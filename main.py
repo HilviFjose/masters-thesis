@@ -1,5 +1,5 @@
 
-from heuristic.construction import ConstructionHeuristic
+from heuristic.construction.construction import ConstructionHeuristic
 from heuristic.destroyer.random_removal import RandomRemoval
 from heuristic.repairer.insertion_greedy import InsertionGreedy
 
