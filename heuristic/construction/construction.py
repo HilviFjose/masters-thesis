@@ -31,6 +31,7 @@ class ConstructionHeuristic:
         self.patients = patients
         self.employees = employees
         self.insertion_generator = InsertionGenerator(self)
+        
 
         #Sender inn dataframes som 
 
@@ -40,17 +41,25 @@ class ConstructionHeuristic:
     def jegFinnes(self):
         print("Konstruktoren finnes")
 
-    #Det først vi gjør etter den er laget 
+    '''
+    Det først vi gjør etter at cosntruction heuristikken er laget. 
+    Her konstrueres det et løsningsobjekt, som er route plan
+    Det lages også en
+    '''
     def construct_initial(self):
+        #Tror rid er request iden, går over alle requests som er gått. Dette blir aktiviteter for oss 
         rid = 1
         unassigned_requests = self.requests.copy()
+        #Henter ut en introduced veichles, som er de veiclesenen som igang
         self.introduced_vehicles.add(self.vehicles.pop(0))
         route_plan = [[]]
         for i in tqdm(range(unassigned_requests.shape[0]), colour='#39ff14'):
             # while not unassigned_requests.empty:
             request = unassigned_requests.iloc[i]
+            
+            #Henter ut hvert request objekt fra unassigned requests. Iterer gjennom alle. 
 
-
+            #Generate insertion kalles her. Da ønsker vi å putte inn en ny request, gitt den gjeldende ruteplanen 
             route_plan, new_objective = self.insertion_generator.generate_insertions(
                 route_plan=route_plan, request=request, rid=rid)
 
@@ -58,7 +67,11 @@ class ConstructionHeuristic:
             self.current_objective = new_objective
 
             rid += 1
+        #TODO: Forstår ikke helt hvorfor infeasible set returneres her? Her har jo ikke blitt gjort noe med 
         return route_plan, self.current_objective, self.infeasible_set
+    
+    #IDE: Må lage en generate insertion, som kan ta inn en liste med aktiviteter. 
+    #Forskjellen på vår og deres er at det blir veldig raskt ugylldig 
 
     def travel_matrix(self, df):
         #TODO: Lage funksjonen basert på det som Anna og de har gjort 

@@ -21,14 +21,12 @@ def main():
 
         #Henter ut data fra dataframes som vi sender inn
         df_activities = pd.read_csv("data/EmployeesNY.csv")
-        print("kommer hit")
         df_employees = pd.read_csv("data/NodesNY.csv")
         df_patients = pd.read_csv("data/VisitsNY.csv")
         #TODO: Finne ut hva som skjer i datahåndteringen over. Hvordan lages dataframene, og hvordan bruks config filene
-        print(df_activities)
         #Her lages en kontruksjonsheuristikk. Våre requests vil være pasienter, og vi går gjennom alle
         constructor = ConstructionHeuristic(df_activities, employees = df_employees, patients =df_patients)
-        constructor.jegFinnes
+        constructor.jegFinnes()
         #TODO: Sjekke hva man skal ha inn av dataframes
 
         print("Constructing initial solution")

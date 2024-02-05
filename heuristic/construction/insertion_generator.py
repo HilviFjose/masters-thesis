@@ -3,6 +3,10 @@ class InsertionGenerator:
     def __init__(self, construction_heuristic):
         self.heuristic = construction_heuristic    
 
+
+def generate_insertions(self, route_plan, request, rid):
+    #TODO: Her skal en pasient puttes inn i planen. Ma sjekke om det går 
+    return new_route_plan, new_objective
 '''      
    def generate_insertions(self, route_plan, request, rid):
         possible_insertions = {}  # dict: delta objective --> route plan
