@@ -1,2 +1,2 @@
-class Employee:
+class Soltion:
     def __init__(self):
