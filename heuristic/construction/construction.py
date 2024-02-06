@@ -1,50 +1,62 @@
 from tqdm import tqdm
-from insertion_generator import InsertionGenerator
+from .insertion_generator import InsertionGenerator
+import pandas as pd
+from typing import List
+import json
+import requests
 import pandas as pd
 
+'''
+INFO:
+I denne klassen definerer de mange funksjoner som jeg ikke forstår hva de bruker til senere. Lurer på det
+Lurer også på hvorfor de oppretter distanseamatrisen her og ikke senere. Hvordan hentes dette opp igjen senere.
+Må forstå mer av strukturen på det. 
+'''
 
 class ConstructionHeuristic:
-    def __init__(self, activities, patients, employees):
-        '''
-        #activites og employees er dataframes 
+    def __init__(self, activities,  employees, patients):
         
-        #self.n = len(requests.index)
-        self.activites = activities["id"]
-        self.employees = employees["id"]
-        self.patients = patients["id"]
-        #Tror ikke vi skal ha de over. Mulig patients, treatments og visits skal organiseres på en annen måte 
-        self.days = 5 
-
-        #Usikker på hva vi skal med denne
-        self.num_nodes_and_depot = (activites.count() + 1)*days* employees.count()  
-        self.T_ij = self.travel_matrix(self.activites)
-        #self.current_objective 
-        #Har dataframe for de tre ulike entitene 
-
-        
-        self.insertion_generator = InsertionGenerator(self)
-
-        #De lager en liste for alle 
-        self.preprocessed = self.preprocess_requests()
-        '''
-        self.activites = activities
+        self.activities = activities
         self.patients = patients
         self.employees = employees
         self.insertion_generator = InsertionGenerator(self)
-        
+        self.T_ij = self.travel_matrix(self.activities)
+        #OBS: Når ducatin er på denne formen så må alle aktiviteter være stigende direkte fra denne 
+        #Tror vi heller skal aksessere den direkte i løpet av bruken av den
+
+
 
         #Sender inn dataframes som 
 
         #Når konstruksjonsheuristikken opprettes så gjøres det en preprossesering i etterpå. 
         #De virker som at de lager en P_ij matrise beskriver hvordan ulike deler ligge ri forhold til hverandr
 
-    def jegFinnes(self):
-        print("Konstruktoren finnes")
+        #Kontruksjonsheuristikken må ha en egen distance matrise og duration for alle 
+
+    def getActivities(self):
+        return self.activities
+
+    def getDurations(self): 
+        return self.D_i
+
+    def getT_ij(self): 
+            return self.T_ij
 
     '''
+    Hvordan fungere det med klaser hvor de kaller hverandre. 
+    Konstruksjonsheuristikken har ulike løsninger og ruter som benyttes. Disse byttes ut etterhvert og vil variere. 
+    Likevel må rutene kunne hente ut datagrunnlaget som hører til selve konstrukjsonen. Nei det kan de ikke 
+    Dataen som skal brukes til den spessifikke oprerasjonen må sendes inn i de andre løsningene. 
+
+    Burde derfor bygge det innenfra. Det er 
+
+
     Det først vi gjør etter at cosntruction heuristikken er laget. 
     Her konstrueres det et løsningsobjekt, som er route plan
-    Det lages også en
+    
+    Prove å forstå selve konstruksjonsheurstikk klassen. Den har en ruteplan. Denne må være for hver ansatt på hver dag som jobber. 
+    #TODO: Lage et løsningsobjekt som består av ruter. 
+    Konstruksjonen har en route plan, som er 
     '''
     def construct_initial(self):
         #Tror rid er request iden, går over alle requests som er gått. Dette blir aktiviteter for oss 
@@ -74,5 +86,31 @@ class ConstructionHeuristic:
     #Forskjellen på vår og deres er at det blir veldig raskt ugylldig 
 
     def travel_matrix(self, df):
+        coordinate_string_patient = self.get_coordinates_string_from_list(self.activities['location'].tolist())
+        return self.get_distance_matrix(coordinate_string_patient)
         #TODO: Lage funksjonen basert på det som Anna og de har gjort 
-        return T_ij 
+        
+ 
+    def get_coordinates_string_from_list(self, list):
+        coordinates_string = ";".join(str(item) for item in list)
+        return coordinates_string.replace("(", "").replace(")", "").replace(" ", "").replace("[","").replace("]","")
+
+    def get_distance_matrix(self, coordinates_string):
+        # Documntation for this API: http://project-osrm.org/docs/v5.10.0/api/#general-options
+        url = 'http://router.project-osrm.org/table/v1/driving/'+coordinates_string+''
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            if 'durations' in data:  # Make sure 'durations' key exists
+                # Process and return the durations data as needed
+                return data['durations']
+            else:
+                # 'durations' key does not exist, return a default value or handle the error as appropriate
+                print("Durations data not provided in the API response.")
+                return None  # You could return an empty list or dict instead, depending on your use case
+        else:
+            # The API did not return a successful response
+            print(f"Error fetching data: {response.status_code}")
+            return None
+
