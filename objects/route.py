@@ -2,13 +2,15 @@ import numpy as np
 import pandas as pd
 from employee import Employee
 from actitivites import Acitivity
+from distances import T_ij
+import math
 
 class Route:
     def __init__(self, day, employee):
         self.travel_time = 0
         self.start_time = employee.getShiftStart(day) 
         self.end_time = employee.getShiftEnd(day)
-        self.route = np.array([])
+        self.route = np.empty(0, dtype=object)
         self.skillLev = employee.getSkillLevel()
         self.day = day
         self.employee = employee
@@ -28,35 +30,53 @@ class Route:
         if activity.getEmployeeRestriction == self.employee.getID() or activity.getSkillreq() > self.skillLev: 
             return False
 
-        #TODO. Må finne ut hvordan man skal iterere over de ulike. Det er 
+        #TODO. Må finne ut hvordan man skal iterere over de ulike. 
+        #Kaller aktiviteten vi ser på nå for a, foregående aktivitet for i, kommenda aktiviet for j  
+         
         S_i = self.start_time
-        T_ij = T_ij[0][activity.id]
+        #T_ia = T_ij[0][activity.id]
+        T_ia = 0 
         D_i = 0 
-        for k in self.route: 
-            if S_i + D_i + T_ij + act.duation + T_ij[act][after_node[0]] <= after_node[1]:
+        index_count = 0 
+        for j in self.route: 
+            print("Sjekker for akivitet", j.getID())
+            index_count +=1 
+            #print("S_i", S_i) + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime()
             
-
-        if len(self.route == 0): 
-            if activity.latestStartTime >= self.start_time + 
-
-
-        start = self.start_time
-        for act in 
-
-        return True
-
-
-
-
-        '''
-        for i in range(len(self.route)-1): 
-            before_node = self.route[i]
-            after_node = self.route[i+1]
-            if before_node[1] + Duration[before_node[0]] + T_ij[before_node[0]][activity] + Duration[activity] + T_ij[activity][after_node[0]] <= after_node[1]:
-                self.route = np.insert(self.route, i, (activity, Duration[activity]))
+            #hva sjekker denne: 
+            if S_i + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
+                activity.setStartTime(activity.getEarliestStartTime())
+                self.route = np.insert(self.route, index_count, activity)
                 return True
+            if S_i + D_i + T_ia <= j.getStartTime()- T_ij[activity.getID()][j.getID()] - activity.getDuration() and activity.getLatestStartTime() <= j.getStartTime() - T_ij[activity.getID()][j.getID()] - activity.getDuration():
+                activity.setStartTime(activity.getLatestStartTime())
+                self.route = np.insert(self.route, index_count, activity)
+                return True
+            S_i = j.getStartTime()
+            T_ia = T_ij[j.getID()][activity.getID()]
+            D_i = j.getDuration()
+        try: 
+            print("Sjekker for akivitet", j.getID()+1)
+        except: 
+            print("empty list")
+        if S_i + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
+            activity.setStartTime(activity.getEarliestStartTime())
+            self.route = np.insert(self.route, index_count, activity)
+            return True
+        if S_i + D_i + T_ia >= activity.getEarliestStartTime() and S_i + D_i + T_ia + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
+            activity.setStartTime(S_i + D_i + math.ceil(T_ia))
+            self.route = np.insert(self.route, index_count, activity)
+            return True
+        if S_i + D_i + T_ia <= self.start_time - T_ij[activity.getID()][0] - activity.getDuration() and activity.getLatestStartTime() <= self.end_time - T_ij[activity.getID()][0] - activity.getDuration():
+            activity.setStartTime(activity.getLatestStartTime())
+            self.route = np.insert(self.route, index_count, activity)
+            return True
+        
         return False 
-        '''
+
+       
+#TODO: Må fikse slik at ceil er på alle funskjonen 
+        
 
     def getRoute(self): 
         return self.route
@@ -77,10 +97,25 @@ df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"])
 
 e1 = Employee(df_employees, 1)
 r1 = Route(1, e1)
+print("ruten starter", r1.start_time)
+print("ruten slutter ", r1.end_time)
 print("original route", r1.getRoute())
 a1 = Acitivity(df_activities, 1)
 print("r1.addActivity(a1)",r1.addActivity(a1))
 print("new route", r1.getRoute())
+a25 = Acitivity(df_activities, 25)
+print("r1.addActivity(a25)",r1.addActivity(a25))
+print("new route", r1.getRoute())
+print("start a1", a1.getStartTime())
+print("start a25", a25.getStartTime())
+
+'''
+Kommentar til resultater. Det skal fungere å legge inn den andre.
+Hvilken av de skal den fungere på
+
+Det er noe med når tidsvinduene strekker seg utenfor begge begrensninger. Da fungerer det ikke
+'''
+
 
 '''
 Uganspunkt for klassen: Dette er rute for en spessifikk ansatt, med starttidspunkt og slutttidspunkt. 
