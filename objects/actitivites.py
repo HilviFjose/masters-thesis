@@ -2,15 +2,15 @@ import pandas as pd
 
 class Acitivity:
     def __init__(self, df, id):
-        self.key = df.iloc[id].keys()
+        #self.key = df.iloc[id].key
         self.id = id 
-        self.latestStartTime = df.iloc[id]["latestStartTime"]
-        self.earliestStartTime = df.iloc[id]["earliestStartTime"]
-        self.duration = df.iloc[id]["activityDuration"]
-        self.skillReq = df.iloc[id]["skillRequirement"]
-        self.sameEmployeeActivityID = df.iloc[id]["sameEmployeeActivityID"]
-        self.location = df.iloc[id]["location"]
-        self.employeeRestricion = df.iloc[id]["employeeRestriction"].replace("(", "").replace(")", "")
+        self.latestStartTime = df.loc[id]["latestStartTime"]
+        self.earliestStartTime = df.loc[id]["earliestStartTime"]
+        self.duration = df.loc[id]["activityDuration"]
+        self.skillReq = df.loc[id]["skillRequirement"]
+        self.sameEmployeeActivityID = df.loc[id]["sameEmployeeActivityID"]
+        self.location = df.loc[id]["location"]
+        self.employeeRestricion = df.loc[id]["employeeRestriction"].replace("(", "").replace(")", "")
         self.startTime = None
     
     def getSkillreq(self): 
@@ -40,6 +40,7 @@ class Acitivity:
     def getID(self): 
         return self.id
     
+
 '''
 Sliter med å forstå hvordan aktivitenene skal henge sammen
 De har jo egenskaper mellom hverandre som presedens og same employee ID
@@ -47,14 +48,18 @@ De har jo egenskaper mellom hverandre som presedens og same employee ID
 
 
 df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
+print(df_activities)
 
-act1 = Acitivity(df_activities, 5)
+act1 = Acitivity(df_activities, 15)
 print(print(act1.getID()))
 print("employeeRes",act1.getEmployeeRestriction())
 print("----------")
 print("earliest and latest")
 print(act1.getEarliestStartTime())
 print(act1.getLatestStartTime())
+print("act1.getDuration()",act1.getDuration())
+#print(act1.key.astype(int))
+#print(act1.key)
 
 
 '''

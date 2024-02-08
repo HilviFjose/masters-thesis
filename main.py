@@ -22,7 +22,9 @@ def main():
         #Henter ut data fra dataframes som vi sender inn
         df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
         df_employees = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"])
-        df_patients = pd.read_csv("data/VisitsNY.csv")
+        df_patients = pd.read_csv("data/Patients.csv").set_index(["patient"])
+        df_treatments = pd.read_csv("data/Treatment.csv").set_index(["treatment"])
+        df_visits = pd.read_csv("data/Visit.csv").set_index(["visit"])
         #TODO: Finne ut hva som skjer i datahåndteringen over. Hvordan lages dataframene, og hvordan bruks config filene
         #Her lages en kontruksjonsheuristikk. Våre requests vil være pasienter, og vi går gjennom alle
         constructor = ConstructionHeuristic(activities=df_activities, employees = df_employees, patients =df_patients)

@@ -1,10 +1,17 @@
 from tqdm import tqdm
-from .insertion_generator import InsertionGenerator
+from insertion_generator import InsertionGenerator
 import pandas as pd
 from typing import List
 import json
 import requests
 import pandas as pd
+
+import sys
+sys.path.append("C:\\Users\\agnesost\\masters-thesis")
+
+from objects.route_plan import RoutePlan
+
+
 
 '''
 INFO:
@@ -13,52 +20,72 @@ Lurer også på hvorfor de oppretter distanseamatrisen her og ikke senere. Hvord
 Må forstå mer av strukturen på det. 
 '''
 
+
+
 class ConstructionHeuristic:
-    def __init__(self, activities,  employees, patients):
+    def __init__(self, activities_df,  employees_df, patients_df, treatment_df, visit_df, days):
         
-        self.activities = activities
-        self.patients = patients
-        self.employees = employees
-        self.insertion_generator = InsertionGenerator(self)
-        self.T_ij = self.travel_matrix(self.activities)
-        #OBS: Når ducatin er på denne formen så må alle aktiviteter være stigende direkte fra denne 
-        #Tror vi heller skal aksessere den direkte i løpet av bruken av den
-
-
-
-        #Sender inn dataframes som 
-
+        self.activities_df = activities_df
+        self.visit_df = visit_df
+        self.treatment_df = treatment_df
+        self.patients_df = patients_df
+        self.employees_df = employees_df
+        self.days = days
+        
+    
+        #Det er mye jeg ikke forstår med hvordan de andre generer 
         #Når konstruksjonsheuristikken opprettes så gjøres det en preprossesering i etterpå. 
         #De virker som at de lager en P_ij matrise beskriver hvordan ulike deler ligge ri forhold til hverandr
-
-        #Kontruksjonsheuristikken må ha en egen distance matrise og duration for alle 
 
     def getActivities(self):
         return self.activities
 
-    def getDurations(self): 
-        return self.D_i
-
-    def getT_ij(self): 
-            return self.T_ij
-
+ 
     '''
     Hvordan fungere det med klaser hvor de kaller hverandre. 
     Konstruksjonsheuristikken har ulike løsninger og ruter som benyttes. Disse byttes ut etterhvert og vil variere. 
     Likevel må rutene kunne hente ut datagrunnlaget som hører til selve konstrukjsonen. Nei det kan de ikke 
     Dataen som skal brukes til den spessifikke oprerasjonen må sendes inn i de andre løsningene. 
 
-    Burde derfor bygge det innenfra. Det er 
+    
+    Beskrivelse av klassen: 
+    Må forstå hva som skjer i de to klassene. 
+    Lager en ConstructionHeuristic 
+    Så kaller den construct initial, som gir ut den initial_route_plan, initial_objective, initial_infeasible_set
 
+    construct initial: 
+    Går gjennom hele lista med requests og prøve å 
+    Hente ut alle pasienter, og finne scoren for de. 
 
     Det først vi gjør etter at cosntruction heuristikken er laget. 
     Her konstrueres det et løsningsobjekt, som er route plan
+
+    Objektivverdi: Hvorfor vil vi ha objektivverdi i denne klassen, og ikke i routeplan?
+    Hvorfor skal det hentes opp? 
     
-    Prove å forstå selve konstruksjonsheurstikk klassen. Den har en ruteplan. Denne må være for hver ansatt på hver dag som jobber. 
-    #TODO: Lage et løsningsobjekt som består av ruter. 
-    Konstruksjonen har en route plan, som er 
+    Prove å forstå selve konstruksjonsheurstikk klassen. Den har en ruteplan. Denne må være for hver ansatt på hver dag som jobber.  
     '''
-    def construct_initial(self):
+    def construct_initial(self): 
+        #Lage en liste med requests og sortere de. Lage en prioritert liste med pasienter
+        unassigned_patients = df_patients.sort_values(by="aggSuit", ascending=False)
+        
+        #Lager en original ruteplan
+        route_plan = RoutePlan(self.days, self.employees_df)
+        new_objective = 0 
+
+        for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
+        # while not unassigned_requests.empty:
+            patient_request = unassigned_patients.iloc[i]
+            insertion_generator = InsertionGenerator(self, route_plan,patient_request)
+
+            print(insertion_generator.getTreatments())
+        #Lage en insert generator som prøver å legge til pasient. 
+        #Vil først få ny objektivverdi når en hel pasient er lagt til, så gir mening å kalle den her
+        return route_plan, new_objective
+
+
+    #Denne lager et inisielt løsningsobjekt. 
+    def construct_initialG(self):
         #Tror rid er request iden, går over alle requests som er gått. Dette blir aktiviteter for oss 
         rid = 1
         unassigned_requests = self.requests.copy()
@@ -84,33 +111,14 @@ class ConstructionHeuristic:
     
     #IDE: Må lage en generate insertion, som kan ta inn en liste med aktiviteter. 
     #Forskjellen på vår og deres er at det blir veldig raskt ugylldig 
+   
 
-    def travel_matrix(self, df):
-        coordinate_string_patient = self.get_coordinates_string_from_list(self.activities['location'].tolist())
-        return self.get_distance_matrix(coordinate_string_patient)
-        #TODO: Lage funksjonen basert på det som Anna og de har gjort 
-        
- 
-    def get_coordinates_string_from_list(self, list):
-        coordinates_string = ";".join(str(item) for item in list)
-        return coordinates_string.replace("(", "").replace(")", "").replace(" ", "").replace("[","").replace("]","")
+#Disse skal ikk her men limer innforeløpig
+df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
+df_employees = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"])
+df_patients = pd.read_csv("data/Patients.csv").set_index(["patient"])
+df_treatments = pd.read_csv("data/Treatment.csv").set_index(["treatment"])
+df_visits = pd.read_csv("data/Visit.csv").set_index(["visit"])
 
-    def get_distance_matrix(self, coordinates_string):
-        # Documntation for this API: http://project-osrm.org/docs/v5.10.0/api/#general-options
-        url = 'http://router.project-osrm.org/table/v1/driving/'+coordinates_string+''
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            data = response.json()
-            if 'durations' in data:  # Make sure 'durations' key exists
-                # Process and return the durations data as needed
-                return data['durations']
-            else:
-                # 'durations' key does not exist, return a default value or handle the error as appropriate
-                print("Durations data not provided in the API response.")
-                return None  # You could return an empty list or dict instead, depending on your use case
-        else:
-            # The API did not return a successful response
-            print(f"Error fetching data: {response.status_code}")
-            return None
-
+testConsHeur = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
+testConsHeur.construct_initial()

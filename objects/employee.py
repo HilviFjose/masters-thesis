@@ -4,12 +4,12 @@ days = 5
 
 class Employee:
     def __init__(self, df, id):
-        self.skillLevel = df.iloc[id]["professionLevel"]
-        self.shifts = self.getShifts(df.iloc[id]["Schedule"])
+        self.skillLevel = df.loc[id]["professionLevel"]
+        self.shifts = self.getShifts(df.loc[id]["Schedule"])
         self.id = id
     
     def getShifts(self, shiftString): 
-        employeeShift = {day: {"startShift": None, "endShift" : None } for day in range(1,days+1)} 
+        employeeShift = {day: {"startShift": 0, "endShift" : 0 } for day in range(1,days+1)} 
         listOfShifts = shiftString.replace("(", "").replace(")", "").split(", ")
         for shift in listOfShifts: 
             d = int(shift) // 3 

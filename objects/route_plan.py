@@ -1,13 +1,51 @@
+import pandas as pd
+import numpy as np
+
+import sys
+sys.path.append("C:\\Users\\agnesost\\masters-thesis")
+from objects.employee import Employee
+from objects.route import Route
+
 class RoutePlan:
-    def __init__(self, days, employeesONday):
-        self.routes = [[Route() for d in range(len(days))] for e in range(2)]
+    def __init__(self, days, employee_df):
+        self.routes = {day: {} for day in range(1, days+1)}
+        for  index, row in employee_df.iterrows():
+            emplID = index
+            emp = Employee(employee_df, index)
+            for day in self.routes: 
+                self.routes[day][index] = Route(day, emp)
+        self.suitScore = 0 
+
+            
+    #def addActivity(self, activity): 
+
 
     #days er her entall dager, mens employees er en liste over    
     #Jeg tror vi skal ha rutene mer, med tilhørende score for alle rutene her. 
-    #Hvis en rute legges til så økes scoren her         
+    #Hvis en rute legges til så økes scoren her     
 
-    def getRouteEmployeeDay(employee, day): 
+    #De ansatte har   
+    #Her blir det på hva vi skal sende inn. Sender inn hele employee dataframen kanskje? 
+
+    '''
+    Ansatt objektene lages bare en gang 
+    '''
+         
+
+
+    
+    def getRoutePlan(self): 
+        return self.routes
+ 
         
+
+
+
+
+df_employees = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"])
+rp = RoutePlan(5, employee_df= df_employees)
+print(rp.getRoutePlan())
+
 
 '''
 

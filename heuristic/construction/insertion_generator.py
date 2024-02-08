@@ -1,12 +1,63 @@
-        
+import numpy as np 
+
 class InsertionGenerator:
-    def __init__(self, construction_heuristic):
-        self.heuristic = construction_heuristic    
+    def __init__(self, construction_heuristic, route_plan, patients_df):
+        #Heuristikken brukes til å hente ut dataframsene. Altså dataverdiene fra de fortåene
+        self.heuristic = construction_heuristic   
+        #Ruteplanen eksisterer ikke i utganspunktet. Den har blitt laget også sendt inn 
+        self.route_plan = route_plan
 
 
-    def generate_insertions(self, route_plan, request, rid):
+        #TODO:Bruke patient df til å lage en liste over aktiviteter som skal inn 
+        self.requestActivities = np.empty(0, dtype=object)
+        treatment = patients_df["treatment"]
+        if isinstance(treatment,str):
+            self.treatment = treatment.split(',')
+        else: 
+            self.treatment = [treatment]
+        self.treatments = None 
+        self.visits = None 
+        self.activites = None 
+
+        #Den har jo en pasient og en mulig objektivverdi. 
+        #Du kan ikke sende en ny pasient inn etterpå, fordi noen av parameterne er endret på 
+        #Så objektet er låst til pasienten man ser på
+
+    def generate_insertions(self):
+        state = True
         #TODO: Her skal en pasient puttes inn i planen. Ma sjekke om det går 
-        return new_route_plan, new_objective
+        
+        
+        #Det er mulig å printe objekter fra denne klassen 
+        return self.route_plan, 0
+    
+    def getTreatments(self): 
+        return self.treatment
+    
+
+'''
+Lurer på: hva er selve insertion objektet? Hvorfor er ikke dette en metode i construksjonen? 
+Er det fordi den er så stor, så de har lagt den utenfor? Eller er det en egen enhet
+
+Burde tenke litt over hva slags egenskaper den insertionene skal ha.
+Vil vi ha det på en spessiell måte. 
+
+Alternativ til slik de har det. Det generes en inserter for hver pasient som skal inn
+Insertern har en egen struktur som tar varer på alle de ulike
+
+Kategorisere hva som er metode og hva som er tilstand: 
+Vil ha en metode som legger til en pasient 
+Det må igjen ha metode som legger til treatments
+Legger til visits 
+Må ha tilstand i form av at man vet om pasienten kan legges til, og hva som er nåværende ruteplan
+
+Hvor skal ruteplanen inn, den må være en egen enitet som oppdateres 
+
+
+#TODO: Finne ut om patterns, treatments som er vnaskeligst å plassere skal først. 
+Må lage en liste på det for å bestemme hvem som skal insertes når
+
+'''
 '''      
    def generate_insertions(self, route_plan, request, rid):
         possible_insertions = {}  # dict: delta objective --> route plan
