@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import math
 import sklearn.metrics
 from sklearn.metrics.pairwise import haversine_distances
 from datetime import datetime, timedelta
@@ -11,11 +12,12 @@ df_visits = pd.read_csv("data/test_data/VisitsNY.csv")
 
 
 def travel_matrix(df):
-        # Positions
-        nodes_lat_lon = list(df_nodes["location"])
-        distance_array = np.array(nodes_lat_lon)
-        distances = haversine_distances(distance_array, distance_array)
-        print("haversine", distances)
+        radians_latitude = [math.radians(float(i.replace(",", "").split()[0])) for i in df["location"]]
+        radians_longitude = [math.radians(float(i.replace(",", "").split()[1])) for i in df["location"]]
+        print("latlong", radians_latitude, radians_longitude)
+    
+       
+        #print("haversine", distances)
 
         # Distance matrix
 
