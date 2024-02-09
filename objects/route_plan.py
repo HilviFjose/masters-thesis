@@ -8,13 +8,13 @@ from objects.route import Route
 
 class RoutePlan:
     def __init__(self, days, employee_df):
-        self.routes = {day: {} for day in range(1, days+1)}
-        for  index, row in employee_df.iterrows():
-            emplID = index
-            emp = Employee(employee_df, index)
+        self.routes = {day: [] for day in range(1, days+1)}
+        for  key, value in employee_df.iterrows():
+            emp = Employee(employee_df, key)
             for day in self.routes: 
-                self.routes[day][index] = Route(day, emp)
+                self.routes[day].append(Route(day, emp))
         self.suitScore = 0 
+        self.days = days 
 
             
     #def addActivity(self, activity): 
@@ -31,13 +31,25 @@ class RoutePlan:
     Ansatt objektene lages bare en gang 
     '''
          
-
+    #TODO: Vi vil legge til aktivitet på denne dagen. Sjekke om totalt sett går
+    def addNodeOnDay(self, activity, day): 
+        for route in self.routes[day]: 
+            state = route.addActivity(activity)
+            if state == True: 
+                return True
+        return False
+    
+    #Informasjon om den ansatte ligger i ruta. 
 
     
     def getRoutePlan(self): 
         return self.routes
  
-        
+    def printSoultion(self): 
+        print("Printer alle rutene")
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                route.printSoultion()
 
 
 

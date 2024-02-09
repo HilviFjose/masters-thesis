@@ -93,11 +93,10 @@ class Route:
         #Det er ikke heldig. Vil gjøre et kall til API-et 
     
     def printSoultion(self): 
-        print("Printer ny løsning")
+        print("Printer ny løsning for dag "+str(self.day)+ " ansatt "+str(self.employee.getID()))
         print(self.getRoute())
         for a in self.route: 
-            print("activity"+str(a.getID()))
-            print("start "+ str(a.getStartTime()))
+            print("activity "+str(a.getID())+ "start "+ str(a.getStartTime()))    
         print("---------------------")
 
 #Du må rekke å begynne på aktiviteten før 

@@ -72,13 +72,23 @@ class ConstructionHeuristic:
         #Lager en original ruteplan
         route_plan = RoutePlan(self.days, self.employees_df)
         new_objective = 0 
-
+        
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
-        # while not unassigned_requests.empty:
             patient_request = unassigned_patients.iloc[i]
+            print("ser på pasient" + str(patient_request))
             insertion_generator = InsertionGenerator(self, route_plan,patient_request)
+            insertion_generator.generate_insertions()
+        '''
+        patient_request = unassigned_patients.iloc[0]
+        
+        insertion_generator = InsertionGenerator(self, route_plan,patient_request)
 
-            print(insertion_generator.getTreatments())
+        print(insertion_generator.getTreatments())
+        print("-----------------------")
+        print(insertion_generator.getPatientDF())
+
+        insertion_generator.generate_insertions()
+        '''
         #Lage en insert generator som prøver å legge til pasient. 
         #Vil først få ny objektivverdi når en hel pasient er lagt til, så gir mening å kalle den her
         return route_plan, new_objective
@@ -121,4 +131,10 @@ df_treatments = pd.read_csv("data/Treatment.csv").set_index(["treatment"])
 df_visits = pd.read_csv("data/Visit.csv").set_index(["visit"])
 
 testConsHeur = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
-testConsHeur.construct_initial()
+route_plan, obj = testConsHeur.construct_initial()
+route_plan.printSoultion()
+#TODO: printe routeplan for å se om det ble noe 
+
+
+#TODO: Fikse slik at pasienter enten er med eller ikkke. 
+#Må få igang state variablene
