@@ -40,12 +40,13 @@ def employeeGenerator():
     df_employees = pd.DataFrame(columns=['employeeId', 'professionLevel', 'schedule'])
     levels = construction_config.professionLevels
     probabilities = construction_config.professionLevelsProb
-
     for e in range(1, construction_config.E_num + 1):
         professionLevel = np.random.choice(levels, p=probabilities)
         #Her må schedule inn... Må sørge for at det fordeles greit OG at det er en sykepleier på alle vakter. 
 
-        schedule = 0
+        schedule = [0,0,0,0,0]
+        for s in schedule():
+            schedule 
         df_employees = df_employees._append({'employeeId': e, 
                                             'professionLevel': professionLevel, 
                                             'schedule': schedule}, ignore_index=True)
