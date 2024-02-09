@@ -7,7 +7,7 @@ sys.path.append('C:\\Users\\gurl\\masters-thesis')
 
 from config import construction_config
 
-print("FILSTI: ", os.getcwd()+'\data')
+#print("FILSTI: ", os.getcwd()+'\data')
 
 #Kan eventuelt legges i en klasse: DataGenerator
 def activitiesGenerator():
@@ -35,6 +35,38 @@ def activitiesGenerator():
 
 
     return df_activities
+
+def generate_profession_levels():
+    for p in construction_config.professionLevels:
+        pattern = construction_config.professionLevels[p]*construction_config.professionLevelsProb[p]*10
+    #pattern = [1]*2 + [2]*3 + [3]*5  # Representerer mønsteret for professionLevels
+    full_pattern = pattern * (construction_config.E_num // len(pattern)) + pattern[:construction_config.E_num % len(pattern)]
+    return full_pattern
+
+def assign_shifts(employee_profession_levels):
+    shifts = []  # Container for alle ansattes skift
+    # Anta en strategi for tildeling av skift her
+    # Denne delen av koden vil avhenge av mer kompleks logikk for å oppfylle alle kravene
+    return shifts
+
+
+def employeeGeneratorNY():
+    total_employees = construction_config.E_num
+    profession_levels = generate_profession_levels(total_employees)
+    
+    # Her ville vi ha logikk for å tildele skift basert på professionLevels og kravene beskrevet.
+    shifts = assign_shifts(profession_levels)
+    
+    df_employees = pd.DataFrame({
+        'employeeId': range(1, total_employees + 1),
+        'professionLevel': profession_levels,
+        'schedule': shifts
+    })
+    
+    file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
+    df_employees.to_csv(file_path, index=False)
+    
+    return df_employees
 
 def employeeGenerator():
     df_employees = pd.DataFrame(columns=['employeeId', 'professionLevel', 'schedule'])
