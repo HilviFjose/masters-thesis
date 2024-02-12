@@ -7,7 +7,7 @@ maxActivitiesPerPatient = 25
 
 # Distributions
 treatmentsPerPatient = 1.05 #Number of treatments per patient
-#visitsPerTreatment = 3.5 #Number of visits per treatment
+visitsPerTreatment = 3.5 #Number of visits per treatment
 activitiesPerVisit = 3.5 #Number of activities per treatment
 
 # Pattern Type Distribution (5days)
@@ -26,40 +26,15 @@ patterns_2daysfollowing = [11,12,13,14]                             # Patterntyp
 patterns_1day = [15,16,17,18,19]                                    # Patterntype 6
 #Patterns_distribution = [Patterns_5days = 0.1, Patterns_4days = 0.1]
 
-# Continuity 
-continuityFactor1 = 0.25 #Top 1 employee
-continuityFactor2 = 0.25 #Top 3 employees
-continuityFactor3 = 0.5 #All employees
-continuityThreshold1 = 0.4 #Top 1 employee
-continuityThreshold2 = 0.2 #Top 3 employees
+# Continuity distribution
+continuityDistribution = [0.25, 0.25, 0.5] #Top 1 employee, top 3 employees, all employees
 
 # Employee history??
 
 # Heaviness
-heavinessFactor = [0.05, 0.2, 0.5, 0.2, 0.05] 
+heavinessDistribution = [0.05, 0.2, 0.5, 0.2, 0.05] 
 
 # ACTIVITIES
-"""
-Columns: 
-id
-patientId
-earliestStartTime
-latestStartTime
-activityDuration
-synchronisation
-skillRequirement
-precedence
-sameEmployeeActivityId
-visit
-treatment
-possiblePatterns
-patternType
-numOfVisits
-utility
-location
-continuityGroup
-heaviness
-"""
 # Activities Distribution 
 precedence = 0.5
 sync = 0.05
@@ -89,10 +64,9 @@ activitiesDay = 0.6
 activitiesEvening = 0.2
 #TODO: må håndtere at aktivititeter kan fordeles over flere skift dersom vi ønsker det i datasettet.
 
-
 # EMPLOYEES
 # Number of employees
-E_num = 20
+E_num = 25
 # Distributions of employees
 E_num_night = 0.1
 E_num_day = 0.7
