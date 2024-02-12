@@ -52,14 +52,14 @@ class RoutePlan:
                 route.printSoultion()
 
 
-
+'''
 
 df_employees = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"])
 rp = RoutePlan(5, employee_df= df_employees)
 print(rp.getRoutePlan())
 
 
-'''
+
 
 Jobber alle ansatte alle dager? 
 Nei det gjør de ikke. Så det må bli konstuert av 

@@ -37,7 +37,6 @@ class Route:
          
         S_i = self.start_time
         T_ia = T_ij[0][activity.id]
-        #T_ia = 0 
         D_i = 0 
         index_count = 0 
         for j in self.route: 
@@ -80,23 +79,55 @@ class Route:
         
         return False 
 
+    def checkAddActivity(self, activity):
+
+        if activity.getEmployeeRestriction == self.employee.getID() or activity.getSkillreq() > self.skillLev: 
+            return False
+
+        #TODO. Denne kan skrives ned, skal bare returnere om det er mulig
+          
+        S_i = self.start_time
+        T_ia = T_ij[0][activity.id]
+        D_i = 0 
+        index_count = 0 
+        for j in self.route: 
+            #TODO: Skrive hva de sjekker
+            if S_i + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
+           
+                return True
+            if S_i + D_i + T_ia >= activity.getEarliestStartTime() and  S_i + D_i + math.ceil(T_ia) + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
+            
+                return True
+            if S_i + D_i + T_ia <= j.getStartTime()- T_ij[activity.getID()][j.getID()] - activity.getDuration() and activity.getLatestStartTime() <= j.getStartTime() - T_ij[activity.getID()][j.getID()] - activity.getDuration():
+                return True
+            S_i = j.getStartTime()
+            T_ia = T_ij[j.getID()][activity.getID()]
+            D_i = j.getDuration()
+            index_count +=1
        
+        if S_i + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
+         
+            return True
+        if S_i + D_i + T_ia >= activity.getEarliestStartTime() and S_i + D_i + T_ia + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
+ 
+            return True
+        if S_i + D_i + T_ia <= self.start_time - T_ij[activity.getID()][0] - activity.getDuration() and activity.getLatestStartTime() <= self.end_time - T_ij[activity.getID()][0] - activity.getDuration():
+
+            return True
+        
+        return False        
 #TODO: Må fikse slik at ceil er på alle funskjonen 
         
 
     def getRoute(self): 
         return self.route
 
-    def getDistance(self, activity1, activity2): 
-        return 0 
-        #Viktig å hente distansematrisen bare en gang, hvis det gjøres på denne måten, så vil den bli hentet flere ganger.
-        #Det er ikke heldig. Vil gjøre et kall til API-et 
     
     def printSoultion(self): 
-        print("Printer ny løsning for dag "+str(self.day)+ " ansatt "+str(self.employee.getID()))
-        print(self.getRoute())
+        print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID()))
+        #print(self.getRoute())
         for a in self.route: 
-            print("activity "+str(a.getID())+ "start "+ str(a.getStartTime()))    
+            print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
         print("---------------------")
 
 #Du må rekke å begynne på aktiviteten før 
@@ -105,6 +136,7 @@ class Route:
 #TODO: Må finne ut hvordanman aksesserer duration og T_ij herfra 
 #TODO: Legge til skillrequirement 
 
+'''
 df_employees  = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"]) 
 df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
 
@@ -148,7 +180,7 @@ r1.printSoultion()
 
 
 
-'''
+
 Sjekke for å finne alle aktivter som kan på mandager 
 Nå fungere den med at noen aktiviteter kan legges til og noen ikke. Så nå må vi ha samling av alle rutene
 

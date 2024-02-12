@@ -42,9 +42,13 @@ class Acitivity:
     
 
 '''
+
+'''
+
+'''
 Sliter med å forstå hvordan aktivitenene skal henge sammen
 De har jo egenskaper mellom hverandre som presedens og same employee ID
-'''
+
 
 
 df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
@@ -62,7 +66,7 @@ print("act1.getDuration()",act1.getDuration())
 #print(act1.key)
 
 
-'''
+
 Dette kan være bra fordi vi ikke skal opprette alle aktiviter med en gang
 Hvis vi tar det pasienthvis så iterer vi først over alle de som er til en pasient 
 Da lager vi ikke fisse objektene før ette en stund 

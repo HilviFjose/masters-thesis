@@ -3,15 +3,21 @@ import sys
 sys.path.append("C:\\Users\\agnesost\\masters-thesis")
 from objects.patterns import pattern
 from objects.actitivites import Acitivity
+import copy
 
+'''
+Insertion generatoren er for en pasient. 
+Det lages en insertion generator hvor 8 kommer med og det oppdateres deretter
+'''
 
 class InsertionGenerator:
-    def __init__(self, construction_heuristic, route_plan, patients_df):
-        #Heuristikken brukes til å hente ut dataframsene. Altså dataverdiene fra de fortåene
-        self.heuristic = construction_heuristic   
+    def __init__(self, construction_heuristic, route_plan, patients_df, treatment_df, visit_df, activities_df):
+        #Heuristikken brukes til å hente ut dataframsene. Altså dataverdiene fra de fortåene   
         #Ruteplanen eksisterer ikke i utganspunktet. Den har blitt laget også sendt inn 
+        self.treatment_df = treatment_df
         self.route_plan = route_plan
-
+        self.activites_df = activities_df
+        self.visit_df = visit_df
         self.patients_df = patients_df
         #TODO:Bruke patient df til å lage en liste over aktiviteter som skal inn 
         self.requestActivities = np.empty(0, dtype=object)
@@ -33,73 +39,105 @@ class InsertionGenerator:
         Må derfor i InsertionGenerator hente tilbake alle dataframesenen knyttet til visit og aktivtet
         Det kan hende at det er litt meningsløs genrering å hente tilbake,
         Alternativt sende inn hele aktivtetsdataframen til pasienten, også gjøre radopperasjoner for å sortere på viktigheten av rekkefølgen 
+        
+        Det er noe mer ruteobjektet her som ikke blir riktig. Kategori
+
+        Det er mystisk at alle får sit første pattern. Virker ikke som at de itereres over
+        De 
         '''
 
     def generate_insertions(self):
-        state = True
         #TODO: Her skal treaments sorteres slik at man vet hvilke som er mest. 
         #Nå itereres den over i rekkefølge 
+        patStat = True
         for treatment in self.treatments: 
+            treatStat = False
             #Inne i en behandling, har hentet alle visits til den 
-            strVis = self.heuristic.treatment_df.loc[treatment, 'visit']
+            strVis = self.treatment_df.loc[treatment, 'visit']
             visitList = self.getIntList(strVis)
             #TODO: Hente ut sett av mulig patterns som kan fungere
-            for treatPat in pattern[self.heuristic.treatment_df.loc[treatment, 'pattern']]: 
-                self.insert_visit_with_pattern(visitList, treatPat)
-
-           
-            '''
-            Første omgang få det til å fungere. 
-            Sende inn et sett av paterns. Har pattern 1 
-            '''
-
-
-
-            #TODO: Visits skal sorteres her for å legge de i prioritert rekkefølge
-            #TODO: Det må også velges dag for når det skal gjennomføres 
-        #TODO: Her skal en pasient puttes inn i planen. Ma sjekke om det går 
+            self.route_plan.printSoultion()
+            print("tester litt")
+            print(pattern[self.treatment_df.loc[treatment, 'pattern']])
+            count_patterns = 0
+            for treatPat in pattern[self.treatment_df.loc[treatment, 'pattern']]:
+                '''
+                Mulige route plans burde generes her. Fordi 
+                '''
+                count_patterns +=1  
+                insertState = self.insert_visit_with_pattern(visitList, treatPat) 
+                if treatment == 8: 
+                    print("StatusTrea")
+                    print("state ",insertState)
+                if insertState == True:
+                   treatStat = True
+                   break
+                #Hvis ikke den første fungerer så vil den bare returnere false
+                #Dette er det samme problemet som det andre. Return False skal være
+                #Hvis det er siste mulige pattern så blir det false 
+            if treatStat == False: 
+                return False
         
+        #Det er noe med true og false her
+        #Jeg tror vi må returne status her. Og sette det på en ny måte
+        
+        return True
+    '''
+    Det er noe her med route plan, hvordan det oppdateres. Hvor skal det være
+    Construction har en routeplan som lages når det oppdateres 
+    Construct kaller en construct initial 
+    '''
 
-        #Nå legger vi til alle mulige aktiviteter i en liste. Det er ikke mulig.
-        #Må sende inn et visit med en gitt dag det burde gjøres 
-        #De må jo prøve alle mulig patterns. Prøver først et, og hvis det ikke fungerer prøve nytt
-        #Det er mulig å printe objekter fra denne klassen 
-        return self.route_plan, 0
+    #TODO: Visits skal sorteres her for å legge de i prioritert rekkefølge
+    #TODO: Det må også velges dag for når det skal gjennomføres 
+    #TODO: Her skal en pasient puttes inn i planen. Ma sjekke om det går 
+
     
+
+    #Denne må returnere False med en gang en ikke fungerer 
+    #Det virker som at denne altid returnerer True 
     def insert_visit_with_pattern(self, visits, pattern):
-        state = False
-        val_day = 1
-        for visit in visits: 
-            for val in pattern: 
-                if val == 1: 
-                    self.insert_visit_on_day( visit, val_day)
-                    if val_day < 5:
-                        val_day += 1
-                    break
-                if val_day < 5:
-                    val_day += 1
         print(visits)
         print(pattern)
-        return True 
+        visit_count = 0
+        for day_index in range(len(pattern)): 
+            if pattern[day_index] == 1: 
+                state = self.insert_visit_on_day(visits[visit_count], day_index+1) 
+                if state == False: 
+                    return False
+                visit_count += 1 
+        return True   
+                
 
-    def insert_visit_on_day(self, visit, day): 
-        print("inserter visit"+str(visit)+"on day"+str(day))
-        state = True
-        #Hente ut alle de 
-        strAct = self.heuristic.visit_df.loc[visit, 'nodes']
+    #Denne funksjonen oppdatere route_self helt til det ikke går lenger
+    def insert_visit_on_day(self, visit, day):  
+        strAct = self.visit_df.loc[visit, 'nodes']
         activites = self.getIntList(strAct)
-        print(activites)
+        if visit == 13 or visit == 14: 
+            print("activites", activites)
+        #print(activites)
         for act in activites: 
             #TODO: Her må det lages en aktivitet objekt 
-            acitvity = Acitivity(self.heuristic.activities_df, act)
+            acitvity = Acitivity(self.activites_df, act)
             state = self.route_plan.addNodeOnDay(acitvity, day)
-        return state
-
-    def getTreatments(self): 
-        return self.treatments
+            if act == 15: 
+                print("dette er status nummer 15", str(state))
+            if state == False: 
+                return False
+        return True
     
-    def getPatientDF(self): 
-        return self.patients_df
+    #Problemet her er at vi legger til alle før vi oppdager at det ikke går lenger
+
+
+    
+    #AddNodeOnDay vil bare legge til aktiviteter dersom det går. 
+    #Dette er kun et problem i forhold til patterns. For her legger den til i første ierasjo
+    
+    '''
+    Det er bestemt at det skal skje på denne dagen. Hvordan sjekker vi
+    Ønsker vi å sjekke om patterns fungerer. Det kan sjekkes ved å slå opp
+    '''
+
     
     def getIntList(self, string):
         if "," in string: 
@@ -108,26 +146,3 @@ class InsertionGenerator:
             stringList = [string]
         return  [int(x) for x in stringList]
 
-'''
-Lurer på: hva er selve insertion objektet? Hvorfor er ikke dette en metode i construksjonen? 
-Er det fordi den er så stor, så de har lagt den utenfor? Eller er det en egen enhet
-
-Burde tenke litt over hva slags egenskaper den insertionene skal ha.
-Vil vi ha det på en spessiell måte. 
-
-Alternativ til slik de har det. Det generes en inserter for hver pasient som skal inn
-Insertern har en egen struktur som tar varer på alle de ulike
-
-Kategorisere hva som er metode og hva som er tilstand: 
-Vil ha en metode som legger til en pasient 
-Det må igjen ha metode som legger til treatments
-Legger til visits 
-Må ha tilstand i form av at man vet om pasienten kan legges til, og hva som er nåværende ruteplan
-
-Hvor skal ruteplanen inn, den må være en egen enitet som oppdateres 
-
-
-#TODO: Finne ut om patterns, treatments som er vnaskeligst å plassere skal først. 
-Må lage en liste på det for å bestemme hvem som skal insertes når
-
-'''
