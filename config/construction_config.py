@@ -76,15 +76,6 @@ E_num_evening = 0.2
 professionLevels = [1, 2, 3, 4]
 professionLevelsProb =  [0.2, 0.3, 0.5, 0] #index 0: level 1
 
-# Shifts
-startNight = 0
-endNight = 480
-startDay = 480
-endDay = 960
-startEvening = 960
-endEvening = 1440
-shifts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-
 #Employee Restrictions
 employeeRestrict = 0.05
 
