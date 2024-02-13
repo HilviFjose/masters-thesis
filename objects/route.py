@@ -29,12 +29,14 @@ class Route:
         '''
         #Oppfyller employee restrictions 
         #Oppfyller skillevel 
-        if activity.getEmployeeRestriction == self.employee.getID() or activity.getSkillreq() > self.skillLev: 
+        if  self.employee.getID() in activity.getEmployeeRestriction() or activity.getSkillreq() > self.skillLev: 
             return False
 
         #TODO. Må finne ut hvordan man skal iterere over de ulike. 
         #Kaller aktiviteten vi ser på nå for a, foregående aktivitet for i, kommenda aktiviet for j  
          
+
+        #Den legger seg inni de andre. Så det fungerer opp mot hverandre
         S_i = self.start_time
         T_ia = T_ij[0][activity.id]
         D_i = 0 
@@ -44,19 +46,19 @@ class Route:
             if S_i + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
                 activity.setStartTime(activity.getEarliestStartTime())
                 self.route = np.insert(self.route, index_count, activity)
-                if activity.id == 15: 
+                if activity.id == 13: 
                     print("legger til aktivitet pga dette1")
                 return True
-            if S_i + D_i + T_ia >= activity.getEarliestStartTime() and  S_i + D_i + math.ceil(T_ia) + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
+            if activity.getLatestStartTime() >= S_i + D_i + T_ia and S_i + D_i + T_ia >= activity.getEarliestStartTime() and  S_i + D_i + math.ceil(T_ia) + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
                 activity.setStartTime(S_i + D_i + math.ceil(T_ia))
                 self.route = np.insert(self.route, index_count, activity)
-                if activity.id == 15: 
+                if activity.id == 13: 
                     print("legger til aktivitet pga dette2")
                 return True
             if S_i + D_i + T_ia <= j.getStartTime()- T_ij[activity.getID()][j.getID()] - activity.getDuration() and activity.getLatestStartTime() <= j.getStartTime() - T_ij[activity.getID()][j.getID()] - activity.getDuration():
                 activity.setStartTime(activity.getLatestStartTime())
                 self.route = np.insert(self.route, index_count, activity)
-                if activity.id == 15: 
+                if activity.id == 13: 
                     print("legger til aktivitet pga dette3")
                 return True
             S_i = j.getStartTime()
@@ -68,7 +70,7 @@ class Route:
             activity.setStartTime(activity.getEarliestStartTime())
             self.route = np.insert(self.route, index_count, activity)
             return True
-        if S_i + D_i + T_ia >= activity.getEarliestStartTime() and S_i + D_i + T_ia + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
+        if activity.getLatestStartTime() >= S_i + D_i + T_ia and S_i + D_i + T_ia >= activity.getEarliestStartTime() and S_i + D_i + T_ia + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
             activity.setStartTime(S_i + D_i + math.ceil(T_ia))
             self.route = np.insert(self.route, index_count, activity)
             return True
@@ -79,45 +81,10 @@ class Route:
         
         return False 
 
-    def checkAddActivity(self, activity):
-
-        if activity.getEmployeeRestriction == self.employee.getID() or activity.getSkillreq() > self.skillLev: 
-            return False
-
-        #TODO. Denne kan skrives ned, skal bare returnere om det er mulig
-          
-        S_i = self.start_time
-        T_ia = T_ij[0][activity.id]
-        D_i = 0 
-        index_count = 0 
-        for j in self.route: 
-            #TODO: Skrive hva de sjekker
-            if S_i + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
-           
-                return True
-            if S_i + D_i + T_ia >= activity.getEarliestStartTime() and  S_i + D_i + math.ceil(T_ia) + activity.getDuration() + T_ij[activity.getID()][j.getID()] <= j.getStartTime(): 
-            
-                return True
-            if S_i + D_i + T_ia <= j.getStartTime()- T_ij[activity.getID()][j.getID()] - activity.getDuration() and activity.getLatestStartTime() <= j.getStartTime() - T_ij[activity.getID()][j.getID()] - activity.getDuration():
-                return True
-            S_i = j.getStartTime()
-            T_ia = T_ij[j.getID()][activity.getID()]
-            D_i = j.getDuration()
-            index_count +=1
-       
-        if S_i + D_i + T_ia <= activity.getEarliestStartTime() and activity.getEarliestStartTime() + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
-         
-            return True
-        if S_i + D_i + T_ia >= activity.getEarliestStartTime() and S_i + D_i + T_ia + activity.getDuration() + T_ij[activity.getID()][0] <= self.end_time: 
- 
-            return True
-        if S_i + D_i + T_ia <= self.start_time - T_ij[activity.getID()][0] - activity.getDuration() and activity.getLatestStartTime() <= self.end_time - T_ij[activity.getID()][0] - activity.getDuration():
-
-            return True
-        
-        return False        
 #TODO: Må fikse slik at ceil er på alle funskjonen 
         
+    def getEmployee(self):
+        return self.employee
 
     def getRoute(self): 
         return self.route

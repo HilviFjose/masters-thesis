@@ -8,9 +8,10 @@ class Acitivity:
         self.earliestStartTime = df.loc[id]["earliestStartTime"]
         self.duration = df.loc[id]["activityDuration"]
         self.skillReq = df.loc[id]["skillRequirement"]
-        self.sameEmployeeActivityID = df.loc[id]["sameEmployeeActivityID"]
+        self.sameEmployeeActivityID = int(df.loc[id]["sameEmployeeActivityID"])
         self.location = df.loc[id]["location"]
-        self.employeeRestricion = df.loc[id]["employeeRestriction"].replace("(", "").replace(")", "")
+        self.employeeRestricions = self.makeEmployeeRestriction(df.loc[id]["employeeRestriction"].replace("(", "").replace(")", ""))
+        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["presedence"])
         self.startTime = None
     
     def getSkillreq(self): 
@@ -22,11 +23,16 @@ class Acitivity:
     def getStartTime(self):
         return self.startTime
     
-    def getEmployeeRestriction(self): 
+    def makeEmployeeRestriction(self, string): 
+        if "," in string: 
+            return string.split(",")
         try:
-            return int(self.employeeRestricion)
+            return [int(string)]
         except: 
-            return 0 
+            return [] 
+        
+    def getEmployeeRestriction(self): 
+        return self.employeeRestricions
 
     def getEarliestStartTime(self): 
         return self.earliestStartTime
@@ -41,33 +47,93 @@ class Acitivity:
         return self.id
     
 
-'''
+    '''
+    Hvordan skal det se ut. 
+    PrevNodeInTime 
+    PrevNode
+    '''
+    def makePresNodes(self, string): 
+        PrevNode = []
+        PrevNodeInTime = []
+        if "(" in string: 
+            return PrevNode, PrevNodeInTime
+        strList = string.split(",")
+        print("strList", strList)
+        for elem in strList: 
+            print("elem", elem)
+            if ":" in elem: 
+                PrevNodeInTime.append(tuple(int(part.strip()) for part in elem.split(":")))
+            else: 
+                print("PrevNode1", PrevNode)
+                PrevNode.append(int(elem))
+                print("PrevNode2", PrevNode)
+        print("returning ", PrevNode, PrevNodeInTime )
+        return PrevNode, PrevNodeInTime
 
-'''
+    def setLatestStartTime(self, newLatestStartTime): 
+        if newLatestStartTime< self.latestStartTime: 
+            self.latestStartTime = newLatestStartTime
+
+    def setEarliestStartTime(self, newEarliestStartTime): 
+        if newEarliestStartTime > self.earliestStartTime: 
+            self.earliestStartTime = newEarliestStartTime
+        if newEarliestStartTime > self.latestStartTime: 
+            self.earliestStartTime = self.latestStartTime
+    
+    def updateEmployeeRes(self,unAllowedEmployee):
+        try: 
+            self.employeeRestricions += unAllowedEmployee
+        except: 
+            a = 0 
+
+    def getSameEmployeeActID(self): 
+        return self.sameEmployeeActivityID
+    
+    def getPrevNode(self):
+        return self.PrevNode 
+    
+    
+    def getPrevNodeInTime(self): 
+        return self.PrevNodeInTime
+#Dette skjer før vi setter starttidspunktet. 
+#Vi setter ikke starttidspunktet
+
 
 '''
 Sliter med å forstå hvordan aktivitenene skal henge sammen
 De har jo egenskaper mellom hverandre som presedens og same employee ID
 
+'''
+
 
 
 df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
-print(df_activities)
+
 
 act1 = Acitivity(df_activities, 15)
 print(print(act1.getID()))
 print("employeeRes",act1.getEmployeeRestriction())
+act1.updateEmployeeRes([5])
+print("employeeRes",act1.getEmployeeRestriction())
+print("act.sameEmployeeActivityID", act1.sameEmployeeActivityID)
 print("----------")
 print("earliest and latest")
 print(act1.getEarliestStartTime())
 print(act1.getLatestStartTime())
 print("act1.getDuration()",act1.getDuration())
+print("act1.getPrevNodeInTime()", act1.getPrevNodeInTime())
+print("act1.getPrevNode()", act1.getPrevNode())
+print("act1.PrevNode", act1.PrevNode)
+print("act1.PrevNodeInTime", act1.PrevNodeInTime)
 #print(act1.key.astype(int))
 #print(act1.key)
 
 
+'''
+Det går ann å legge til employee restrictions så vi sjekker det først. 
+Må ha same employee aktcity noden
 
-Dette kan være bra fordi vi ikke skal opprette alle aktiviter med en gang
-Hvis vi tar det pasienthvis så iterer vi først over alle de som er til en pasient 
-Da lager vi ikke fisse objektene før ette en stund 
+Hvordan vil jeg at dataen skal se ut? 
+Skal informasjonen være begge veier? Nå plasseres en først, også en annen.
+Så i dette datasettet vil vi i den påfølgende lagre den første 
 '''

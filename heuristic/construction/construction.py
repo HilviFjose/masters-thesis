@@ -96,4 +96,9 @@ TODO: Usikker på om employeerestrictions slår inn eller ikke. Det må vi sjekk
 TODO: Tror vi ville fått feil i ruteobjektet hele det første visitet var mulig. 
 Slik at det legger seg inn også få neste plass i et annet pattern. Da blir det duplisert,
 MÅ sjekkes ut 
+
+
+Tror derfor at route_objektet må være på hvert pattern, og ikke på hver 
+
+Merk: Resultater av kjøring på første datasett tar ikke inn noen med presedens 
 '''

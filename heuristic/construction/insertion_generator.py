@@ -60,6 +60,7 @@ class InsertionGenerator:
             print("tester litt")
             print(pattern[self.treatment_df.loc[treatment, 'pattern']])
             count_patterns = 0
+            old_route_plan = copy.deepcopy(self.route_plan)
             for treatPat in pattern[self.treatment_df.loc[treatment, 'pattern']]:
                 '''
                 Mulige route plans burde generes her. Fordi 
@@ -72,10 +73,12 @@ class InsertionGenerator:
                 if insertState == True:
                    treatStat = True
                    break
+                self.route_plan = copy.deepcopy(old_route_plan)
                 #Hvis ikke den første fungerer så vil den bare returnere false
                 #Dette er det samme problemet som det andre. Return False skal være
                 #Hvis det er siste mulige pattern så blir det false 
             if treatStat == False: 
+                #Hvis den er false så må self.route_plan settes tilbake til det den var
                 return False
         
         #Det er noe med true og false her
@@ -119,9 +122,32 @@ class InsertionGenerator:
         for act in activites: 
             #TODO: Her må det lages en aktivitet objekt 
             acitvity = Acitivity(self.activites_df, act)
+            if act == 17: 
+                print("test17-1", acitvity.getEarliestStartTime())
+            #Sørger for at same employee aktiviteter gjennomføres av samma ansatt
+            if acitvity.getSameEmployeeActID() != 0 and acitvity.getSameEmployeeActID() < act: 
+                emplForAct = self.route_plan.getEmployeeAllocatedForActivity(acitvity.getSameEmployeeActID(), day)
+                otherEmplOnDay = self.route_plan.getOtherEmplOnDay(emplForAct, day)
+                acitvity.updateEmployeeRes(otherEmplOnDay) 
+                
+            for prevNode in acitvity.getPrevNode(): 
+                #Finne aktivitetsobjektet 
+                print("problemer med denne", acitvity.getID())
+                print("prevNode exists ", self.route_plan.checkAcitivyInRoutePlan(prevNode,day))
+                prevNodeAct = self.route_plan.getActivity(prevNode, day)
+                acitvity.setEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
+
+            for PrevNodeInTime in acitvity.getPrevNodeInTime(): 
+                prevNodeAct = self.route_plan.getActivity(PrevNodeInTime[0], day)
+                acitvity.setLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTime[1])
+
+
             state = self.route_plan.addNodeOnDay(acitvity, day)
-            if act == 15: 
-                print("dette er status nummer 15", str(state))
+            if act == 17: 
+                print("test17-2", acitvity.getEarliestStartTime())
+                print("start", self.route_plan.routes[day][0].start_time)
+                print("slutt", self.route_plan.routes[day][0].end_time)
+                #print("dette er status nummer 30", str(state))
             if state == False: 
                 return False
         return True

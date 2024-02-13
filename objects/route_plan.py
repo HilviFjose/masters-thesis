@@ -51,6 +51,32 @@ class RoutePlan:
             for route in self.routes[day]: 
                 route.printSoultion()
 
+#Presedensen vil altid gjelde aktivitere for samme dag, så vi sender inn dag også
+    def getEmployeeAllocatedForActivity(self, activity, day): 
+        for route in self.routes[day]: 
+            for act in route.route: 
+                if act.getID == activity: 
+                    return route.getEmployee().getID()
+    
+    def getOtherEmplOnDay(self, empl, day): 
+        otherEmpl = []
+        for route in self.routes[day]: 
+            if route.getEmployee().getID() != empl: 
+                otherEmpl.append(route.getEmployee().getID())
+
+    def getActivity(self, prevNode, day): 
+        for route in self.routes[day]: 
+            for act in route.route: 
+                if act.getID() == prevNode: 
+                    return act        
+
+    def checkAcitivyInRoutePlan(self, node, day):
+        for route in self.routes[day]: 
+            for act in route.route: 
+                if act.getID() == node: 
+                    return True
+        return False        
+       
 
 '''
 
