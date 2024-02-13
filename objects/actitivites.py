@@ -103,7 +103,7 @@ class Acitivity:
 Sliter med å forstå hvordan aktivitenene skal henge sammen
 De har jo egenskaper mellom hverandre som presedens og same employee ID
 
-'''
+
 
 
 
@@ -127,7 +127,7 @@ print("act1.PrevNode", act1.PrevNode)
 print("act1.PrevNodeInTime", act1.PrevNodeInTime)
 #print(act1.key.astype(int))
 #print(act1.key)
-
+'''
 
 '''
 Det går ann å legge til employee restrictions så vi sjekker det først. 

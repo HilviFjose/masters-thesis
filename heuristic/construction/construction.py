@@ -77,6 +77,7 @@ df_patients = pd.read_csv("data/Patients.csv").set_index(["patient"])
 df_treatments = pd.read_csv("data/Treatment.csv").set_index(["treatment"])
 df_visits = pd.read_csv("data/Visit.csv").set_index(["visit"])
 
+print(df_activities.index)
 testConsHeur = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
 route_plan, obj = testConsHeur.construct_initial()
 testConsHeur.route_plan.printSoultion()
