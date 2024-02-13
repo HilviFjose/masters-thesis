@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import random 
 import sys
-sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  #include subfolders
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 
 from config import construction_config
 
@@ -51,7 +51,7 @@ def assign_shifts(employees):
 
     #add same shift for remaining week for each employee
     for e in employees:
-        shifts=[e[2][0]+i*3 for i in range(1,5)]    #same shift each working day
+        shifts=[e[2][0]+i*3 for i in range(1,construction_config.days)]    #same shift each working day
         e[2].extend(shifts)
 
     #verify results, set to "if False:"" to disable
@@ -60,10 +60,10 @@ def assign_shifts(employees):
         day=[e for e in employees if e[2][0]==2]
         evening=[e for e in employees if e[2][0]==3]
 
-        #print(n_night,n_day,n_evening)
-        #print(len(night),len(day),len(evening))
+        print(n_night,n_day,n_evening)
+        print(len(night),len(day),len(evening))
 
-
+#TESTING
 #employees=[[i+1,random.randint(1,3),[]] for i in range(100)]  #generate employes with id, skill end empty shift list [[id,skill,[]],...]
 #print(employees)
 
@@ -73,18 +73,14 @@ def assign_shifts(employees):
 def employeeGenerator():
     df_employees = pd.DataFrame(columns=['employeeId', 'professionLevel', 'schedule'])
 
-    total_employees = construction_config.E_num
-    levels = construction_config.professionLevels
-    probabilities = construction_config.professionLevelsProb
-    #profession_levels = assign_profession_levels(total_employees, levels, probabilities)
-    profession_levels = np.random.choice(levels, total_employees, p=probabilities)
+    profession_levels = np.random.choice(construction_config.professionLevels, 
+                                         construction_config.E_num, 
+                                         p=construction_config.professionLevelsProb)
 
-    print('professionlevels', profession_levels)
     employees = []
     for index, level in enumerate(profession_levels): 
-        employees.append([index+1, level, []])
+        employees.append([index+1, level, []])          # EmployeeId, Profession Level, Schedule
 
-    print('employeegenerator ', employees)
     shifts_assignment = assign_shifts(employees) 
 
     for e in employees: 

@@ -7,15 +7,16 @@ maxActivitiesPerPatient = 25
 
 # Distributions
 treatmentsPerPatient = 1.05 #Number of treatments per patient
-visitsPerTreatment = 3.5 #Number of visits per treatment
-activitiesPerVisit = 3.5 #Number of activities per treatment
+activitiesPerVisit = 2.5 #Number of activities per treatment
 
-# Pattern Type Distribution (5days)
+# Pattern Type Distribution (5days) - Decides visits per treatment
 frequency1 = 0.2 #Five days a week
 frequency2 = 0.2 #Four days a week
 frequency3 = 0.2 #Three days spread throughout the week
-frequency4 = 0.2 #Two concecutive days
-frequency5 = 0.2 #One day a week
+frequency4 = 0.1 #Two days spread throughout the week
+frequency5 = 0.1 #Two concecutive days
+frequency6 = 0.2 #One day a week
+patternTypes = [frequency1, frequency2, frequency3, frequency4, frequency5, frequency6]
 
 # Patterns
 patterns_5days = [1]                                                # Patterntype 1
@@ -24,7 +25,6 @@ patterns_3days = [7]                                                # Patterntyp
 pattern_2daysspread = [8,9,10]                                      # Patterntype 4
 patterns_2daysfollowing = [11,12,13,14]                             # Patterntype 5
 patterns_1day = [15,16,17,18,19]                                    # Patterntype 6
-#Patterns_distribution = [Patterns_5days = 0.1, Patterns_4days = 0.1]
 
 # Continuity distribution
 continuityDistribution = [0.25, 0.25, 0.5] #Top 1 employee, top 3 employees, all employees
@@ -40,18 +40,15 @@ precedence = 0.5
 sync = 0.05
 sameEmployee = 0.1 #Prosent??
 
-# Starting time in minutes (1 day)
-latestStartTime = 1400
-
 # Profession Requirement
 professionReq1 = [0.4, 0.3, 0.3, 0] #index 0: logistics
 
 # Duration in minutes 
-minDurationHealth = 45
+minDurationHealth = 15
 maxDurationHealth = 120 
 minDurationEquip = 5
-maxDurationEquip = 40
-#Må finne ut av hvordan dette skal fordeles?? Random eller bruke en kjent fordeling?
+maxDurationEquip = 30
+#TODO: Må finne ut av hvordan dette skal fordeles?? Random eller bruke en kjent fordeling?
 
 # Starting time for health activities
 minWindowHealth = minDurationHealth
@@ -78,6 +75,9 @@ professionLevelsProb =  [0.2, 0.3, 0.5, 0] #index 0: level 1
 
 #Employee Restrictions
 employeeRestrict = 0.05
+
+#Working period
+days = 5
 
 
 
