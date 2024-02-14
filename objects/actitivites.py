@@ -58,16 +58,16 @@ class Acitivity:
         if "(" in string: 
             return PrevNode, PrevNodeInTime
         strList = string.split(",")
-        print("strList", strList)
+        #print("strList", strList)
         for elem in strList: 
-            print("elem", elem)
+            #print("elem", elem)
             if ":" in elem: 
                 PrevNodeInTime.append(tuple(int(part.strip()) for part in elem.split(":")))
             else: 
-                print("PrevNode1", PrevNode)
+                #print("PrevNode1", PrevNode)
                 PrevNode.append(int(elem))
-                print("PrevNode2", PrevNode)
-        print("returning ", PrevNode, PrevNodeInTime )
+                #print("PrevNode2", PrevNode)
+       #print("returning ", PrevNode, PrevNodeInTime )
         return PrevNode, PrevNodeInTime
 
     def setLatestStartTime(self, newLatestStartTime): 

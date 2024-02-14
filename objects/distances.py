@@ -35,3 +35,5 @@ for index, row in df_distance.iterrows():
 
 
     #days er her entall dager, mens employees er en liste over             
+
+print("T_ij[33][34]" , T_ij[33][34])

@@ -62,7 +62,7 @@ class RoutePlan:
     def getEmployeeAllocatedForActivity(self, activity, day): 
         for route in self.routes[day]: 
             for act in route.route: 
-                if act.getID == activity: 
+                if act.getID() == activity: 
                     return route.getEmployee().getID()
     
     def getOtherEmplOnDay(self, empl, day): 
@@ -70,6 +70,7 @@ class RoutePlan:
         for route in self.routes[day]: 
             if route.getEmployee().getID() != empl: 
                 otherEmpl.append(route.getEmployee().getID())
+        return otherEmpl
 
     def getActivity(self, prevNode, day): 
         for route in self.routes[day]: 
