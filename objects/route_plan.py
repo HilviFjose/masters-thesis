@@ -15,6 +15,7 @@ class RoutePlan:
                 self.routes[day].append(Route(day, emp))
         self.suitScore = 0 
         self.days = days 
+        self.rev = True
 
             
     #def addActivity(self, activity): 
@@ -33,7 +34,13 @@ class RoutePlan:
          
     #TODO: Vi vil legge til aktivitet på denne dagen. Sjekke om totalt sett går
     def addNodeOnDay(self, activity, day): 
-        for route in self.routes[day]: 
+        if self.rev == True:
+            routes =  reversed(self.routes[day])
+            self.rev = False
+        else: 
+            routes = self.routes[day]
+            self.rev = True
+        for route in routes: 
             state = route.addActivity(activity)
             if state == True: 
                 return True

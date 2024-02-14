@@ -1,15 +1,9 @@
-
-'''
-from heuristic.construction.construction import ConstructionHeuristic
-from heuristic.destroyer.random_removal import RandomRemoval
-from heuristic.repairer.insertion_greedy import InsertionGreedy
-'''
-#Jeg vet ikke hva det over er 
-
 import pandas as pd
 from heuristic.construction.construction import ConstructionHeuristic
 
-
+'''
+Ikke ferdigarbeidet klasse. 
+'''
 
 
 def main():

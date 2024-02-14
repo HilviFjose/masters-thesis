@@ -1,16 +1,11 @@
 from tqdm import tqdm
-from insertion_generator import InsertionGenerator
-import pandas as pd
-from typing import List
-import json
-import requests
 import pandas as pd
 import copy
-
+from insertion_generator import InsertionGenerator
 import sys
 sys.path.append("C:\\Users\\agnesost\\masters-thesis")
-
 from objects.route_plan import RoutePlan
+
 
 
 class ConstructionHeuristic:
@@ -25,36 +20,43 @@ class ConstructionHeuristic:
         self.route_plan = RoutePlan(days, employees_df) 
         self.current_objective = 0 
         self.listOfPatients = []
+        self.unAssignedPatients = []
         
  
-    '''
- 
-
-    Det først vi gjør etter at cosntruction heuristikken er laget. 
-    Her konstrueres det et løsningsobjekt, som er route plan
-
-    Objektivverdi: Hvorfor vil vi ha objektivverdi i denne klassen, og ikke i routeplan?
-    Hvorfor skal det hentes opp? 
-    
-    Prove å forstå selve konstruksjonsheurstikk klassen. Den har en ruteplan. Denne må være for hver ansatt på hver dag som jobber.  
-    '''
     def construct_initial(self): 
-        #Lage en liste med requests og sortere de. Lage en prioritert liste med pasienter
+        '''
+        Funksjonen iterer over alle paienter som kan allokeres til hjemmesykehuset. 
+        Rekkefølgen bestemmes av hvor mye aggregert suitability pasienten vil tilføre ojektivet
+        '''
+
+        #Lager en liste med pasienter i prioritert rekkefølge. 
         unassigned_patients = df_patients.sort_values(by="aggSuit", ascending=False)
-        
-        #Lager en original ruteplan
-        
+        print("unassigned_patients", unassigned_patients)
+        #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
+            #Henter ut raden i pasient dataframes som tilhører pasienten
+            patient = unassigned_patients.index[i] 
             patient_request = unassigned_patients.iloc[i]
-            insert_routeplan = copy.deepcopy(self.route_plan)
-            insertion_generator = InsertionGenerator(self, insert_routeplan, patient_request, self.treatment_df, self.visit_df, self.activities_df)
+            
+            #Kopierer nåværende ruteplan for denne pasienten 
+            route_plan_with_patient = copy.deepcopy(self.route_plan)
+            #Oppretter et InsertionGenerator objekt, hvor pasient_requesten og kopien av dagens ruteplan sendes inn
+            insertion_generator = InsertionGenerator(self, route_plan_with_patient, patient_request, self.treatment_df, self.visit_df, self.activities_df)
+            #InsertionGenratoren forsøker å legge til pasienten, og returnerer True hvis velykket
             state = insertion_generator.generate_insertions()
-            #Sender inn self_route plan men skal ikke hente den ut igjen. 
+            
+           
             if state == True: 
+                #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                 self.route_plan = insertion_generator.route_plan
+                #Objektivverdien oppdateres
                 self.current_objective += patient_request["aggSuit"]
-                self.listOfPatients.append(patient_request[0])
-       
+                #Pasienten legges til i 
+                self.listOfPatients.append(patient)
+                
+            
+            if state == False: 
+                self.unAssignedPatients.append(patient)
         #Lage en insert generator som prøver å legge til pasient. 
         #Vil først få ny objektivverdi når en hel pasient er lagt til, så gir mening å kalle den her
         return self.route_plan, self.current_objective
@@ -82,7 +84,9 @@ testConsHeur = ConstructionHeuristic(df_activities, df_employees, df_patients, d
 route_plan, obj = testConsHeur.construct_initial()
 testConsHeur.route_plan.printSoultion()
 print("Dette er objektivet", testConsHeur.current_objective)
-print(testConsHeur.listOfPatients)
+print("Hjemmesykehuspasienter ", testConsHeur.listOfPatients)
+print("Ikke allokert ", testConsHeur.unAssignedPatients)
+
 #TODO: printe routeplan for å se om det ble noe 
 
 

@@ -21,10 +21,12 @@ class InsertionGenerator:
         self.patients_df = patients_df
         #TODO:Bruke patient df til å lage en liste over aktiviteter som skal inn 
         self.requestActivities = np.empty(0, dtype=object)
-        self.treatments = self.getIntList(patients_df["treatment"])
+        treatment_string_or_int = patients_df["treatment"]
+        self.treatments = self.getIntList(treatment_string_or_int)
         
         self.visits = []
         self.activites = None 
+        self.rev = False
 
         #Den har jo en pasient og en mulig objektivverdi. 
         #Du kan ikke sende en ny pasient inn etterpå, fordi noen av parameterne er endret på 
@@ -54,6 +56,8 @@ class InsertionGenerator:
             treatStat = False
             #Inne i en behandling, har hentet alle visits til den 
             strVis = self.treatment_df.loc[treatment, 'visit']
+             
+            print("FEIL1 ",strVis)
             visitList = self.getIntList(strVis)
             #TODO: Hente ut sett av mulig patterns som kan fungere
             self.route_plan.printSoultion()
@@ -61,15 +65,27 @@ class InsertionGenerator:
             print(pattern[self.treatment_df.loc[treatment, 'pattern']])
             count_patterns = 0
             old_route_plan = copy.deepcopy(self.route_plan)
-            for treatPat in pattern[self.treatment_df.loc[treatment, 'pattern']]:
+
+
+            if self.rev == True:
+                patterns =  reversed(pattern[self.treatment_df.loc[treatment, 'pattern']])
+                self.rev = False
+            else: 
+                patterns = pattern[self.treatment_df.loc[treatment, 'pattern']]
+                self.rev = True
+
+
+            for treatPat in patterns:
                 '''
                 Mulige route plans burde generes her. Fordi 
                 '''
                 count_patterns +=1  
-                insertState = self.insert_visit_with_pattern(visitList, treatPat) 
-                if treatment == 8: 
-                    print("StatusTrea")
-                    print("state ",insertState)
+                try:
+                    insertState = self.insert_visit_with_pattern(visitList, treatPat) 
+                except: 
+                    print("treatmentTest1 ", treatment)
+                    print("type ", type(treatment))
+            
                 if insertState == True:
                    treatStat = True
                    break
@@ -100,12 +116,15 @@ class InsertionGenerator:
     #Denne må returnere False med en gang en ikke fungerer 
     #Det virker som at denne altid returnerer True 
     def insert_visit_with_pattern(self, visits, pattern):
-        print(visits)
+        print("Her printes visits ",visits)
         print(pattern)
         visit_count = 0
         for day_index in range(len(pattern)): 
             if pattern[day_index] == 1: 
-                state = self.insert_visit_on_day(visits[visit_count], day_index+1) 
+                try: 
+                    state = self.insert_visit_on_day(visits[visit_count], day_index+1) 
+                except: 
+                    print("prøver å inserte visit ", visits , "på index ", str(visit_count), " med dag index ", str(day_index+1))
                 if state == False: 
                     return False
                 visit_count += 1 
@@ -124,18 +143,27 @@ class InsertionGenerator:
             acitvity = Acitivity(self.activites_df, act)
             if act == 17: 
                 print("test17-1", acitvity.getEarliestStartTime())
+
             #Sørger for at same employee aktiviteter gjennomføres av samma ansatt
             if acitvity.getSameEmployeeActID() != 0 and acitvity.getSameEmployeeActID() < act: 
                 emplForAct = self.route_plan.getEmployeeAllocatedForActivity(acitvity.getSameEmployeeActID(), day)
                 otherEmplOnDay = self.route_plan.getOtherEmplOnDay(emplForAct, day)
                 acitvity.updateEmployeeRes(otherEmplOnDay) 
+                if act == 34: 
+                    print("TEST34")
+                    print("acitvity.getSameEmployeeActID() ",acitvity.getSameEmployeeActID())
+                    print("emplForAct ",emplForAct)
+                    print("")
                 
             for prevNode in acitvity.getPrevNode(): 
                 #Finne aktivitetsobjektet 
                 print("problemer med denne", acitvity.getID())
                 print("prevNode exists ", self.route_plan.checkAcitivyInRoutePlan(prevNode,day))
                 prevNodeAct = self.route_plan.getActivity(prevNode, day)
-                acitvity.setEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
+                try: 
+                    acitvity.setEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
+                except: 
+                    print("Finner ikke prevNode ", prevNodeAct , " for aktivitet ", acitvity.getID())
 
             for PrevNodeInTime in acitvity.getPrevNodeInTime(): 
                 prevNodeAct = self.route_plan.getActivity(PrevNodeInTime[0], day)
@@ -166,9 +194,11 @@ class InsertionGenerator:
 
     
     def getIntList(self, string):
-        if "," in string: 
+        if type(string) == str and "," in string: 
             stringList = string.split(',')
         else: 
             stringList = [string]
         return  [int(x) for x in stringList]
+       
 
+    
