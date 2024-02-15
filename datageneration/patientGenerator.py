@@ -97,11 +97,16 @@ def visitsGenerator(df_treatments):
 
     #TODO: Skriv om dette til at det er en choice i stedet for en poisson-fordeling. Det gir f.eks. mye mer mening at det ofte er 5 aktiviteter enn 6 aktiviteter i et besøk. 
     # Distribution of number of activities per visit
+    #TODO: HER ER DET NOE FEIL I GENERERINGEN. TAR VERDIENE 0 TIL 5 I STEDET FOR 1 TIL 6.
+    A_numMax = construction_config.maxActivitiesPerVisit            # Max number of activities per visit
+    prob = construction_config.A_numProb                            # The probability of the number of activities per visit
     V_num = df_visits.shape[0]
-    activities = np.random.poisson(lam=construction_config.activitiesPerVisit, size=V_num)
-    # A minimum of 1 and maximum of 7 activities per visit. 
-    activities = np.maximum(activities, 1) #TODO: gjør at ingen visits har 0 aktiviteter, MEN det gjør at snittet på antall aktivititeter per visit blir mye høyere enn planlagt.
-    activities = np.minimum(activities, 7) 
+    activities = np.random.choice(A_numMax, size=V_num, p=prob)     # Distribution of the number of activities per visit
+
+    #activities = np.random.poisson(lam=construction_config.activitiesPerVisit, size=V_num)
+    # A minimum of 1 and maximum of 6 activities per visit. 
+    #activities = np.maximum(activities, 1) #TODO: gjør at ingen visits har 0 aktiviteter, MEN det gjør at snittet på antall aktivititeter per visit blir mye høyere enn planlagt.
+    #activities = np.minimum(activities, 6) 
 
     df_visits['activities'] = activities
 
@@ -134,11 +139,11 @@ def activitiesGenerator(df_visits):
     df_activities['treatmentId'] = expanded_rows['treatmentId']
     df_activities['patientId'] = expanded_rows['patientId']
     df_activities['numActivitiesInVisit'] = expanded_rows['activities']
-
     
     #TODO: Generate location for all activities. Kan gjøres på pasienter og så overstyre det her for pick-up/delivery i denne funksjonen.
     
-    # Distribute activities between healthcare activities [H] and equipment activities [E]
+    # Distribute activities between healthcare activities 'H' and equipment activities 'E'
+    # Generate precedence and same employee requirements
     #TODO: Vurdere om det skal håndteres forskjellig ut fra om det er partall eller oddetall antall aktiviteter i et visit
     #TODO: Overstyre lokasjon for pick-up/delivery på sykehuset. 
     for visitId, group in df_activities.groupby('visitId'):
@@ -149,25 +154,67 @@ def activitiesGenerator(df_visits):
             # For 3 to 4 activities
             if np.random.rand() < 0.5:
                 # 50 % chance: The two first activities in the visit is a pick-up and delivery
-                sorted_indices = group.sort_values(by='activityId').index[:2]  # Ta de to første etter sortering for laveste activityId
+                sorted_indices = group.sort_values(by='activityId').index[:2]  # The two activities with the lowest id
                 df_activities.loc[sorted_indices, 'activityType'] = 'E'
                 remaining_indices = group.index.difference(sorted_indices)
                 df_activities.loc[remaining_indices, 'activityType'] = 'H'
+
+                # Precedence and time limit for pick-up and delivery at the start of the visit
+                activity_ids = group['activityId'].tolist()
+                mu = (construction_config.pd_min + construction_config.pd_max) / 2
+                sigma = (construction_config.pd_max - construction_config.pd_min) / 6
+                pd_time = int(np.random.normal(mu, sigma))
+                df_activities.loc[df_activities['activityId'] == activity_ids[1], 'precedence'] = activity_ids[0]
+                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'precedence'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+                
+                # Same Employee Requirement for pick-up and delivery activities
+                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]          # Start of the visit
+                df_activities.loc[df_activities['activityId'] == activity_ids[1], 'sameEmployeeActivityId'] = activity_ids[0]          # Start of the visit
+
             else:
                 # 50 % chance: The two last activities in the visit is a pick-up and delivery
-                sorted_indices = group.sort_values(by='activityId', ascending=False).index[:2]  # Ta de to første for høyeste activityId
+                sorted_indices = group.sort_values(by='activityId', ascending=False).index[:2]   # The two activities with the highest id
                 df_activities.loc[sorted_indices, 'activityType'] = 'E'
                 remaining_indices = group.index.difference(sorted_indices)
                 df_activities.loc[remaining_indices, 'activityType'] = 'H'
+
+                # Precedence and time limit for pick-up and delivery at the end of the visit
+                activity_ids = group['activityId'].tolist()
+                mu = (construction_config.pd_min + construction_config.pd_max) / 2
+                sigma = (construction_config.pd_max - construction_config.pd_min) / 6
+                pd_time = int(np.random.normal(mu, sigma))
+                df_activities.loc[df_activities['activityId'] == activity_ids[1], 'precedence'] = activity_ids[0]
+                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'precedence'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+
+                # Same Employee Requirement for pick-up and delivery activities
+                df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'sameEmployeeActivityId'] = activity_ids[-2]         # End of the visit
+                df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'sameEmployeeActivityId'] = activity_ids[-1]         # End of the visit
         else:
             # For more than 5 activities - 'E' to the two last and two first activities (pick-up and delivery)
-            lowest_indices = group.sort_values(by='activityId').index[:2]  # De to med lavest activityId
-            highest_indices = group.sort_values(by='activityId', ascending=False).index[:2]  # De to med høyest activityId
+            lowest_indices = group.sort_values(by='activityId').index[:2]                       # The two activities with the lowest id
+            highest_indices = group.sort_values(by='activityId', ascending=False).index[:2]     # The two activities with the highest id
             df_activities.loc[lowest_indices, 'activityType'] = 'E'
             df_activities.loc[highest_indices, 'activityType'] = 'E'
             remaining_indices = group.index.difference(lowest_indices.union(highest_indices))
             df_activities.loc[remaining_indices, 'activityType'] = 'H'  
-
+            
+            # Precedence and time limits for pick-up and delivery
+            activity_ids = group['activityId'].tolist()
+            mu = (construction_config.pd_min + construction_config.pd_max) / 2
+            sigma = (construction_config.pd_max - construction_config.pd_min) / 6
+            pd_time1 = int(np.random.normal(mu, sigma))
+            pd_time2 = int(np.random.normal(mu, sigma))
+            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'precedence'] = activity_ids[0]                                           # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'precedence'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'precedence'] = activity_ids[-3]                                         # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'precedence'] = f"{activity_ids[-2]}, {activity_ids[-3]}: {pd_time2}"    # Pick-up and delivery at the end
+            
+            # Same Employee Requirement for åick-up and delivery activities 
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]      # The two first activities 
+            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'sameEmployeeActivityId'] = activity_ids[0]
+            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'sameEmployeeActivityId'] = activity_ids[-2]    # The two last activities
+            df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'sameEmployeeActivityId'] = activity_ids[-1]
+            
         # Generate duration of activities
         for activityType, group in df_activities.groupby('activityType'):
             if activityType == 'E':
@@ -183,7 +230,7 @@ def activitiesGenerator(df_visits):
             
             # Integers and clipping to ensure duration within limits from config files
             duration_clipped = np.clip(np.round(duration), construction_config.minDurationEquip, construction_config.maxDurationEquip) if activityType == 'E' else np.clip(np.round(duration), construction_config.minDurationHealth, construction_config.maxDurationHealth)
-            
+
             df_activities.loc[group.index, 'duration'] = duration_clipped
         
         # TODO: Generate earliest and latest start times of activities
@@ -199,9 +246,21 @@ def activitiesGenerator(df_visits):
             #Den samla varigheten (total duration for alle aktiviteter med et og samme visitId) må være mindre eller lik differansen mellom tidligst og senest mulig starttid. 
             #OG passe på at earliestStartTime < latestStartTime
 
-        #TODO: Generate precedence and same employee requirements
+        
+
         #TODO: Generate sync
-        #TODO: Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
+            
+        # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
+        for activityType, group in df_activities.groupby('activityType'):
+            if activityType == 'E':
+                df_activities.loc[group.index, 'skillRequirement'] = 1
+            else:
+                # Healthcare activities - 50 % with Skill Requirement 2 and 50 % with Skill Requirement 3
+                healthcare_indices = group.index
+                shuffled_indices = np.random.permutation(healthcare_indices)
+                half_point = len(shuffled_indices) // 2 
+                df_activities.loc[shuffled_indices[:half_point], 'skillRequirement'] = 2
+                df_activities.loc[shuffled_indices[half_point:], 'skillRequirement'] = 3
 
         file_path = os.path.join(os.getcwd(), 'data', 'activities.csv')
         df_activities.to_csv(file_path, index=False)

@@ -6,16 +6,18 @@ P_num = 50
 maxActivitiesPerPatient = 25 
 
 # Distributions
-treatmentsPerPatient = 1.05 #Number of treatments per patient
-activitiesPerVisit = 2.5 #Number of activities per treatment
+treatmentsPerPatient = 1.05                     #Number of treatments per patient
+activitiesPerVisit = 2.5                        #Number of activities per treatment
+maxActivitiesPerVisit = 6                       #Max number of activities per visit
+A_numProb = [0.25, 0.05, 0.3, 0.05, 0.3, 0.05]    #Probability of the number of activities from 1 to 6 in a visit
 
 # Pattern Type Distribution (5days) - Decides visits per treatment
-frequency1 = 0.2 #Five days a week
-frequency2 = 0.2 #Four days a week
-frequency3 = 0.2 #Three days spread throughout the week
-frequency4 = 0.1 #Two days spread throughout the week
-frequency5 = 0.1 #Two concecutive days
-frequency6 = 0.2 #One day a week
+frequency1 = 0.2                #Five days a week
+frequency2 = 0.2                #Four days a week
+frequency3 = 0.2                #Three days spread throughout the week
+frequency4 = 0.1                #Two days spread throughout the week
+frequency5 = 0.1                #Two concecutive days
+frequency6 = 0.2                #One day a week
 patternTypes = [frequency1, frequency2, frequency3, frequency4, frequency5, frequency6]
 
 # Patterns
@@ -36,9 +38,11 @@ heavinessDistribution = [0.05, 0.2, 0.5, 0.2, 0.05]
 
 # ACTIVITIES
 # Activities Distribution 
-precedence = 0.5
-sync = 0.05
-sameEmployee = 0.1 #Prosent??
+#precedence = 0.5
+#sync = 0.05
+#sameEmployee = 0.1 #Prosent??
+pd_min = 30                     #Min pickup and delivery time limit
+pd_max = 120                    #Max pickup and delivery time limit
 
 # Profession Requirement
 professionReq1 = [0.4, 0.3, 0.3, 0] #index 0: logistics
@@ -73,11 +77,14 @@ E_num_evening = 0.2
 professionLevels = [1, 2, 3, 4]
 professionLevelsProb =  [0.2, 0.3, 0.5, 0] #index 0: level 1
 
-#Employee Restrictions
+# Employee Restrictions
 employeeRestrict = 0.05
 
-#Working period
+# Working period
 days = 5
+
+# DEPOT LOCATION
+depot = (59.9365, 10.7396)
 
 
 
