@@ -6,6 +6,11 @@ sys.path.append("C:\\Users\\agnesost\\masters-thesis")
 from objects.employee import Employee
 from objects.route import Route
 
+
+'''
+Info: 
+Dette er selve løsningen som inneholder routes. 
+'''
 class RoutePlan:
     def __init__(self, days, employee_df):
         self.routes = {day: [] for day in range(1, days+1)}
@@ -13,36 +18,27 @@ class RoutePlan:
             emp = Employee(employee_df, key)
             for day in self.routes: 
                 self.routes[day].append(Route(day, emp))
-        self.suitScore = 0 
         self.days = days 
+
+        #TODO: Revurdere om vi skal reversere listene som iterers over eller gjøre random 
         self.rev = True
 
             
-    #def addActivity(self, activity): 
-
-
-    #days er her entall dager, mens employees er en liste over    
-    #Jeg tror vi skal ha rutene mer, med tilhørende score for alle rutene her. 
-    #Hvis en rute legges til så økes scoren her     
-
-    #De ansatte har   
-    #Her blir det på hva vi skal sende inn. Sender inn hele employee dataframen kanskje? 
-
-    '''
-    Ansatt objektene lages bare en gang 
-    '''
          
     #TODO: Vi vil legge til aktivitet på denne dagen. Sjekke om totalt sett går
-    def addNodeOnDay(self, activity, day): 
+    def addNodeOnDay(self, activity, day):
+
         if self.rev == True:
             routes =  reversed(self.routes[day])
             self.rev = False
         else: 
             routes = self.routes[day]
             self.rev = True
+
+
         for route in routes: 
-            state = route.addActivity(activity)
-            if state == True: 
+            insertStatus = route.addActivity(activity)
+            if insertStatus == True: 
                 return True
         return False
     
@@ -61,7 +57,7 @@ class RoutePlan:
 #Presedensen vil altid gjelde aktivitere for samme dag, så vi sender inn dag også
     def getEmployeeAllocatedForActivity(self, activity, day): 
         for route in self.routes[day]: 
-            for act in route.route: 
+            for act in route.getRoute(): 
                 if act.getID() == activity: 
                     return route.getEmployee().getID()
     
@@ -74,37 +70,14 @@ class RoutePlan:
 
     def getActivity(self, prevNode, day): 
         for route in self.routes[day]: 
-            for act in route.route: 
+            for act in route.getRoute(): 
                 if act.getID() == prevNode: 
                     return act        
 
     def checkAcitivyInRoutePlan(self, node, day):
         for route in self.routes[day]: 
-            for act in route.route: 
+            for act in route.getRoute(): 
                 if act.getID() == node: 
                     return True
         return False        
        
-
-'''
-
-df_employees = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"])
-rp = RoutePlan(5, employee_df= df_employees)
-print(rp.getRoutePlan())
-
-
-
-
-Jobber alle ansatte alle dager? 
-Nei det gjør de ikke. Så det må bli konstuert av 
-I konstuktøren så lages alle parameterne
-
-Skal denne oppdateres jevnlig, eller skal det konstureres nye underveid. 
-
-Den må nesten være indeksert med alle ansatte alle dager. 
-Det er ikke en effektiv måte å gjøre det på dersom de har veldig ulike arbeidstimer. 
-
-
-Alt 1) Dictionary hvor de indekseres med ulike dager og ansatte 
-Alt 2) To dimesjonal liste med ruteobjektet. Da må vi ha for alle kombinasjoner 
-'''

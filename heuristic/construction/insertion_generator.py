@@ -4,6 +4,7 @@ sys.path.append("C:\\Users\\agnesost\\masters-thesis")
 from objects.patterns import pattern
 from objects.actitivites import Acitivity
 import copy
+import random 
 
 '''
 Info: PatientInsertor prøver å legge til en pasient i ruteplanen som sendes inn
@@ -18,99 +19,149 @@ class PatientInsertor:
         self.visit_df = visit_df
         self.patients_df = patients_df
 
-        self.treatments = self.getIntList(patients_df["treatment"])
+        #Liste over treatments som pasienten skal gjennomgå
+        self.treatments = self.string_or_number_to_int_list(patients_df["treatment"])
+        #Dette er en parameter som settes for å bytte på hvilken vei det iteres over patterns. 
+        #TODO: Burde heller gjøres ved å iterere tilfeldig over rekkefølgen på patterns
         self.rev = False
 
     def generate_insertions(self):
-        #TODO: Her skal treaments sorteres slik at man vet hvilke som er mest. 
-        #Nå itereres den over i rekkefølge 
-        
+        '''
+        Funksjonen forsøker å legge til alle treatments for pasienten. 
+
+        Returns: 
+        True/False på om det var plass til pasienten på hjemmesykehus eller ikke 
+        '''
+         
+        #TODO: Treatments bør sorteres slik at de mest kompliserte 
         for treatment in self.treatments: 
-            treatStat = False
-            #Inne i en behandling, har hentet alle visits til den 
-            strVis = self.treatment_df.loc[treatment, 'visit']
-             
-        
-            visitList = self.getIntList(strVis)
-            #TODO: Hente ut sett av mulig patterns som kan fungere
-    
-            #print("tester litt")
-            #print(pattern[self.treatment_df.loc[treatment, 'pattern']])
-            count_patterns = 0
+            treatStatus = False
+            #Henter ut alle visits knyttet til behandlingen og legger de i en visitList
+            stringVisits = self.treatment_df.loc[treatment, 'visit']
+            visitList = self.string_or_number_to_int_list(stringVisits)
+            
+            #Oppretter en kopi av ruteplanen uten pasienten  
             old_route_plan = copy.deepcopy(self.route_plan)
 
-
+            
+            #Reverserer listen annen hver gang for å ikke alltid begynne med pattern på starten av uken
             if self.rev == True:
                 patterns =  reversed(pattern[self.treatment_df.loc[treatment, 'pattern']])
                 self.rev = False
             else: 
                 patterns = pattern[self.treatment_df.loc[treatment, 'pattern']]
                 self.rev = True
-
-
-            for treatPat in patterns:
-                count_patterns +=1  
-                insertState = self.insert_visit_with_pattern(visitList, treatPat) 
-                if insertState == True:
-                   treatStat = True
+            
+            #Iterer over alle patterns som er mulige for denne treatmenten
+            for treatPattern in patterns:
+                #Forsøker å inserte visit med pattern. insertStatus settes til True hvis velykket
+                insertStatus = self.insert_visit_with_pattern(visitList, treatPattern) 
+                #Hvis insertet av visit med pattern er velykkt settes treatStaus til True. 
+                #Deretter breakes løkken fordi vi ikke trenger å sjekke for flere pattern.
+                if insertStatus == True:
+                   treatStatus = True
                    break
+                #Kommer hit dersom patternet ikke fungerte. 
+                #Gjennoppretter da routePlanen til å være det den var før vi la til visits. 
                 self.route_plan = copy.deepcopy(old_route_plan)
-                #Hvis ikke den første fungerer så vil den bare returnere false
-                #Dette er det samme problemet som det andre. Return False skal være
-                #Hvis det er siste mulige pattern så blir det false 
-            if treatStat == False: 
-                #Hvis den er false så må self.route_plan settes tilbake til det den var
+                
+            #Returnerer False hvis det ikke var mulig å legge til treatmentet med noen av patterne
+            if treatStatus == False: 
                 return False
         
         return True
     
-    #Denne må returnere False med en gang en ikke fungerer 
-    #Det virker som at denne altid returnerer True 
+
     def insert_visit_with_pattern(self, visits, pattern):
-        #print("Her printes visits ",visits)
-        #print(pattern)
-        visit_count = 0
+        '''
+        Funksjonen forsøker å legge til alle visits for pasienten. 
+
+        Arg: 
+        visits (list): Liste av vists som skal legges til i self.route_plan, eks: [5,6,7]
+        pattern (list): Liste som inneholder et pattern, med 1 på dager visits skal gjennomføre, eks: [1,0,1,0,1]
+
+        Returns: 
+        True/False på om det var plass til visitene på hjemmesykehuset med dette patternet 
+        '''
+
+        visit_index = 0
+        #Iterer gjennom alle dagene i patternet 
         for day_index in range(len(pattern)): 
+            #hvis patternet på den gitte dagen er 1, så forsøker vi å inserte visittet på den gitte dagen
+            #Dersom insert ikke er mulig returerer funkjsonen False
             if pattern[day_index] == 1: 
-                state = self.insert_visit_on_day(visits[visit_count], day_index+1) 
-                if state == False: 
+                insertStatus = self.insert_visit_on_day(visits[visit_index], day_index+1) 
+                if insertStatus == False: 
                     return False
-                visit_count += 1 
+                #Øker indeksen for å betrakte neste visit i visitlisten
+                visit_index += 1 
         return True   
                 
 
-    #Denne funksjonen oppdatere route_self helt til det ikke går lenger
+    #Denne 
     def insert_visit_on_day(self, visit, day):  
-        strAct = self.visit_df.loc[visit, 'nodes']
-        activites = self.getIntList(strAct)
-        for act in activites: 
-            #TODO: Her må det lages en aktivitet objekt 
-            acitvity = Acitivity(self.activites_df, act)
-            if acitvity.getSameEmployeeActID() != 0 and acitvity.getSameEmployeeActID() < act: 
-                emplForAct = self.route_plan.getEmployeeAllocatedForActivity(acitvity.getSameEmployeeActID(), day)
-                otherEmplOnDay = self.route_plan.getOtherEmplOnDay(emplForAct, day)
-                acitvity.updateEmployeeRes(otherEmplOnDay) 
-                
-            for prevNode in acitvity.getPrevNode(): 
+        '''
+        Funksjonen forsøker å legge til alle aktiviter som inngår i et visit ved å oppdatere route_self 
+
+        Arg: 
+        visit (int): Et visit som skal legges til i self.route_plan eks: 6
+        day (int): Dagen visitet skal gjennomføres, eks: 3
+
+        Returns: 
+        True/False på om det var plass til visitet på hjemmesykehuset denn dagen
+        '''
+
+        #Henter ut liste med aktiviteter som inngår i vistet 
+        stringActivities = self.visit_df.loc[visit, 'nodes']
+        activitesList = self.string_or_number_to_int_list(stringActivities)
+        
+        #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
+        for activityID in activitesList: 
+            #Oppreter et aktivitesobjekt basert på ID-en 
+            activity = Acitivity(self.activites_df, activityID)
+            
+            #Her håndteres pick up and delivery
+            #PickUpAcitivy er aktiviteten som tilsvarer pick up noded dersom denne aktiviteten er delivery
+            if activity.getPickUpActivityID() != 0 and activity.getPickUpActivityID() < activityID: 
+                #Henter ut den ansatte som skal gjennomføre PickUp aktiviteten 
+                employeeAllocatedToAcitivy = self.route_plan.getEmployeeAllocatedForActivity(activity.getPickUpActivityID(), day)
+                #Henter ut de ansatte som jobber den gitte dagen og ikke er allokert til å utføre pickup aktiviten 
+                otherEmplOnDay = self.route_plan.getOtherEmplOnDay(employeeAllocatedToAcitivy, day)
+                #Legger til de ansatte som ikke allokert til å gjøre pick up noden til delivery aktivteten employee restictions
+                activity.addEmployeeRes(otherEmplOnDay) 
+
+            #Her håndteres presedens.   
+            #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
+            for prevNode in activity.getPrevNode(): 
                 prevNodeAct = self.route_plan.getActivity(prevNode, day)
-                acitvity.setEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
+                activity.setEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
 
-            
-            for PrevNodeInTime in acitvity.getPrevNodeInTime(): 
+            #Her håndteres presedens med tidsvindu
+            #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
+            for PrevNodeInTime in activity.getPrevNodeInTime(): 
                 prevNodeAct = self.route_plan.getActivity(PrevNodeInTime[0], day)
-                acitvity.setLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTime[1])
+                activity.setLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTime[1])
             
-
-            state = self.route_plan.addNodeOnDay(acitvity, day)
-            if state == False: 
+            #Prøver å legge til aktivten til ruteplanen på den gitte dagen.
+            activityStatus = self.route_plan.addNodeOnDay(activity, day)
+            #Dersom aktiviten ikk kan legges til returers False
+            if activityStatus == False: 
                 return False
+        #Dersom alle aktivitene har blitt lagt til returers true    
         return True
     
-    def getIntList(self, string):
-        if type(string) == str and "," in string: 
-            stringList = string.split(',')
+    def string_or_number_to_int_list(self, string_or_int):
+        '''
+        Denne funksjonen brukes til å lage liste basert på string eller int dataen som kommer fra dataframe
+
+        Return: 
+        List of int values 
+        '''
+        
+        if type(string_or_int) == str and "," in string_or_int: 
+            stringList = string_or_int.split(',')
         else: 
-            stringList = [string]
+            stringList = [string_or_int]
         return  [int(x) for x in stringList]
        
 

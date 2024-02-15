@@ -8,7 +8,7 @@ class Acitivity:
         self.earliestStartTime = df.loc[id]["earliestStartTime"]
         self.duration = df.loc[id]["activityDuration"]
         self.skillReq = df.loc[id]["skillRequirement"]
-        self.sameEmployeeActivityID = int(df.loc[id]["sameEmployeeActivityID"])
+        self.pickUpActivityID = int(df.loc[id]["sameEmployeeActivityID"])
         self.location = df.loc[id]["location"]
         self.employeeRestricions = self.makeEmployeeRestriction(df.loc[id]["employeeRestriction"].replace("(", "").replace(")", ""))
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["presedence"])
@@ -80,14 +80,14 @@ class Acitivity:
         if newEarliestStartTime > self.latestStartTime: 
             self.earliestStartTime = self.latestStartTime
     
-    def updateEmployeeRes(self,unAllowedEmployee):
-        try: 
-            self.employeeRestricions += unAllowedEmployee
-        except: 
-            a = 0 
+    def addEmployeeRes(self, unAllowedEmployees):
+        #BRUKES
+        self.employeeRestricions += unAllowedEmployees
+        
 
-    def getSameEmployeeActID(self): 
-        return self.sameEmployeeActivityID
+    def getPickUpActivityID(self): 
+        #BRUKES
+        return self.pickUpActivityID
     
     def getPrevNode(self):
         return self.PrevNode 
