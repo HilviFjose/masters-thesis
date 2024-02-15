@@ -8,6 +8,8 @@ class Employee:
         self.shifts = self.getShifts(df.loc[id]["Schedule"])
         self.id = id
     
+    #TODO: Denne er veldig midlertidig håndtert. Må endres slik at den tar inn de faktiske skiftene.
+    #Den henter ut skiftene nå også sette rtidspunktene basert pådet. Men burde endres på kanskje 
     def getShifts(self, shiftString): 
         employeeShift = {day: {"startShift": 0, "endShift" : 0 } for day in range(1,days+1)} 
         listOfShifts = shiftString.replace("(", "").replace(")", "").split(", ")
@@ -36,11 +38,3 @@ class Employee:
     
     def getID(self): 
         return self.id
-
-'''
-
-#Dette er bare for å teste klassen 
-df_employees  = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"]) 
-e1 = Employee(df_employees, 1)
-
-'''

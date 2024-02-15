@@ -1,8 +1,12 @@
 import pandas as pd
 
+'''
+Info:
+For å opprette en aktivitet må dataframene som inneholder aktivitetne til ID-en sendes inn og selve ID-en
+'''
+
 class Acitivity:
     def __init__(self, df, id):
-        #self.key = df.iloc[id].key
         self.id = id 
         self.latestStartTime = df.loc[id]["latestStartTime"]
         self.earliestStartTime = df.loc[id]["earliestStartTime"]
@@ -13,15 +17,8 @@ class Acitivity:
         self.employeeRestricions = self.makeEmployeeRestriction(df.loc[id]["employeeRestriction"].replace("(", "").replace(")", ""))
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["presedence"])
         self.startTime = None
-    
-    def getSkillreq(self): 
-        return self.skillReq
-    
-    def setStartTime(self, startTime): 
-        self.startTime = startTime
 
-    def getStartTime(self):
-        return self.startTime
+    #make funskjonene setter parameterne til Acitivy objektet 
     
     def makeEmployeeRestriction(self, string): 
         if "," in string: 
@@ -30,6 +27,33 @@ class Acitivity:
             return [int(string)]
         except: 
             return [] 
+        
+
+    def makePresNodes(self, string): 
+        '''
+        Får inn dataen fra dataframen og returnerer to lister med presedens informasjonen 
+        '''
+        PrevNode = []
+        PrevNodeInTime = []
+        if "(" in string: 
+            return PrevNode, PrevNodeInTime
+        strList = string.split(",")
+        for elem in strList: 
+            if ":" in elem: 
+                PrevNodeInTime.append(tuple(int(part.strip()) for part in elem.split(":")))
+            else: 
+                PrevNode.append(int(elem))
+        return PrevNode, PrevNodeInTime
+    
+    #get funksjonene henter ut Acitivy variablene og parameterne 
+    def getSkillreq(self): 
+        return self.skillReq
+    
+    def setStartTime(self, startTime): 
+        self.startTime = startTime
+
+    def getStartTime(self):
+        return self.startTime
         
     def getEmployeeRestriction(self): 
         return self.employeeRestricions
@@ -46,29 +70,16 @@ class Acitivity:
     def getID(self): 
         return self.id
     
-
-    '''
-    Hvordan skal det se ut. 
-    PrevNodeInTime 
-    PrevNode
-    '''
-    def makePresNodes(self, string): 
-        PrevNode = []
-        PrevNodeInTime = []
-        if "(" in string: 
-            return PrevNode, PrevNodeInTime
-        strList = string.split(",")
-        #print("strList", strList)
-        for elem in strList: 
-            #print("elem", elem)
-            if ":" in elem: 
-                PrevNodeInTime.append(tuple(int(part.strip()) for part in elem.split(":")))
-            else: 
-                #print("PrevNode1", PrevNode)
-                PrevNode.append(int(elem))
-                #print("PrevNode2", PrevNode)
-       #print("returning ", PrevNode, PrevNodeInTime )
-        return PrevNode, PrevNodeInTime
+    def getPickUpActivityID(self): 
+        return self.pickUpActivityID
+    
+    def getPrevNode(self):
+        return self.PrevNode 
+    
+    def getPrevNodeInTime(self): 
+        return self.PrevNodeInTime
+    
+    #set og add funsksjonene oppdatere aktivtetens parametere
 
     def setLatestStartTime(self, newLatestStartTime): 
         if newLatestStartTime< self.latestStartTime: 
@@ -81,59 +92,7 @@ class Acitivity:
             self.earliestStartTime = self.latestStartTime
     
     def addEmployeeRes(self, unAllowedEmployees):
-        #BRUKES
         self.employeeRestricions += unAllowedEmployees
         
 
-    def getPickUpActivityID(self): 
-        #BRUKES
-        return self.pickUpActivityID
-    
-    def getPrevNode(self):
-        return self.PrevNode 
-    
-    
-    def getPrevNodeInTime(self): 
-        return self.PrevNodeInTime
-#Dette skjer før vi setter starttidspunktet. 
-#Vi setter ikke starttidspunktet
 
-
-'''
-Sliter med å forstå hvordan aktivitenene skal henge sammen
-De har jo egenskaper mellom hverandre som presedens og same employee ID
-
-
-
-
-
-df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
-
-
-act1 = Acitivity(df_activities, 15)
-print(print(act1.getID()))
-print("employeeRes",act1.getEmployeeRestriction())
-act1.updateEmployeeRes([5])
-print("employeeRes",act1.getEmployeeRestriction())
-print("act.sameEmployeeActivityID", act1.sameEmployeeActivityID)
-print("----------")
-print("earliest and latest")
-print(act1.getEarliestStartTime())
-print(act1.getLatestStartTime())
-print("act1.getDuration()",act1.getDuration())
-print("act1.getPrevNodeInTime()", act1.getPrevNodeInTime())
-print("act1.getPrevNode()", act1.getPrevNode())
-print("act1.PrevNode", act1.PrevNode)
-print("act1.PrevNodeInTime", act1.PrevNodeInTime)
-#print(act1.key.astype(int))
-#print(act1.key)
-'''
-
-'''
-Det går ann å legge til employee restrictions så vi sjekker det først. 
-Må ha same employee aktcity noden
-
-Hvordan vil jeg at dataen skal se ut? 
-Skal informasjonen være begge veier? Nå plasseres en først, også en annen.
-Så i dette datasettet vil vi i den påfølgende lagre den første 
-'''
