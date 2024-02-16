@@ -1,10 +1,11 @@
 from tqdm import tqdm
 import pandas as pd
 import copy
-from insertion_generator import PatientInsertor
+
 import sys
 sys.path.append("C:\\Users\\agnesost\\masters-thesis")
 from objects.route_plan import RoutePlan
+from heuristic.construction.insertion_generator import PatientInsertor
 
 '''
 Info: ConstructionHeurstic klassen er selve konstruskjonsheurstikken. 
@@ -36,7 +37,7 @@ class ConstructionHeuristic:
         '''
 
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = df_patients.sort_values(by="aggSuit", ascending=False)
+        unassigned_patients = self.patients_df.sort_values(by="aggSuit", ascending=False)
         
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
@@ -69,16 +70,4 @@ Alt som kommer under her er for å teste koden, skal foreløpig kjøres herfra n
 '''    
 
 #TODO: Endre slik at dataen ikke må hentes på denne måten
-df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
-df_employees = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"])
-df_patients = pd.read_csv("data/Patients.csv").set_index(["patient"])
-df_treatments = pd.read_csv("data/Treatment.csv").set_index(["treatment"])
-df_visits = pd.read_csv("data/Visit.csv").set_index(["visit"])
 
-
-testConsHeur = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
-testConsHeur.construct_initial()
-testConsHeur.route_plan.printSoultion()
-print("Dette er objektivet", testConsHeur.current_objective)
-print("Hjemmesykehuspasienter ", testConsHeur.listOfPatients)
-print("Ikke allokert ", testConsHeur.unAssignedPatients)
