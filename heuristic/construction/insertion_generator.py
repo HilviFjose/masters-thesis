@@ -141,6 +141,7 @@ class PatientInsertor:
             for PrevNodeInTime in activity.getPrevNodeInTime(): 
                 prevNodeAct = self.route_plan.getActivity(PrevNodeInTime[0], day)
                 activity.setLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTime[1])
+                #TODO: Noe galt med denne funksjonen 
             
             #Prøver å legge til aktivten til ruteplanen på den gitte dagen.
             activityStatus = self.route_plan.addNodeOnDay(activity, day)

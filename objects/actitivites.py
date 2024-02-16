@@ -81,17 +81,27 @@ class Acitivity:
     
     #set og add funsksjonene oppdatere aktivtetens parametere
 
+    
     def setLatestStartTime(self, newLatestStartTime): 
+        #latest starttime endres dersom den er lavere enn nåværende latest startime
         if newLatestStartTime< self.latestStartTime: 
             self.latestStartTime = newLatestStartTime
+        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
+        if self.earliestStartTime > newLatestStartTime: 
+            self.earliestStartTime = 0
+            self.latestStartTime = 0
 
     def setEarliestStartTime(self, newEarliestStartTime): 
+        #earliest starttime endres dersom den er høyere enn nåværende latest startime
         if newEarliestStartTime > self.earliestStartTime: 
             self.earliestStartTime = newEarliestStartTime
+        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
         if newEarliestStartTime > self.latestStartTime: 
-            self.earliestStartTime = self.latestStartTime
+            self.earliestStartTime = 0
+            self.latestStartTime = 0
     
     def addEmployeeRes(self, unAllowedEmployees):
+        #legger til unallowed employees i employeerestrictions
         self.employeeRestricions += unAllowedEmployees
         
 
