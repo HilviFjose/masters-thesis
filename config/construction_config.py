@@ -7,7 +7,9 @@ maxActivitiesPerPatient = 25
 
 # Distributions
 treatmentsPerPatient = 1.05                     #Number of treatments per patient
-activitiesPerVisit = 2.5                        #Number of activities per treatment
+maxTreatmentsPerPatient = 3
+V_numProb = [0.9, 0.05, 0.05]
+#activitiesPerVisit = 2.5                        #Number of activities per treatment
 maxActivitiesPerVisit = 6                       #Max number of activities per visit
 A_numProb = [0.25, 0.05, 0.3, 0.05, 0.3, 0.05]    #Probability of the number of activities from 1 to 6 in a visit
 
@@ -83,8 +85,9 @@ employeeRestrict = 0.05
 # Working period
 days = 5
 
-# DEPOT LOCATION
-depot = (59.9365, 10.7396)
+# LOCATION
+depot = (59.9365, 10.7396)      # Lat and lon for Oslo University Hospital
+area = 5                        # Allowing for locations 5 km area around the depot
 
 
 
