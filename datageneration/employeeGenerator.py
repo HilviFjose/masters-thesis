@@ -5,7 +5,7 @@ import numpy as np
 import random 
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-
+print('FILSTI',os.path.join(os.path.split(__file__)[0],'..'))
 from config import construction_config
 
 def assign_shifts(employees):

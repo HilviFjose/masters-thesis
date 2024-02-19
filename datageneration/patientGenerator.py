@@ -8,7 +8,10 @@ sys.path.append(os.path.join(os.path.split(__file__)[0],'..') )  #include subfol
 
 from config import construction_config
 
-def locationGenerator(lat, lon, radius_km, num_points):
+import random
+import numpy as np
+
+def locationGenerator(locations, radius_km, num_points):
     """Forklaring fra chatten:
     For å generere et bestemt antall punkter innenfor arealet av en sirkel, kan vi tilpasse tilnærmingen ved 
     å bruke en metode som lar oss plassere punkter tilfeldig, men innenfor grensene av sirkelens radius. 
@@ -21,6 +24,9 @@ def locationGenerator(lat, lon, radius_km, num_points):
 
     points = []
     for _ in range(num_points):
+        # Velger en tilfeldig lokasjon fra listen
+        lat, lon = random.choice(locations)
+
         # Genererer en tilfeldig vinkel og radius
         angle = random.uniform(0, 2 * np.pi)
         r = radius_km * np.sqrt(random.uniform(0, 1))
@@ -41,49 +47,41 @@ def locationGenerator(lat, lon, radius_km, num_points):
     return points
 
 def patientGenerator():
-    df_patients = pd.DataFrame(columns=['patientId', 'treatments', 'visits', 'activities', 'utility', 'agg_utility','employeeRestrictions', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
+    df_patients = pd.DataFrame(columns=['patientId', 'treatmentIds', 'utility','employeeRestrictions', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
      
     patientId = []
-    treatments = []
+    nTreatments = []
     utility = []
-    agg_utility = []
     continuityGroup = []
     heaviness = []
 
+    #Generate random location for each patient
+    locations = locationGenerator(construction_config.refLoc, construction_config.area, construction_config.P_num)
+
     for i in range(construction_config.P_num):
         patientId.append(i+1)
-
-        #Generate random location for each patient
-        locations = locationGenerator(construction_config.depot[0], construction_config.depot[1], 
-                                construction_config.area, construction_config.P_num)
-        print("Iterasjon: ", i, locations)
         
         #Distribution of number of treatments per patient
         T_numMax = construction_config.maxTreatmentsPerPatient                                          # Max number of activities per visit
         prob = construction_config.V_numProb                                                            # The probability of the number of activities per visit
-        treatments = np.random.choice(range(1,T_numMax+1), size=construction_config.P_num, p=prob)      # Distribution of the number of activities per visit
-        #treatments = np.random.poisson(lam=construction_config.treatmentsPerPatient, size=construction_config.P_num)
-        #treatments = np.maximum(treatments, 1) 
-
+        nTreatments = np.random.choice(range(1,T_numMax+1), size=construction_config.P_num, p=prob)      # Distribution of the number of activities per visit
+        
         #Distribution of utility, continuity group and heaviness for patients
         utility.append(np.random.choice([j+1 for j in range(5)]))
-        #agg_utility.append(visits[i]*utility[i-1]) #Må flyttes ned til en annen funksjon etter at visits er generert.  
         continuityGroup.append(np.random.choice([j+1 for j in range(3)], p=construction_config.continuityDistribution))
         heaviness.append(np.random.choice([i+1 for i in range(5)], p=construction_config.heavinessDistribution))
         
         df_patients = df_patients._append({
                 'patientId': i+1,
-                'treatments': treatments[i],
-                #'visits': visits[i], #Dette skal endres
+                'nTreatments': nTreatments[i],
                 'utility': utility[i],
-                #'agg_utility': agg_utility[i],
                 'continuityGroup': continuityGroup[i],
                 'heaviness': heaviness[i],
                 'location' : locations[i]
             }, ignore_index=True)
 
-    file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
-    df_patients.to_csv(file_path, index=False)
+    #file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
+    #df_patients.to_csv(file_path, index=False)
 
     return df_patients
 
@@ -91,7 +89,7 @@ def treatmentGenerator(df_patients):
     df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern','visits', 'location'])
 
     # Generate rows for each treatment with the patientId
-    expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['treatments'])].reset_index(drop=False)
+    expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
     expanded_rows['treatmentId'] = range(1, len(expanded_rows) + 1)
     # Generate pattern type for each treatment. Will decide the number of visits per treatment.
     patternType = np.random.choice([i+1 for i in range(len(construction_config.patternTypes))], len(expanded_rows), p=construction_config.patternTypes)
@@ -340,12 +338,45 @@ def patientEmployeeContextGenerator(df_patients, df_employees):
     #Employee history
     return df_patients
 
-def autofillPatient():
-    #Legge inn det som er generert i senere funksjoner hvis nødvendig for å få fyllt ut alle kolonner i df_patients
-    return
+def autofillPatient(df_patients, df_treatments):
+    #Treatment IDs
+    treatments_grouped = df_treatments.groupby('patientId')['treatmentId'].apply(list).reset_index(name='treatmentIds')
+
+    # Beregner summen av 'visits' for hver 'patientID' i df_treatments
+    visits_sum = df_treatments.groupby('patientId')['visits'].sum().reset_index(name='nVisits')
+
+    # Slår sammen behandlings-IDer og totalt antall visits med df_patients
+    df_patients_merged = pd.merge(df_patients, treatments_grouped, on='patientId', how='left')
+    df_patients_merged = pd.merge(df_patients_merged, visits_sum, on='patientId', how='left')
+
+    #Aggregated Utility - patient utility times the number of visits per patient
+    df_patients_merged['aggUtility'] = df_patients_merged['nVisits'] * df_patients_merged['utility']
+    
+    file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
+    df_patients_merged.to_csv(file_path, index=False)
+
+    return df_patients_merged
+
+def autofillTreatment(df_treatments, df_visits):
+    visits_grouped = df_visits.groupby('treatmentId')['visitId'].apply(list).reset_index(name='visitsIds')
+    df_treatments_merged = pd.merge(df_treatments, visits_grouped, on='treatmentId', how='left')
+    file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
+    df_treatments_merged.to_csv(file_path, index=False)
+    return df_treatments_merged
+
+def autofillVisit(df_visits, df_activities):
+    activities_grouped = df_activities.groupby('visitId')['activityId'].apply(list).reset_index(name='activitiesIds')
+    df_visits_merged = pd.merge(df_visits, activities_grouped, on='visitId', how='left')
+    file_path = os.path.join(os.getcwd(), 'data', 'visits.csv')
+    df_visits_merged.to_csv(file_path, index=False)
+    return df_visits_merged
+
 
 #TESTING
 df_patients = patientGenerator()
 df_treatments = treatmentGenerator(df_patients)
 df_visits = visitsGenerator(df_treatments)
-activitiesGenerator(df_visits)
+df_activities = activitiesGenerator(df_visits)
+df_patients_filled = autofillPatient(df_patients, df_treatments)
+df_treatments_filled = autofillTreatment(df_treatments, df_visits)
+df_visits_filled = autofillVisit(df_visits, df_activities)
