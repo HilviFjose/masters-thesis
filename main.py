@@ -32,6 +32,7 @@ def main():
     print("Hjemmesykehuspasienter ", constructor.listOfPatients)
     print("Ikke allokert ", constructor.unAssignedPatients)
 
+"""
     initial_objective = constructor.current_objective
     initial_route_plan = constructor.route_plan 
     initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
@@ -94,6 +95,8 @@ def main():
 
     '''
     
+"""
 
 if __name__ == "__main__":
     main()
+

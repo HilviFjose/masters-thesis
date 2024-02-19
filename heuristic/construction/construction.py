@@ -2,7 +2,6 @@ from tqdm import tqdm
 import pandas as pd
 import copy
 import os
-
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.route_plan import RoutePlan
@@ -66,9 +65,6 @@ class ConstructionHeuristic:
             if state == False: 
                 self.unAssignedPatients.append(patient)
         
-'''
-Alt som kommer under her er for å teste koden, skal foreløpig kjøres herfra når testes
-'''    
 
 #TODO: Endre slik at dataen ikke må hentes på denne måten
 
