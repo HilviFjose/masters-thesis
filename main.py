@@ -5,11 +5,6 @@ from heuristic.improvement.simulated_annealing import SimulatedAnnealing
 from heuristic.improvement.alns import ALNS
 from heuristic.improvement.operator.operators import Operators
 
-'''
-Ikke ferdigarbeidet klasse. 
-'''
-
-#Anna Helle importert 
 import numpy.random as rnd
 
 def main():
@@ -37,8 +32,12 @@ def main():
     print("Hjemmesykehuspasienter ", constructor.listOfPatients)
     print("Ikke allokert ", constructor.unAssignedPatients)
 
+    initial_objective = constructor.current_objective
+    initial_route_plan = constructor.route_plan 
+    initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
+
     #TODO: Finne ut hva dette er 
-    delayed = (False, None, None) 
+    #delayed = (False, None, None) 
 
     #IMPROVEMENT OF INITAL SOLUTION 
     random_state = rnd.RandomState()
@@ -55,7 +54,11 @@ def main():
     alns.set_operators(operators)
 
     #RUN ALNS 
-
+    current_route_plan, current_objective, current_infeasible_set, _ = alns.iterate(
+            iterations)
+    
+    constructor.print_new_objective(
+            current_route_plan, current_infeasible_set)
 
 
     '''
@@ -69,6 +72,31 @@ def main():
 
     '''
 
+    '''
+    #TODO
+    Agnes: 
+    - Fikse tidsvindu og employee restriction-kolonne i construction 
+    - Lage en funksjon for objektivvurdering som kan brukes i simulated annealing (Lag den som en global funksjon)
+
+    Guro:
+    - Tidsvinduer i data generation
+    - Lokasjoner i data generation
+    - Fikse slik at kolonnene stemmer overens med Agnes sitt oppsett
+    - Adaptive weights
+    - Se på konstruksjonsheuristikken
+
+
+    Hilvi: 
+    - Begynne smått på operator-filen
+    - Simulated annealing
+    - Se på konstruksjonsheuristikken
+
+    Generelt: 
+    - Finne noen python-pakker for evaluering av effektiviteten til koden. 
+    - Lage parameterfil for inputdata
+
+    '''
+    
 
 if __name__ == "__main__":
     main()

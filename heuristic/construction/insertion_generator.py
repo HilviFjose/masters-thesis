@@ -2,7 +2,7 @@ import numpy as np
 import sys
 sys.path.append("C:\\Users\\agnesost\\masters-thesis")
 from objects.patterns import pattern
-from objects.actitivites import Acitivity
+from objects.activity import Activity
 import copy
 import random 
 
@@ -118,7 +118,7 @@ class PatientInsertor:
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         for activityID in activitesList: 
             #Oppreter et aktivitesobjekt basert på ID-en 
-            activity = Acitivity(self.activites_df, activityID)
+            activity = Activity(self.activites_df, activityID)
             
             #Her håndteres pick up and delivery
             #PickUpAcitivy er aktiviteten som tilsvarer pick up noded dersom denne aktiviteten er delivery

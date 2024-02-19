@@ -9,6 +9,7 @@ reaction_factor = 0.2
 #Adaptive Weights: Gitte vektmuligheter, brukes til å velge operator
 #Har en liste med alle operatorer hvor de innehar en av disse verdiene
 weights = [3, 2, 1, 0.5]
+#TODO: sigma_scores
 
 #Antall iterasjoner i ALNSen
 iterations = 10
@@ -17,7 +18,7 @@ iterations = 10
 #Maxen du kan fjerne er halve løsningen
 destruction_degree = 0.5
 
-# Simulated annealing temperatures -- NOTE: these must be tuned
-start_temperature = 50
+# Simulated annealing temperatures -- TODO: these must be tuned
+start_temperature = 50 
 end_temperature = 10
 cooling_rate = 0.999

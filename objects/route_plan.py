@@ -30,7 +30,7 @@ class RoutePlan:
         Funksjonen legger til aktiviteten på den gitte dagen ved å iterere over alle rutene som finnes på dagen 
 
         Arg: 
-        activity (Acitivity): Activity objekt som vil legges til i en rute 
+        activity (Activity): Activity objekt som vil legges til i en rute 
         day (int): Dagen aktiviten skal legges til på 
 
         Return: 
@@ -68,7 +68,7 @@ class RoutePlan:
         returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
         
         Arg: 
-        activity (Acitivity): Activity objekt som finnes i en rute på en gitt dag
+        activity (Activity): Activity objekt som finnes i en rute på en gitt dag
         day (int): dagen aktiviten finnes i en rute  
 
         Return: 

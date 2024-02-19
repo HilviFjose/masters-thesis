@@ -5,7 +5,7 @@ Info:
 For å opprette en aktivitet må dataframene som inneholder aktivitetne til ID-en sendes inn og selve ID-en
 '''
 
-class Acitivity:
+class Activity:
     def __init__(self, df, id):
         self.id = id 
         self.latestStartTime = df.loc[id]["latestStartTime"]

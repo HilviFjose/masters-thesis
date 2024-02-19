@@ -3,7 +3,7 @@ import pandas as pd
 import sys
 sys.path.append("C:\\Users\\agnesost\\masters-thesis")
 from objects.employee import Employee
-from objects.actitivites import Acitivity
+from objects.activity import Activity
 from objects.distances import T_ij
 import math
 

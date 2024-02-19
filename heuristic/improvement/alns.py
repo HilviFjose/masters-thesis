@@ -3,6 +3,8 @@ import numpy as np
 import copy
 from tqdm import tqdm 
 
+from config.main_config import *
+
 class ALNS:
     def __init__(self, weights, reaction_factor, current_route_plan, current_objective, initial_infeasible_set, criterion,
                     destruction_degree, constructor, rnd_state=rnd.RandomState()): 
@@ -24,7 +26,7 @@ class ALNS:
         #self.destroy_repair_updater = Destroy_Repair_Updater(constructor)
 
     
-    def iterate(self, num_iterations,  index_removed, delayed):
+    def iterate(self, num_iterations):
         weights = np.asarray(self.weights, dtype=np.float16)
         
         current_route_plan = copy.deepcopy(self.route_plan)
@@ -64,7 +66,7 @@ class ALNS:
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
             d_operator = self.destroy_operators[destroy]
-            destroyed_route_plan, removed_requests, index_removed, destroyed = d_operator(
+            destroyed_route_plan, removed_requests, destroyed = d_operator(
                 current_route_plan, current_infeasible_set)
             
             if not destroyed:
@@ -72,10 +74,115 @@ class ALNS:
 
             d_count[destroy] += 1
 
+            # Update solution
+            # Undersøke hva denne filen gjør. Er den kun aktuell på lunde sin?
+            #updated_route_plan = self.destroy_repair_updater.update_solution(destroyed_route_plan, index_removed, disruption_time)
           
+            # Fix solution
+            r_operator = self.repair_operators[repair]
+            candidate, candidate_objective, candidate_infeasible_set = r_operator(
+                destroyed_route_plan, removed_requests, current_infeasible_set, current_route_plan)
+
+            r_count[repair] += 1
+
+            # Compare solutions
+            best, best_objective, best_infeasible_set, current_route_plan, current_objective, current_infeasible_set, weight_score = self.evaluate_candidate(
+                best, best_objective, best_infeasible_set,
+                current_route_plan, current_objective, current_infeasible_set,
+                candidate, candidate_objective, candidate_infeasible_set, self.criterion)
+            
+            # Konverterer til hexa-string for å sjekke om vi har samme løsning. Scores oppdateres kun hvis vi har en løsning som ikke er funnet før
+            if hash(str(candidate)) == hash(str(current_route_plan)) and hash(str(candidate)) in found_solutions.keys():
+                already_found = True
+            else:
+                found_solutions[hash(str(current_route_plan))] = 1
+
+            if not already_found:
+                # Update scores
+                d_scores[destroy] += weight_score
+                r_scores[repair] += weight_score
+
+            # After a certain number of iterations, update weight
+            # TODO: Noen får denne i oppgave
+            if (i+1) % N_U == 0: #TODO: Se på i sammenheng med initial_improvement_config. 
+                # Update weights with scores
+                for destroy in range(len(d_weights)):
+                    d_weights[destroy] = d_weights[destroy] * \
+                        (1 - self.reaction_factor) + \
+                        (self.reaction_factor *
+                         d_scores[destroy] / d_count[destroy])
+                for repair in range(len(r_weights)):
+                    r_weights[repair] = r_weights[repair] * \
+                        (1 - self.reaction_factor) + \
+                        (self.reaction_factor *
+                         r_scores[repair] / r_count[repair])
+
+                # Reset scores
+                d_scores = np.ones(
+                    len(self.destroy_operators), dtype=np.float16)
+                r_scores = np.ones(
+                    len(self.repair_operators), dtype=np.float16)
+
+        return best, best_objective, best_infeasible_set
+    
+    def set_operators(self, operators):
+        # Add destroy operators
+        self.add_destroy_operator(operators.random_removal)
+        self.add_destroy_operator(operators.time_related_removal)
+        self.add_destroy_operator(operators.distance_related_removal)
+        self.add_destroy_operator(operators.related_removal)
+        self.add_destroy_operator(operators.worst_deviation_removal)
+
+        # Add repair operators
+        self.add_repair_operator(operators.greedy_repair)
+        self.add_repair_operator(operators.regret_2_repair)
+        self.add_repair_operator(operators.regret_3_repair)
+
+    # Add operator to the heuristic instance
+
+    def add_destroy_operator(self, operator):
+        self.destroy_operators.append(operator)
+
+    def add_repair_operator(self, operator):
+        self.repair_operators.append(operator)
+
+
     # Select destroy/repair operator
     @staticmethod
     def select_operator(operators, weights, rnd_state):
         w = weights / np.sum(weights)
         a = [i for i in range(len(operators))]
         return rnd_state.choice(a=a, p=w)
+    
+    # Evaluate candidate
+    def evaluate_candidate(self, best, best_objective, best_infeasible_set, current, current_objective,
+                           current_infeasible_set, candidate, candidate_objective, candidate_infeasible_set,
+                           criterion):
+        # If solution is accepted by criterion (simulated annealing)
+        if criterion.accept_criterion(self.rnd_state, current_objective, candidate_objective):
+            # TODO: Endre objektivvurdering
+            if candidate_objective <= current_objective:
+                # Solution is better
+                # TODO: Legge inn som sigma123 i main_config i stedet. 
+                weight_score = 1
+            else:
+                # Solution is not better, but accepted
+                weight_score = 2
+            current = copy.deepcopy(candidate)
+            current_objective = copy.deepcopy(candidate_objective)
+            current_infeasible_set = copy.deepcopy(candidate_infeasible_set)
+        else:
+            # Solution is rejected
+            weight_score = 3
+
+        if candidate_objective <= best_objective:
+            # Solution is new global best
+            current = copy.deepcopy(candidate)
+            current_objective = copy.deepcopy(candidate_objective)
+            current_infeasible_set = copy.deepcopy(candidate_infeasible_set)
+            best = copy.deepcopy(candidate)
+            best_objective = copy.deepcopy(candidate_objective)
+            best_infeasible_set = copy.deepcopy(candidate_infeasible_set)
+            weight_score = 0
+
+        return best, best_objective, best_infeasible_set, current, current_objective, current_infeasible_set, weight_score
