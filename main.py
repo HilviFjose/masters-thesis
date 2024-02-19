@@ -4,7 +4,6 @@ from config.main_config import *
 from heuristic.improvement.simulated_annealing import SimulatedAnnealing
 from heuristic.improvement.alns import ALNS
 from heuristic.improvement.operator.operators import Operators
-
 import numpy.random as rnd
 
 def main():

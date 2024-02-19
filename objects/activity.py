@@ -17,6 +17,10 @@ class Activity:
         self.employeeRestricions = self.makeEmployeeRestriction(df.loc[id]["employeeRestriction"].replace("(", "").replace(")", ""))
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["presedence"])
         self.startTime = None
+        self.newLatestStartTime = 1440
+        self.newEeariestStartTime = 0
+        self.employeeNotAllowedDueToPickUpDelivery = []
+        self.possibleToInsert = True
 
     #make funskjonene setter parameterne til Acitivy objektet 
     
@@ -81,7 +85,26 @@ class Activity:
     
     #set og add funsksjonene oppdatere aktivtetens parametere
 
+    def setNewEarliestStartTime(self, newEarliestStartTime): 
+        #earliest starttime endres dersom den er høyere enn nåværende latest startime
+        if newEarliestStartTime > self.newEeariestStartTime: 
+            self.newEeariestStartTime = newEarliestStartTime
+        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
+        if max(self.newEeariestStartTime, self.earliestStartTime) > min(self.latestStartTime, self.newLatestStartTime): 
+            self.possibleToInsert = False
+
+    def setNewLatestStartTime(self, newLatestStartTime): 
+        #latest starttime endres dersom den er lavere enn nåværende latest startime
+        if newLatestStartTime < self.newLatestStartTime: 
+            self.newLatestStartTime = newLatestStartTime
+        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
+        if max(self.newEeariestStartTime, self.earliestStartTime) > min(self.latestStartTime, self.newLatestStartTime): 
+            self.possibleToInsert = False 
+            
+
     
+    
+    '''
     def setLatestStartTime(self, newLatestStartTime): 
         #latest starttime endres dersom den er lavere enn nåværende latest startime
         if newLatestStartTime< self.latestStartTime: 
@@ -99,10 +122,11 @@ class Activity:
         if newEarliestStartTime > self.latestStartTime: 
             self.earliestStartTime = 0
             self.latestStartTime = 0
-    
-    def addEmployeeRes(self, unAllowedEmployees):
-        #legger til unallowed employees i employeerestrictions
-        self.employeeRestricions += unAllowedEmployees
+    '''
+
+    def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
+        self.employeeNotAllowedDueToPickUpDelivery = list 
+
         
 
 
