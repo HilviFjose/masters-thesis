@@ -36,12 +36,7 @@ def main():
     initial_route_plan = constructor.route_plan 
     initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
-    #TODO: Finne ut hva dette er 
-    #delayed = (False, None, None) 
-
     #IMPROVEMENT OF INITAL SOLUTION 
-    random_state = rnd.RandomState()
-
     #Parameterne er hentet fra config. 
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
@@ -59,6 +54,8 @@ def main():
     
     constructor.print_new_objective(
             current_route_plan, current_infeasible_set)
+    
+    #LOCAL SEARCH
 
 
     '''

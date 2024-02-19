@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import sys
-sys.path.append("C:\\Users\\agnesost\\masters-thesis")
+import os
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.employee import Employee
 from objects.activity import Activity
 from objects.distances import T_ij

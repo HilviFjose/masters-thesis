@@ -1,6 +1,7 @@
 import numpy as np 
+import os
 import sys
-sys.path.append("C:\\Users\\agnesost\\masters-thesis")
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.patterns import pattern
 from objects.activity import Activity
 import copy

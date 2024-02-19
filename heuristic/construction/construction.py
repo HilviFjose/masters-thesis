@@ -1,9 +1,10 @@
 from tqdm import tqdm
 import pandas as pd
 import copy
+import os
 
 import sys
-sys.path.append("C:\\Users\\agnesost\\masters-thesis")
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.route_plan import RoutePlan
 from heuristic.construction.insertion_generator import PatientInsertor
 
