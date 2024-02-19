@@ -27,6 +27,7 @@ def main():
     constructor.construct_initial()
     
     constructor.route_plan.printSoultion()
+    print(constructor.route_plan.objective)
     print("Dette er objektivet", constructor.current_objective)
     print("Hjemmesykehuspasienter ", constructor.listOfPatients)
     print("Ikke allokert ", constructor.unAssignedPatients)
@@ -37,6 +38,7 @@ def main():
 
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
+    '''
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
     alns = ALNS(weights, reaction_factor, initial_route_plan, initial_objective, initial_infeasible_set, criterion,
@@ -55,7 +57,7 @@ def main():
             current_route_plan, current_infeasible_set)
     
     #LOCAL SEARCH
-
+'''
 
     '''
     #TODO
@@ -71,7 +73,7 @@ def main():
     '''
     #TODO
     Agnes: 
-    - Fikse tidsvindu og employee restriction-kolonne i construction 
+    - Fikse tidsvindu og employee restriction-kolonne i construction - Gjort 
     - Lage en funksjon for objektivvurdering som kan brukes i simulated annealing (Lag den som en global funksjon)
 
     Guro:

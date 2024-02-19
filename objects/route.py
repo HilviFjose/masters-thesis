@@ -7,6 +7,7 @@ from objects.employee import Employee
 from objects.activity import Activity
 from objects.distances import T_ij
 import math
+import copy 
 
 class Route:
     def __init__(self, day, employee):
@@ -16,7 +17,8 @@ class Route:
         self.route = np.empty(0, dtype=object)
         self.skillLev = employee.getSkillLevel()
         self.day = day
-        
+        self.travel_time = 0
+        self.aggSkillDiff = 0 
 
 
     def addActivity(self, activity):
@@ -43,6 +45,7 @@ class Route:
         T_ia = math.ceil(T_ij[0][activity.id])
         D_i = 0 
         index_count = 0 
+        i = None
 
         #Nå har vi satt i noden til å være depoet, også vil vi hoppe videre mellom aktivtene 
         for j in self.route: 
@@ -54,6 +57,12 @@ class Route:
                 #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å være earliest startime 
                 activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
                 self.route = np.insert(self.route, index_count, activity)
+                self.aggSkillDiff +=  self.skillLev - activity.getSkillreq() 
+                if index_count == 0: 
+                    self.travel_time -= T_ij[0][j.getID()]
+                else: 
+                    self.travel_time -= T_ij[i.getID()][j.getID()]
+                self.travel_time += T_ia + T_ij[activity.getID()][j.getID()]
                 return True
             
             #Dersom latest start time er større enn starttiden + varigheten + reiseveien fra i til a 
@@ -65,12 +74,19 @@ class Route:
                 #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å startiden til i + varigheten til i + reiseveien fra i til a 
                 activity.setStartTime(S_i + D_i + math.ceil(T_ia))
                 self.route = np.insert(self.route, index_count, activity)
+                self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
+                if index_count == 0: 
+                    self.travel_time -= T_ij[0][j.getID()]
+                else: 
+                    self.travel_time -= T_ij[i.getID()][j.getID()]
+                self.travel_time += T_ia + T_ij[activity.getID()][j.getID()]
                 return True
           
             #Så settes j noden til å være i noden for å kunne sjekke neste mellomrom i ruten
             S_i = j.getStartTime()
             T_ia = math.ceil(T_ij[j.getID()][activity.getID()])
             D_i = j.getDuration()
+            i = copy.copy(j) 
             index_count +=1
        
         #Etter vi har iterert oss gjennom alle mollom rom mellom aktiviteter sjekker vi her om det er plass i slutten av ruta       
@@ -79,6 +95,10 @@ class Route:
             max(activity.getEarliestStartTime(), activity.newEeariestStartTime)+ activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
             self.route = np.insert(self.route, index_count, activity)
+            self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
+            if index_count != 0 : 
+                self.travel_time -= math.ceil(T_ij[i.getID()][0])
+            self.travel_time += T_ia + math.ceil(T_ij[activity.getID()][0])           
             return True
 
         if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= S_i + D_i + T_ia and (
@@ -86,6 +106,10 @@ class Route:
             S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(S_i + D_i + math.ceil(T_ia))
             self.route = np.insert(self.route, index_count, activity)
+            self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
+            if index_count != 0 : 
+                self.travel_time -= math.ceil(T_ij[i.getID()][0])
+            self.travel_time += T_ia + math.ceil(T_ij[activity.getID()][0])
             return True
 
         #Returnerer false dersom det ikke var plass mellom noen aktiviteter i ruten 
