@@ -86,8 +86,22 @@ employeeRestrict = 0.05
 days = 5
 
 # LOCATION
+area = 2                        # Allowing for locations X km area around the depot and reference locations
 depot = (59.9365, 10.7396)      # Lat and lon for Oslo University Hospital
-area = 5                        # Allowing for locations 5 km area around the depot
+Ullern = (59.9400, 10.6665)
+Ris = (59.9564, 10.6973)
+Holmenkollen = (59.9653, 10.6566)
+Sogn = (59.9548, 10.7429)
+Bjerke = (59.9386, 10.8148)
+Haugerud = (59.9218, 10.8353)
+Boler = (59.8926, 10.8215)
+Lambergseter = (59.8655, 10.8131)
+Grunerlokka = (59.9233, 10.7871)
+StHanshaugen = (59.9329, 10.7506)
+Majorstuen = (59.9282, 10.7126)
+refLoc = [depot, Ullern, Ris, Holmenkollen, Sogn, Bjerke, Haugerud, Boler, Lambergseter, Grunerlokka, StHanshaugen, Majorstuen]
+
+
 
 
 

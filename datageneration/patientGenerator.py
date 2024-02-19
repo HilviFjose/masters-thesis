@@ -4,12 +4,12 @@ import numpy as np
 import random 
 
 import sys
-sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  #include subfolders
+sys.path.append(os.path.join(os.path.split(__file__)[0],'..') )  #include subfolders
 
 from config import construction_config
 
 def locationGenerator(lat, lon, radius_km, num_points):
-    """MIDLERTIDIG LØSNING - Forklaring fra chatten:
+    """Forklaring fra chatten:
     For å generere et bestemt antall punkter innenfor arealet av en sirkel, kan vi tilpasse tilnærmingen ved 
     å bruke en metode som lar oss plassere punkter tilfeldig, men innenfor grensene av sirkelens radius. 
     Denne metoden involverer å generere tilfeldige vinkler og radiuser for hvert punkt, slik at de faller innenfor 
@@ -56,6 +56,7 @@ def patientGenerator():
         #Generate random location for each patient
         locations = locationGenerator(construction_config.depot[0], construction_config.depot[1], 
                                 construction_config.area, construction_config.P_num)
+        print("Iterasjon: ", i, locations)
         
         #Distribution of number of treatments per patient
         T_numMax = construction_config.maxTreatmentsPerPatient                                          # Max number of activities per visit
