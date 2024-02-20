@@ -21,6 +21,7 @@ class RoutePlan:
                 self.routes[day].append(Route(day, emp))
         self.days = days 
         self.objective = [0,0,0,0,0]
+        self.objective1 = [0,0,0,0,0]
 
         #TODO: Revurdere om vi skal reversere listene som iterers over eller gjøre random 
         self.rev = True
@@ -127,3 +128,8 @@ class RoutePlan:
                 if act.getID() == actID: 
                     return act        
 
+
+    def updateObjective(self): 
+        for day in range(1, 1+self.days): 
+            for route in self.routes[day]: 
+                self.objective1[4] += route.updateObjective()
