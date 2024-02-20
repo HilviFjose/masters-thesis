@@ -3,10 +3,8 @@ import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 
-
-
-
 df_distance = pd.read_csv('data/Distances.csv')
+
 '''
 dict_distances = df_distance.to_dict(orient='records')
 
