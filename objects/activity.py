@@ -127,6 +127,10 @@ class Activity:
     def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
         self.employeeNotAllowedDueToPickUpDelivery = list 
 
-        
-
+    def restartActivity(self): 
+        self.startTime = None
+        self.newLatestStartTime = 1440
+        self.newEeariestStartTime = 0
+        self.employeeNotAllowedDueToPickUpDelivery = []
+        self.possibleToInsert = True
 

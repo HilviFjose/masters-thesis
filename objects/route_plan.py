@@ -5,6 +5,7 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.employee import Employee
 from objects.route import Route
+import copy
 
 
 '''
@@ -67,7 +68,7 @@ class RoutePlan:
     def getRoutePlan(self): 
         return self.routes
  
-    def printSoultion(self): 
+    def printSolution(self): 
         '''
         Printer alle rutene som inngår i routeplan
         '''
@@ -129,6 +130,27 @@ class RoutePlan:
 
 
     def updateObjective(self): 
+        objective = [self.objective[0], 0, 0, 0, 0]
         for day in range(1, 1+self.days): 
             for route in self.routes[day]: 
-                self.objective1[4] += route.updateObjective()
+                obj_34_tupl = route.updateObjective()
+                objective[3] += obj_34_tupl[0]
+                objective[4] += obj_34_tupl[1]
+        self.objective = objective
+
+    def removeActivityFromEmployeeOnDay(self, employee, activity, day):
+        for route in self.routes[day]: 
+            if route.employee.getID() == employee:
+                route.removeActivity(activity)
+
+
+    def insertAcitivyInEmployeesRoute(self, employee, activity, day): 
+        #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
+        insert_activity = copy.deepcopy(activity)
+        insert_activity.restartActivity()
+        
+        for route in self.routes[day]: 
+            if route.employee.getID() == employee:
+                return route.addActivity(activity)
+       
+        

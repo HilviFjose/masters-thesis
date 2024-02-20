@@ -57,12 +57,14 @@ class Route:
                 #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å være earliest startime 
                 activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
                 self.route = np.insert(self.route, index_count, activity)
+                '''
                 self.aggSkillDiff +=  self.skillLev - activity.getSkillreq() 
                 if index_count == 0: 
                     self.travel_time -= T_ij[0][j.getID()]
                 else: 
                     self.travel_time -= T_ij[i.getID()][j.getID()]
                 self.travel_time += T_ia + T_ij[activity.getID()][j.getID()]
+                '''
                 return True
             
             #Dersom latest start time er større enn starttiden + varigheten + reiseveien fra i til a 
@@ -74,12 +76,14 @@ class Route:
                 #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å startiden til i + varigheten til i + reiseveien fra i til a 
                 activity.setStartTime(S_i + D_i + math.ceil(T_ia))
                 self.route = np.insert(self.route, index_count, activity)
+                '''
                 self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
                 if index_count == 0: 
                     self.travel_time -= T_ij[0][j.getID()]
                 else: 
                     self.travel_time -= T_ij[i.getID()][j.getID()]
                 self.travel_time += T_ia + T_ij[activity.getID()][j.getID()]
+                '''
                 return True
           
             #Så settes j noden til å være i noden for å kunne sjekke neste mellomrom i ruten
@@ -95,10 +99,12 @@ class Route:
             max(activity.getEarliestStartTime(), activity.newEeariestStartTime)+ activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
             self.route = np.insert(self.route, index_count, activity)
+            '''
             self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
             if index_count != 0 : 
                 self.travel_time -= math.ceil(T_ij[i.getID()][0])
-            self.travel_time += T_ia + math.ceil(T_ij[activity.getID()][0])           
+            self.travel_time += T_ia + math.ceil(T_ij[activity.getID()][0])      
+            '''     
             return True
 
         if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= S_i + D_i + T_ia and (
@@ -106,10 +112,12 @@ class Route:
             S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(S_i + D_i + math.ceil(T_ia))
             self.route = np.insert(self.route, index_count, activity)
+            '''
             self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
             if index_count != 0 : 
                 self.travel_time -= math.ceil(T_ij[i.getID()][0])
             self.travel_time += T_ia + math.ceil(T_ij[activity.getID()][0])
+            '''
             return True
 
         #Returnerer false dersom det ikke var plass mellom noen aktiviteter i ruten 
@@ -134,9 +142,23 @@ class Route:
     def updateObjective(self): 
         i = 0 
         travel_time = 0 
+        aggregated_skilldiff = 0
         for act in self.route: 
             j = act.getID()
             travel_time += math.ceil(T_ij[i][j])
             i = j 
+            aggregated_skilldiff += self.employee.getSkillLevel() - act.getSkillreq()
         travel_time += math.ceil(T_ij[i][0])
-        return travel_time
+        return  aggregated_skilldiff, travel_time
+    
+    def removeActivity(self, activity):
+        index = 0 
+        for act in self.route: 
+            if act.getID() == activity.getID(): 
+                self.route = np.delete(self.route, index)
+                return 
+            index += 1 
+        print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
+        return
+       
+    

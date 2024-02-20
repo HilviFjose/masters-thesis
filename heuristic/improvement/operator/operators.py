@@ -48,9 +48,25 @@ class Operators:
     #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
         return None
     
-    def worst_activity_removal_on_day():
+    def worst_activity_removal_on_day(self, current_route_plan, current_infeasible_set):
     #Removes the worst activity on a "locked" day, being the one contributing the least to the objective. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
+    #Only relevant objective is    
+        """
+    for day in current_route_plan:
+            for route in current_route_plan.routes[day]: 
+                for activity in route:
+
+                self.objective1[4] += route.updateObjective()
+        removed_activity = current_infeasible_set
+        destroyed = []
+        return destroyed_route_plan, removed_activity, destroyed, destroyed_on_day
+        """
+        destroyed = []
+        destroyed_on_day = None
+
+        return current_route_plan, current_infeasible_set, destroyed
+   
+        
     
     def worst_route_removal_on_day():
     #Removes the worst whole route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
@@ -62,3 +78,5 @@ class Operators:
     
     
 #---------- REPAIR OPERATORS ----------
+    def greedy_repair_on_day():
+        return None

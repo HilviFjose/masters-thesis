@@ -6,6 +6,7 @@ from heuristic.improvement.alns import ALNS
 from heuristic.improvement.operator.operators import Operators
 import numpy.random as rnd
 
+
 def main():
     constructor = None
 
@@ -26,7 +27,9 @@ def main():
     print("Constructing Inital Solution")
     constructor.construct_initial()
     
-    constructor.route_plan.printSoultion()
+    constructor.route_plan.printSolution()
+    constructor.route_plan.updateObjective()
+
     print("Dette er objektivet", constructor.route_plan.objective)
     print("Hjemmesykehuspasienter ", constructor.listOfPatients)
     print("Ikke allokert ", constructor.unAssignedPatients)
@@ -49,11 +52,15 @@ def main():
     alns.set_operators(operators)
 
     #RUN ALNS 
-    current_route_plan, current_objective, current_infeasible_set, _ = alns.iterate(
+    current_route_plan, current_objective, current_infeasible_set = alns.iterate(
             iterations)
     
+    print("Oppdatert objektiv etter ALNS ", current_route_plan.objective)
+    
+    '''
     constructor.print_new_objective(
             current_route_plan, current_infeasible_set)
+        '''
     
     #LOCAL SEARCH
 
@@ -92,10 +99,9 @@ def main():
     - Finne noen python-pakker for evaluering av effektiviteten til koden. 
     - Lage parameterfil for inputdata
 
+   
     '''
-    
-"""
+
 
 if __name__ == "__main__":
     main()
-
