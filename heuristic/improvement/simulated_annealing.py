@@ -1,4 +1,5 @@
 import numpy as np
+from helpfunctions import *
 
 class SimulatedAnnealing:
     def __init__(self, start_temperature, end_temperature, cooling_rate):
@@ -12,7 +13,7 @@ class SimulatedAnnealing:
 
         # Always accept better solution
         # TODO: Legge inn en ny objektivvurdering. Må iterere oss gjennom flere objektiver. 
-        if candidate_objective <= current_objective:
+        if checkCandidateBetterThanCurren(candidateObj= candidate_objective, currObj= current_objective):
             #print("Found better solution")
             accept = True
 

@@ -27,18 +27,17 @@ def main():
     constructor.construct_initial()
     
     constructor.route_plan.printSoultion()
-    print(constructor.route_plan.objective)
-    print("Dette er objektivet", constructor.current_objective)
+    print("Dette er objektivet", constructor.route_plan.objective)
     print("Hjemmesykehuspasienter ", constructor.listOfPatients)
     print("Ikke allokert ", constructor.unAssignedPatients)
 
-    initial_objective = constructor.current_objective
+    initial_objective = constructor.route_plan.objective
     initial_route_plan = constructor.route_plan 
     initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
-    '''
+    
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
     alns = ALNS(weights, reaction_factor, initial_route_plan, initial_objective, initial_infeasible_set, criterion,
@@ -57,7 +56,7 @@ def main():
             current_route_plan, current_infeasible_set)
     
     #LOCAL SEARCH
-'''
+
 
     '''
     #TODO

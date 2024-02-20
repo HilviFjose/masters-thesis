@@ -2,6 +2,7 @@ import numpy.random as rnd
 import numpy as np 
 import copy
 from tqdm import tqdm 
+from helpfunctions import *
 
 from config.main_config import *
 
@@ -161,7 +162,7 @@ class ALNS:
         # If solution is accepted by criterion (simulated annealing)
         if criterion.accept_criterion(self.rnd_state, current_objective, candidate_objective):
             # TODO: Endre objektivvurdering
-            if candidate_objective <= current_objective:
+            if checkCandidateBetterThanCurren(candidateObj= candidate_objective, currObj= current_objective):
                 # Solution is better
                 # TODO: Legge inn som sigma123 i main_config i stedet. 
                 weight_score = 1
