@@ -19,11 +19,18 @@ class RoutePlan:
             for day in self.routes: 
                 self.routes[day].append(Route(day, emp))
         self.days = days 
+        self.objective = [0,0,0,0,0]
+        self.objective1 = [0,0,0,0,0]
 
         #TODO: Revurdere om vi skal reversere listene som iterers over eller gjøre random 
         self.rev = True
 
-            
+
+    '''
+    Når skal de oppdateres 
+    '''
+
+                
     
     def addNodeOnDay(self, activity, day):
         '''
@@ -46,8 +53,14 @@ class RoutePlan:
 
         #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
         for route in routes: 
+            old_skillDiffObj = route.aggSkillDiff
+            old_travel_time = route.travel_time
             insertStatus = route.addActivity(activity)
             if insertStatus == True: 
+                self.objective[3] -= old_skillDiffObj
+                self.objective[3] += route.aggSkillDiff
+                self.objective[4] -= old_travel_time
+                self.objective[4] += route.travel_time
                 return True
         return False
     
@@ -114,3 +127,8 @@ class RoutePlan:
                 if act.getID() == actID: 
                     return act        
 
+
+    def updateObjective(self): 
+        for day in range(1, 1+self.days): 
+            for route in self.routes[day]: 
+                self.objective1[4] += route.updateObjective()
