@@ -7,6 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.split(__file__)[0],'..') )  #include subfolders
 
 from config import construction_config
+from datageneration import employeeGenerator
 
 import random
 import numpy as np
@@ -46,8 +47,8 @@ def locationGenerator(locations, radius_km, num_points):
         
     return points
 
-def patientGenerator():
-    df_patients = pd.DataFrame(columns=['patientId', 'treatmentIds', 'utility','employeeRestrictions', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
+def patientGenerator(df_employees):
+    df_patients = pd.DataFrame(columns=['patientId', 'nTreatments', 'utility','employeeRestrictions', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
      
     patientId = []
     nTreatments = []
@@ -79,9 +80,27 @@ def patientGenerator():
                 'heaviness': heaviness[i],
                 'location' : locations[i]
             }, ignore_index=True)
+        
+    
+    # Employee Restrictions
+    num_restricted_patients = int(len(df_patients) * 0.05)      # 5 % of the patients have a restriction against an employee
+    restricted_patient_indices = np.random.choice(df_patients.index, size=num_restricted_patients, replace=False) # Random patients get employee restrictions
+    
+    for index in restricted_patient_indices:
+        random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
+        df_patients.at[index, 'employeeRestrictions'] = random_employee_id
 
-    #file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
-    #df_patients.to_csv(file_path, index=False)
+    # Employee history  TODO: Må potensielt oppdatere format på dette
+    num_history_patients = int(len(df_patients) * 0.9)          # 90 % of the patients have a treatment history with some employees
+    history_patient_indices = np.random.choice(df_patients.index, size=num_history_patients, replace=False) # Random patients get employee history
+
+    for index in history_patient_indices:
+        num_employees = np.random.randint(1, 6)             # Allowing for between 1 and 6 employees in the employee history
+        random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()      # Random employees
+        df_patients.at[index, 'employeeHistory'] = random_employee_ids
+
+    file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
+    df_patients.to_csv(file_path, index=False)
 
     return df_patients
 
@@ -119,7 +138,7 @@ def treatmentGenerator(df_patients):
         else:
             df_treatments.at[index, 'pattern'] = construction_config.patterns_1day
             df_treatments.at[index, 'visits'] = 1
-        
+
     file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
     df_treatments.to_csv(file_path, index=False)
 
@@ -155,16 +174,6 @@ def visitsGenerator(df_treatments):
     return df_visits
 
 def activitiesGenerator(df_visits):
-    #Opprinnelige kolonner fra i høst
-    df_activities_prosjektoppgave = pd.DataFrame(columns=['activityId', 'patientId', 'earliestStartTime', 'latestStartTime', 
-                                          'duration', 'synchronisation', 'skillRequirement', 'precedence', 
-                                          'sameEmployeeActivityId', 'visitId', 'treatmentId', 
-                                          'possiblePatterns', 'patternType', 'numOfVisits', 
-                                          'utility', 'location', 'continuityGroup', 'heaviness'])
-    
-    #Noen av disse kolonnene skal ikke fylles med data i denne funksjonen, men i senere funksjoner: 
-    #continuitygroup, heaviness (logistikkoppgaver må håndteres...), (location, om det ikke er henting/levering av utstyr på sykehus), utility (halveres for synch-aktiviteter)
-
     df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 
                                           'duration', 'synchronisation', 'skillRequirement', 'precedence', 
                                           'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location'])
@@ -209,7 +218,7 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'sameEmployeeActivityId'] = activity_ids[0]          # Start of the visit
 
                 # Overwrite location of the first activity (pick-up at the hospital)
-                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'location'] = f'{construction_config.depot}' #TODO: Legge inn config -> construction_config.depot
+                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'location'] = f'{construction_config.depot}' 
 
                 # Synchronise the two last activities if there are four activities in the visit
                 if group['numActivitiesInVisit'].iloc[0] == 4:
@@ -237,7 +246,7 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'sameEmployeeActivityId'] = activity_ids[-1]         # End of the visit
 
                 # Overwrite location of the last activity (delivery at the hospital)
-                df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'location'] = f'{construction_config.depot}' #TODO: Legge inn config -> construction_config.depot
+                df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'location'] = f'{construction_config.depot}' 
                 
                 # Synchronise the two first activities if there are four activities in the visit
                 if group['numActivitiesInVisit'].iloc[0] == 4:
@@ -299,20 +308,26 @@ def activitiesGenerator(df_visits):
 
         df_activities.loc[group.index, 'duration'] = duration_clipped
         
-    # TODO: Generate earliest and latest start times of activities
-    df_activities['earliestStartTime'] = 0      # Midlertidig løsning
-    df_activities['latestStartTime'] = 1440     # Midlertidig løsning
+    #Generate earliest and latest start times of activities
     for visitId, group in df_activities.groupby('visitId'):
         # Total duration of all activities for a given visitId
-        visit_duration = group['duration'].sum()
+        visit_duration = int(group['duration'].sum())
 
         #Earliest and latest possible starting times within a day
-        earliestStartTimeDay = 0
-        latestStartTimeDay = 1400
+        startDay = 0
+        endDay = 1400
+        latestPossible = 1440 - visit_duration
+        latestStartTime = np.random.randint(visit_duration, latestPossible)
+    
+        if np.random.rand() < 0.6:  # 60% sjanse for å velge et tall innenfor 480 og 960 (08:00-16:00)
+            latestStartTime = np.random.randint(480, min(960, latestPossible))
+        
+        earliestStartTime = np.random.randint(0, latestStartTime-visit_duration)
+                  
 
-        #Alle aktiviteter i samme visit skal ha samme earliest and latest start time
-        #Den samla varigheten (total duration for alle aktiviteter med et og samme visitId) må være mindre eller lik differansen mellom tidligst og senest mulig starttid. 
-        #OG passe på at earliestStartTime < latestStartTime
+        df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] = earliestStartTime
+        df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] = latestStartTime
+
        
     # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
     for activityType, group in df_activities.groupby('activityType'):
@@ -333,10 +348,22 @@ def activitiesGenerator(df_visits):
 
 
 def patientEmployeeContextGenerator(df_patients, df_employees):
-    #Koble ansatte og pasienter sammen
-    #Employee restrictions
-    #Employee history
+    # Employee Restrictions
+    num_restricted_patients = int(len(df_patients) * 0.05)      # 5 % of the patients have a restriction against an employee
+    restricted_patient_indices = np.random.choice(df_patients.index, size=num_restricted_patients, replace=False) # Random patients get employee restrictions
+    
+    for index in restricted_patient_indices:
+        random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
+        df_patients.at[index, 'employeeRestrictions'] = random_employee_id
+
+    #TODO: Employee history
+        
+    # Overwrite old csv file
+    file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
+    df_patients.to_csv(file_path, index=False)
+    
     return df_patients
+
 
 def autofillPatient(df_patients, df_treatments):
     #Treatment IDs
@@ -373,10 +400,12 @@ def autofillVisit(df_visits, df_activities):
 
 
 #TESTING
-df_patients = patientGenerator()
+df_employees = employeeGenerator.employeeGenerator()
+df_patients = patientGenerator(df_employees)
 df_treatments = treatmentGenerator(df_patients)
 df_visits = visitsGenerator(df_treatments)
 df_activities = activitiesGenerator(df_visits)
 df_patients_filled = autofillPatient(df_patients, df_treatments)
 df_treatments_filled = autofillTreatment(df_treatments, df_visits)
 df_visits_filled = autofillVisit(df_visits, df_activities)
+

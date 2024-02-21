@@ -5,7 +5,6 @@ import numpy as np
 import random 
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-print('FILSTI',os.path.join(os.path.split(__file__)[0],'..'))
 from config import construction_config
 
 def assign_shifts(employees):
@@ -14,7 +13,7 @@ def assign_shifts(employees):
     skill_2=[i for i,e in enumerate(employees) if e[1]==2]
     skill_3=[i for i,e in enumerate(employees) if e[1]==3]
 
-    print(len(skill_1),len(skill_1),len(skill_1))
+    #print(len(skill_1),len(skill_1),len(skill_1))
 
     #put all skill 1 to day-shift
     for index in skill_1:
@@ -60,8 +59,8 @@ def assign_shifts(employees):
         day=[e for e in employees if e[2][0]==2]
         evening=[e for e in employees if e[2][0]==3]
 
-        print(n_night,n_day,n_evening)
-        print(len(night),len(day),len(evening))
+        #print(n_night,n_day,n_evening)
+        #print(len(night),len(day),len(evening))
 
 #TESTING
 #employees=[[i+1,random.randint(1,3),[]] for i in range(100)]  #generate employes with id, skill end empty shift list [[id,skill,[]],...]
