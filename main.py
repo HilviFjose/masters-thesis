@@ -76,12 +76,11 @@ def main():
     - Lage en funksjon for objektivvurdering som kan brukes i simulated annealing (Lag den som en global funksjon)
 
     Guro:
-    - Tidsvinduer i data generation
-    - Lokasjoner i data generation
-    - Fikse slik at kolonnene stemmer overens med Agnes sitt oppsett
+    - FERDIG: Tidsvinduer i data generation 
+    - FERDIG: Lokasjoner i data generation
+    - ISH FERDIG, SE PÅ SAMMEN: Fikse slik at kolonnene stemmer overens med Agnes sitt oppsett
     - Adaptive weights
     - Se på konstruksjonsheuristikken
-
 
     Hilvi: 
     - Begynne smått på operator-filen
