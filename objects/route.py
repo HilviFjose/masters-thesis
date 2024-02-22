@@ -21,7 +21,9 @@ class Route:
         self.aggSkillDiff = 0 
 
 
-    def addActivity(self, activity):
+    def addActivity(self, activity_in):
+        activity = copy.deepcopy(activity_in)
+        activity.restartActivity()
         '''
         Funkjsonenen sjekker først om aktivitetnen oppfyller krav for å være i ruten
         Funkjsonen itererer vi over alle mellomrom mellom aktivitene som ligger i ruten. 
@@ -151,14 +153,94 @@ class Route:
         travel_time += math.ceil(T_ij[i][0])
         return  aggregated_skilldiff, travel_time
     
-    def removeActivity(self, activity):
+    def removeActivity(self, activityID):
         index = 0 
         for act in self.route: 
-            if act.getID() == activity.getID(): 
+            if act.getID() == activityID: 
                 self.route = np.delete(self.route, index)
                 return 
             index += 1 
-        print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
+        #print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
         return
-       
     
+    def insertOnIndex(self, activity_old, index):
+        activity = copy.deepcopy(activity_old)
+
+        if len(self.route) == 0: 
+            return self.insertToEmptyList( activity)
+            
+        if index == 0: 
+            i_id = 0
+            S_i = self.start_time
+            D_i = 0
+            T_ia = T_ij[0][activity.getID()]
+        else:
+            i = self.route[index - 1]
+            i_id = i.getID()
+            S_i = i.startTime
+            D_i = i.duration
+            T_ia = T_ij[i_id][activity.getID()]
+        if index == len(self.route): 
+            j_id = 0
+            S_j = self.end_time
+        else:
+            j = self.route[index]
+            j_id = j.getID()
+            S_j = j.startTime
+
+        if S_i + D_i + T_ia <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
+            #og aktivitetens starttid + aktivitetens varighet og reiseveien fra a til j er mindre enn starttidspunktet for j 
+            max(activity.getEarliestStartTime(), activity.newEeariestStartTime) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j_id]) <= S_j): 
+            #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å være earliest startime 
+            activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
+            self.route = np.insert(self.route, index, activity)
+            return True
+        
+        #Dersom latest start time er større enn starttiden + varigheten + reiseveien fra i til a 
+        if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= S_i + D_i + T_ia and (
+            #og starttiden + varigheten + reiseveien fra i til a  er større enn earliest starttime
+            S_i + D_i + T_ia >= max(activity.getEarliestStartTime(), activity.newEeariestStartTime)) and  (
+            #og aktivitetens starttid + aktivitetens varighet og reiseveien fra a til j er mindre enn starttidspunktet for j 
+            S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][j_id]) <= S_j): 
+            #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å startiden til i + varigheten til i + reiseveien fra i til a 
+            activity.setStartTime(S_i + D_i + math.ceil(T_ia))
+            self.route = np.insert(self.route, index, activity)
+            return True
+        return False 
+    
+
+    def insertToEmptyList(self, activity): 
+        if self.start_time + T_ij[0][activity.id] <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
+            #og aktivitetens starttid + aktivitetens varighet og reiseveien fra a til j er mindre enn starttidspunktet for j 
+            max(activity.getEarliestStartTime(), activity.newEeariestStartTime) + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
+            #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å være earliest startime 
+            activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
+            self.route = np.insert(self.route, 0, activity)
+            return True
+        
+        #Dersom latest start time er større enn starttiden + varigheten + reiseveien fra i til a 
+        if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= self.start_time + T_ij[0][activity.id] and (
+            #og starttiden + varigheten + reiseveien fra i til a  er større enn earliest starttime
+            self.start_time + T_ij[0][activity.id] >= max(activity.getEarliestStartTime(), activity.newEeariestStartTime)) and  (
+            #og aktivitetens starttid + aktivitetens varighet og reiseveien fra a til j er mindre enn starttidspunktet for j 
+            self.start_time + T_ij[0][activity.id] + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
+            #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å startiden til i + varigheten til i + reiseveien fra i til a 
+            activity.setStartTime(self.start_time + math.ceil(T_ij[0][activity.id]))
+            self.route = np.insert(self.route, 0, activity)
+            return True
+        return False 
+    
+    def getActivity(self, actID): 
+        '''
+        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
+        
+        Arg: 
+        actID (int): ID til en aktivitet som gjøres en gitt dag
+        day (int): dagen aktiviten finnes i en rute  
+
+        Return: 
+        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
+        '''
+        for act in self.route: 
+            if act.getID() == actID: 
+                return act        

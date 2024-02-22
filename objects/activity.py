@@ -15,7 +15,9 @@ class Activity:
         self.pickUpActivityID = int(df.loc[id]["sameEmployeeActivityID"])
         self.location = df.loc[id]["location"]
         self.employeeRestricions = self.makeEmployeeRestriction(df.loc[id]["employeeRestriction"].replace("(", "").replace(")", ""))
-        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["presedence"])
+        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevpresedence"])
+        #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
+        self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextpresedence"])
         self.startTime = None
         self.newLatestStartTime = 1440
         self.newEeariestStartTime = 0

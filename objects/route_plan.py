@@ -141,10 +141,10 @@ class RoutePlan:
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         for route in self.routes[day]: 
             if route.employee.getID() == employee:
-                route.removeActivity(activity)
+                route.removeActivity(activity.getID())
 
 
-    def insertAcitivyInEmployeesRoute(self, employee, activity, day): 
+    def insertActivityInEmployeesRoute(self, employee, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
         insert_activity.restartActivity()
@@ -154,3 +154,12 @@ class RoutePlan:
                 return route.addActivity(activity)
        
         
+    def getObjective(self): 
+        return self.objective
+    
+    def swithRoute(self, route, day): 
+        #Det er viktig at route objektet ikke er det samme som org_route
+        for org_route in self.routes[day]: 
+            if org_route.employee.id == route.employee.id: 
+                self.routes[day].remove(org_route)
+                self.routes[day].append(route)
