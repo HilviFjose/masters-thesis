@@ -175,7 +175,7 @@ def visitsGenerator(df_treatments):
 
 def activitiesGenerator(df_visits):
     df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 
-                                          'duration', 'synchronisation', 'skillRequirement', 'precedence', 
+                                          'duration', 'synchronisation', 'skillRequirement', 'nextPrece', 'prevPrece', 
                                           'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location'])
 
     # Generate rows for each activity with the visitId, treatmentId and patientId
@@ -210,8 +210,10 @@ def activitiesGenerator(df_visits):
                 mu = (construction_config.pd_min + construction_config.pd_max) / 2
                 sigma = (construction_config.pd_max - construction_config.pd_min) / 6
                 pd_time = int(np.random.normal(mu, sigma))
-                df_activities.loc[df_activities['activityId'] == activity_ids[1], 'precedence'] = activity_ids[0]
-                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'precedence'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]
+                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = activity_ids[-1]
+                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time}"
                 
                 # Same Employee Requirement for pick-up and delivery activities
                 df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]          # Start of the visit
@@ -238,8 +240,10 @@ def activitiesGenerator(df_visits):
                 mu = (construction_config.pd_min + construction_config.pd_max) / 2
                 sigma = (construction_config.pd_max - construction_config.pd_min) / 6
                 pd_time = int(np.random.normal(mu, sigma))
-                df_activities.loc[df_activities['activityId'] == activity_ids[1], 'precedence'] = activity_ids[0]
-                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'precedence'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]
+                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = activity_ids[-1]
+                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time}"
 
                 # Same Employee Requirement for pick-up and delivery activities
                 df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'sameEmployeeActivityId'] = activity_ids[-2]         # End of the visit
@@ -269,11 +273,15 @@ def activitiesGenerator(df_visits):
             sigma = (construction_config.pd_max - construction_config.pd_min) / 6
             pd_time1 = int(np.random.normal(mu, sigma))
             pd_time2 = int(np.random.normal(mu, sigma))
-            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'precedence'] = activity_ids[0]                                           # Pick-up and delivery at the start
-            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'precedence'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
-            df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'precedence'] = activity_ids[-3]                                         # Pick-up and delivery at the end
-            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'precedence'] = f"{activity_ids[-2]}, {activity_ids[-3]}: {pd_time2}"    # Pick-up and delivery at the end
-            
+            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]                                           # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'prevPrece'] = activity_ids[-3]                                         # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'prevPrece'] = f"{activity_ids[-2]}, {activity_ids[-3]}: {pd_time2}"    # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'nextPrece'] = activity_ids[2]                                           # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[1]}, {activity_ids[2]}: {pd_time1}"       # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = activity_ids[-1]                                         # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-3], 'nextPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time2}"    # Pick-up and delivery at the end
+
             # Same Employee Requirement for åick-up and delivery activities 
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]      # The two first activities 
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'sameEmployeeActivityId'] = activity_ids[0]
