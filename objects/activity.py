@@ -10,12 +10,12 @@ class Activity:
         self.id = id 
         self.latestStartTime = df.loc[id]["latestStartTime"]
         self.earliestStartTime = df.loc[id]["earliestStartTime"]
-        self.duration = df.loc[id]["activityDuration"]
+        self.duration = df.loc[id]["duration"]
         self.skillReq = df.loc[id]["skillRequirement"]
-        self.pickUpActivityID = int(df.loc[id]["sameEmployeeActivityID"])
+        self.pickUpActivityID = df.loc[id]["sameEmployeeActivityId"]
         self.location = df.loc[id]["location"]
-        self.employeeRestricions = self.makeEmployeeRestriction(df.loc[id]["employeeRestriction"].replace("(", "").replace(")", ""))
-        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["presedence"])
+        self.employeeRestricions = df.loc[id]["employeeRestriction"]
+        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevPrece"])
         self.startTime = None
         self.newLatestStartTime = 1440
         self.newEeariestStartTime = 0
@@ -24,7 +24,7 @@ class Activity:
 
     #make funskjonene setter parameterne til Acitivy objektet 
     
-    def makeEmployeeRestriction(self, string): 
+    def makeEmployeeRestriction(self, string): #Tror denne nå kan slettes - Guro
         if "," in string: 
             return string.split(",")
         try:
@@ -32,14 +32,12 @@ class Activity:
         except: 
             return [] 
         
-
+    '''
     def makePresNodes(self, string): 
-        '''
-        Får inn dataen fra dataframen og returnerer to lister med presedens informasjonen 
-        '''
+        #Får inn dataen fra dataframen og returnerer to lister med presedens informasjonen 
         PrevNode = []
         PrevNodeInTime = []
-        if "(" in string: 
+        if not string: 
             return PrevNode, PrevNodeInTime
         strList = string.split(",")
         for elem in strList: 
@@ -48,7 +46,35 @@ class Activity:
             else: 
                 PrevNode.append(int(elem))
         return PrevNode, PrevNodeInTime
+    '''
     
+    def makePresNodes(self, input_data): #TODO: AGNES: Ny funksjon her til fordel for den over. Stemmer det at det er dette det den skal gjøre, Agnes?
+        '''
+        Receives data from the dataframe and returns two lists with the precedence information.
+        This version can handle both strings and individual numbers.
+        '''
+        PrevNode = []
+        PrevNodeInTime = []
+        
+        # If input_data is directly an integer, process it accordingly
+        if isinstance(input_data, int):
+            PrevNode.append(input_data)
+            return PrevNode, PrevNodeInTime
+        
+        # If input_data is a string, proceed with the original logic
+        elif isinstance(input_data, str) and input_data:
+            strList = input_data.split(",")
+            for elem in strList:
+                if ":" in elem:
+                    PrevNodeInTime.append(tuple(int(part.strip()) for part in elem.split(":")))
+                else:
+                    PrevNode.append(int(elem))
+            return PrevNode, PrevNodeInTime
+        
+        # If input_data is neither an int nor a non-empty string, return empty lists
+        else:
+            return PrevNode, PrevNodeInTime
+
     #get funksjonene henter ut Acitivy variablene og parameterne 
     def getSkillreq(self): 
         return self.skillReq

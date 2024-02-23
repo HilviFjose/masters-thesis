@@ -21,7 +21,8 @@ class PatientInsertor:
         self.patients_df = patients_df
 
         #Liste over treatments som pasienten skal gjennomgå
-        self.treatments = self.string_or_number_to_int_list(patients_df["treatment"])
+        #self.treatments = self.string_or_number_to_int_list(patients_df["treatmentsIds"])
+        self.treatments = self.patients_df["treatmentsIds"]
         #Dette er en parameter som settes for å bytte på hvilken vei det iteres over patterns. 
         #TODO: Burde heller gjøres ved å iterere tilfeldig over rekkefølgen på patterns
         self.rev = False
@@ -38,8 +39,9 @@ class PatientInsertor:
         for treatment in self.treatments: 
             treatStatus = False
             #Henter ut alle visits knyttet til behandlingen og legger de i en visitList
-            stringVisits = self.treatment_df.loc[treatment, 'visit']
-            visitList = self.string_or_number_to_int_list(stringVisits)
+            #stringVisit = self.treatment_df.loc[treatment, 'visitsIds']
+            #visitList = self.string_or_number_to_int_list(stringVisit)
+            visitList = self.treatment_df.loc[treatment, 'visitsIds']
             
             #Oppretter en kopi av ruteplanen uten pasienten  
             old_route_plan = copy.deepcopy(self.route_plan)
@@ -47,10 +49,10 @@ class PatientInsertor:
             
             #Reverserer listen annen hver gang for å ikke alltid begynne med pattern på starten av uken
             if self.rev == True:
-                patterns =  reversed(pattern[self.treatment_df.loc[treatment, 'pattern']])
+                patterns =  reversed(pattern[self.treatment_df.loc[treatment, 'patternType']])
                 self.rev = False
             else: 
-                patterns = pattern[self.treatment_df.loc[treatment, 'pattern']]
+                patterns = pattern[self.treatment_df.loc[treatment, 'patternType']]
                 self.rev = True
             
             #Iterer over alle patterns som er mulige for denne treatmenten
@@ -113,11 +115,12 @@ class PatientInsertor:
         '''
 
         #Henter ut liste med aktiviteter som inngår i vistet 
-        stringActivities = self.visit_df.loc[visit, 'nodes']
-        activitesList = self.string_or_number_to_int_list(stringActivities)
-        
+        #stringActivities = self.visit_df.loc[visit, 'activitiesIds']
+        #activitesList = self.string_or_number_to_int_list(stringActivities)
+        activitiesList = self.visit_df.loc[visit, 'activitiesIds']
+
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
-        for activityID in activitesList: 
+        for activityID in activitiesList: 
             #Oppreter et aktivitesobjekt basert på ID-en 
             activity = Activity(self.activites_df, activityID)
             

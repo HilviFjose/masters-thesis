@@ -1,10 +1,13 @@
 import pandas as pd
+import numpy.random as rnd
+
 from heuristic.construction.construction import ConstructionHeuristic
 from config.main_config import *
 from heuristic.improvement.simulated_annealing import SimulatedAnnealing
 from heuristic.improvement.alns import ALNS
 from heuristic.improvement.operator.operators import Operators
-import numpy.random as rnd
+from datageneration.employeeGenerator import *
+from datageneration.patientGenerator import *
 
 def main():
     constructor = None
@@ -15,14 +18,23 @@ def main():
     #Input
     #TODO: Finne ut hva som skjer i datahåndteringen over. Hvordan lages dataframene, og hvordan bruks config filene
     
-    df_activities  = pd.read_csv("data/NodesNY.csv").set_index(["id"]) 
-    df_employees = pd.read_csv("data/EmployeesNY.csv").set_index(["EmployeeID"])
-    df_patients = pd.read_csv("data/Patients.csv").set_index(["patient"])
-    df_treatments = pd.read_csv("data/Treatment.csv").set_index(["treatment"])
-    df_visits = pd.read_csv("data/Visit.csv").set_index(["visit"])
+    df_employees = employeeGenerator.employeeGenerator()
+    df_patients = patientGenerator(df_employees)
+    df_treatments = treatmentGenerator(df_patients)
+    df_visits = visitsGenerator(df_treatments)
+    df_activities = activitiesGenerator(df_visits)
+    df_patients_filled = autofillPatient(df_patients, df_treatments)
+    df_treatments_filled = autofillTreatment(df_treatments, df_visits)
+    df_visits_filled = autofillVisit(df_visits, df_activities)
+
+    #df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
+    #df_employees = pd.read_csv("data/test/EmployeesNY.csv").set_index(["employeeId"])
+    #df_patients = pd.read_csv("data/test/PatientsNY.csv").set_index(["patientId"])
+    #df_treatments = pd.read_csv("data/test/TreatmentsNY.csv").set_index(["treatmentId"])
+    #df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
 
     #Her lages en kontruksjonsheuristikk. Våre requests vil være pasienter, og vi går gjennom alle.
-    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
+    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients_filled, df_treatments_filled, df_visits_filled, 5)
     print("Constructing Inital Solution")
     constructor.construct_initial()
     
@@ -35,6 +47,7 @@ def main():
     initial_route_plan = constructor.route_plan 
     initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
+    """
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
     
@@ -56,7 +69,7 @@ def main():
             current_route_plan, current_infeasible_set)
     
     #LOCAL SEARCH
-
+    """
 
     '''
     #TODO

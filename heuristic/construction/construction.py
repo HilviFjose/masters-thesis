@@ -38,7 +38,7 @@ class ConstructionHeuristic:
         '''
 
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by="aggSuit", ascending=False)
+        unassigned_patients = self.patients_df.sort_values(by="aggUtility", ascending=False)
         
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
@@ -58,10 +58,10 @@ class ConstructionHeuristic:
                 #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                 self.route_plan = patientInsertor.route_plan
                 #Objektivverdien oppdateres
-                self.current_objective += patient_request["aggSuit"]
+                self.current_objective += patient_request["aggUtility"]
                 #Pasienten legges til i hjemmsykehusets liste med pasienter
                 self.listOfPatients.append(patient)
-                self.route_plan.objective[0] += patient_request["aggSuit"]
+                self.route_plan.objective[0] += patient_request["aggUtility"]
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
             if state == False: 

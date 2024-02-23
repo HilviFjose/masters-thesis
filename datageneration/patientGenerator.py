@@ -48,7 +48,7 @@ def locationGenerator(locations, radius_km, num_points):
     return points
 
 def patientGenerator(df_employees):
-    df_patients = pd.DataFrame(columns=['patientId', 'nTreatments', 'utility','employeeRestrictions', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
+    df_patients = pd.DataFrame(columns=['patientId', 'nTreatments', 'utility','employeeRestriction', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
      
     patientId = []
     nTreatments = []
@@ -88,7 +88,7 @@ def patientGenerator(df_employees):
     
     for index in restricted_patient_indices:
         random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
-        df_patients.at[index, 'employeeRestrictions'] = random_employee_id
+        df_patients.at[index, 'employeeRestriction'] = random_employee_id
 
     # Employee history  TODO: Må potensielt oppdatere format på dette
     num_history_patients = int(len(df_patients) * 0.9)          # 90 % of the patients have a treatment history with some employees
@@ -117,6 +117,7 @@ def treatmentGenerator(df_patients):
     df_treatments['patientId'] = expanded_rows['patientId']
     df_treatments['patternType'] = patternType
     df_treatments['location'] = expanded_rows['location']
+    df_treatments['employeeRestriction'] = expanded_rows['employeeRestriction']
 
     for index, row in df_treatments.iterrows():
         #Fill rows with possible patterns
@@ -155,6 +156,7 @@ def visitsGenerator(df_treatments):
     df_visits['treatmentId'] = expanded_rows['treatmentId']
     df_visits['patientId'] = expanded_rows['patientId']
     df_visits['location'] = expanded_rows['location']
+    df_visits['employeeRestriction'] = expanded_rows['employeeRestriction']
 
     # Distribution of number of activities per visit
     A_numMax = construction_config.maxActivitiesPerVisit                        # Max number of activities per visit
@@ -188,6 +190,7 @@ def activitiesGenerator(df_visits):
     df_activities['patientId'] = expanded_rows['patientId']
     df_activities['numActivitiesInVisit'] = expanded_rows['activities']
     df_activities['location'] = expanded_rows['location']
+    df_activities['employeeRestriction'] = expanded_rows['employeeRestriction']
            
     # Distribute activities between healthcare activities 'H' and equipment activities 'E'
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital
@@ -362,7 +365,7 @@ def patientEmployeeContextGenerator(df_patients, df_employees):
     
     for index in restricted_patient_indices:
         random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
-        df_patients.at[index, 'employeeRestrictions'] = random_employee_id
+        df_patients.at[index, 'employeeRestriction'] = random_employee_id
 
     #TODO: Employee history
         
@@ -375,7 +378,7 @@ def patientEmployeeContextGenerator(df_patients, df_employees):
 
 def autofillPatient(df_patients, df_treatments):
     #Treatment IDs
-    treatments_grouped = df_treatments.groupby('patientId')['treatmentId'].apply(list).reset_index(name='treatmentIds')
+    treatments_grouped = df_treatments.groupby('patientId')['treatmentId'].apply(list).reset_index(name='treatmentsIds')
 
     # Beregner summen av 'visits' for hver 'patientID' i df_treatments
     visits_sum = df_treatments.groupby('patientId')['visits'].sum().reset_index(name='nVisits')

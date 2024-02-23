@@ -70,7 +70,7 @@ def assign_shifts(employees):
 #print(employees)
 
 def employeeGenerator():
-    df_employees = pd.DataFrame(columns=['employeeId', 'professionLevel', 'schedule'])
+    df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'schedule'])
 
     profession_levels = np.random.choice(construction_config.professionLevels, 
                                          construction_config.E_num, 
@@ -86,7 +86,7 @@ def employeeGenerator():
         schedule = []
         df_employees = df_employees._append({
             'employeeId': e[0],
-            'professionLevel': e[1],
+            'professionalLevel': e[1],
             'schedule': e[2]
         },ignore_index=True)
     
@@ -95,4 +95,4 @@ def employeeGenerator():
     
     return df_employees
 
-employeeGenerator()
+#employeeGenerator()
