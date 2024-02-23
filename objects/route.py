@@ -23,7 +23,8 @@ class Route:
 
     def addActivity(self, activity_in):
         activity = copy.deepcopy(activity_in)
-        activity.restartActivity()
+        #Kan ikke restarte den her når den muligens skal legges inn basert på infoen før 
+        #activity.restartActivity()
         '''
         Funkjsonenen sjekker først om aktivitetnen oppfyller krav for å være i ruten
         Funkjsonen itererer vi over alle mellomrom mellom aktivitene som ligger i ruten. 
@@ -35,7 +36,9 @@ class Route:
         Return: 
         True/False på om aktiviteten er blitt lagt til i ruten 
         '''
-        #Sjekker om ruten oppfyller aktivitetens krav til employee restriction og skillevel 
+      
+
+
         if  self.employee.getID() in activity.getEmployeeRestriction() or (
             self.employee.getID() in activity.employeeNotAllowedDueToPickUpDelivery) or (
                 activity.getSkillreq() > self.skillLev): 
@@ -139,7 +142,7 @@ class Route:
             print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
         print("---------------------")
 
-
+    #TODO: Denne fungerer ikke nå for skill d
     #Dette er alternativ måte å regne ut objektivet. Slik at ikke alt ligger i routeplan 
     def updateObjective(self): 
         i = 0 
@@ -151,7 +154,8 @@ class Route:
             i = j 
             aggregated_skilldiff += self.employee.getSkillLevel() - act.getSkillreq()
         travel_time += math.ceil(T_ij[i][0])
-        return  aggregated_skilldiff, travel_time
+        self.aggSkillDiff= aggregated_skilldiff
+        self.travel_time = travel_time
     
     def removeActivity(self, activityID):
         index = 0 

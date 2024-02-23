@@ -133,9 +133,9 @@ class RoutePlan:
         objective = [self.objective[0], 0, 0, 0, 0]
         for day in range(1, 1+self.days): 
             for route in self.routes[day]: 
-                obj_34_tupl = route.updateObjective()
-                objective[3] += obj_34_tupl[0]
-                objective[4] += obj_34_tupl[1]
+                route.updateObjective()
+                objective[3] += route.aggSkillDiff 
+                objective[4] += route.travel_time
         self.objective = objective
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
@@ -163,3 +163,29 @@ class RoutePlan:
             if org_route.employee.id == route.employee.id: 
                 self.routes[day].remove(org_route)
                 self.routes[day].append(route)
+
+    def updateAcitivyBasedOnRoutePlanOnDay(self, activity,day):
+        #Her håndteres pick up and delivery
+        #PickUpAcitivy er aktiviteten som tilsvarer pick up noded dersom denne aktiviteten er delivery
+        if activity.getPickUpActivityID() != 0 and activity.getPickUpActivityID() < activity.id: 
+            #Henter ut den ansatte som skal gjennomføre PickUp aktiviteten 
+            employeeAllocatedToAcitivy = self.getEmployeeAllocatedForActivity(activity.getPickUpActivityID(), day)
+            #Henter ut de ansatte som jobber den gitte dagen og ikke er allokert til å utføre pickup aktiviten 
+            otherEmplOnDay = self.getOtherEmplOnDay(employeeAllocatedToAcitivy, day)
+            #Legger til de ansatte som ikke allokert til å gjøre pick up noden til delivery aktivteten employee restictions
+            #TODO: Se hvor otherEmplOnDay blir av i 
+            
+
+        #Her håndteres presedens.   
+        #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
+        for prevNode in activity.getPrevNode(): 
+            prevNodeAct = self.route_plan.getActivity(prevNode, day)
+            activity.setNewEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
+
+        #Her håndteres presedens med tidsvindu
+        #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
+        for PrevNodeInTime in activity.getPrevNodeInTime(): 
+            prevNodeAct = self.route_plan.getActivity(PrevNodeInTime[0], day)
+            activity.setNewLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTime[1])
+            #TODO: Noe galt med denne funksjonen 
+        

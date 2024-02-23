@@ -22,17 +22,18 @@ class LocalSearch:
     def do_local_search(self):
         #TODO: Finne ut om det er noe teori på hva som burd være først 
         candidate = self.candidate
-        #for day in range(1, self.candidate.days + 1):
-         #   candidate = self.change_employee(candidate,day)
-        #for day in range(1, self.candidate.days + 1):
-        #    candidate = self.change_employee(candidate,day)
-        print("iiiiiiiiiiiiiiiii")
+        for day in range(1, self.candidate.days + 1):
+           candidate = self.change_employee(candidate,day)
+        for day in range(1, self.candidate.days + 1):
+            candidate = self.change_employee(candidate,day)
+        print("NY LØSNING ETTER FØRSTE LOKALSØK")
         candidate.printSolution()
+        candidate.updateObjective()
+        print("Objective", candidate.objective)
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
-                new_route = self.swap_activities_in_route(route)
-                print("ooooooooooooooooooooooo")
-                candidate.printSolution()
+                #Denne returnerer ikkke riktig nye ruteplan
+                new_route = self.swap_activities_in_route(copy.deepcopy(route))
                 candidate = self.switchRoute(candidate, new_route, day)
         candidate.updateObjective()
         return candidate
@@ -40,8 +41,12 @@ class LocalSearch:
     def switchRoute(self, candidate, new_route,  day):
         for org_route in candidate.routes[day]: 
             if org_route.employee.id == new_route.employee.id: 
+               
                 candidate.routes[day].remove(org_route)
+                
                 candidate.routes[day].append(new_route)
+               
+        return candidate
     '''
     Hva er forskjellen på denne og den over.
     Der sender vi inn candidaten, også blir den 
@@ -50,19 +55,18 @@ class LocalSearch:
     '''
     
     def swap_activities_in_route(self, route):
-        '''
-       71 og 43 har akkurat samme tidsvinduer og vil derfor være et mulig swap, hvorfor kommer vi oss ikke ned til dem 
-
-       '''
-        
-        best_travel_time = route.updateObjective()[1]
+        #TODO: Legge inn sånn at den oppdaterer tidsvinduverdiene basert på hvor de andre ligger
+        #Lager ikke gyldige løsninger nå 
+       
+        route.updateObjective()
+        best_travel_time = route.travel_time
+        old_objective = best_travel_time
         best_found_route = route
     
-        print("Det gamle objektivet ", best_travel_time)
-
+        #Den fungerer nå for de uten presedens. Sjekke med
         for activity1 in route.route:
             for activity2 in route.route: 
-                if activity1.id <= activity2.id: 
+                if activity1.id >= activity2.id: 
                     continue
                 #TODO: Jeg forstår ikke hvorfor denne printen kommer to ganger. Finne ut  
                 #print("Prøver å bytte aktivitet", activity1.id, activity2.id, "DAY", route.day, "emp", route.employee.id)
@@ -87,9 +91,6 @@ class LocalSearch:
                         index_act2 = index_count
                     index_count += 1
 
-                if activity1.id == 71 and  activity2.id == 43: 
-                    print("Ser på aktivitet 43 og 71")
-                    print("indexene", index_act1, index_act2)
             
                 '''
                 Må sortere de, den som skal settes inn på den laveste indeksen kan settes inn på indeksen
@@ -97,48 +98,65 @@ class LocalSearch:
                 Deretter plasseres den andre, men dersom den skal settes inn bakerst i listen så må den bare appendes
 
                 '''
+
+                 
                 new_route.removeActivity(activity1.getID())
                 new_route.removeActivity(activity2.getID())
                 
+                activity1_new = copy.deepcopy(activity1)
+                activity2_new = copy.deepcopy(activity2)
 
-                if index_act1 < index_act2: 
-                    status = new_route.insertOnIndex(activity2, index_act1)
+                if index_act1 < index_act2:
+                    if activity1_new.id == 44 and activity2_new.id == 47: 
+                        print("kommerhit 0- feil") 
+                    status = new_route.insertOnIndex(activity2_new, index_act1)
                     if status == False: 
                         continue
 
-                    status = new_route.insertOnIndex(activity1, index_act2)
+                    status = new_route.insertOnIndex(activity1_new, index_act2)
                     if status == False: 
                         continue
                 
                 else: 
-                    status = new_route.insertOnIndex(activity1, index_act2)
+                    if activity1_new.id == 44 and activity2_new.id == 74: 
+                        print("kommerhit 0")
+                    status = new_route.insertOnIndex(activity1_new, index_act2)
                     if status == False: 
                         continue
+                    if activity1_new.id == 44 and activity2_new.id == 74: 
+                        print("kommerhit 1")
 
-                    status = new_route.insertOnIndex( activity2, index_act1)
+                    status = new_route.insertOnIndex( activity2_new, index_act1)
                     if status == False: 
                         continue
+                    if activity1_new.id == 44 and activity2_new.id == 74: 
+                        print("kommerhit 2")
          
                 
                 
-             
-            
                 
-                print("kommer noen ned hit2 på aktivitet", activity1.id, activity2.id)
+                if activity1_new.id == 44 and activity2_new.id == 74: 
+                    print("NextDependentActivityList", NextDependentActivityList)
                 for nextAct in NextDependentActivityList: 
                     status = new_route.addActivity(new_route.getActivity(nextAct))
                     if status == False: 
                         continue
-                print("kommer noen ned hit3 på aktivitet", activity1.id, activity2.id)
+                if activity1_new.id == 44 and activity2_new.id == 74: 
+                    print("kommerhit 3")
                 #Status er true hvis vi fikk lagt til alle, og false hvis ikke
-                new_route.printSoultion()
-                new_route.travel_time = new_route.updateObjective()[1]
-                print("Det nye objektivet", new_route.travel_time)
-                print("--------------------")
+                #TODO: Det blir ikke riktgi 
+
+                new_route.updateObjective()
+                if activity1_new.id == 44 and activity2_new.id == 74: 
+                    print("kommerhit 4")
+                    print("changed objective old", old_objective, "new objective", new_route.travel_time)
+                
                 if status == True and new_route.travel_time < best_travel_time:
-                    print("swap is done", activity1.id, activity2.id)
                     best_travel_time = new_route.travel_time
-                    best_found_route = new_route 
+                    best_found_route = copy.deepcopy(new_route) 
+                    print("swap is done", activity1.id, activity2.id)
+                    print("changed objective old", old_objective, "new objective", best_travel_time)
+                    print("--------------------")
         return best_found_route
   
 

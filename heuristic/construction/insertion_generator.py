@@ -121,30 +121,7 @@ class PatientInsertor:
             #Oppreter et aktivitesobjekt basert på ID-en 
             activity = Activity(self.activites_df, activityID)
             
-            #Her håndteres pick up and delivery
-            #PickUpAcitivy er aktiviteten som tilsvarer pick up noded dersom denne aktiviteten er delivery
-            if activity.getPickUpActivityID() != 0 and activity.getPickUpActivityID() < activityID: 
-                #Henter ut den ansatte som skal gjennomføre PickUp aktiviteten 
-                employeeAllocatedToAcitivy = self.route_plan.getEmployeeAllocatedForActivity(activity.getPickUpActivityID(), day)
-                #Henter ut de ansatte som jobber den gitte dagen og ikke er allokert til å utføre pickup aktiviten 
-                otherEmplOnDay = self.route_plan.getOtherEmplOnDay(employeeAllocatedToAcitivy, day)
-                #Legger til de ansatte som ikke allokert til å gjøre pick up noden til delivery aktivteten employee restictions
-                activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
-        
-
-            #Her håndteres presedens.   
-            #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
-            for prevNode in activity.getPrevNode(): 
-                prevNodeAct = self.route_plan.getActivity(prevNode, day)
-                activity.setNewEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
-
-            #Her håndteres presedens med tidsvindu
-            #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
-            for PrevNodeInTime in activity.getPrevNodeInTime(): 
-                prevNodeAct = self.route_plan.getActivity(PrevNodeInTime[0], day)
-                activity.setNewLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTime[1])
-                #TODO: Noe galt med denne funksjonen 
-            
+            self.route_plan.updateAcitivyBasedOnRoutePlanOnDay(activity, day)
             #Prøver å legge til aktivten til ruteplanen på den gitte dagen.
             activityStatus = self.route_plan.addNodeOnDay(activity, day)
             #Dersom aktiviten ikk kan legges til returers False
