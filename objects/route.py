@@ -157,7 +157,7 @@ class Route:
         self.aggSkillDiff= aggregated_skilldiff
         self.travel_time = travel_time
     
-    def removeActivity(self, activityID):
+    def removeActivityID(self, activityID):
         index = 0 
         for act in self.route: 
             if act.getID() == activityID: 

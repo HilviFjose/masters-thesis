@@ -34,24 +34,5 @@ for index, row in df_distance.iterrows():
     T_ij[i][j] = row['0']
 
 
-
     #days er her entall dager, mens employees er en liste over             
-
-print("0 - 74", math.ceil(T_ij[0][74]))
-print("74 - 44", math.ceil(T_ij[74][44]))
-print(" 44 - 4", math.ceil(T_ij[44][4]))
-print("4 - 0", math.ceil(T_ij[4][0]))
-print("sum", str(math.ceil(T_ij[0][74])+math.ceil(T_ij[74][44])+ math.ceil(T_ij[44][4])+math.ceil(T_ij[4][0])))
-
-print("0 - 44", math.ceil(T_ij[0][44]))
-print("44 - 74", math.ceil(T_ij[44][74]))
-print(" 74 - 4", math.ceil(T_ij[74][4]))
-print("4 - 0", math.ceil(T_ij[4][0]))
-print("sum", str(math.ceil(T_ij[0][44])+math.ceil(T_ij[44][74])+ math.ceil(T_ij[74][4])+math.ceil(T_ij[4][0])))
-
-print("0 - 74", math.ceil(T_ij[0][74]))
-print("74 - 4", math.ceil(T_ij[74][4]))
-print(" 4 - 44", math.ceil(T_ij[4][44]))
-print("44 - 0", math.ceil(T_ij[44][0]))
-print("sum", str(math.ceil(T_ij[0][74])+math.ceil(T_ij[74][4])+ math.ceil(T_ij[4][44])+math.ceil(T_ij[44][0])))
 

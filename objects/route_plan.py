@@ -91,11 +91,12 @@ class RoutePlan:
         '''
         for route in self.routes[day]: 
             for act in route.getRoute(): 
-                if act.getID() == activity: 
+                if act.getID() == activity.id: 
                     return route.getEmployee().getID()
     
     #TODO: Denne fungerer ikke nå. Må endre på den sånn at den funker!!
     def getOtherEmplOnDay(self, activityID, day):  
+        #TODO: Ggjøre raskere 
         '''
         Oppdatert: Sender inn aktivitetsID til den aktiviteten som må gjøres på samme dag. 
         Det er en aktivitet, men vi vet ikke om den ligger i lista. 
@@ -110,17 +111,22 @@ class RoutePlan:
         List (Int) employeeID til de ansatte som ikke er empl 
         
         '''
-        otherEmpl = []
+        empForAct = None
         activityIDinRoute = False
+        otherEmpl = []
         for route in self.routes[day]: 
             for act in route.getRoute(): 
                 if act.id == activityID: 
                     activityIDinRoute = True
-                    continue
-            otherEmpl.append(route.getEmployee().getID())
-        if activityIDinRoute == True: 
+                    empForAct = route.employee.id
+        if not activityIDinRoute: 
             return otherEmpl
-        return []
+        for route in self.routes[day]: 
+            if route.employee.id != empForAct: 
+                otherEmpl.append(route.employee.id)
+        return otherEmpl
+        
+        
 
     def getActivity(self, actID, day): 
         '''
@@ -136,7 +142,8 @@ class RoutePlan:
         for route in self.routes[day]: 
             for act in route.getRoute(): 
                 if act.getID() == actID: 
-                    return act        
+                    return act 
+        return None       
 
 
     def updateObjective(self): 
@@ -151,7 +158,7 @@ class RoutePlan:
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         for route in self.routes[day]: 
             if route.employee.getID() == employee:
-                route.removeActivity(activity.getID())
+                route.removeActivityID(activity.getID())
 
 
     def insertActivityInEmployeesRoute(self, employee, activity, day): 
@@ -159,14 +166,10 @@ class RoutePlan:
         insert_activity = copy.deepcopy(activity)
         insert_activity.restartActivity()
         self.updateAcitivyBasedOnRoutePlanOnDay(insert_activity, day)
-        if insert_activity.id == 19: 
-            print(insert_activity.startTime)
-            print(insert_activity.newLatestStartTime)
-            print(insert_activity.newEeariestStartTime )
-        
         for route in self.routes[day]: 
             if route.employee.getID() == employee:
-                return route.addActivity(insert_activity)
+                status = route.addActivity(insert_activity)
+                return status
        
         
     def getObjective(self): 
@@ -199,14 +202,25 @@ class RoutePlan:
 
         #Her håndteres presedens.   
         #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
-        for prevNode in activity.getPrevNode(): 
-            prevNodeAct = self.getActivity(prevNode, day)
-            activity.setNewEarliestStartTime(prevNodeAct.getStartTime()+prevNodeAct.getDuration())
+        for prevNodeID in activity.PrevNode: 
+            prevNodeAct = self.getActivity(prevNodeID, day)
+            if prevNodeAct != None:
+                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration())
 
+        for nextNodeID in activity.NextNode: 
+            nextNodeAct = self.getActivity(nextNodeID, day)
+            if nextNodeAct != None:
+                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration())
+        
         #Her håndteres presedens med tidsvindu
         #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
-        for PrevNodeInTime in activity.getPrevNodeInTime(): 
-            prevNodeAct = self.getActivity(PrevNodeInTime[0], day)
-            activity.setNewLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTime[1])
-            #TODO: Noe galt med denne funksjonen 
-        
+        for PrevNodeInTimeID in activity.PrevNodeInTime: 
+            prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
+            if prevNodeAct != None:
+                activity.setNewLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTimeID[1])
+
+        for NextNodeInTimeID in activity.NextNodeInTime: 
+            nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
+            if nextNodeAct != None:
+                activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1])
+    
