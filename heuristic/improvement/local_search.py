@@ -189,6 +189,17 @@ class LocalSearch:
         return best_found_route
 
     def swap_employee(self, route_plan, day):
+        route_plan.updateObjective()
+        best_objective = route_plan.getObjective()
+        best_found_candidate = route_plan
+
+        #Skal hente alle aktiviter 
+
+
+        for activity1 in route_plan.route:
+            for activity2 in route.route: 
+                if activity1.id >= activity2.id: 
+                    continue
         '''
             Skal iterere over alle parr av aktiviteter som skjer på en gitt dag
             Dersom de ikke er i samme rute skal de forsøkes byttes plass på. 
