@@ -1,10 +1,11 @@
 import pandas as pd 
-
-
-
-
+import os
+import sys
+import math
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 
 df_distance = pd.read_csv('data/Distances.csv')
+
 '''
 dict_distances = df_distance.to_dict(orient='records')
 
@@ -33,6 +34,8 @@ for index, row in df_distance.iterrows():
     T_ij[i][j] = row['0']
 
 
-
     #days er her entall dager, mens employees er en liste over             
 
+T_ij[4][74] = 2
+T_ij[5][68] = 2
+T_ij[63][43] = 0

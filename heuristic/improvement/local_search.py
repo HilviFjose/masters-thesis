@@ -32,7 +32,11 @@ class LocalSearch:
         print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
         candidate.printSolution()
         print("Objective", candidate.objective)
+<<<<<<< HEAD
 
+=======
+        """
+>>>>>>> 3a4a7bc8a56082cc8b1aa3fabc9d468f04a87cf6
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
@@ -51,7 +55,11 @@ class LocalSearch:
         print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
         candidate.printSolution()
         print("Objective", candidate.objective)
+<<<<<<< HEAD
 
+=======
+        """
+>>>>>>> 3a4a7bc8a56082cc8b1aa3fabc9d468f04a87cf6
         return candidate
     
     def switchRoute(self, candidate, new_route,  day):

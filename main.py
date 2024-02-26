@@ -4,8 +4,8 @@ from config.main_config import *
 from heuristic.improvement.simulated_annealing import SimulatedAnnealing
 from heuristic.improvement.alns import ALNS
 from heuristic.improvement.operator.operators import Operators
-
 import numpy.random as rnd
+
 
 def main():
     constructor = None
@@ -27,17 +27,20 @@ def main():
     print("Constructing Inital Solution")
     constructor.construct_initial()
     
-    constructor.route_plan.printSoultion()
-    print("Dette er objektivet", constructor.current_objective)
+    constructor.route_plan.printSolution()
+    constructor.route_plan.updateObjective()
+
+    print("Dette er objektivet", constructor.route_plan.objective)
     print("Hjemmesykehuspasienter ", constructor.listOfPatients)
     print("Ikke allokert ", constructor.unAssignedPatients)
 
-    initial_objective = constructor.current_objective
+    initial_objective = constructor.route_plan.objective
     initial_route_plan = constructor.route_plan 
     initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
+    
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
     alns = ALNS(weights, reaction_factor, initial_route_plan, initial_objective, initial_infeasible_set, criterion,
@@ -49,11 +52,15 @@ def main():
     alns.set_operators(operators)
 
     #RUN ALNS 
-    current_route_plan, current_objective, current_infeasible_set, _ = alns.iterate(
+    current_route_plan, current_objective, current_infeasible_set = alns.iterate(
             iterations)
     
+    print("Oppdatert objektiv etter ALNS ", current_route_plan.objective)
+    
+    '''
     constructor.print_new_objective(
             current_route_plan, current_infeasible_set)
+        '''
     
     #LOCAL SEARCH
 
@@ -72,16 +79,15 @@ def main():
     '''
     #TODO
     Agnes: 
-    - Fikse tidsvindu og employee restriction-kolonne i construction 
+    - Fikse tidsvindu og employee restriction-kolonne i construction - Gjort 
     - Lage en funksjon for objektivvurdering som kan brukes i simulated annealing (Lag den som en global funksjon)
 
     Guro:
-    - Tidsvinduer i data generation
-    - Lokasjoner i data generation
-    - Fikse slik at kolonnene stemmer overens med Agnes sitt oppsett
+    - FERDIG: Tidsvinduer i data generation 
+    - FERDIG: Lokasjoner i data generation
+    - ISH FERDIG, SE PÅ SAMMEN: Fikse slik at kolonnene stemmer overens med Agnes sitt oppsett
     - Adaptive weights
     - Se på konstruksjonsheuristikken
-
 
     Hilvi: 
     - Begynne smått på operator-filen
@@ -92,8 +98,9 @@ def main():
     - Finne noen python-pakker for evaluering av effektiviteten til koden. 
     - Lage parameterfil for inputdata
 
+   
     '''
-    
+
 
 if __name__ == "__main__":
     main()

@@ -15,8 +15,15 @@ class Activity:
         self.pickUpActivityID = int(df.loc[id]["sameEmployeeActivityID"])
         self.location = df.loc[id]["location"]
         self.employeeRestricions = self.makeEmployeeRestriction(df.loc[id]["employeeRestriction"].replace("(", "").replace(")", ""))
-        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["presedence"])
+        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevpresedence"])
+        #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
+        self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextpresedence"])
+        
         self.startTime = None
+        self.newLatestStartTime = 1440
+        self.newEeariestStartTime = 0
+        self.employeeNotAllowedDueToPickUpDelivery = []
+        self.possibleToInsert = True
 
     #make funskjonene setter parameterne til Acitivy objektet 
     
@@ -81,28 +88,35 @@ class Activity:
     
     #set og add funsksjonene oppdatere aktivtetens parametere
 
-    
-    def setLatestStartTime(self, newLatestStartTime): 
-        #latest starttime endres dersom den er lavere enn nåværende latest startime
-        if newLatestStartTime< self.latestStartTime: 
-            self.latestStartTime = newLatestStartTime
-        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if self.earliestStartTime > newLatestStartTime: 
-            self.earliestStartTime = 0
-            self.latestStartTime = 0
-
-    def setEarliestStartTime(self, newEarliestStartTime): 
+    def setNewEarliestStartTime(self, newEarliestStartTime): 
         #earliest starttime endres dersom den er høyere enn nåværende latest startime
-        if newEarliestStartTime > self.earliestStartTime: 
-            self.earliestStartTime = newEarliestStartTime
+        if newEarliestStartTime > self.newEeariestStartTime: 
+            self.newEeariestStartTime = newEarliestStartTime
         #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if newEarliestStartTime > self.latestStartTime: 
-            self.earliestStartTime = 0
-            self.latestStartTime = 0
-    
-    def addEmployeeRes(self, unAllowedEmployees):
-        #legger til unallowed employees i employeerestrictions
-        self.employeeRestricions += unAllowedEmployees
-        
+        if max(self.newEeariestStartTime, self.earliestStartTime) > min(self.latestStartTime, self.newLatestStartTime): 
+            self.possibleToInsert = False
+
+    def setNewLatestStartTime(self, newLatestStartTime): 
+        #latest starttime endres dersom den er lavere enn nåværende latest startime
+        if newLatestStartTime < self.newLatestStartTime: 
+            self.newLatestStartTime = newLatestStartTime
+        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
+        if max(self.newEeariestStartTime, self.earliestStartTime) > min(self.latestStartTime, self.newLatestStartTime): 
+            self.possibleToInsert = False 
+            
 
 
+
+    def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
+        self.employeeNotAllowedDueToPickUpDelivery = list 
+
+    def restartActivity(self): 
+        self.startTime = None
+        self.newLatestStartTime = 1440
+        self.newEeariestStartTime = 0
+        self.employeeNotAllowedDueToPickUpDelivery = []
+        self.possibleToInsert = True
+
+
+act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 70)
+print("pickUpActivityID", act70.pickUpActivityID)
