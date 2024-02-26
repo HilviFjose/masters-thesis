@@ -24,6 +24,16 @@ class LocalSearch:
         candidate = self.candidate
 
         for day in range(1, self.candidate.days + 1):
+           candidate = self.swap_employee(candidate, day)
+        for day in range(1, self.candidate.days + 1):
+            candidate = self.swap_employee(candidate,day)
+        candidate.updateObjective()
+        print("NY LØSNING ETTER SWAP EMPLOYEE LOKALSØK")
+        candidate.printSolution()
+        print("Objective", candidate.objective)
+
+        """
+        for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 #Denne returnerer ikkke riktig nye ruteplan
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
@@ -32,7 +42,7 @@ class LocalSearch:
         print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
         candidate.printSolution()
         print("Objective", candidate.objective)
-        """
+       
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
@@ -193,13 +203,50 @@ class LocalSearch:
         best_objective = route_plan.getObjective()
         best_found_candidate = route_plan
 
-        #Skal hente alle aktiviter 
+        #TODO: Nå fungerer ikke swap employee på de som har sameEmployee. Skal vi legge tilfunskjonalitet for det? 
 
+        #Skal aktivitetene plasseres på hverandres plass i listen? 
+        #Eller skal de bare bytte ansatt som er allokert til aktiviteten <-- Prøver på denne 
 
-        for activity1 in route_plan.route:
-            for activity2 in route.route: 
-                if activity1.id >= activity2.id: 
+        #Skal hente alle parr av aktiviteter. Så må hente ut alle parr av ruter først
+        for route1 in route_plan.routes[day]: 
+            for route2 in route_plan.routes[day]: 
+                if route1.employee.id >= route2.employee.id: 
                     continue
+                for activity1 in route1.route: 
+                    for activity2 in route2.route: 
+                        
+                        print("prøver å swappe ", activity1.id, activity2.id)
+
+                        new_candidate = copy.deepcopy(route_plan) 
+                        #Denne funksjonen kunne vært gjort på rutenivå
+                        new_candidate.removeActivityFromEmployeeOnDay(route1.employee, activity1, day)
+                        new_candidate.removeActivityFromEmployeeOnDay(route2.employee, activity2, day)
+                        
+                        status = new_candidate.insertActivityInEmployeesRoute(route2.employee.id, activity1, day)
+                        if status == False: 
+                            continue 
+                    
+
+                        status = new_candidate.insertActivityInEmployeesRoute(route1.employee.id, activity2, day)
+                        if status == False: 
+                            continue 
+
+                        
+
+                        new_candidate.updateObjective()
+                        
+                        if checkCandidateBetterThanCurrent( new_candidate.objective, best_objective ):
+                            best_objective = new_candidate.objective
+                            best_found_candidate = new_candidate 
+        return best_found_candidate
+
+                        #Nå har vi hentet ut to aktivteter som vi vil bytte plass på
+
+                        #Ta ut begge av hverandres rute. Så legge til begge i hverandres rute
+
+
+
         '''
             Skal iterere over alle parr av aktiviteter som skjer på en gitt dag
             Dersom de ikke er i samme rute skal de forsøkes byttes plass på. 

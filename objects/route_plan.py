@@ -161,13 +161,13 @@ class RoutePlan:
                 route.removeActivityID(activity.getID())
 
 
-    def insertActivityInEmployeesRoute(self, employee, activity, day): 
+    def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
         insert_activity.restartActivity()
         self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
         for route in self.routes[day]: 
-            if route.employee.getID() == employee:
+            if route.employee.getID() == employeeID:
                 status = route.addActivity(insert_activity)
                 return status
        
