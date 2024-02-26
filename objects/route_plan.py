@@ -33,7 +33,7 @@ class RoutePlan:
 
                 
     
-    def addNodeOnDay(self, activity, day):
+    def addActivityOnDay(self, activity, day):
         '''
         Funksjonen legger til aktiviteten på den gitte dagen ved å iterere over alle rutene som finnes på dagen 
 
@@ -77,7 +77,7 @@ class RoutePlan:
             for route in self.routes[day]: 
                 route.printSoultion()
 
-    def getEmployeeAllocatedForActivity(self, activity, day): 
+    def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
         returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
         
@@ -95,7 +95,7 @@ class RoutePlan:
                     return route.getEmployee().getID()
     
     #TODO: Denne fungerer ikke nå. Må endre på den sånn at den funker!!
-    def getOtherEmplOnDay(self, activityID, day):  
+    def getListOtherEmplIDsOnDay(self, activityID, day):  
         #TODO: Ggjøre raskere 
         '''
         Oppdatert: Sender inn aktivitetsID til den aktiviteten som må gjøres på samme dag. 
@@ -165,7 +165,7 @@ class RoutePlan:
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
         insert_activity.restartActivity()
-        self.updateAcitivyBasedOnRoutePlanOnDay(insert_activity, day)
+        self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
         for route in self.routes[day]: 
             if route.employee.getID() == employee:
                 status = route.addActivity(insert_activity)
@@ -182,45 +182,42 @@ class RoutePlan:
                 self.routes[day].remove(org_route)
                 self.routes[day].append(route)
 
-    def updateAcitivyBasedOnRoutePlanOnDay(self, activity,day):
-        '''
-        Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
-        Basert på det som allerede ligger inne i 
-        '''
+    def updateActivityBasedOnRoutePlanOnDay(self, activity,day):
+            '''
+            Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
+            Basert på det som allerede ligger inne i 
+            '''
+            activity.restartActivity()
 
-        #Her håndteres pick up and delivery
-        #PickUpAcitivy er aktiviteten som tilsvarer pick up noded dersom denne aktiviteten er delivery
-        if activity.getPickUpActivityID() != 0 : 
-            #Henter ut den ansatte som skal gjennomføre PickUp aktiviteten 
-            #TODO: Har endret på denne, så den funker ikke nå. MÅ FIKSE 
-            #employeeAllocatedToAcitivy = self.getEmployeeAllocatedForActivity(activity.getPickUpActivityID(), day)
-            #Henter ut de ansatte som jobber den gitte dagen og ikke er allokert til å utføre pickup aktiviten 
-            otherEmplOnDay = self.getOtherEmplOnDay(activity.getPickUpActivityID(), day)
-            #Legger til de ansatte som ikke allokert til å gjøre pick up noden til delivery aktivteten employee restictions
-            activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
+            #Her håndteres pick up and delivery
+            if activity.getPickUpActivityID() != 0 : 
+                otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
+                activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
+                
+            #Her håndteres presedens.   
+            #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
+            for prevNodeID in activity.PrevNode: 
+                prevNodeAct = self.getActivity(prevNodeID, day)
+                #if activity.id == 70: 
+                 #   print("prevNodeAct for 70", prevNodeAct.id)
+                if prevNodeAct != None:
+                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration())
+  
+            for nextNodeID in activity.NextNode: 
+                nextNodeAct = self.getActivity(nextNodeID, day)
+                if nextNodeAct != None:
+                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration())
             
+            #Her håndteres presedens med tidsvindu
+            #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
+            for PrevNodeInTimeID in activity.PrevNodeInTime: 
+                prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
+                if prevNodeAct != None:
+                    activity.setNewLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTimeID[1])
 
-        #Her håndteres presedens.   
-        #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
-        for prevNodeID in activity.PrevNode: 
-            prevNodeAct = self.getActivity(prevNodeID, day)
-            if prevNodeAct != None:
-                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration())
 
-        for nextNodeID in activity.NextNode: 
-            nextNodeAct = self.getActivity(nextNodeID, day)
-            if nextNodeAct != None:
-                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration())
+            for NextNodeInTimeID in activity.NextNodeInTime: 
+                nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
+                if nextNodeAct != None:
+                    activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1])
         
-        #Her håndteres presedens med tidsvindu
-        #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
-        for PrevNodeInTimeID in activity.PrevNodeInTime: 
-            prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
-            if prevNodeAct != None:
-                activity.setNewLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTimeID[1])
-
-        for NextNodeInTimeID in activity.NextNodeInTime: 
-            nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
-            if nextNodeAct != None:
-                activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1])
-    

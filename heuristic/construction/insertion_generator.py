@@ -118,13 +118,9 @@ class PatientInsertor:
         
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         for activityID in activitesList: 
-            #Oppreter et aktivitesobjekt basert på ID-en 
             activity = Activity(self.activites_df, activityID)
-            
-            self.route_plan.updateAcitivyBasedOnRoutePlanOnDay(activity, day)
-            #Prøver å legge til aktivten til ruteplanen på den gitte dagen.
-            activityStatus = self.route_plan.addNodeOnDay(activity, day)
-            #Dersom aktiviten ikk kan legges til returers False
+            self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
+            activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
                 return False
         #Dersom alle aktivitene har blitt lagt til returers true    

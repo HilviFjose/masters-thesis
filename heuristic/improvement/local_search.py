@@ -32,7 +32,7 @@ class LocalSearch:
         print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
         candidate.printSolution()
         print("Objective", candidate.objective)
-    
+        """
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
@@ -41,7 +41,7 @@ class LocalSearch:
         print("NY LØSNING ETTER CHANGE EMPLOYEE LOKALSØK")
         candidate.printSolution()
         print("Objective", candidate.objective)
-
+  
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 #Denne returnerer ikkke riktig nye ruteplan
@@ -51,9 +51,7 @@ class LocalSearch:
         print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
         candidate.printSolution()
         print("Objective", candidate.objective)
-
-       
-        
+        """
         return candidate
     
     def switchRoute(self, candidate, new_route,  day):
@@ -104,20 +102,20 @@ class LocalSearch:
                 activity2_new = copy.deepcopy(activity2)
 
                 if index_act1 < index_act2:
-                    status = new_route.insertOnIndex(activity2_new, index_act1)
+                    status = new_route.insertActivityOnIndex(activity2_new, index_act1)
                     if status == False: 
                         continue
 
-                    status = new_route.insertOnIndex(activity1_new, index_act2)
+                    status = new_route.insertActivityOnIndex(activity1_new, index_act2)
                     if status == False: 
                         continue
                 
                 else: 
-                    status = new_route.insertOnIndex(activity1_new, index_act2)
+                    status = new_route.insertActivityOnIndex(activity1_new, index_act2)
                     if status == False: 
                         continue
 
-                    status = new_route.insertOnIndex( activity2_new, index_act1)
+                    status = new_route.insertActivityOnIndex( activity2_new, index_act1)
                     if status == False: 
                         continue
          # TODO: Denne lista under her er tom
@@ -136,6 +134,9 @@ class LocalSearch:
         return best_found_route
   
 
+
+# TODO: Tenke over at in time tidsvinduer ikke tas hensyn til av aktiviteten mellom de to som har det.
+# TODO: Tenke på forskyvningsmekanisme for å gjøre mer plass til aktivitet som skal moves inn (for å forbedre ytelse til lokalsøk) 
     def move_activity_in_route(self, route):
         route.updateObjective()
         best_travel_time = route.travel_time
@@ -161,25 +162,29 @@ class LocalSearch:
                 index_count += 1
     
             new_route.removeActivityID(activity.getID())
-            
+
             activity_new = copy.deepcopy(activity)
 
-            for index in range(len(new_route.route)):
+            for index in range(len(new_route.route)+1):
+                newer_route = copy.deepcopy(new_route)
+                information_candidate = copy.deepcopy(self.candidate)
+                information_routeplan = self.switchRoute(information_candidate, newer_route, newer_route.day)
                 if index == index_act:
                     continue
-                status = new_route.insertOnIndex(activity_new, index)
+                status = newer_route.insertActivityOnIndex(activity_new, index)
                 if status == False:
                     continue
 
                 for nextAct in NextDependentActivitiyList:
-                    status = new_route.addActivity(nextAct)
+                    information_routeplan.updateActivityBasedOnRoutePlanOnDay(nextAct, route.day)
+                    status = newer_route.addActivity(nextAct)
                     if status == False: 
                         break
-                new_route.updateObjective()
+                newer_route.updateObjective()
 
-                if status == True and new_route.travel_time < best_travel_time + 100:
-                    best_travel_time = new_route.travel_time
-                    best_found_route = copy.deepcopy(new_route) 
+                if status == True and newer_route.travel_time < best_travel_time:
+                    best_travel_time = newer_route.travel_time
+                    best_found_route = copy.deepcopy(newer_route) 
                     print("move is done", activity.id)
         return best_found_route
 
@@ -205,8 +210,8 @@ class LocalSearch:
         
         for route in route_plan.routes[day]: 
             for activity in route.route:
-                employee = route_plan.getEmployeeAllocatedForActivity(activity, day)
-                otherEmployees = route_plan.getOtherEmplOnDay(activity.getID(), day)
+                employee = route_plan.getEmployeeIDAllocatedForActivity(activity, day)
+                otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.getID(), day)
                 for othEmpl in otherEmployees: 
                     new_candidate = copy.deepcopy(route_plan)
                     new_candidate.removeActivityFromEmployeeOnDay(employee, activity, day)
