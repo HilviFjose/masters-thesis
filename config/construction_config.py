@@ -2,8 +2,7 @@
 
 # PATIENTS
 # Number of patients
-P_num = 50 
-maxActivitiesPerPatient = 25 
+P_num = 25 
 
 # Distributions
 treatmentsPerPatient = 1.05                     #Number of treatments per patient
@@ -69,7 +68,7 @@ activitiesEvening = 0.2
 
 # EMPLOYEES
 # Number of employees
-E_num = 25
+E_num = 10
 # Distributions of employees
 E_num_night = 0.1
 E_num_day = 0.7

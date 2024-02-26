@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.split(__file__)[0],'..') )  #include subfolders
 
 from config import construction_config
-from datageneration import employeeGenerator
+from datageneration import employeeGeneration
 
 import random
 import numpy as np
@@ -71,7 +71,7 @@ def patientGenerator(df_employees):
         utility.append(np.random.choice([j+1 for j in range(5)]))
         continuityGroup.append(np.random.choice([j+1 for j in range(3)], p=construction_config.continuityDistribution))
         heaviness.append(np.random.choice([i+1 for i in range(5)], p=construction_config.heavinessDistribution))
-        
+
         df_patients = df_patients._append({
                 'patientId': i+1,
                 'nTreatments': nTreatments[i],
@@ -80,7 +80,6 @@ def patientGenerator(df_employees):
                 'heaviness': heaviness[i],
                 'location' : locations[i]
             }, ignore_index=True)
-        
     
     # Employee Restrictions
     num_restricted_patients = int(len(df_patients) * 0.05)      # 5 % of the patients have a restriction against an employee
@@ -88,7 +87,9 @@ def patientGenerator(df_employees):
     
     for index in restricted_patient_indices:
         random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
-        df_patients.at[index, 'employeeRestriction'] = random_employee_id
+        list = []
+        list.append(random_employee_id)
+        df_patients.at[index, 'employeeRestriction'] = list
 
     # Employee history  TODO: Må potensielt oppdatere format på dette
     num_history_patients = int(len(df_patients) * 0.9)          # 90 % of the patients have a treatment history with some employees
@@ -411,7 +412,7 @@ def autofillVisit(df_visits, df_activities):
 
 
 #TESTING
-df_employees = employeeGenerator.employeeGenerator()
+df_employees = employeeGeneration.employeeGenerator()
 df_patients = patientGenerator(df_employees)
 df_treatments = treatmentGenerator(df_patients)
 df_visits = visitsGenerator(df_treatments)

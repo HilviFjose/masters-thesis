@@ -5,7 +5,8 @@ import os
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.employee import Employee
 from objects.activity import Activity
-from objects.distances import T_ij
+#from objects.distances import T_ij
+from parameters import T_ij
 import math
 import copy 
 
@@ -34,9 +35,9 @@ class Route:
         True/False på om aktiviteten er blitt lagt til i ruten 
         '''
         #Sjekker om ruten oppfyller aktivitetens krav til employee restriction og skillevel 
-        if  self.employee.getID() in activity.getEmployeeRestriction() or (
-            self.employee.getID() in activity.employeeNotAllowedDueToPickUpDelivery) or (
-                activity.getSkillreq() > self.skillLev): 
+        if  (self.employee.getID() == activity.getEmployeeRestriction() #TODO: Har byttet fra in til ==. Dette funker med datagenereringen fordi det maks genereres én restriksjon per pasient, men usikker på om det er det vi ønsker.
+             or (self.employee.getID() in activity.employeeNotAllowedDueToPickUpDelivery) 
+             or (activity.getSkillreq() > self.skillLev)): 
             return False
 
         

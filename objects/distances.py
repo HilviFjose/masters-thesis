@@ -1,9 +1,6 @@
 import pandas as pd 
 
 
-
-
-
 df_distance = pd.read_csv('data/Distances.csv')
 '''
 dict_distances = df_distance.to_dict(orient='records')

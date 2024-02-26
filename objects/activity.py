@@ -1,5 +1,10 @@
 import pandas as pd
 
+import os
+import sys
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
+from datageneration.employeeGeneration import *
+from datageneration.patientGeneration import *
 '''
 Info:
 For å opprette en aktivitet må dataframene som inneholder aktivitetne til ID-en sendes inn og selve ID-en
@@ -24,6 +29,7 @@ class Activity:
 
     #make funskjonene setter parameterne til Acitivy objektet 
     
+    '''
     def makeEmployeeRestriction(self, string): #Tror denne nå kan slettes - Guro
         if "," in string: 
             return string.split(",")
@@ -31,6 +37,14 @@ class Activity:
             return [int(string)]
         except: 
             return [] 
+    '''
+    
+    def makeEmployeeRestriction(self, input_data): 
+        list = []
+        if isinstance(input_data, int):
+            return list.append(input_data)
+        return input_data
+
         
     '''
     def makePresNodes(self, string): 
@@ -61,7 +75,7 @@ class Activity:
             PrevNode.append(input_data)
             return PrevNode, PrevNodeInTime
         
-        # If input_data is a string, proceed with the original logic
+        # If input_data is a string
         elif isinstance(input_data, str) and input_data:
             strList = input_data.split(",")
             for elem in strList:
@@ -153,6 +167,15 @@ class Activity:
     def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
         self.employeeNotAllowedDueToPickUpDelivery = list 
 
-        
+"""
+df_employees = (employeeGeneration.employeeGenerator()) #.set_index(["employeeId"]) TODO: Fiks dette!
+df_patients = patientGenerator(df_employees).set_index(["patientId"])
+df_treatments = treatmentGenerator(df_patients).set_index(["treatmentId"])
+df_visits = visitsGenerator(df_treatments).set_index(["visitId"])
+df_activities = activitiesGenerator(df_visits).set_index(["activityId"])        
+act = Activity(df_activities, 16)
+print("PrevNode", act.PrevNode)
+print("ID", act.id)
+print("duration", act.duration)
 
-
+"""

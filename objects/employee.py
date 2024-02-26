@@ -1,6 +1,12 @@
 import pandas as pd
 
-days = 5 
+import os
+import sys
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
+from datageneration import employeeGeneration 
+from config import construction_config
+
+days = construction_config.days
 
 class Employee:
     def __init__(self, df, id):
@@ -14,21 +20,21 @@ class Employee:
         employeeShift = {day: {"startShift": 0, "endShift" : 0 } for day in range(1,days+1)} 
         #listOfShifts = shiftString.replace("(", "").replace(")", "").split(", ")
         for shift in schedule: 
-            d = int(shift) // 3 
-            if d+1 > days:  # Skip shifts that map to a day outside the valid range
+            d = (int(shift) - 1) // 3 + 1 
+            time = (int(shift) -1) % 3
+            if d > days:  # Skip shifts that map to a day outside the valid range
                 continue
-            time = int(shift) % 3 
             if time == 0: 
-                employeeShift[d+1]["startShift"] =  960 
-                employeeShift[d+1]["endShift"] = 1440  
+                employeeShift[d]["startShift"] =  0 
+                employeeShift[d]["endShift"] = 480  
             if time == 1: 
-                employeeShift[d+1]["startShift"] =  0
-                employeeShift[d+1]["endShift"] =  480
+                employeeShift[d]["startShift"] =  480
+                employeeShift[d]["endShift"] =  960
             if time == 2: 
-                employeeShift[d+1]["startShift"] =  480 
-                employeeShift[d+1]["endShift"] =  960
+                employeeShift[d]["startShift"] =  960 
+                employeeShift[d]["endShift"] =  1440
 
-        print(employeeShift) #TODO: Her skjer det noe rart. Alle ansatte med kveldsskift: de ansatte får ikke jobb tildelt mandag 
+        #print(employeeShift) #TODO: Her skjer det noe rart. Alle ansatte med kveldsskift: de ansatte får ikke jobb tildelt mandag 
         return employeeShift
 
     def getShiftStart(self, day): 
@@ -42,3 +48,14 @@ class Employee:
     
     def getID(self): 
         return self.id
+
+#TESTING
+'''
+df_employees = (employeeGeneration.employeeGenerator()).set_index(["employeeId"])    
+for i in range(1,15):
+    e = Employee(df_employees, i)
+    print('id', e.id)
+    print('skill', e.skillLevel)
+    print('schedule', e.shifts)
+'''
+
