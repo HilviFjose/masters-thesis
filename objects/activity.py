@@ -22,7 +22,7 @@ class Activity:
         self.employeeRestricions = df.loc[id]["employeeRestriction"]
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevPrece"])
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
-        self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextpresedence"])
+        self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextPrece"])
         
         self.startTime = None
         self.newLatestStartTime = 1440
@@ -145,10 +145,17 @@ class Activity:
             self.possibleToInsert = False 
             
 
-
-
     def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
         self.employeeNotAllowedDueToPickUpDelivery = list 
+
+
+    def restartActivity(self): 
+        self.startTime = None
+        self.newLatestStartTime = 1440
+        self.newEeariestStartTime = 0
+        self.employeeNotAllowedDueToPickUpDelivery = []
+        self.possibleToInsert = True
+
 
         
 

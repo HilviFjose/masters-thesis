@@ -33,7 +33,7 @@ def main():
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
-    constructor.route_plan.printSoultion()
+    constructor.route_plan.printSolution()
     print("Objective Values", constructor.route_plan.objective)
     print("Patients allocated to AHH ", constructor.listOfPatients)
     print("Patients not allocated", constructor.unAssignedPatients)

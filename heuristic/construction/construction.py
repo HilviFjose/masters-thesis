@@ -48,7 +48,7 @@ class ConstructionHeuristic:
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
             #Oppretter et PatientInsertor objekt, hvor pasient_df og kopien av dagens ruteplan sendes inn
-            patientInsertor = PatientInsertor( route_plan_with_patient, patient_request, self.treatment_df, self.visit_df, self.activities_df)
+            patientInsertor = PatientInsertor( route_plan_with_patient, patient_request, self.treatment_df, self.visit_df, self.activities_df, patient)
             #patientInsertor forsøker å legge til pasienten, og returnerer True hvis velykket
             state = patientInsertor.generate_insertions()
             

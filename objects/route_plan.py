@@ -6,6 +6,7 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subf
 from objects.employee import Employee
 from objects.route import Route
 import copy
+import random 
 
 
 '''
@@ -45,15 +46,23 @@ class RoutePlan:
         True/False på om innsettingen av aktiviteten var velykket 
         '''
         #Reverserer rekkefølgen på routes for å ikke alltid begynne med samme ansatt på den gitte dagen
+        '''
         if self.rev == True:
             routes =  reversed(self.routes[day])
             self.rev = False
         else: 
             routes = self.routes[day]
             self.rev = True
+        '''
+
+        routes = self.routes[day]
+        index_random = [i for i in range(len(routes))]
+        random.shuffle(index_random)
+
 
         #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
-        for route in routes: 
+        for index in index_random:
+            route = routes[index]
             old_skillDiffObj = route.aggSkillDiff
             old_travel_time = route.travel_time
             insertStatus = route.addActivity(activity)
@@ -208,6 +217,7 @@ class RoutePlan:
             for nextNodeID in activity.NextNode: 
                 nextNodeAct = self.getActivity(nextNodeID, day)
                 if nextNodeAct != None:
+                    #TODO: Se på denne mtp at presedens innnen tid skal være fra atkivteten slutter
                     activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration())
             
             #Her håndteres presedens med tidsvindu
@@ -215,7 +225,7 @@ class RoutePlan:
             for PrevNodeInTimeID in activity.PrevNodeInTime: 
                 prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
                 if prevNodeAct != None:
-                    activity.setNewLatestStartTime(prevNodeAct.getStartTime()+PrevNodeInTimeID[1])
+                    activity.setNewLatestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration + PrevNodeInTimeID[1])
 
 
             for NextNodeInTimeID in activity.NextNodeInTime: 

@@ -275,8 +275,8 @@ def activitiesGenerator(df_visits):
             activity_ids = group['activityId'].tolist()
             mu = (construction_config.pd_min + construction_config.pd_max) / 2
             sigma = (construction_config.pd_max - construction_config.pd_min) / 6
-            pd_time1 = int(np.random.normal(mu, sigma))
-            pd_time2 = int(np.random.normal(mu, sigma))
+            pd_time1 = int(np.random.normal(mu, sigma))#+100
+            pd_time2 = int(np.random.normal(mu, sigma))#+100
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]                                           # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'prevPrece'] = activity_ids[-3]                                         # Pick-up and delivery at the end
@@ -337,8 +337,8 @@ def activitiesGenerator(df_visits):
         earliestStartTime = np.random.randint(0, latestStartTime-visit_duration)
                   
 
-        df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] = earliestStartTime
-        df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] = latestStartTime
+        df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] = earliestStartTime #0
+        df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] = latestStartTime #1440
 
        
     # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        

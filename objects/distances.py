@@ -1,7 +1,11 @@
 import pandas as pd 
 
 
+
+
+
 df_distance = pd.read_csv('data/Distances.csv')
+
 '''
 dict_distances = df_distance.to_dict(orient='records')
 
@@ -30,6 +34,4 @@ for index, row in df_distance.iterrows():
     T_ij[i][j] = row['0']
 
 
-
     #days er her entall dager, mens employees er en liste over             
-

@@ -5,6 +5,7 @@ from datageneration import employeeGeneration
 from datageneration import patientGeneration 
 from datageneration import distance_matrix
 from config import construction_config
+import random
 
 '''
 # DATA GENERATION
@@ -57,3 +58,12 @@ df_activities_depot = pd.concat([depot_row, df_activities], axis=0)
 T_ij = distance_matrix.travel_matrix(df_activities_depot)
 #print(df_activities_depot.head())
 #print("T_ij Lengde: ",len(T_ij))
+print('activity 54 to 55',T_ij[54][55])
+
+print(df_patients.index)
+
+routes = [43, 23, 54]
+l1 = [i for i in range(len(routes))]
+print("l1 = [i for i in len(routes)]", l1)
+random.shuffle(l1)
+print(l1)
