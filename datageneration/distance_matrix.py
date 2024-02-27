@@ -5,11 +5,17 @@ import sklearn.metrics
 from sklearn.metrics.pairwise import haversine_distances
 from datetime import datetime, timedelta
 
+import os
+import sys
+sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
+from config import main_config
+
+
 def process_location(x):
     # Hvis x er en streng, fjern parenteser og splitt
     if isinstance(x, str):
         lat_str, lon_str = x.strip("()").split(",")
-    # Hvis x allerede er en tuple, bare bruk verdien direkte
+    # Hvis x er en tuple, bare bruk verdien direkte
     elif isinstance(x, tuple):
         lat_str, lon_str = x
     else:
@@ -21,12 +27,8 @@ def process_location(x):
     return lat, lon
 
 def travel_matrix(df):
+        
         # Radians distance matrix
-        #rad_lat = [math.radians(float(i.replace(",", "").replace("(", "").replace(")", "").split()[0])) for i in df["location"]]
-        #rad_lon = [math.radians(float(i.replace(",", "").replace("(", "").replace(")", "").split()[1])) for i in df["location"]]
-        
-        #rad_location =list(zip(rad_lat ,rad_lon))
-        
         df['lat'], df['lon'] = zip(*df['location'].apply(process_location))
 
         # Konverterer lat og lon til radianer
@@ -36,12 +38,12 @@ def travel_matrix(df):
         # Lager en liste av tupler med radianverdier for bredde- og lengdegrad
         rad_location = list(zip(df['rad_lat'], df['rad_lon']))
 
+        # Distance matrix
         D_ij = haversine_distances(rad_location, rad_location) * 6371
         
-        # TODO: De to under her bør inn i config etterhvert
         # Buses in Oslo om average drive in 25 kms/h.
-        speed = 40
-        rush_factor = 2
+        speed = main_config.speed
+        rush_factor = main_config.rush_factor
 
         # Travel time matrix - 2D-list with time given in minutes. 
         T_ij = [[0 for _ in range(len(D_ij))] for _ in range(len(D_ij))]

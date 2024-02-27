@@ -17,21 +17,7 @@ def main():
 
     #TODO: Burde legge til sånn try og accept kriterier her når vi er ferdig. Men Bruker ikke det enda fordi letter å jobbe uten
 
-    
-    #Input
-    #TODO: Finne ut hva som skjer i datahåndteringen over. Hvordan lages dataframene, og hvordan bruks config filene
-    
-    #df_employees = employeeGeneration.employeeGenerator() 
-    #df_patients = patientGeneration.patientGenerator(df_employees)
-    #df_treatments = patientGeneration.treatmentGenerator(df_patients)
-    #df_visits = patientGeneration.visitsGenerator(df_treatments)
-    #df_activities = patientGeneration.activitiesGenerator(df_visits)
-    #df_patients_filled = patientGeneration.autofillPatient(df_patients, df_treatments).set_index(["patientId"])
-    #df_treatments_filled = patientGeneration.autofillTreatment(df_treatments, df_visits).set_index(["treatmentId"])
-    #df_visits_filled = patientGeneration.autofillVisit(df_visits, df_activities).set_index(["visitId"])  
-    #df_activities = df_activities.set_index(["activityId"])  
-    #df_employees = df_employees.set_index(["employeeId"])
-
+    #Input - Data Generation
     df_employees = parameters.df_employees
     df_patients = parameters.df_patients_filled
     df_treatments = parameters.df_treatments_filled
@@ -40,21 +26,24 @@ def main():
 
     T_ij = distance_matrix.travel_matrix(df_activities)
 
-    #df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
-    #df_employees = pd.read_csv("data/test/EmployeesNY.csv").set_index(["employeeId"])
-    #df_patients = pd.read_csv("data/test/PatientsNY.csv").set_index(["patientId"])
-    #df_treatments = pd.read_csv("data/test/TreatmentsNY.csv").set_index(["treatmentId"])
-    #df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
-    
+    #Input - Test Data 
+    '''
+    df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
+    df_employees = pd.read_csv("data/test/EmployeesNY.csv").set_index(["employeeId"])
+    df_patients = pd.read_csv("data/test/PatientsNY.csv").set_index(["patientId"])
+    df_treatments = pd.read_csv("data/test/TreatmentsNY.csv").set_index(["treatmentId"])
+    df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
+    '''
+
     #Her lages en kontruksjonsheuristikk. Våre requests vil være pasienter, og vi går gjennom alle.
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
     constructor.route_plan.printSoultion()
-    print("Objektivverdier", constructor.route_plan.objective)
-    print("Hjemmesykehuspasienter ", constructor.listOfPatients)
-    print("Ikke allokert ", constructor.unAssignedPatients)
+    print("Objective Values", constructor.route_plan.objective)
+    print("Patients allocated to AHH ", constructor.listOfPatients)
+    print("Patients not allocated", constructor.unAssignedPatients)
 
     initial_objective = constructor.route_plan.objective
     initial_route_plan = constructor.route_plan 

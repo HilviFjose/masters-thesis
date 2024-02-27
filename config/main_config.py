@@ -22,3 +22,8 @@ destruction_degree = 0.5
 start_temperature = 50 
 end_temperature = 10
 cooling_rate = 0.999
+
+# Distance Matrix
+# Buses in Oslo om average drive in 25 kms/h.
+speed = 40
+rush_factor = 2

@@ -1,14 +1,12 @@
 #Generelt om distributions: Mange av disse vil være ca.-tall eller maxfactor for en fordeling.1
 
 # PATIENTS
-# Number of patients
-P_num = 25 
+P_num = 30                                      # Number of patients
 
 # Distributions
 treatmentsPerPatient = 1.05                     #Number of treatments per patient
 maxTreatmentsPerPatient = 3
 V_numProb = [0.9, 0.05, 0.05]
-#activitiesPerVisit = 2.5                        #Number of activities per treatment
 maxActivitiesPerVisit = 6                       #Max number of activities per visit
 A_numProb = [0.25, 0.05, 0.3, 0.05, 0.3, 0.05]    #Probability of the number of activities from 1 to 6 in a visit
 
@@ -38,10 +36,6 @@ continuityDistribution = [0.25, 0.25, 0.5] #Top 1 employee, top 3 employees, all
 heavinessDistribution = [0.05, 0.2, 0.5, 0.2, 0.05] 
 
 # ACTIVITIES
-# Activities Distribution 
-#precedence = 0.5
-#sync = 0.05
-#sameEmployee = 0.1 #Prosent??
 pd_min = 30                     #Min pickup and delivery time limit
 pd_max = 120                    #Max pickup and delivery time limit
 
@@ -59,12 +53,6 @@ maxDurationEquip = 30
 minWindowHealth = minDurationHealth
 minWindowEquip = minDurationEquip
 averageWindowHealth = 200 #average time window between earliest and latest starting time
-
-#Distribution of activities over one day
-activitiesNight = 0.2
-activitiesDay = 0.6
-activitiesEvening = 0.2
-#TODO: må håndtere at aktivititeter kan fordeles over flere skift dersom vi ønsker det i datasettet.
 
 # EMPLOYEES
 # Number of employees
