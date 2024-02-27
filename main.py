@@ -48,6 +48,7 @@ def main():
 
 
     operators = Operators(alns)
+    print(operators)
 
     alns.set_operators(operators)
 

@@ -1,54 +1,69 @@
 import pandas as pd
 import copy
 import math
+import numpy.random as rnd 
+from helpfunctions import checkCandidateBetterThanCurrent
 
 import os
 import sys
-#sys.path.append("C:\\Users\\hilvif\\masters-thesis\\heuristic\\improvement\\operators")
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Include subfolders
 
 from objects.distances import *
 from config.construction_config import *
-#from heuristic.improvement.initial.initial_repair_generator import RepairGenerator
+from heuristic.improvement.operator.repair_generator import RepairGenerator
 
 class Operators:
     def __init__(self, alns):
-        self.destruction_degree = alns.destruction_degree
+        self.destruction_degree = alns.destruction_degree # TODO: Skal vi ha dette?
         self.constructor = alns.constructor
-        self.T_ij = T_ij #Må T_ij hentes på en smartere måte her?
-        # TODO: SE PÅ REPAIR OG INSERTION GENERELT: self.repair_generator = RepairGenerator(self.constructor)
+        self.repair_generator = RepairGenerator(self.constructor)
 
-    # TODO: Lage en funksjon som finner number of activities/visits/treatments/patients to remove based on degree of destruction
-    def activities_to_remove(self, route_plan):
-        # Count number of activities in route_plan
-        num_activities = 0
-
-        # TODO: Må hente ut unike pasienter og visits fra route_plan 
-        num_activities = []
-        for route in route_plan:
-            for activity in route: 
-                if activity not in num_activities:
-                    num_activities.append(activity)
-
-        # Calculate number of activities to remove
-        activities_remove = math.ceil(num_activities * self.destruction_degree)
-
+    # Uses destruction degree to set max cap for removal
+    def activities_to_remove(self, activities_remove):
         return activities_remove
     
 #---------- REMOVE OPERATORS ----------
-    def random_activity_removal_on_day():
-    #Removes one random activity on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
+
+    def random_route_removal(self, current_route_plan):
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+
+        if destroyed_route_plan:
+            route_ids = [route.route_id for route in destroyed_route_plan]
+            selected_route_id = rnd.choice(route_ids)
+            removed_route = next(route for route in destroyed_route_plan if route.route_id == selected_route_id)
+            destroyed_route_plan.remove(removed_route)
+
+        removed_activities = []
+        for act in removed_route:
+            removed_activities.add(act)
+
+        return destroyed_route_plan, removed_activities, True
     
-    def random_route_removal_on_day():
-    #Removes a random whole route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
+    def worst_route_removal(self, current_route_plan):
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        worst_route = None
+        current_worst_objective = current_route_plan.objective
+
+        for route in destroyed_route_plan:
+            route_plan_holder = copy.deepcopy(current_route_plan)
+            removed_route = route_plan_holder.pop(route)
+            objective_removed_route = route_plan_holder.objective
+            
+            # If current worst objective is better than candidate, then candidate is the new current worst
+            if checkCandidateBetterThanCurrent(current_worst_objective, objective_removed_route):
+                worst_route = removed_route
+                current_worst_objective = objective_removed_route
+                destroyed_route_plan = route_plan_holder
+        
+        removed_activities = []
+        for act in removed_route:
+            removed_activities.add(act)
+
+        return destroyed_route_plan, removed_activities, True
     
-    def random_leg_removal_on_day():
-    #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
-    
-    def worst_activity_removal_on_day(self, current_route_plan, current_infeasible_set):
+
+# TODO: Finne ut om vi i det hele tatt skal ha removal operatorer på aktivitetsnivå? Repair vil bli veldig conditioned i så fall. 
+    def worst_activity_removal_on_day():
     #Removes the worst activity on a "locked" day, being the one contributing the least to the objective. (Can possibly later be used on several days, given conditional repair operators.)
     #Only relevant objective is    
         """
@@ -60,23 +75,43 @@ class Operators:
         removed_activity = current_infeasible_set
         destroyed = []
         return destroyed_route_plan, removed_activity, destroyed, destroyed_on_day
-        """
+      
         destroyed = []
         destroyed_on_day = None
-
-        return current_route_plan, current_infeasible_set, destroyed
-   
-        
-    
-    def worst_route_removal_on_day():
-    #Removes the worst whole route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
+        """
         return None
     
     def worst_leg_removal_on_day():
     #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
         return None
     
+    def random_activity_removal_on_day():
+    #Removes one random activity on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
+        return None
+
+    def random_leg_removal_on_day():
+    #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
+        return None
+    
     
 #---------- REPAIR OPERATORS ----------
-    def greedy_repair_on_day():
-        return None
+    def greedy_repair(self, destroyed_route_plan, removed_activities, initial_infeasible_set, current_route_plan, index_removed_activities):
+        unassigned_activities = removed_activities.copy() + initial_infeasible_set.copy()
+        unassigned_activities.sort(key=lambda x: x[0])
+        route_plan = copy.deepcopy(destroyed_route_plan)
+        current_objective = current_route_plan.objective
+        infeasible_set = []
+        # unassigned_activities = pd.DataFrame(unassigned_activities)
+        while not unassigned_activities.empty:
+            rid = unassigned_activities.iloc[i][0]
+            activity = unassigned_activities.iloc[i][1]
+            index_removal = [
+                i for i in index_removed_activities if i[0] == rid or i[0] == rid+0.5]
+
+            route_plan, new_objective, infeasible_set = self.repair_generator.generate_insertions(
+                route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
+
+            # update current objective
+            current_objective = new_objective
+
+        return route_plan, current_objective, infeasible_set

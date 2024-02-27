@@ -42,20 +42,20 @@ class ALNS:
         found_solutions = {}
         initial_route_plan = copy.deepcopy(self.route_plan)
 
-        #destroy operators vil være tom når denne lages? 
+        # weights er vekter for å velge operator, score og count brukes for oppdatere weights
         d_weights = np.ones(len(self.destroy_operators), dtype=np.float16)
         r_weights = np.ones(len(self.repair_operators), dtype=np.float16)
         d_scores = np.ones(len(self.destroy_operators), dtype=np.float16)
         r_scores = np.ones(len(self.repair_operators), dtype=np.float16)
+        # Kan ikke count bare være at vi hver 10 iterasjon eller noe oppdaterer?
         d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
+        '''
         print("lager local search")
         candidate = current_route_plan
         localsearch = LocalSearch(candidate)
         candidate = localsearch.do_local_search()
-
-        '''
         print("NY LØSNING FRA LØKALSØK")
         candidate.printSolution()
         print(candidate.objective)
@@ -78,13 +78,14 @@ class ALNS:
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
             d_operator = self.destroy_operators[destroy]
-            destroyed_route_plan, removed_requests, destroyed = d_operator(
-                current_route_plan, current_infeasible_set)
+            destroyed_route_plan, removed_activities, destroyed = d_operator(
+                current_route_plan)
             
-            '''
+            print("d_operator",d_operator)
+            
             if not destroyed:
                 break
-            '''
+        
             d_count[destroy] += 1
 
             # Update solution
@@ -93,17 +94,22 @@ class ALNS:
           
             # Fix solution
             #TODO: Lage repair iteratorer, de er kommentert ut, mens vi jobber med lokalsøket, på samme måte som destroy operatorer 
-            '''
+            
             r_operator = self.repair_operators[repair]
             candidate, candidate_objective, candidate_infeasible_set = r_operator(
-                destroyed_route_plan, removed_requests, current_infeasible_set, current_route_plan)
+                destroyed_route_plan, removed_activities, current_infeasible_set, current_route_plan, index_removed_activities)
+    
 
             r_count[repair] += 1
-            '''
-            # HER ET STED SKAL LOKALSØKET KOMME
-            #TODO: Legge inn lokalsøket når destroy og repair operatorene fungerer. Nå vil bare gjøre det på nytt og på nytt
-            
-            '''
+           
+            # Local search if solution is promising
+            local_search_requirement = 0.05 # TODO: Legge inn i main config
+            if candidate_objective.isPromising(candidate_objective, best_objective, local_search_requirement): # TODO: Lage denne i helpfunctions
+                print("lager local search")
+                candidate_for_local_search = copy.deepcopy(candidate)
+                localsearch = LocalSearch(candidate_for_local_search)
+                candidate = localsearch.do_local_search()
+
             # Compare solutions
             best, best_objective, best_infeasible_set, current_route_plan, current_objective, current_infeasible_set, weight_score = self.evaluate_candidate(
                 best, best_objective, best_infeasible_set,
@@ -121,6 +127,7 @@ class ALNS:
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
 
+            """
             # After a certain number of iterations, update weight
             # TODO: Noen får denne i oppgave
             if (i+1) % N_U == 0: #TODO: Se på i sammenheng med initial_improvement_config. 
@@ -141,25 +148,19 @@ class ALNS:
                     len(self.destroy_operators), dtype=np.float16)
                 r_scores = np.ones(
                     len(self.repair_operators), dtype=np.float16)
-            '''
+            """
         return best, best_objective, best_infeasible_set
     
     def set_operators(self, operators):
         # Add destroy operators
-        self.add_destroy_operator(operators.worst_activity_removal_on_day)
-        # self.add_destroy_operator(operators.random_removal)
-        # self.add_destroy_operator(operators.time_related_removal)
-        # self.add_destroy_operator(operators.distance_related_removal)
-        # self.add_destroy_operator(operators.related_removal)
-        # self.add_destroy_operator(operators.worst_deviation_removal)
+        self.add_destroy_operator(operators.worst_route_removal)
+        self.add_destroy_operator(operators.random_route_removal)
 
         # Add repair operators
-        self.add_repair_operator(operators.greedy_repair_on_day)
-        #self.add_repair_operator(operators.regret_2_repair)
-        #self.add_repair_operator(operators.regret_3_repair)
+        self.add_repair_operator(operators.greedy_repair)
 
     # Add operator to the heuristic instance
-
+        
     def add_destroy_operator(self, operator):
         self.destroy_operators.append(operator)
 
@@ -181,7 +182,7 @@ class ALNS:
         # If solution is accepted by criterion (simulated annealing)
         if criterion.accept_criterion(self.rnd_state, current_objective, candidate_objective):
             # TODO: Endre objektivvurdering
-            if checkCandidateBetterThanCurren(candidateObj= candidate_objective, currObj= current_objective):
+            if checkCandidateBetterThanCurrent(candidateObj= candidate_objective, currObj= current_objective):
                 # Solution is better
                 # TODO: Legge inn som sigma123 i main_config i stedet. 
                 weight_score = 1
