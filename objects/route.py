@@ -52,7 +52,7 @@ class Route:
 
         #Nå har vi satt i noden til å være depoet, også vil vi hoppe videre mellom aktivtene 
         for j in self.route: 
-            
+            self.makeSpaceForIndex(index_count)
             if S_i + D_i + T_ia <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
                 max(activity.getEarliestStartTime(), activity.newEeariestStartTime) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j.getID()]) <= j.getStartTime()):  
                 activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
@@ -84,7 +84,8 @@ class Route:
             D_i = j.getDuration()
             i = copy.copy(j) 
             index_count +=1
-       
+
+        self.makeSpaceForIndex(index_count)
         #Etter vi har iterert oss gjennom alle mollom rom mellom aktiviteter sjekker vi her om det er plass i slutten av ruta       
         #Det er samme logikk som i iterasjonen over, bare at vi her sjekker opp mot slutten av ruta
         if S_i + D_i + T_ia <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
@@ -156,6 +157,8 @@ class Route:
     
     def insertActivityOnIndex(self, activity_old, index):
         activity = copy.deepcopy(activity_old)
+
+        self.makeSpaceForIndex(index)
 
         if len(self.route) == 0: 
             return self.insertToEmptyList(activity)
@@ -230,3 +233,37 @@ class Route:
             if act.getID() == actID: 
                 return act        
 
+
+    def moveActivitiesEarlier(self, stopIndex): 
+        i_id = 0
+        S_i = self.start_time
+        D_i = 0
+        for j in range(stopIndex): 
+            act = self.route[j]
+            
+            #Setter starttidspunkt til å være tidligst mulig tidspunkt 
+            #print(act.id, " flyttet fremover") 
+            act.startTime = max(act.getEarliestStartTime(), act.newEeariestStartTime, S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
+            i_id = act.id 
+            S_i = act.startTime 
+            D_i = act.duration
+
+    def moveActivitiesLater(self, stopIndex): 
+        j_id = 0
+        S_j = self.end_time
+       
+        for i in range(len(self.route)-1, stopIndex-1, -1): 
+            act = self.route[i]
+            
+            #Setter starttidspunkt til å være tidligst mulig tidspunkt  
+            #print(act.id, " flyttet bakover")
+            act.startTime =min(act.getLatestStartTime(), act.newLatestStartTime, S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
+            j_id = act.id 
+            S_j = act.startTime 
+         
+    def makeSpaceForIndex(self, index): 
+        #Disse blir feil fordi de ikke håndterer presedens. 
+        #Presedensen er ikke riktig slik det er NÅ
+        self.moveActivitiesEarlier(index)
+        self.moveActivitiesLater(index)
+     

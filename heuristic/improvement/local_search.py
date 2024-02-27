@@ -65,6 +65,13 @@ class LocalSearch:
                 candidate.switchRoute(new_route, day)
         print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
         candidate.printSolution()
+
+        '''
+        #Her tester jeg med ny funksjonalitet
+        test_route = copy.deepcopy(candidate.routes[1][0])
+        test_route.makeSpaceForIndex(2)
+        print("-----------------------------")
+        '''
         
         return candidate
     
