@@ -331,8 +331,8 @@ def activitiesGenerator(df_visits):
         latestPossible = 1440 - visit_duration
         latestStartTime = np.random.randint(visit_duration, latestPossible)
     
-        if np.random.rand() < 0.6:  # 60% sjanse for å velge et tall innenfor 480 og 960 (08:00-16:00)
-            latestStartTime = np.random.randint(480, min(960, latestPossible))
+        if np.random.rand() < 0.7:  # 70% sjanse for å velge et tall innenfor 480 og 960 (08:00-16:00)
+            latestStartTime = np.random.randint(480, min(1200, latestPossible))
         
         earliestStartTime = np.random.randint(0, latestStartTime-visit_duration)
                   
@@ -412,6 +412,7 @@ def autofillVisit(df_visits, df_activities):
 
 
 #TESTING
+'''
 df_employees = employeeGeneration.employeeGenerator()
 df_patients = patientGenerator(df_employees)
 df_treatments = treatmentGenerator(df_patients)
@@ -420,4 +421,6 @@ df_activities = activitiesGenerator(df_visits)
 df_patients_filled = autofillPatient(df_patients, df_treatments)
 df_treatments_filled = autofillTreatment(df_treatments, df_visits)
 df_visits_filled = autofillVisit(df_visits, df_activities)
+'''
+
 
