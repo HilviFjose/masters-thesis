@@ -55,10 +55,11 @@ class ALNS:
         localsearch = LocalSearch(candidate)
         candidate = localsearch.do_local_search()
 
+        '''
         print("NY LØSNING FRA LØKALSØK")
         candidate.printSolution()
         print(candidate.objective)
-
+        '''
 
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             #Hva er dette? Løsning vi allerede har funnet??

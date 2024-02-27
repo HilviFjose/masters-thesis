@@ -76,6 +76,8 @@ class RoutePlan:
         for day in range(1, self.days +1): 
             for route in self.routes[day]: 
                 route.printSoultion()
+        self.updateObjective()
+        print("objective ", self.objective)
 
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
@@ -161,13 +163,13 @@ class RoutePlan:
                 route.removeActivityID(activity.getID())
 
 
-    def insertActivityInEmployeesRoute(self, employee, activity, day): 
+    def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
         insert_activity.restartActivity()
         self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
         for route in self.routes[day]: 
-            if route.employee.getID() == employee:
+            if route.employee.getID() == employeeID:
                 status = route.addActivity(insert_activity)
                 return status
        
@@ -220,4 +222,12 @@ class RoutePlan:
                 nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
                 if nextNodeAct != None:
                     activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1])
+        
+            
+    def switchRoute(self, new_route,  day):
+            for org_route in self.routes[day]: 
+                if org_route.employee.id == new_route.employee.id: 
+                    self.routes[day].remove(org_route)
+                    self.routes[day].append(new_route) 
+            
         

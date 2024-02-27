@@ -23,42 +23,52 @@ class LocalSearch:
         #TODO: Finne ut om det er noe teori på hva som burd være først 
         candidate = self.candidate
 
+        # SWAP EMPLOYEE
         for day in range(1, self.candidate.days + 1):
-            for route in candidate.routes[day]:
-                #Denne returnerer ikkke riktig nye ruteplan
-                new_route = self.move_activity_in_route(copy.deepcopy(route))
-                candidate = self.switchRoute(candidate, new_route, day)
-        candidate.updateObjective()
-        print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
+           candidate = self.swap_employee(candidate, day)
+        for day in range(1, self.candidate.days + 1):
+            candidate = self.swap_employee(candidate,day)
+        print("NY LØSNING ETTER SWAP EMPLOYEE LOKALSØK")
         candidate.printSolution()
-        print("Objective", candidate.objective)
+        
+
+        # MOVE EMPLOYEE
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
-            candidate = self.change_employee(candidate,day)
-        candidate.updateObjective()
+           candidate = self.change_employee(candidate,day)
         print("NY LØSNING ETTER CHANGE EMPLOYEE LOKALSØK")
         candidate.printSolution()
-        print("Objective", candidate.objective)
-  
+    
+
+        # SWAP ACTIVITY
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
-                #Denne returnerer ikkke riktig nye ruteplan
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
-                candidate = self.switchRoute(candidate, new_route, day)
-        candidate.updateObjective()
+                candidate.switchRoute(new_route, day)
+        for day in range(1, self.candidate.days + 1):
+            for route in candidate.routes[day]:
+                new_route = self.swap_activities_in_route(copy.deepcopy(route))
+                candidate.switchRoute(new_route, day)
         print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
         candidate.printSolution()
-        print("Objective", candidate.objective)
+        
+
+        # MOVE ACTIVITY
+        for day in range(1, self.candidate.days + 1):
+            for route in candidate.routes[day]:
+                new_route = self.move_activity_in_route(copy.deepcopy(route))
+                candidate.switchRoute(new_route, day)
+        for day in range(1, self.candidate.days + 1):
+            for route in candidate.routes[day]:
+                new_route = self.move_activity_in_route(copy.deepcopy(route))
+                candidate.switchRoute(new_route, day)
+        print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
+        candidate.printSolution()
+        
         return candidate
     
-    def switchRoute(self, candidate, new_route,  day):
-        for org_route in candidate.routes[day]: 
-            if org_route.employee.id == new_route.employee.id: 
-                candidate.routes[day].remove(org_route)
-                candidate.routes[day].append(new_route) 
-        return candidate
-    
+   
  
     
     def swap_activities_in_route(self, route):
@@ -99,11 +109,17 @@ class LocalSearch:
                 activity1_new = copy.deepcopy(activity1)
                 activity2_new = copy.deepcopy(activity2)
 
+                
+                information_candidate = copy.deepcopy(self.candidate)
+
+
                 if index_act1 < index_act2:
                     status = new_route.insertActivityOnIndex(activity2_new, index_act1)
                     if status == False: 
                         continue
 
+                    information_candidate.switchRoute(new_route, new_route.day)
+                    information_candidate.updateActivityBasedOnRoutePlanOnDay(activity1_new, route.day)
                     status = new_route.insertActivityOnIndex(activity1_new, index_act2)
                     if status == False: 
                         continue
@@ -113,11 +129,15 @@ class LocalSearch:
                     if status == False: 
                         continue
 
+                    information_candidate.switchRoute(new_route, new_route.day)
+                    information_candidate.updateActivityBasedOnRoutePlanOnDay(activity2_new, route.day)
                     status = new_route.insertActivityOnIndex( activity2_new, index_act1)
                     if status == False: 
                         continue
-         # TODO: Denne lista under her er tom
+       
                 for nextAct in NextDependentActivityList: 
+                    information_candidate.switchRoute(new_route, new_route.day)
+                    information_candidate.updateActivityBasedOnRoutePlanOnDay(nextAct, route.day)
                     status = new_route.addActivity(nextAct)
                     if status == False: 
                         continue
@@ -166,7 +186,7 @@ class LocalSearch:
             for index in range(len(new_route.route)+1):
                 newer_route = copy.deepcopy(new_route)
                 information_candidate = copy.deepcopy(self.candidate)
-                information_routeplan = self.switchRoute(information_candidate, newer_route, newer_route.day)
+                information_candidate.switchRoute(newer_route, newer_route.day)
                 if index == index_act:
                     continue
                 status = newer_route.insertActivityOnIndex(activity_new, index)
@@ -174,7 +194,7 @@ class LocalSearch:
                     continue
 
                 for nextAct in NextDependentActivitiyList:
-                    information_routeplan.updateActivityBasedOnRoutePlanOnDay(nextAct, route.day)
+                    information_candidate.updateActivityBasedOnRoutePlanOnDay(nextAct, route.day)
                     status = newer_route.addActivity(nextAct)
                     if status == False: 
                         break
@@ -187,12 +207,49 @@ class LocalSearch:
         return best_found_route
 
     def swap_employee(self, route_plan, day):
-        '''
-            Skal iterere over alle parr av aktiviteter som skjer på en gitt dag
-            Dersom de ikke er i samme rute skal de forsøkes byttes plass på. 
-            Henter altså ut ruten og indeksen og forsøker å legge de til der. 
-            Dersom begge returnerer true, så har vi en ny løsning 
-        '''
+        route_plan.updateObjective()
+        best_objective = route_plan.getObjective()
+        best_found_candidate = route_plan
+
+        for route1 in route_plan.routes[day]: 
+            for route2 in route_plan.routes[day]: 
+                if route1.employee.id >= route2.employee.id: 
+                    continue
+                for activity1 in route1.route: 
+                    for activity2 in route2.route: 
+                        
+                        
+                        new_route1 = copy.deepcopy(route1)
+                        new_route2 = copy.deepcopy(route2)
+
+                        new_route1.removeActivityID(activity1.id)
+                        new_route2.removeActivityID(activity2.id)
+                        
+                        state = new_route1.addActivity(activity2)
+                        if state == False: 
+                            continue
+              
+
+                        state = new_route2.addActivity(activity1)
+                        if state == False: 
+                            continue
+                  
+                        
+                        
+                        new_candidate = copy.deepcopy(route_plan) 
+                        new_candidate.switchRoute(new_route1, day)
+                        new_candidate.switchRoute(new_route2, day)
+                        new_candidate.updateObjective()
+                       
+                            
+                        
+                        if checkCandidateBetterThanCurrent( new_candidate.objective, best_objective ):
+                            best_objective = new_candidate.objective
+                            best_found_candidate = new_candidate 
+                            print( "bytter plass på aktivitet ", activity1.id, activity2.id)
+                            print("new_candidate.objective", new_candidate.objective)
+        return best_found_candidate
+
     
 
     def change_employee(self, route_plan, day):
