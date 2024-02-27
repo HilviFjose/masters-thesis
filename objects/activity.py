@@ -21,6 +21,9 @@ class Activity:
         self.location = df.loc[id]["location"]
         self.employeeRestricions = df.loc[id]["employeeRestriction"]
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevPrece"])
+        #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
+        self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextpresedence"])
+        
         self.startTime = None
         self.newLatestStartTime = 1440
         self.newEeariestStartTime = 0
@@ -142,40 +145,11 @@ class Activity:
             self.possibleToInsert = False 
             
 
-    
-    
-    '''
-    def setLatestStartTime(self, newLatestStartTime): 
-        #latest starttime endres dersom den er lavere enn nåværende latest startime
-        if newLatestStartTime< self.latestStartTime: 
-            self.latestStartTime = newLatestStartTime
-        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if self.earliestStartTime > newLatestStartTime: 
-            self.earliestStartTime = 0
-            self.latestStartTime = 0
 
-    def setEarliestStartTime(self, newEarliestStartTime): 
-        #earliest starttime endres dersom den er høyere enn nåværende latest startime
-        if newEarliestStartTime > self.earliestStartTime: 
-            self.earliestStartTime = newEarliestStartTime
-        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if newEarliestStartTime > self.latestStartTime: 
-            self.earliestStartTime = 0
-            self.latestStartTime = 0
-    '''
 
     def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
         self.employeeNotAllowedDueToPickUpDelivery = list 
 
-"""
-df_employees = (employeeGeneration.employeeGenerator()) #.set_index(["employeeId"]) TODO: Fiks dette!
-df_patients = patientGenerator(df_employees).set_index(["patientId"])
-df_treatments = treatmentGenerator(df_patients).set_index(["treatmentId"])
-df_visits = visitsGenerator(df_treatments).set_index(["visitId"])
-df_activities = activitiesGenerator(df_visits).set_index(["activityId"])        
-act = Activity(df_activities, 16)
-print("PrevNode", act.PrevNode)
-print("ID", act.id)
-print("duration", act.duration)
+        
 
-"""
+
