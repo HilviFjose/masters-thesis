@@ -76,6 +76,8 @@ class RoutePlan:
         for day in range(1, self.days +1): 
             for route in self.routes[day]: 
                 route.printSoultion()
+        self.updateObjective()
+        print("objective ", self.objective)
 
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
@@ -220,4 +222,12 @@ class RoutePlan:
                 nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
                 if nextNodeAct != None:
                     activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1])
+        
+            
+    def switchRoute(self, new_route,  day):
+            for org_route in self.routes[day]: 
+                if org_route.employee.id == new_route.employee.id: 
+                    self.routes[day].remove(org_route)
+                    self.routes[day].append(new_route) 
+            
         
