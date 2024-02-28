@@ -2,12 +2,12 @@ import pandas as pd
 import copy
 import math
 import numpy.random as rnd 
-from helpfunctions import checkCandidateBetterThanCurrent
 
 import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Include subfolders
 
+from helpfunctions import checkCandidateBetterThanCurrent
 from objects.distances import *
 from config.construction_config import *
 from heuristic.improvement.operator.repair_generator import RepairGenerator
@@ -26,27 +26,29 @@ class Operators:
 
     def random_route_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
+        routes = destroyed_route_plan.routes
 
         if destroyed_route_plan:
-            route_ids = [route.route_id for route in destroyed_route_plan]
-            selected_route_id = rnd.choice(route_ids)
-            removed_route = next(route for route in destroyed_route_plan if route.route_id == selected_route_id)
+            index_list = list(range(len(routes)))
+            selected_index = rnd.choice(index_list)
+            removed_route = routes[selected_index]
             destroyed_route_plan.remove(removed_route)
-
+       
         removed_activities = []
         for act in removed_route:
             removed_activities.add(act)
-
+     
         return destroyed_route_plan, removed_activities, True
     
     def worst_route_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
+        routes = destroyed_route_plan.routes
         worst_route = None
         current_worst_objective = current_route_plan.objective
 
-        for route in destroyed_route_plan:
+        for route in routes:
             route_plan_holder = copy.deepcopy(current_route_plan)
-            removed_route = route_plan_holder.pop(route)
+            removed_route = route_plan_holder.routes.pop(route)
             objective_removed_route = route_plan_holder.objective
             
             # If current worst objective is better than candidate, then candidate is the new current worst
@@ -56,7 +58,7 @@ class Operators:
                 destroyed_route_plan = route_plan_holder
         
         removed_activities = []
-        for act in removed_route:
+        for act in worst_route:
             removed_activities.add(act)
 
         return destroyed_route_plan, removed_activities, True

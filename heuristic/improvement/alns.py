@@ -109,7 +109,7 @@ class ALNS:
                 candidate_for_local_search = copy.deepcopy(candidate)
                 localsearch = LocalSearch(candidate_for_local_search)
                 candidate = localsearch.do_local_search()
-
+            """
             # Compare solutions
             best, best_objective, best_infeasible_set, current_route_plan, current_objective, current_infeasible_set, weight_score = self.evaluate_candidate(
                 best, best_objective, best_infeasible_set,
@@ -127,7 +127,7 @@ class ALNS:
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
 
-            """
+            
             # After a certain number of iterations, update weight
             # TODO: Noen får denne i oppgave
             if (i+1) % N_U == 0: #TODO: Se på i sammenheng med initial_improvement_config. 
