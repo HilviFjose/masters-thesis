@@ -62,14 +62,14 @@ class PatientInsertor:
             #Iterer over alle patterns som er mulige for denne treatmenten
             patterns = pattern[self.treatment_df.loc[treatment, 'patternType']]
             index_random = [i for i in range(len(patterns))]
-            random.shuffle(index_random)
+            #random.shuffle(index_random) #TODO: Legge til random igjen når vi er ferdig med feilsøking
 
             for index in index_random:
                 treatPattern = patterns[index]
                 #Forsøker å inserte visit med pattern. insertStatus settes til True hvis velykket
                 insertStatus = self.insert_visit_with_pattern(visitList, treatPattern) 
                 if self.patient == 18:
-                    print("insertion of ", treatment, " with pattern ", treatPattern, " NOT SUCCESS")
+                    print("insertion of ", treatment, " with pattern ", treatPattern)
         
                 #Hvis insertet av visit med pattern er velykkt settes treatStaus til True. 
                 #Deretter breakes løkken fordi vi ikke trenger å sjekke for flere pattern.

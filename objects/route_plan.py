@@ -13,6 +13,7 @@ import random
 Info: 
 Dette er selve løsningen som inneholder routes. 
 '''
+'''
 class RoutePlan:
     def __init__(self, days, employee_df):
         self.routes = {day: [] for day in range(1, days+1)}
@@ -24,18 +25,32 @@ class RoutePlan:
         self.objective = [0,0,0,0,0]
         self.objective1 = [0,0,0,0,0]
 
-        #TODO: Revurdere om vi skal reversere listene som iterers over eller gjøre random 
-        self.rev = True
+        #self.rev = True #Dersom vi ønsker å reversere listene (Sorterer heller listene annerledes nå)
+'''
+class RoutePlan:
+    def __init__(self, days, employee_df):
+        self.employee_df = employee_df
+        self.routes = {day: [] for day in range(1, days+1)}
+        employee_skills = {} # For å holde styr på ansattes ferdigheter
+
+        for key, value in employee_df.iterrows():
+            emp = Employee(employee_df, key)
+            employee_skills[key] = value['professionalLevel'] 
+
+            for day in self.routes:
+                self.routes[day].append((emp.skillLevel, Route(day, emp))) # Lagrer professionalLevel sammen med Route
+
+        # Sorter routes basert på skill for hver dag
+        for day in self.routes:
+            self.routes[day] = [route for _, route in sorted(self.routes[day], key=lambda x: x[0])]
+
+        self.days = days 
+        self.objective = [0,0,0,0,0]
+        self.objective1 = [0,0,0,0,0]
 
 
-    '''
-    Når skal de oppdateres 
-    '''
-
-                
-    
     def addActivityOnDay(self, activity, day):
-        '''
+        ''' FORKLARING
         Funksjonen legger til aktiviteten på den gitte dagen ved å iterere over alle rutene som finnes på dagen 
 
         Arg: 
@@ -45,8 +60,8 @@ class RoutePlan:
         Return: 
         True/False på om innsettingen av aktiviteten var velykket 
         '''
-        #Reverserer rekkefølgen på routes for å ikke alltid begynne med samme ansatt på den gitte dagen
-        '''
+
+        ''' #GAMMEL METODE - Reverserer rekkefølgen på routes for å ikke alltid begynne med samme ansatt på den gitte dagen
         if self.rev == True:
             routes =  reversed(self.routes[day])
             self.rev = False
@@ -54,14 +69,13 @@ class RoutePlan:
             routes = self.routes[day]
             self.rev = True
         '''
-
+        '''
+         #GAMMEL METODE - Itererer helt tilfeldig
         routes = self.routes[day]
         index_random = [i for i in range(len(routes))]
         random.shuffle(index_random)
 
-
-        #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
-        for index in index_random:
+        for index in index_random: #Disse to linjene erstattes med første linje i for-løkken nedenfor
             route = routes[index]
             old_skillDiffObj = route.aggSkillDiff
             old_travel_time = route.travel_time
@@ -73,7 +87,49 @@ class RoutePlan:
                 self.objective[4] += route.travel_time
                 return True
         return False
-    
+        '''
+        '''
+        #GAMMEL METODE - Itererer etter sortert skill
+        # Iterer gjennom routes i den sorterte rekkefølgen basert på skill
+        for route in self.routes[day]:
+            old_skillDiffObj = route.aggSkillDiff
+            old_travel_time = route.travel_time
+            insertStatus = route.addActivity(activity)
+            if insertStatus == True: 
+                self.objective[3] -= old_skillDiffObj
+                self.objective[3] += route.aggSkillDiff
+                self.objective[4] -= old_travel_time
+                self.objective[4] += route.travel_time
+                return True
+        return False
+        '''
+        # Grupperer ruter basert på profesjonen til den ansatte
+        routes_grouped_by_skill = {}
+        for route in self.routes[day]:
+            skill_level = route.skillLev 
+            if skill_level not in routes_grouped_by_skill:
+                routes_grouped_by_skill[skill_level] = [route]
+            else:
+                routes_grouped_by_skill[skill_level].append(route)
+        
+        # Iterer gjennom sorterte professionLevels og iterer i tilfeldig rekkefølge
+        for skill_level in sorted(routes_grouped_by_skill):
+            routes = routes_grouped_by_skill[skill_level]
+            random.shuffle(routes)  
+            
+            #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
+            for route in routes:
+                old_skillDiffObj = route.aggSkillDiff
+                old_travel_time = route.travel_time
+                insertStatus = route.addActivity(activity)
+                if insertStatus:
+                    self.objective[3] -= old_skillDiffObj
+                    self.objective[3] += route.aggSkillDiff
+                    self.objective[4] -= old_travel_time
+                    self.objective[4] += route.travel_time
+                    return True
+        return False
+        
     def getRoutePlan(self): 
         return self.routes
  

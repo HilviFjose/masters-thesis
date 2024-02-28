@@ -275,8 +275,8 @@ def activitiesGenerator(df_visits):
             activity_ids = group['activityId'].tolist()
             mu = (construction_config.pd_min + construction_config.pd_max) / 2
             sigma = (construction_config.pd_max - construction_config.pd_min) / 6
-            pd_time1 = int(np.random.normal(mu, sigma))#+100
-            pd_time2 = int(np.random.normal(mu, sigma))#+100
+            pd_time1 = int(np.random.normal(mu, sigma))
+            pd_time2 = int(np.random.normal(mu, sigma))
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]                                           # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'prevPrece'] = activity_ids[-3]                                         # Pick-up and delivery at the end
@@ -317,7 +317,6 @@ def activitiesGenerator(df_visits):
         
         # Integers and clipping to ensure duration within limits from config files
         duration_clipped = np.clip(np.round(duration), construction_config.minDurationEquip, construction_config.maxDurationEquip) if activityType == 'E' else np.clip(np.round(duration), construction_config.minDurationHealth, construction_config.maxDurationHealth)
-
         df_activities.loc[group.index, 'duration'] = duration_clipped
         
     #Generate earliest and latest start times of activities
@@ -358,25 +357,6 @@ def activitiesGenerator(df_visits):
 
     return df_activities
 
-
-def patientEmployeeContextGenerator(df_patients, df_employees):
-    # Employee Restrictions
-    num_restricted_patients = int(len(df_patients) * 0.05)      # 5 % of the patients have a restriction against an employee
-    restricted_patient_indices = np.random.choice(df_patients.index, size=num_restricted_patients, replace=False) # Random patients get employee restrictions
-    
-    for index in restricted_patient_indices:
-        random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
-        df_patients.at[index, 'employeeRestriction'] = random_employee_id
-
-    #TODO: Employee history
-        
-    # Overwrite old csv file
-    file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
-    df_patients.to_csv(file_path, index=False)
-    
-    return df_patients
-
-
 def autofillPatient(df_patients, df_treatments):
     #Treatment IDs
     treatments_grouped = df_treatments.groupby('patientId')['treatmentId'].apply(list).reset_index(name='treatmentsIds')
@@ -410,8 +390,52 @@ def autofillVisit(df_visits, df_activities):
     df_visits_merged.to_csv(file_path, index=False)
     return df_visits_merged
 
+def TimeWindowsWithTravel(df_activities, T_ij):
+    T_ij_max = round(max([max(row) for row in T_ij]))          # Max travel distance between two activities
+    print(f'T_ij_max: {T_ij_max} minutes')
+    T_ij_max_depot = round(max(row[0] for row in T_ij))        # Max travel distance from the depot to an activity
+    print(f'T_ij_max_depot: {T_ij_max_depot} minutes') 
+    
+    for visitId, group in df_activities.groupby('visitId'):
+        # Total duration of all activities for a given visitId
+        visit_duration = int(group['duration'].sum())
+
+        #Earliest and latest possible starting times within a day
+        startDay = 0
+        endDay = 1400
+        latestPossible = 1440 - visit_duration
+
+        #Generated values without travel distances
+        earliestStartTime = df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] 
+        latestStartTime = df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] 
+        # TODO: Se på hvor mye slingringsmonn det er ønsket på tidsvinduer - Hvor stramme tidsvinduer skal vi tillate
+        if group['numActivitiesInVisit'].iloc[0] >= 3 and group['numActivitiesInVisit'].iloc[0] <= 4:
+            if (latestStartTime - earliestStartTime < (visit_duration + T_ij_max_depot)*1.5).any():     # Krever noe slingringsmonn 
+                print('case for lite tid, 3 aktiviteter', visitId)
+                if (earliestStartTime > T_ij_max_depot).any() and (endDay - latestStartTime > T_ij_max_depot).any():
+                    df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] -= round(T_ij_max_depot/2)
+                    df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] += round(T_ij_max_depot/2)
+                elif (earliestStartTime < T_ij_max_depot).any():
+                    df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] += T_ij_max_depot
+                elif (endDay - latestStartTime < T_ij_max_depot).any():
+                    df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] -= T_ij_max_depot
+        if group['numActivitiesInVisit'].iloc[0] >= 5:
+            if (latestStartTime - earliestStartTime < (visit_duration + T_ij_max_depot*2)*1.5).any():   # Krever noe slingringsmonn 
+                print('case for lite tid, 5 aktiviteter', visitId)
+                if (earliestStartTime > T_ij_max_depot).any() and (endDay - latestStartTime > T_ij_max_depot).any():
+                    df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] -= T_ij_max_depot
+                    df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] += T_ij_max_depot
+                elif (earliestStartTime < T_ij_max_depot*2).any():
+                    df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] += T_ij_max_depot*2
+                elif (endDay - latestStartTime < T_ij_max_depot*2).any():
+                    df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] -= T_ij_max_depot*2
+        
+        file_path = os.path.join(os.getcwd(), 'data', 'activitiesNewTimeWindows.csv')
+        (df_activities.reset_index()).to_csv(file_path, index=False)
+    return df_activities
 
 #TESTING
+
 '''
 df_employees = employeeGeneration.employeeGenerator()
 df_patients = patientGenerator(df_employees)
@@ -422,5 +446,6 @@ df_patients_filled = autofillPatient(df_patients, df_treatments)
 df_treatments_filled = autofillTreatment(df_treatments, df_visits)
 df_visits_filled = autofillVisit(df_visits, df_activities)
 '''
+
 
 

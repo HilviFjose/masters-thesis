@@ -13,7 +13,6 @@ from datageneration import distance_matrix
 
 import parameters
 
-
 def main():
     constructor = None
 
@@ -25,8 +24,6 @@ def main():
     df_treatments = parameters.df_treatments
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
-
-    T_ij = distance_matrix.travel_matrix(df_activities)
 
     #CONSTRUCTION HEURISTIC
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)

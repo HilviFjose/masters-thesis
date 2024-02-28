@@ -54,16 +54,8 @@ depot_row = depot_row.set_index(['activityId'])
 # Legger til depot_row i begynnelsen av df_activities
 df_activities_depot = pd.concat([depot_row, df_activities], axis=0)
 
-# Viser de første radene i den nye DataFrame for å bekrefte at depotet er lagt til
 T_ij = distance_matrix.travel_matrix(df_activities_depot)
-#print(df_activities_depot.head())
-#print("T_ij Lengde: ",len(T_ij))
-print('activity 54 to 55',T_ij[54][55])
 
-print(df_patients.index)
-
-routes = [43, 23, 54]
-l1 = [i for i in range(len(routes))]
-print("l1 = [i for i in len(routes)]", l1)
-random.shuffle(l1)
-print(l1)
+#ADDING TRAVEL DISTANCE TO TIME WINDOWS
+#Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
+df_activities = patientGeneration.TimeWindowsWithTravel(df_activities, T_ij)

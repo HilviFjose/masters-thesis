@@ -36,8 +36,8 @@ continuityDistribution = [0.25, 0.25, 0.5] #Top 1 employee, top 3 employees, all
 heavinessDistribution = [0.05, 0.2, 0.5, 0.2, 0.05] 
 
 # ACTIVITIES
-pd_min = 30                     #Min pickup and delivery time limit
-pd_max = 120                    #Max pickup and delivery time limit
+pd_min = 60                     #Min pickup and delivery time limit
+pd_max = 150                    #Max pickup and delivery time limit
 
 # Profession Requirement
 professionReq1 = [0.4, 0.3, 0.3, 0] #index 0: logistics
