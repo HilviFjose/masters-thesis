@@ -62,7 +62,7 @@ class PatientInsertor:
             #Iterer over alle patterns som er mulige for denne treatmenten
             patterns = pattern[self.treatment_df.loc[treatment, 'patternType']]
             index_random = [i for i in range(len(patterns))]
-            #random.shuffle(index_random) #TODO: Legge til random igjen når vi er ferdig med feilsøking
+            random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
             for index in index_random:
                 treatPattern = patterns[index]

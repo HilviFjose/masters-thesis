@@ -50,6 +50,8 @@ class RoutePlan:
 
 
     def addActivityOnDay(self, activity, day):
+        #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
+        # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
         ''' FORKLARING
         Funksjonen legger til aktiviteten på den gitte dagen ved å iterere over alle rutene som finnes på dagen 
 
