@@ -44,14 +44,10 @@ class RoutePlan:
             old_travel_time = route.travel_time
             #Før aktivitet legges til så må activity oppdateres
             self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-            if activity.id == 64: 
-                print("64TEST")
-                print("newEeariestStartTime", activity.newEeariestStartTime)
-                print("newLatestStartTime", activity.newLatestStartTime)
                 
             insertStatus = route.addActivity(activity)
-            if activity.id == 20: 
-                print("insertStaus 20", insertStatus)
+            if  18 < activity.id < 28:
+                print("insertStaus ", activity.id, insertStatus)
             #TODO: Her må dependent i alle aktiviteter oppdatres 
             if insertStatus == True: 
                 self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day)

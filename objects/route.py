@@ -45,10 +45,7 @@ class Route:
             self.updateActivityBasedOnDependenciesInRoute(activity) 
 
             if 18 < activity.id < 28: 
-                print("TEST PASIENT 5")
                 print("act ", activity.id)
-                print(activity.newEeariestStartTime)
-                print(activity.newLatestStartTime)
                 self.printSoultion()
             if (activity.possibleToInsert == True) and (
                 S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
@@ -69,17 +66,18 @@ class Route:
             S_i = j.getStartTime()
             T_ia = math.ceil(T_ij[j.getID()][activity.getID()])
             D_i = j.getDuration()
-            i = copy.copy(j) 
+            i = j 
             index_count +=1
 
+        #Problem: Startidspunktet settes før den oppdaterer 
         self.makeSpaceForIndex(index_count)
         self.updateActivityBasedOnDependenciesInRoute(activity)
+        if S_i != self.start_time:
+            S_i = i.getStartTime()
         if 18 < activity.id < 28: 
-                print("TEST PASIENT 5")
                 print("act ", activity.id)
-                print(activity.newEeariestStartTime)
-                print(activity.newLatestStartTime)
                 self.printSoultion()
+                
         if (activity.possibleToInsert == True) and (
             S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
             max(activity.earliestStartTime, activity.getNewEarliestStartTime())+ activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
@@ -87,7 +85,17 @@ class Route:
             self.route = np.insert(self.route, index_count, activity)
           
             return True
+        '''
+        if activity.id == 20: 
+            print("20TEST")
+            print(min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia)
+            print(S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
+            print(S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time)
 
+            print(activity.latestStartTime)
+            print(activity.getNewLatestStartTime())
+            print(str(S_i + D_i + T_ia))
+        '''
         if (activity.possibleToInsert == True) and (
             min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia) and (
             S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (

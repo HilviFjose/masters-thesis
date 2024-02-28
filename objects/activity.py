@@ -109,6 +109,8 @@ class Activity:
         #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
         if max(self.getNewEarliestStartTime(), self.earliestStartTime) > min(self.latestStartTime, self.getNewLatestStartTime()): 
             self.possibleToInsert = False
+        else: 
+            self.possibleToInsert = True
 
     def setNewLatestStartTime(self, newLatestStartTimeFromDepAct, depAct): 
         #latest starttime endres dersom den er lavere enn nåværende latest startime
@@ -116,6 +118,8 @@ class Activity:
         #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
         if max(self.getNewEarliestStartTime(), self.earliestStartTime) > min(self.latestStartTime, self.getNewLatestStartTime()): 
             self.possibleToInsert = False
+        else: 
+            self.possibleToInsert = True
             
     
 
