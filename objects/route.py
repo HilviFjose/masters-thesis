@@ -21,64 +21,51 @@ class Route:
         self.aggSkillDiff = 0 
 
 
+
+
+#TODO: Denne klassen kan omstrukturers slik at addActivity bruker add activity on index. Slik at det blir færre funskjoner
     def addActivity(self, activity_in):
         activity = copy.deepcopy(activity_in)
-        #Kan ikke restarte den her når den muligens skal legges inn basert på infoen før 
-        #activity.restartActivity()
-        '''
-        Funkjsonenen sjekker først om aktivitetnen oppfyller krav for å være i ruten
-        Funkjsonen itererer vi over alle mellomrom mellom aktivitene som ligger i ruten. 
-        Ugangspunktet er altså at ruten går fra i til j, og det skal byttes ut med å gå fra i til a og a til j 
-
-        Arg: 
-        activity (Activity) aktivitetsobjektet som skal legges til i ruten 
-
-        Return: 
-        True/False på om aktiviteten er blitt lagt til i ruten 
-        '''
+      
 
         if  self.employee.getID() in activity.getEmployeeRestriction() or (
             self.employee.getID() in activity.employeeNotAllowedDueToPickUpDelivery) or (
                 activity.getSkillreq() > self.skillLev) or (activity.possibleToInsert == False): 
             return False
 
-        
-        #Begynner med å sette i noden til å være depoet på starten av ruten, for å sjekke om vi kan starte med denne aktiviten
         S_i = self.start_time
         T_ia = math.ceil(T_ij[0][activity.id])
         D_i = 0 
         index_count = 0 
         i = None
 
-        #Nå har vi satt i noden til å være depoet, også vil vi hoppe videre mellom aktivtene 
         for j in self.route: 
             self.makeSpaceForIndex(index_count)
-            if S_i + D_i + T_ia <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
-                max(activity.getEarliestStartTime(), activity.newEeariestStartTime) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j.getID()]) <= j.getStartTime()):  
-                activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
+            #Tror den her også må oppdatere activity oppdateres slik at den kan flyttes
+            self.updateActivityBasedOnDependenciesInRoute(activity) 
+
+            if 18 < activity.id < 28: 
+                print("TEST PASIENT 5")
+                print("act ", activity.id)
+                print(activity.newEeariestStartTime)
+                print(activity.newLatestStartTime)
+                self.printSoultion()
+            if (activity.possibleToInsert == True) and (
+                S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
+                max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j.getID()]) <= j.getStartTime()):  
+                activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
                 self.route = np.insert(self.route, index_count, activity)
                 return True
+         
             
-            #Dersom latest start time er større enn starttiden + varigheten + reiseveien fra i til a 
-            if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= S_i + D_i + T_ia and (
-                #og starttiden + varigheten + reiseveien fra i til a  er større enn earliest starttime
-                S_i + D_i + T_ia >= max(activity.getEarliestStartTime(), activity.newEeariestStartTime)) and  (
-                #og aktivitetens starttid + aktivitetens varighet og reiseveien fra a til j er mindre enn starttidspunktet for j 
+            if (activity.possibleToInsert == True) and (
+                min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia) and (
+                S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and  (
                 S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][j.getID()]) <= j.getStartTime()): 
-                #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å startiden til i + varigheten til i + reiseveien fra i til a 
                 activity.setStartTime(S_i + D_i + math.ceil(T_ia))
                 self.route = np.insert(self.route, index_count, activity)
-                '''
-                self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
-                if index_count == 0: 
-                    self.travel_time -= T_ij[0][j.getID()]
-                else: 
-                    self.travel_time -= T_ij[i.getID()][j.getID()]
-                self.travel_time += T_ia + T_ij[activity.getID()][j.getID()]
-                '''
+       
                 return True
-          
-            #Så settes j noden til å være i noden for å kunne sjekke neste mellomrom i ruten
             S_i = j.getStartTime()
             T_ia = math.ceil(T_ij[j.getID()][activity.getID()])
             D_i = j.getDuration()
@@ -86,42 +73,32 @@ class Route:
             index_count +=1
 
         self.makeSpaceForIndex(index_count)
-        #Etter vi har iterert oss gjennom alle mollom rom mellom aktiviteter sjekker vi her om det er plass i slutten av ruta       
-        #Det er samme logikk som i iterasjonen over, bare at vi her sjekker opp mot slutten av ruta
-        if S_i + D_i + T_ia <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
-            max(activity.getEarliestStartTime(), activity.newEeariestStartTime)+ activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
-            activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
+        self.updateActivityBasedOnDependenciesInRoute(activity)
+        if 18 < activity.id < 28: 
+                print("TEST PASIENT 5")
+                print("act ", activity.id)
+                print(activity.newEeariestStartTime)
+                print(activity.newLatestStartTime)
+                self.printSoultion()
+        if (activity.possibleToInsert == True) and (
+            S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
+            max(activity.earliestStartTime, activity.getNewEarliestStartTime())+ activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
+            activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
             self.route = np.insert(self.route, index_count, activity)
-            '''
-            self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
-            if index_count != 0 : 
-                self.travel_time -= math.ceil(T_ij[i.getID()][0])
-            self.travel_time += T_ia + math.ceil(T_ij[activity.getID()][0])      
-            '''     
+          
             return True
 
-        if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= S_i + D_i + T_ia and (
-            S_i + D_i + T_ia >= max(activity.getEarliestStartTime(), activity.newEeariestStartTime)) and (
+        if (activity.possibleToInsert == True) and (
+            min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia) and (
+            S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
             S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(S_i + D_i + math.ceil(T_ia))
             self.route = np.insert(self.route, index_count, activity)
-            '''
-            self.aggSkillDiff +=  self.skillLev - activity.getSkillreq()
-            if index_count != 0 : 
-                self.travel_time -= math.ceil(T_ij[i.getID()][0])
-            self.travel_time += T_ia + math.ceil(T_ij[activity.getID()][0])
-            '''
+           
             return True
 
-        #Returnerer false dersom det ikke var plass mellom noen aktiviteter i ruten 
         return False 
 
-        
-    def getEmployee(self):
-        return self.employee
-
-    def getRoute(self): 
-        return self.route
 
     #Printer ruten 
     def printSoultion(self): 
@@ -158,7 +135,8 @@ class Route:
     def insertActivityOnIndex(self, activity_old, index):
         activity = copy.deepcopy(activity_old)
 
-        self.makeSpaceForIndex(index)
+        #TODO: Jeg tror det er tilfeldig her at jeg ikke får feil. Fordi hver gang vi flytter plass på en, så må de resterende aktivitetene oppdateres.
+        #self.makeSpaceForIndex(index)
 
         if len(self.route) == 0: 
             return self.insertToEmptyList(activity)
@@ -182,14 +160,14 @@ class Route:
             j_id = j.getID()
             S_j = j.startTime
 
-        if S_i + D_i + T_ia <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
-            max(activity.getEarliestStartTime(), activity.newEeariestStartTime) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j_id]) <= S_j): 
-            activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
+        if S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime()) and (
+            max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j_id]) <= S_j): 
+            activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
             self.route = np.insert(self.route, index, activity)
             return True
         
-        if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= S_i + D_i + T_ia and (
-            S_i + D_i + T_ia >= max(activity.getEarliestStartTime(), activity.newEeariestStartTime)) and  (
+        if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia and (
+            S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and  (
             S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][j_id]) <= S_j): 
             activity.setStartTime(S_i + D_i + math.ceil(T_ia))
             self.route = np.insert(self.route, index, activity)
@@ -198,40 +176,25 @@ class Route:
     
 
     def insertToEmptyList(self, activity): 
-        if self.start_time + T_ij[0][activity.id] <= max(activity.getEarliestStartTime(), activity.newEeariestStartTime) and (
-            #og aktivitetens starttid + aktivitetens varighet og reiseveien fra a til j er mindre enn starttidspunktet for j 
-            max(activity.getEarliestStartTime(), activity.newEeariestStartTime) + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
-            #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å være earliest startime 
-            activity.setStartTime(max(activity.getEarliestStartTime(), activity.newEeariestStartTime))
+        if self.start_time + T_ij[0][activity.id] <= max(activity.earliestStartTime, activity.getNewEarliestStartTime()) and (
+            max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
+            activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
             self.route = np.insert(self.route, 0, activity)
             return True
-        
-        #Dersom latest start time er større enn starttiden + varigheten + reiseveien fra i til a 
-        if min(activity.getLatestStartTime(), activity.newLatestStartTime) >= self.start_time + T_ij[0][activity.id] and (
-            #og starttiden + varigheten + reiseveien fra i til a  er større enn earliest starttime
-            self.start_time + T_ij[0][activity.id] >= max(activity.getEarliestStartTime(), activity.newEeariestStartTime)) and  (
-            #og aktivitetens starttid + aktivitetens varighet og reiseveien fra a til j er mindre enn starttidspunktet for j 
+   
+        if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= self.start_time + T_ij[0][activity.id] and (
+            self.start_time + T_ij[0][activity.id] >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and  (
             self.start_time + T_ij[0][activity.id] + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
-            #Legger til aktiviteten på i ruten og oppdatere starttidspunktet til å startiden til i + varigheten til i + reiseveien fra i til a 
             activity.setStartTime(self.start_time + math.ceil(T_ij[0][activity.id]))
             self.route = np.insert(self.route, 0, activity)
             return True
         return False 
     
     def getActivity(self, actID): 
-        '''
-        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
-        
-        Arg: 
-        actID (int): ID til en aktivitet som gjøres en gitt dag
-        day (int): dagen aktiviten finnes i en rute  
-
-        Return: 
-        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
-        '''
         for act in self.route: 
             if act.getID() == actID: 
-                return act        
+                return act 
+        return None       
 
 
     def moveActivitiesEarlier(self, stopIndex): 
@@ -240,10 +203,16 @@ class Route:
         D_i = 0
         for j in range(stopIndex): 
             act = self.route[j]
-            
-            #Setter starttidspunkt til å være tidligst mulig tidspunkt 
-            #print(act.id, " flyttet fremover") 
-            act.startTime = max(act.getEarliestStartTime(), act.newEeariestStartTime, S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
+
+            #hvor oppdateres 64 med tiden til 63 nå, før den settes inn? 
+
+
+            new_startTime =  max(act.earliestStartTime, act.getNewEarliestStartTime(), S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
+            if new_startTime < act.startTime: 
+                act.startTime = new_startTime
+                
+                self.updateActivityDependencies(act)
+                
             i_id = act.id 
             S_i = act.startTime 
             D_i = act.duration
@@ -254,16 +223,87 @@ class Route:
        
         for i in range(len(self.route)-1, stopIndex-1, -1): 
             act = self.route[i]
+           
             
-            #Setter starttidspunkt til å være tidligst mulig tidspunkt  
-            #print(act.id, " flyttet bakover")
-            act.startTime =min(act.getLatestStartTime(), act.newLatestStartTime, S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
+            new_startTime = min(act.latestStartTime, act.getNewLatestStartTime(), S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
+            if new_startTime > act.startTime: 
+                act.startTime = new_startTime
+
+                self.updateActivityDependencies(act)
+
             j_id = act.id 
             S_j = act.startTime 
          
     def makeSpaceForIndex(self, index): 
-        #Disse blir feil fordi de ikke håndterer presedens. 
-        #Presedensen er ikke riktig slik det er NÅ
+        #Det er noe med oppdateringen tilbake til route_plan 
+        #Når vi prøver å sette inn 63 så 
+        #Når vi ved add activity oppdaterer funksjonen på ruten, så henter den de gamle ruteplanene
         self.moveActivitiesEarlier(index)
         self.moveActivitiesLater(index)
-     
+
+
+    def getActivity(self, ActID):
+        for activity in self.route:
+            if activity.id == ActID:
+                return activity
+        return None
+    
+    def updateActivityDependencies(self, act): 
+        for nextActID in act.NextNode: 
+            nextAct = self.getActivity(nextActID)
+            if nextAct != None: 
+                self.updateNextDependentActivityBasedOnActivityInRoute(nextAct, act)
+        
+        for prevActID in act.PrevNode: 
+            prevAct = self.getActivity(prevActID)
+            if prevAct != None: 
+                self.updatePrevDependentActivityBasedOnActivityInRoute(prevAct, act)
+
+        for nextActInTimeTupl in act.NextNodeInTime: 
+            nextActInTime = self.getActivity(nextActInTimeTupl[0])
+            if nextActInTime != None: 
+                self.updateNextInTimeDependentActivityBasedOnActivityInRoute(nextActInTime, act, nextActInTimeTupl[1])
+        
+        for prevActInTimeTupl in act.PrevNodeInTime: 
+            prevActInTime = self.getActivity(prevActInTimeTupl[0])
+            if prevActInTime != None: 
+                self.updatePrevInTimeDependentActivityBasedOnActivityInRoute(prevActInTime, act, prevActInTimeTupl[1])        
+
+    
+    #TODO: Disse funskjonene kunne kanskje bare vært gjort i funksjonen over
+    def updateNextDependentActivityBasedOnActivityInRoute(self, nextAct, act):
+        nextAct.setNewEarliestStartTime(act.getStartTime() + act.getDuration(), act.id)
+
+    
+    def updatePrevDependentActivityBasedOnActivityInRoute(self, prevAct, act):
+        prevAct.setNewLatestStartTime(act.getStartTime() - prevAct.duration, act.id)
+    
+    def updateNextInTimeDependentActivityBasedOnActivityInRoute(self, nextInTimeAct, act, inTime):
+        nextInTimeAct.setNewLatestStartTime(act.getStartTime() + act.duration + inTime, act.id)
+        
+    
+    def updatePrevInTimeDependentActivityBasedOnActivityInRoute(self, prevInTimeAct, act, inTime):
+        prevInTimeAct.setNewEarliestStartTime(act.getStartTime() - inTime , act.id)
+
+
+    def updateActivityBasedOnDependenciesInRoute(self, activity): 
+        for prevNodeID in activity.PrevNode: 
+            prevNodeAct = self.getActivity(prevNodeID)
+            if prevNodeAct != None:
+                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
+
+        for nextNodeID in activity.NextNode: 
+            nextNodeAct = self.getActivity(nextNodeID)
+            if nextNodeAct != None:
+                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
+        
+        for PrevNodeInTimeID in activity.PrevNodeInTime: 
+            prevNodeAct = self.getActivity(PrevNodeInTimeID[0])
+            if prevNodeAct != None:
+                activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
+
+
+        for NextNodeInTimeID in activity.NextNodeInTime: 
+            nextNodeAct = self.getActivity(NextNodeInTimeID[0])
+            if nextNodeAct != None:
+                activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])

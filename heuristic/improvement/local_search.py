@@ -23,25 +23,28 @@ class LocalSearch:
         #TODO: Finne ut om det er noe teori på hva som burd være først 
         candidate = self.candidate
 
+        '''
         # SWAP EMPLOYEE
         for day in range(1, self.candidate.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.candidate.days + 1):
             candidate = self.swap_employee(candidate,day)
         print("NY LØSNING ETTER SWAP EMPLOYEE LOKALSØK")
-        candidate.printSolution()
-        
+        #candidate.printSolution()
+        '''
 
         # MOVE EMPLOYEE
+        '''
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         print("NY LØSNING ETTER CHANGE EMPLOYEE LOKALSØK")
-        candidate.printSolution()
-    
+        #candidate.printSolution()
+        '''
 
         # SWAP ACTIVITY
+        '''
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
@@ -51,10 +54,12 @@ class LocalSearch:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
         print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
-        candidate.printSolution()
+        '''
+        #candidate.printSolution()
         
 
         # MOVE ACTIVITY
+        '''
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
@@ -64,6 +69,7 @@ class LocalSearch:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
         print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
+        '''
         candidate.printSolution()
 
         '''
@@ -72,7 +78,6 @@ class LocalSearch:
         test_route.makeSpaceForIndex(2)
         print("-----------------------------")
         '''
-        
         return candidate
     
    
@@ -126,6 +131,8 @@ class LocalSearch:
                         continue
 
                     information_candidate.switchRoute(new_route, new_route.day)
+                    #Lagt inn restart uten å sjekke
+                    activity1_new.restartActivity()
                     information_candidate.updateActivityBasedOnRoutePlanOnDay(activity1_new, route.day)
                     status = new_route.insertActivityOnIndex(activity1_new, index_act2)
                     if status == False: 
@@ -137,6 +144,7 @@ class LocalSearch:
                         continue
 
                     information_candidate.switchRoute(new_route, new_route.day)
+                    activity2_new.restartActivity()
                     information_candidate.updateActivityBasedOnRoutePlanOnDay(activity2_new, route.day)
                     status = new_route.insertActivityOnIndex( activity2_new, index_act1)
                     if status == False: 
@@ -144,6 +152,7 @@ class LocalSearch:
        
                 for nextAct in NextDependentActivityList: 
                     information_candidate.switchRoute(new_route, new_route.day)
+                    nextAct.restartActivity()
                     information_candidate.updateActivityBasedOnRoutePlanOnDay(nextAct, route.day)
                     status = new_route.addActivity(nextAct)
                     if status == False: 
@@ -201,6 +210,7 @@ class LocalSearch:
                     continue
 
                 for nextAct in NextDependentActivitiyList:
+                    nextAct.restartActivity()
                     information_candidate.updateActivityBasedOnRoutePlanOnDay(nextAct, route.day)
                     status = newer_route.addActivity(nextAct)
                     if status == False: 
@@ -232,12 +242,13 @@ class LocalSearch:
                         new_route1.removeActivityID(activity1.id)
                         new_route2.removeActivityID(activity2.id)
                         
-                        state = new_route1.addActivity(activity2)
+                        #TODO: Nå sendes routeplan inn her. har ikke sjekket premissene. Var ikke med før
+                        state = new_route1.addActivity(activity2, route_plan)
                         if state == False: 
                             continue
               
 
-                        state = new_route2.addActivity(activity1)
+                        state = new_route2.addActivity(activity1, route_plan)
                         if state == False: 
                             continue
                   
