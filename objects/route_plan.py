@@ -85,9 +85,9 @@ class RoutePlan:
         
         '''
         for route in self.routes[day]: 
-            for act in route.getRoute(): 
+            for act in route.route: 
                 if act.getID() == activity.id: 
-                    return route.getEmployee().getID()
+                    return route.employee.getID()
     
     #TODO: Denne fungerer ikke nå. Må endre på den sånn at den funker!!
     def getListOtherEmplIDsOnDay(self, activityID, day):  
@@ -194,8 +194,6 @@ class RoutePlan:
             for prevNodeID in activity.PrevNode: 
                 prevNodeAct = self.getActivity(prevNodeID, day)
                 if prevNodeAct != None:
-                    if activity.id == 64 and prevNodeID == 63: 
-                        print("newEarliest", str(prevNodeAct.getStartTime() + prevNodeAct.getDuration()))
                     activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
   
             for nextNodeID in activity.NextNode: 

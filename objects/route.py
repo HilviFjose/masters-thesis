@@ -44,9 +44,7 @@ class Route:
             #Tror den her også må oppdatere activity oppdateres slik at den kan flyttes
             self.updateActivityBasedOnDependenciesInRoute(activity) 
 
-            if 18 < activity.id < 28: 
-                print("act ", activity.id)
-                self.printSoultion()
+           
             if (activity.possibleToInsert == True) and (
                 S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
                 max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j.getID()]) <= j.getStartTime()):  
@@ -74,9 +72,7 @@ class Route:
         self.updateActivityBasedOnDependenciesInRoute(activity)
         if S_i != self.start_time:
             S_i = i.getStartTime()
-        if 18 < activity.id < 28: 
-                print("act ", activity.id)
-                self.printSoultion()
+       
                 
         if (activity.possibleToInsert == True) and (
             S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (

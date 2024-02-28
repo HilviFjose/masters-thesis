@@ -6,6 +6,7 @@ import numpy as np
 #TODO: Tenke mer over hvike operatorer vi har innad på en dag i vår struktur. 
 #Det må være noen operatorer for alle typer aktiviteter.
 
+#TODO: Skal vi ha 
 '''
 Skal man ved hjelp av disse operatorene kunne komme til optimal løsning? 
 '''
@@ -23,28 +24,28 @@ class LocalSearch:
         #TODO: Finne ut om det er noe teori på hva som burd være først 
         candidate = self.candidate
 
-        '''
+        
         # SWAP EMPLOYEE
         for day in range(1, self.candidate.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.candidate.days + 1):
             candidate = self.swap_employee(candidate,day)
         print("NY LØSNING ETTER SWAP EMPLOYEE LOKALSØK")
-        #candidate.printSolution()
-        '''
+        candidate.printSolution()
+        
 
         # MOVE EMPLOYEE
-        '''
+        
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         print("NY LØSNING ETTER CHANGE EMPLOYEE LOKALSØK")
-        #candidate.printSolution()
-        '''
+        candidate.printSolution()
+        
 
         # SWAP ACTIVITY
-        '''
+        
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
@@ -54,22 +55,24 @@ class LocalSearch:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
         print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
-        '''
-        #candidate.printSolution()
+        
+        candidate.printSolution()
         
 
         # MOVE ACTIVITY
-        '''
+        
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
+        '''       
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
+        ''' 
         print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
-        '''
+        
         candidate.printSolution()
 
         '''
@@ -170,16 +173,22 @@ class LocalSearch:
 
 
 # TODO: Tenke over at in time tidsvinduer ikke tas hensyn til av aktiviteten mellom de to som har det.
-# TODO: Tenke på forskyvningsmekanisme for å gjøre mer plass til aktivitet som skal moves inn (for å forbedre ytelse til lokalsøk) 
+    '''
+    Her må vi tenke på når vi gjør hvilke oppdateringer av tidsbegresninger 
+    Nå jobber vi med ruteobjekter, ønsker derfor ikke å kalle updatebasedonrouteplan inne i 
+    '''
     def move_activity_in_route(self, route):
         route.updateObjective()
         best_travel_time = route.travel_time
         best_found_route = route
     
         for activity in route.route:
+
             NextDependentActivitiyIDs = activity.NextNode
             for elem in (activity.NextNodeInTime): 
                 NextDependentActivitiyIDs.append(elem[0])
+            
+            
             new_route = copy.deepcopy(route)
 
             NextDependentActivitiyList = []
@@ -205,12 +214,15 @@ class LocalSearch:
                 information_candidate.switchRoute(newer_route, newer_route.day)
                 if index == index_act:
                     continue
+
+                #TODO: Muligens endre under
                 status = newer_route.insertActivityOnIndex(activity_new, index)
                 if status == False:
                     continue
 
                 for nextAct in NextDependentActivitiyList:
                     nextAct.restartActivity()
+                    #TODO: Muligens endre under
                     information_candidate.updateActivityBasedOnRoutePlanOnDay(nextAct, route.day)
                     status = newer_route.addActivity(nextAct)
                     if status == False: 
@@ -243,12 +255,12 @@ class LocalSearch:
                         new_route2.removeActivityID(activity2.id)
                         
                         #TODO: Nå sendes routeplan inn her. har ikke sjekket premissene. Var ikke med før
-                        state = new_route1.addActivity(activity2, route_plan)
+                        state = new_route1.addActivity(activity2)
                         if state == False: 
                             continue
               
 
-                        state = new_route2.addActivity(activity1, route_plan)
+                        state = new_route2.addActivity(activity1)
                         if state == False: 
                             continue
                   
