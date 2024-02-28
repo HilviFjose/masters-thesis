@@ -39,7 +39,7 @@ def main():
     initial_route_plan = constructor.route_plan 
     initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
-    """    
+        
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
     
@@ -65,7 +65,7 @@ def main():
         '''
     
     #LOCAL SEARCH
-    """
+    
 
     '''
     #TODO
