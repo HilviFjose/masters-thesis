@@ -41,7 +41,7 @@ class Route:
 
         for j in self.route: 
             self.makeSpaceForIndex(index_count)
-            #Tror den her også må oppdatere activity oppdateres slik at den kan flyttes
+            #Beg: Activites grenser i ruten må oppdateres etter at Makespace flytter på startTidspunkter
             self.updateActivityBasedOnDependenciesInRoute(activity) 
 
            
@@ -67,8 +67,9 @@ class Route:
             i = j 
             index_count +=1
 
-        #Problem: Startidspunktet settes før den oppdaterer 
+        
         self.makeSpaceForIndex(index_count)
+        #Beg: Activites grenser i ruten må oppdateres etter at Makespace flytter på startTidspunkter
         self.updateActivityBasedOnDependenciesInRoute(activity)
         if S_i != self.start_time:
             S_i = i.getStartTime()
@@ -131,16 +132,19 @@ class Route:
         for act in self.route: 
             if act.getID() == activityID: 
                 self.route = np.delete(self.route, index)
+                act.startTime = None
+                self.updateActivityDependenciesInRoute(act)
                 return 
             index += 1 
         #print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
         return
     
-    def insertActivityOnIndex(self, activity_old, index):
-        activity = copy.deepcopy(activity_old)
-
-        #TODO: Jeg tror det er tilfeldig her at jeg ikke får feil. Fordi hver gang vi flytter plass på en, så må de resterende aktivitetene oppdateres.
-        #self.makeSpaceForIndex(index)
+    def insertActivityOnIndex(self, activity, index):
+   
+        
+        self.makeSpaceForIndex(index)
+        #Beg: Må oppdatere verdiene innad basert på det som er flyttet 
+        self.updateActivityBasedOnDependenciesInRoute(activity)
 
         if len(self.route) == 0: 
             return self.insertToEmptyList(activity)
@@ -215,7 +219,8 @@ class Route:
             if new_startTime < act.startTime: 
                 act.startTime = new_startTime
                 
-                self.updateActivityDependencies(act)
+                #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
+                self.updateActivityDependenciesInRoute(act)
                 
             i_id = act.id 
             S_i = act.startTime 
@@ -233,7 +238,8 @@ class Route:
             if new_startTime > act.startTime: 
                 act.startTime = new_startTime
 
-                self.updateActivityDependencies(act)
+                #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
+                self.updateActivityDependenciesInRoute(act)
 
             j_id = act.id 
             S_j = act.startTime 
@@ -252,7 +258,7 @@ class Route:
                 return activity
         return None
     
-    def updateActivityDependencies(self, act): 
+    def updateActivityDependenciesInRoute(self, act): 
         for nextActID in act.NextNode: 
             nextAct = self.getActivity(nextActID)
             if nextAct != None: 
@@ -276,17 +282,29 @@ class Route:
     
     #TODO: Disse funskjonene kunne kanskje bare vært gjort i funksjonen over
     def updateNextDependentActivityBasedOnActivityInRoute(self, nextAct, act):
+        if act.startTime == None: 
+            nextAct.setNewEarliestStartTime(0, act.id)
+            return
         nextAct.setNewEarliestStartTime(act.getStartTime() + act.getDuration(), act.id)
 
     
     def updatePrevDependentActivityBasedOnActivityInRoute(self, prevAct, act):
+        if act.startTime == None: 
+            prevAct.setNewLatestStartTime(1440, act.id)
+            return
         prevAct.setNewLatestStartTime(act.getStartTime() - prevAct.duration, act.id)
     
     def updateNextInTimeDependentActivityBasedOnActivityInRoute(self, nextInTimeAct, act, inTime):
+        if act.startTime == None: 
+            nextInTimeAct.setNewLatestStartTime(1440, act.id)
+            return
         nextInTimeAct.setNewLatestStartTime(act.getStartTime() + act.duration + inTime, act.id)
         
     
     def updatePrevInTimeDependentActivityBasedOnActivityInRoute(self, prevInTimeAct, act, inTime):
+        if act.startTime == None: 
+            prevInTimeAct.setNewEarliestStartTime(0, act.id)
+            return
         prevInTimeAct.setNewEarliestStartTime(act.getStartTime() - inTime , act.id)
 
 

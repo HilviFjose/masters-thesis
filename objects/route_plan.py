@@ -42,15 +42,25 @@ class RoutePlan:
         for route in routes: 
             old_skillDiffObj = route.aggSkillDiff
             old_travel_time = route.travel_time
-            #Før aktivitet legges til så må activity oppdateres
+
+            #TODO: Update funskjonene burde sjekkes med de andre   
+            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
+            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
+            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
+            
+            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
+            
             self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-                
+
             insertStatus = route.addActivity(activity)
-            if  18 < activity.id < 28:
-                print("insertStaus ", activity.id, insertStatus)
-            #TODO: Her må dependent i alle aktiviteter oppdatres 
+            
+            
             if insertStatus == True: 
-                self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day)
+                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
+                #Må gjøres på alle fordi alle kan ha blitt flyttet
+                for possiblyMovedActivity in route.route: 
+                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
+            
                 self.objective[3] -= old_skillDiffObj
                 self.objective[3] += route.aggSkillDiff
                 self.objective[4] -= old_travel_time
@@ -154,16 +164,26 @@ class RoutePlan:
         for route in self.routes[day]: 
             if route.employee.getID() == employee:
                 route.removeActivityID(activity.getID())
+                #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
+                self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day )
+
 
 
     def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
-        insert_activity.restartActivity()
-        self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
+        
+        
+        
         for route in self.routes[day]: 
             if route.employee.getID() == employeeID:
+                #Beg: Må oppdatere grensene til alle i ruten som muligens kan flytte seg når vi prøver å legge til aktivtete
+                
+                self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
                 status = route.addActivity(insert_activity)
+                if status == True: 
+                    for routeActivity in route.route: 
+                        self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
        
         
