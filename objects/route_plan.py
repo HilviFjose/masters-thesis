@@ -47,6 +47,8 @@ class RoutePlan:
         self.days = days 
         self.objective = [0,0,0,0,0]
         self.objective1 = [0,0,0,0,0]
+        self.weeklyHeaviness = 0
+        self.dailyHeaviness = 0
 
 
     def addActivityOnDay(self, activity, day):
@@ -217,12 +219,55 @@ class RoutePlan:
 
     def updateObjective(self): 
         objective = [self.objective[0], 0, 0, 0, 0]
+        self.calculateWeeklyHeaviness()
+        self.calculateDailyHeaviness()
+        objective[1] = self.weeklyHeaviness
+        objective[2] = self.dailyHeaviness
         for day in range(1, 1+self.days): 
             for route in self.routes[day]: 
                 route.updateObjective()
                 objective[3] += route.aggSkillDiff 
                 objective[4] += route.travel_time
         self.objective = objective
+        
+    def calculateWeeklyHeaviness(self):
+        employee_weekly_heaviness = {}
+
+        for day, routes in self.routes.items():
+            for route in routes:
+                employee_id = route.employee.id
+                profession = route.skillLev  
+                if profession not in employee_weekly_heaviness:
+                    employee_weekly_heaviness[profession] = {}
+                if employee_id not in employee_weekly_heaviness[profession]:
+                    employee_weekly_heaviness[profession][employee_id] = []
+                # Legger til route's "heaviness" for den ansatte
+                employee_weekly_heaviness[profession][employee_id].append(route.calculateTotalHeaviness())
+
+        # Gjennomsnittlig "heaviness" for hver ansatt og finner deretter max-min innen hver yrkesgruppe
+        weekly_diffs = []
+        for profession, employees in employee_weekly_heaviness.items():
+            avg_heaviness_per_employee = [np.mean(heaviness) for heaviness in employees.values()]
+            if avg_heaviness_per_employee: 
+                weekly_diffs.append(max(avg_heaviness_per_employee) - min(avg_heaviness_per_employee))
+
+        self.weeklyHeaviness = sum(weekly_diffs)
+
+
+    def calculateDailyHeaviness(self):
+        daily_diffs = []
+        for day, routes in self.routes.items():    
+            profession_groups = {}
+            for route in routes:
+                profession = route.skillLev
+                if profession not in profession_groups:
+                    profession_groups[profession] = []
+                profession_groups[profession].append(route.calculateTotalHeaviness())
+
+            for profession, heaviness in profession_groups.items():
+                daily_diffs.append(max(heaviness) - min(heaviness))
+        self.dailyHeaviness = sum(daily_diffs)
+
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         for route in self.routes[day]: 

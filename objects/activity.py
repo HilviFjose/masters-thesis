@@ -17,6 +17,7 @@ class Activity:
         self.earliestStartTime = df.loc[id]["earliestStartTime"]
         self.duration = df.loc[id]["duration"]
         self.skillReq = df.loc[id]["skillRequirement"]
+        self.heaviness = df.loc[id]["heaviness"]
         self.pickUpActivityID = df.loc[id]["sameEmployeeActivityId"]
         self.location = df.loc[id]["location"]
         self.employeeRestricions = df.loc[id]["employeeRestriction"]
@@ -126,6 +127,8 @@ class Activity:
     def getPrevNodeInTime(self): 
         return self.PrevNodeInTime
     
+    def getHeaviness(self):
+        return self.heaviness
     #set og add funsksjonene oppdatere aktivtetens parametere
 
     def setNewEarliestStartTime(self, newEarliestStartTime): 

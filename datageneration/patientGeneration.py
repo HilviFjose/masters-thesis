@@ -119,6 +119,7 @@ def treatmentGenerator(df_patients):
     df_treatments['patternType'] = patternType
     df_treatments['location'] = expanded_rows['location']
     df_treatments['employeeRestriction'] = expanded_rows['employeeRestriction']
+    df_treatments['heaviness'] = expanded_rows['heaviness']
 
     for index, row in df_treatments.iterrows():
         #Fill rows with possible patterns
@@ -158,6 +159,7 @@ def visitsGenerator(df_treatments):
     df_visits['patientId'] = expanded_rows['patientId']
     df_visits['location'] = expanded_rows['location']
     df_visits['employeeRestriction'] = expanded_rows['employeeRestriction']
+    df_visits['heaviness'] = expanded_rows['heaviness']
 
     # Distribution of number of activities per visit
     A_numMax = construction_config.maxActivitiesPerVisit                        # Max number of activities per visit
@@ -192,6 +194,7 @@ def activitiesGenerator(df_visits):
     df_activities['numActivitiesInVisit'] = expanded_rows['activities']
     df_activities['location'] = expanded_rows['location']
     df_activities['employeeRestriction'] = expanded_rows['employeeRestriction']
+    df_activities['heaviness'] = expanded_rows['heaviness']
            
     # Distribute activities between healthcare activities 'H' and equipment activities 'E'
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital

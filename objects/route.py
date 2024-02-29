@@ -20,7 +20,7 @@ class Route:
         self.day = day
         self.travel_time = 0
         self.aggSkillDiff = 0 
-
+        self.totalHeaviness = 0
 
     def addActivity(self, activity_in):
         activity = copy.deepcopy(activity_in)
@@ -126,12 +126,11 @@ class Route:
 
     #Printer ruten 
     def printSoultion(self): 
-        print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID()))
+        print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID())+' HEAVINESS '+str(self.calculateTotalHeaviness()))
         for a in self.route: 
-            print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
+            print("activity "+str(a.getID())+ " start "+ str(a.getStartTime())+' heaviness '+str(a.getHeaviness()))    
         print("---------------------")
 
-    #TODO: Denne fungerer ikke nå for skill d
     #Dette er alternativ måte å regne ut objektivet. Slik at ikke alt ligger i routeplan 
     def updateObjective(self): 
         i = 0 
@@ -145,7 +144,11 @@ class Route:
         travel_time += math.ceil(T_ij[i][0])
         self.aggSkillDiff= aggregated_skilldiff
         self.travel_time = travel_time
-    
+        
+    def calculateTotalHeaviness(self):
+        self.totalHeaviness = sum([act.getHeaviness() for act in self.route])
+        return self.totalHeaviness
+
     def removeActivityID(self, activityID):
         index = 0 
         for act in self.route: 
