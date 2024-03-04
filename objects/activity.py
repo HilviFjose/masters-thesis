@@ -44,7 +44,8 @@ class Activity:
             return [int(string)]
         except: 
             return [] 
-        
+    
+
 
     def makePresNodes(self, string): 
         '''

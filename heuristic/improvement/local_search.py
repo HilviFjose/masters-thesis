@@ -44,11 +44,27 @@ class LocalSearch:
         candidate.printSolution()
         
 
+        # MOVE ACTIVITY
+        
+        for day in range(1, self.candidate.days + 1):
+            for route in candidate.routes[day]:
+                new_route = self.move_activity_in_route(copy.deepcopy(route))
+                candidate.switchRoute(new_route, day)
+        
+              
+        for day in range(1, self.candidate.days + 1):
+            for route in candidate.routes[day]:
+                new_route = self.move_activity_in_route(copy.deepcopy(route))
+                candidate.switchRoute(new_route, day)
+        
+        print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
+        
+        candidate.printSolution()
         
         
 
         # SWAP ACTIVITY
-        '''
+       
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
@@ -61,23 +77,8 @@ class LocalSearch:
         
         candidate.printSolution()
         
-        '''
-        # MOVE ACTIVITY
+    
         
-        for day in range(1, self.candidate.days + 1):
-            for route in candidate.routes[day]:
-                new_route = self.move_activity_in_route(copy.deepcopy(route))
-                candidate.switchRoute(new_route, day)
-        
-        '''       
-        for day in range(1, self.candidate.days + 1):
-            for route in candidate.routes[day]:
-                new_route = self.move_activity_in_route(copy.deepcopy(route))
-                candidate.switchRoute(new_route, day)
-        ''' 
-        print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
-        
-        candidate.printSolution()
 
         '''
         #Her tester jeg med ny funksjonalitet
@@ -116,14 +117,14 @@ class LocalSearch:
                 index_act1 = 0 
                 index_act2 = 0 
                 for act in new_route.route:
-                    if act.getID() == activity1.getID():
+                    if act.id == activity1.id:
                         index_act1 = index_count
-                    if act.getID() == activity2.getID():
+                    if act.id == activity2.id:
                         index_act2 = index_count
                     index_count += 1
         
-                new_route.removeActivityID(activity1.getID())
-                new_route.removeActivityID(activity2.getID())
+                new_route.removeActivityID(activity1.id)
+                new_route.removeActivityID(activity2.id)
                 
                 activity1_new = copy.deepcopy(activity1)
                 activity2_new = copy.deepcopy(activity2)
@@ -204,11 +205,11 @@ class LocalSearch:
             index_count = 0
             index_act = 0 
             for act in new_route.route:
-                if act.getID() == activity.getID():
+                if act.id == activity.id:
                     index_act = index_count
                 index_count += 1
     
-            new_route.removeActivityID(activity.getID())
+            new_route.removeActivityID(activity.id)
 
             activity_new = copy.deepcopy(activity)
 
@@ -304,15 +305,28 @@ class LocalSearch:
         for route in route_plan.routes[day]: 
             for activity in route.route:
                 employee = route_plan.getEmployeeIDAllocatedForActivity(activity, day)
-                otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.getID(), day)
+                otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.id, day)
+                sameEmployeeActivity = route_plan.getActivity(activity.pickUpActivityID, day)
                 for othEmpl in otherEmployees: 
+                    
                     new_candidate = copy.deepcopy(route_plan)
                     new_candidate.removeActivityFromEmployeeOnDay(employee, activity, day)
+                    if sameEmployeeActivity != None: 
+                        new_candidate.removeActivityFromEmployeeOnDay(employee, sameEmployeeActivity, day)
+                        
+
                     status = new_candidate.insertActivityInEmployeesRoute(othEmpl, activity, day)
-                    new_candidate.updateObjective()
-                    
                     if status == False: 
                         break
+                  
+                        
+                    #Legger til sameEmployee aktiviteten 
+                    if sameEmployeeActivity != None: 
+                        status = new_candidate.insertActivityInEmployeesRoute(othEmpl, sameEmployeeActivity, day)
+                        if status == False: 
+                            break
+                  
+                    new_candidate.updateObjective()
                     
                     if checkCandidateBetterThanCurrent( new_candidate.objective, best_objective ):
                         best_objective = new_candidate.objective

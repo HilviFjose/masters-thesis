@@ -127,14 +127,15 @@ class Route:
         self.aggSkillDiff= aggregated_skilldiff
         self.travel_time = travel_time
     
+    #TODO: 
     def removeActivityID(self, activityID):
         index = 0 
         for act in self.route: 
             if act.getID() == activityID: 
+                
                 self.route = np.delete(self.route, index)
                 act.startTime = None
                 self.updateActivityDependenciesInRoute(act)
-                return 
             index += 1 
         #print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
         return
@@ -240,6 +241,7 @@ class Route:
 
                 #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
                 self.updateActivityDependenciesInRoute(act)
+           
 
             j_id = act.id 
             S_j = act.startTime 

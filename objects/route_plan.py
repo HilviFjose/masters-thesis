@@ -96,8 +96,8 @@ class RoutePlan:
         '''
         for route in self.routes[day]: 
             for act in route.route: 
-                if act.getID() == activity.id: 
-                    return route.employee.getID()
+                if act.id== activity.id: 
+                    return route.employee.id
     
     #TODO: Denne fungerer ikke nå. Må endre på den sånn at den funker!!
     def getListOtherEmplIDsOnDay(self, activityID, day):  
@@ -146,7 +146,7 @@ class RoutePlan:
         '''
         for route in self.routes[day]: 
             for act in route.route: 
-                if act.getID() == actID: 
+                if act.id == actID: 
                     return act 
         return None       
 
@@ -161,25 +161,30 @@ class RoutePlan:
         self.objective = objective
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
+         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
+        #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
         for route in self.routes[day]: 
-            if route.employee.getID() == employee:
-                route.removeActivityID(activity.getID())
+            if route.employee.id == employee:
+                route.removeActivityID(activity.id)
                 #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
                 self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day )
-
+       
+        
 
 
     def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
-        
+        insert_activity.employeeNotAllowedDueToPickUpDelivery = []
+        insert_activity.startTime = None
         
         
         for route in self.routes[day]: 
-            if route.employee.getID() == employeeID:
+            if route.employee.id == employeeID:
                 #Beg: Må oppdatere grensene til alle i ruten som muligens kan flytte seg når vi prøver å legge til aktivtete
-                
+              
                 self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
+             
                 status = route.addActivity(insert_activity)
                 if status == True: 
                     for routeActivity in route.route: 
