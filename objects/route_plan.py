@@ -51,8 +51,9 @@ class RoutePlan:
             #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
             
             self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-
+         
             insertStatus = route.addActivity(activity)
+            
             
             
             if insertStatus == True: 
@@ -167,16 +168,16 @@ class RoutePlan:
             if route.employee.id == employee:
                 route.removeActivityID(activity.id)
                 #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
-                self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day )
-       
+                self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day)
+              
+        
         
 
 
     def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
-        insert_activity.employeeNotAllowedDueToPickUpDelivery = []
-        insert_activity.startTime = None
+        
         
         
         for route in self.routes[day]: 

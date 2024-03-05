@@ -82,17 +82,7 @@ class Route:
             self.route = np.insert(self.route, index_count, activity)
           
             return True
-        '''
-        if activity.id == 20: 
-            print("20TEST")
-            print(min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia)
-            print(S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
-            print(S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time)
-
-            print(activity.latestStartTime)
-            print(activity.getNewLatestStartTime())
-            print(str(S_i + D_i + T_ia))
-        '''
+   
         if (activity.possibleToInsert == True) and (
             min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia) and (
             S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
@@ -127,18 +117,20 @@ class Route:
         self.aggSkillDiff= aggregated_skilldiff
         self.travel_time = travel_time
     
-    #TODO: 
+    #TODO: Oppdates ikke oppover igjen i hierarkiet
     def removeActivityID(self, activityID):
         index = 0 
         for act in self.route: 
             if act.getID() == activityID: 
-                
                 self.route = np.delete(self.route, index)
+                act.employeeNotAllowedDueToPickUpDelivery = []
                 act.startTime = None
                 self.updateActivityDependenciesInRoute(act)
+                return
             index += 1 
         #print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
         return
+
     
     def insertActivityOnIndex(self, activity, index):
    
@@ -213,14 +205,13 @@ class Route:
         for j in range(stopIndex): 
             act = self.route[j]
 
-            #hvor oppdateres 64 med tiden til 63 nå, før den settes inn? 
 
 
             new_startTime =  max(act.earliestStartTime, act.getNewEarliestStartTime(), S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
             if new_startTime < act.startTime: 
                 act.startTime = new_startTime
                 
-                #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
+            
                 self.updateActivityDependenciesInRoute(act)
                 
             i_id = act.id 

@@ -35,7 +35,6 @@ class LocalSearch:
         candidate.printSolution()
         
         # SWAP EMPLOYEE
-        
         for day in range(1, self.candidate.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.candidate.days + 1):
@@ -45,7 +44,6 @@ class LocalSearch:
         
 
         # MOVE ACTIVITY
-        
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
@@ -64,7 +62,6 @@ class LocalSearch:
         
 
         # SWAP ACTIVITY
-       
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
@@ -76,16 +73,11 @@ class LocalSearch:
         print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
         
         candidate.printSolution()
-        
-    
-        
 
-        '''
-        #Her tester jeg med ny funksjonalitet
-        test_route = copy.deepcopy(candidate.routes[1][0])
-        test_route.makeSpaceForIndex(2)
-        print("-----------------------------")
-        '''
+    
+    
+
+        
         return candidate
     
    
@@ -187,8 +179,8 @@ class LocalSearch:
         best_travel_time = route.travel_time
         best_found_route = route
     
+    
         for activity in route.route:
-
             NextDependentActivitiyIDs = activity.NextNode
             for elem in (activity.NextNodeInTime): 
                 NextDependentActivitiyIDs.append(elem[0])
@@ -303,23 +295,21 @@ class LocalSearch:
         best_found_candidate = route_plan
         
         for route in route_plan.routes[day]: 
+            new_candidate = copy.deepcopy(route_plan)
             for activity in route.route:
                 employee = route_plan.getEmployeeIDAllocatedForActivity(activity, day)
                 otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.id, day)
                 sameEmployeeActivity = route_plan.getActivity(activity.pickUpActivityID, day)
                 for othEmpl in otherEmployees: 
                     
-                    new_candidate = copy.deepcopy(route_plan)
                     new_candidate.removeActivityFromEmployeeOnDay(employee, activity, day)
                     if sameEmployeeActivity != None: 
                         new_candidate.removeActivityFromEmployeeOnDay(employee, sameEmployeeActivity, day)
-                        
 
                     status = new_candidate.insertActivityInEmployeesRoute(othEmpl, activity, day)
                     if status == False: 
                         break
                   
-                        
                     #Legger til sameEmployee aktiviteten 
                     if sameEmployeeActivity != None: 
                         status = new_candidate.insertActivityInEmployeesRoute(othEmpl, sameEmployeeActivity, day)
@@ -328,7 +318,7 @@ class LocalSearch:
                   
                     new_candidate.updateObjective()
                     
-                    if checkCandidateBetterThanCurrent( new_candidate.objective, best_objective ):
+                    if checkCandidateBetterThanCurrent(new_candidate.objective, best_objective ):
                         best_objective = new_candidate.objective
                         best_found_candidate = new_candidate 
         return best_found_candidate
