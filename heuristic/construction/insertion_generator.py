@@ -11,7 +11,7 @@ import random
 Info: PatientInsertor prøver å legge til en pasient i ruteplanen som sendes inn
 TODO: Skrive mer utfyllende her
 '''
-
+# TODO: Må sende inn patientID
 class PatientInsertor:
     def __init__(self, route_plan, patients_df, treatment_df, visit_df, activities_df):
         self.treatment_df = treatment_df
@@ -60,6 +60,9 @@ class PatientInsertor:
                 #Hvis insertet av visit med pattern er velykkt settes treatStaus til True. 
                 #Deretter breakes løkken fordi vi ikke trenger å sjekke for flere pattern.
                 if insertStatus == True:
+                   #TODO: må fikse slik at kun legges til dersom alle treatments for pasienten er godkjente
+                   self.route_plan.treatments[treatment] = visitList
+
                    treatStatus = True
                    break
                 #Kommer hit dersom patternet ikke fungerte. 
@@ -69,7 +72,8 @@ class PatientInsertor:
             #Returnerer False hvis det ikke var mulig å legge til treatmentet med noen av patterne
             if treatStatus == False: 
                 return False
-        
+            
+        self.route_plan.allocatedPatients 
         return True
     
 
@@ -122,7 +126,8 @@ class PatientInsertor:
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
                 return False
-        #Dersom alle aktivitene har blitt lagt til returers true    
+        #Dersom alle aktivitene har blitt lagt til returers true  
+        self.route_plan.visits[visit] = activitesList  
         return True
     
     def string_or_number_to_int_list(self, string_or_int):

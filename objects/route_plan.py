@@ -21,6 +21,10 @@ class RoutePlan:
                 self.routes[day].append(Route(day, emp))
         self.days = days 
         self.objective = [0,0,0,0,0]
+        self.treatments = {}
+        self.visits = {}
+        self.allocatedPatients = {}
+        self.notAllocatedPatients = []
 
 
         #TODO: Revurdere om vi skal reversere listene som iterers over eller gjøre random 

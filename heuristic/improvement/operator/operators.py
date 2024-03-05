@@ -23,7 +23,8 @@ class Operators:
         return activities_remove
     
 #---------- REMOVE OPERATORS ----------
-
+    """
+   
     def random_route_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         routes = destroyed_route_plan.routes
@@ -56,12 +57,28 @@ class Operators:
                 worst_route = removed_route
                 current_worst_objective = objective_removed_route
                 destroyed_route_plan = route_plan_holder
-        
+            
         removed_activities = []
         for act in worst_route:
             removed_activities.add(act)
 
         return destroyed_route_plan, removed_activities, True
+         """
+    def random_treatment_removal(self, current_route_plan):
+        # TODO: Må oppdatere routeplan.allocatedPatients dersom alle pasientens treatments fjernes
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        selected_treatment = rnd.choice(destroyed_route_plan.treatments.keys())
+        removed_activities = []
+        for visit in destroyed_route_plan.treatments[selected_treatment]:
+            removed_activities += destroyed_route_plan.visits[visit]
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route: 
+                    if act.id in removed_activities:
+                        route.removeActivityID(act.id)
+        
+        return destroyed_route_plan, removed_activities, True
+
     
 
 # TODO: Finne ut om vi i det hele tatt skal ha removal operatorer på aktivitetsnivå? Repair vil bli veldig conditioned i så fall. 
@@ -97,23 +114,19 @@ class Operators:
     
     
 #---------- REPAIR OPERATORS ----------
-    def greedy_repair(self, destroyed_route_plan, removed_activities, initial_infeasible_set, current_route_plan, index_removed_activities):
-        unassigned_activities = removed_activities.copy() + initial_infeasible_set.copy()
-        unassigned_activities.sort(key=lambda x: x[0])
+    def greedy_repair(self, destroyed_route_plan, removed_activities):
         route_plan = copy.deepcopy(destroyed_route_plan)
-        current_objective = current_route_plan.objective
-        infeasible_set = []
-        # unassigned_activities = pd.DataFrame(unassigned_activities)
-        while not unassigned_activities.empty:
-            rid = unassigned_activities.iloc[i][0]
-            activity = unassigned_activities.iloc[i][1]
-            index_removal = [
-                i for i in index_removed_activities if i[0] == rid or i[0] == rid+0.5]
+        must_insert_activities = []
+        # Må sjekke om aktiviteter i removed_activities har samme pasient som noen aktiviteter i route plan.allocatedpatients (hvis denne hadde flere treatments). 
+        # I så fall må alle aktiviteter i hele treatmentet som ble fjernet prioriteres til å legges inn.
+        # Vil kjøre insertion på treatment-nivå (TreatmentInsertions-klasse kanskje? Agnes er usikker) for å legge inn disse som har denne sammenhengen
+        # Så kjøre vanlig grådig PatientInsertion
 
-            route_plan, new_objective, infeasible_set = self.repair_generator.generate_insertions(
+        while not removed_activities.empty:
+            route_plan, new_objective = self.repair_generator.generate_insertions(
                 route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
 
             # update current objective
             current_objective = new_objective
 
-        return route_plan, current_objective, infeasible_set
+        return route_plan, current_objective

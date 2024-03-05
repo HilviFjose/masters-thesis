@@ -96,8 +96,8 @@ class ALNS:
             #TODO: Lage repair iteratorer, de er kommentert ut, mens vi jobber med lokalsøket, på samme måte som destroy operatorer 
             
             r_operator = self.repair_operators[repair]
-            candidate, candidate_objective, candidate_infeasible_set = r_operator(
-                destroyed_route_plan, removed_activities, current_infeasible_set, current_route_plan, index_removed_activities)
+            candidate, candidate_objective  = r_operator(
+                destroyed_route_plan, removed_activities, current_route_plan)
     
 
             r_count[repair] += 1
@@ -153,8 +153,7 @@ class ALNS:
     
     def set_operators(self, operators):
         # Add destroy operators
-        self.add_destroy_operator(operators.worst_route_removal)
-        self.add_destroy_operator(operators.random_route_removal)
+        self.add_destroy_operator(operators.random_treatment_removal)
 
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)
