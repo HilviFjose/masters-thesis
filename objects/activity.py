@@ -20,11 +20,21 @@ class Activity:
         self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextpresedence"])
         
         self.startTime = None
-        self.newLatestStartTime = 1440
-        self.newEeariestStartTime = 0
+        #self.newLatestStartTime = 1440
+        #self.newEeariestStartTime = 0
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
 
+        
+
+
+        #Lager dependent activities. Som er aktiviteter som denne noden påvirkes av 
+        self.dependentActivities = self.PrevNode + self.NextNode 
+        for elem in (self.PrevNodeInTime + self.NextNodeInTime): 
+            self.dependentActivities.append(elem[0])
+
+        self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
+        self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
     #make funskjonene setter parameterne til Acitivy objektet 
     
     def makeEmployeeRestriction(self, string): 
@@ -34,7 +44,8 @@ class Activity:
             return [int(string)]
         except: 
             return [] 
-        
+    
+
 
     def makePresNodes(self, string): 
         '''
@@ -65,11 +76,16 @@ class Activity:
     def getEmployeeRestriction(self): 
         return self.employeeRestricions
 
-    def getEarliestStartTime(self): 
-        return self.earliestStartTime
+    def getNewEarliestStartTime(self): 
+        if len(self.newEeariestStartTime) == 0: 
+            return 0
+        return max(list(self.newEeariestStartTime.values()))
+ 
     
-    def getLatestStartTime(self): 
-        return self.latestStartTime
+    def getNewLatestStartTime(self): 
+        if len(self.newLatestStartTime) == 0: 
+            return 1440
+        return min(list(self.newLatestStartTime.values()))
     
     def getDuration(self): 
         return self.duration
@@ -88,23 +104,25 @@ class Activity:
     
     #set og add funsksjonene oppdatere aktivtetens parametere
 
-    def setNewEarliestStartTime(self, newEarliestStartTime): 
+    def setNewEarliestStartTime(self, newEarliestStartTimeFromDepAct, depAct): 
         #earliest starttime endres dersom den er høyere enn nåværende latest startime
-        if newEarliestStartTime > self.newEeariestStartTime: 
-            self.newEeariestStartTime = newEarliestStartTime
+        self.newEeariestStartTime[depAct] = newEarliestStartTimeFromDepAct
         #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if max(self.newEeariestStartTime, self.earliestStartTime) > min(self.latestStartTime, self.newLatestStartTime): 
+        if max(self.getNewEarliestStartTime(), self.earliestStartTime) > min(self.latestStartTime, self.getNewLatestStartTime()): 
             self.possibleToInsert = False
+        else: 
+            self.possibleToInsert = True
 
-    def setNewLatestStartTime(self, newLatestStartTime): 
+    def setNewLatestStartTime(self, newLatestStartTimeFromDepAct, depAct): 
         #latest starttime endres dersom den er lavere enn nåværende latest startime
-        if newLatestStartTime < self.newLatestStartTime: 
-            self.newLatestStartTime = newLatestStartTime
+        self.newLatestStartTime[depAct] = newLatestStartTimeFromDepAct
         #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if max(self.newEeariestStartTime, self.earliestStartTime) > min(self.latestStartTime, self.newLatestStartTime): 
-            self.possibleToInsert = False 
+        if max(self.getNewEarliestStartTime(), self.earliestStartTime) > min(self.latestStartTime, self.getNewLatestStartTime()): 
+            self.possibleToInsert = False
+        else: 
+            self.possibleToInsert = True
             
-
+    
 
 
     def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
@@ -112,11 +130,12 @@ class Activity:
 
     def restartActivity(self): 
         self.startTime = None
-        self.newLatestStartTime = 1440
-        self.newEeariestStartTime = 0
+        self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
+        self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
 
 
-act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 70)
-print("pickUpActivityID", act70.pickUpActivityID)
+act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 64)
+print("earliestStartTime", act70.newEeariestStartTime)
+print("newLatestStartTime", act70.newLatestStartTime)
