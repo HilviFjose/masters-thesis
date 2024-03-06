@@ -5,7 +5,7 @@ import numpy as np
 import random 
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from config import construction_config
+from config import antibiotics_config
 
 def assign_shifts(employees):
     #get index lists for each skill
@@ -50,7 +50,7 @@ def assign_shifts(employees):
 
     #add same shift for remaining week for each employee
     for e in employees:
-        shifts=[e[2][0]+i*3 for i in range(1,construction_config.days)]    #same shift each working day
+        shifts=[e[2][0]+i*3 for i in range(1,antibiotics_config.days)]    #same shift each working day
         e[2].extend(shifts)
 
     #verify results, set to "if False:"" to disable
@@ -72,9 +72,9 @@ def assign_shifts(employees):
 def employeeGenerator():
     df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'schedule'])
 
-    profession_levels = np.random.choice(construction_config.professionLevels, 
-                                         construction_config.E_num, 
-                                         p=construction_config.professionLevelsProb)
+    profession_levels = np.random.choice(antibiotics_config.professionLevels, 
+                                         antibiotics_config.E_num, 
+                                         p=antibiotics_config.professionLevelsProb)
 
     employees = []
     for index, level in enumerate(profession_levels): 

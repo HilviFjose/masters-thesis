@@ -6,7 +6,7 @@ import random
 import sys
 sys.path.append(os.path.join(os.path.split(__file__)[0],'..') )  #include subfolders
 
-from config import construction_config
+from config import antibiotics_config
 from datageneration import employeeGeneration
 
 import random
@@ -57,20 +57,20 @@ def patientGenerator(df_employees):
     heaviness = []
 
     #Generate random location for each patient
-    locations = locationGenerator(construction_config.refLoc, construction_config.area, construction_config.P_num)
+    locations = locationGenerator(antibiotics_config.refLoc, antibiotics_config.area, antibiotics_config.P_num)
 
-    for i in range(construction_config.P_num):
+    for i in range(antibiotics_config.P_num):
         patientId.append(i+1)
         
         #Distribution of number of treatments per patient
-        T_numMax = construction_config.maxTreatmentsPerPatient                                          # Max number of activities per visit
-        prob = construction_config.V_numProb                                                            # The probability of the number of activities per visit
-        nTreatments = np.random.choice(range(1,T_numMax+1), size=construction_config.P_num, p=prob)      # Distribution of the number of activities per visit
+        T_numMax = len(antibiotics_config.T_numProb)                                                    # Max number of activities per visit
+        prob = antibiotics_config.T_numProb                                                             # The probability of the number of activities per visit
+        nTreatments = np.random.choice(range(1,T_numMax+1), size=antibiotics_config.P_num, p=prob)      # Distribution of the number of activities per visit
         
         #Distribution of utility, continuity group and heaviness for patients
         utility.append(np.random.choice([j+1 for j in range(5)]))
-        continuityGroup.append(np.random.choice([j+1 for j in range(3)], p=construction_config.continuityDistribution))
-        heaviness.append(np.random.choice([i+1 for i in range(5)], p=construction_config.heavinessDistribution))
+        continuityGroup.append(np.random.choice([j+1 for j in range(3)], p=antibiotics_config.continuityDistribution))
+        heaviness.append(np.random.choice([i+1 for i in range(5)], p=antibiotics_config.heavinessDistribution))
 
         df_patients = df_patients._append({
                 'patientId': i+1,
@@ -82,7 +82,7 @@ def patientGenerator(df_employees):
             }, ignore_index=True)
     
     # Employee Restrictions
-    num_restricted_patients = int(len(df_patients) * 0.05)      # 5 % of the patients have a restriction against an employee
+    num_restricted_patients = int(len(df_patients) * antibiotics_config.employeeRestrict)      # 5 % of the patients have a restriction against an employee
     restricted_patient_indices = np.random.choice(df_patients.index, size=num_restricted_patients, replace=False) # Random patients get employee restrictions
     
     for index in restricted_patient_indices:
@@ -92,7 +92,7 @@ def patientGenerator(df_employees):
         df_patients.at[index, 'employeeRestriction'] = list
 
     # Employee history  TODO: Må potensielt oppdatere format på dette
-    num_history_patients = int(len(df_patients) * 0.9)          # 90 % of the patients have a treatment history with some employees
+    num_history_patients = int(len(df_patients) * antibiotics_config.employeeHistory)          # 90 % of the patients have a treatment history with some employees
     history_patient_indices = np.random.choice(df_patients.index, size=num_history_patients, replace=False) # Random patients get employee history
 
     for index in history_patient_indices:
@@ -112,7 +112,7 @@ def treatmentGenerator(df_patients):
     expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
     expanded_rows['treatmentId'] = range(1, len(expanded_rows) + 1)
     # Generate pattern type for each treatment. Will decide the number of visits per treatment.
-    patternType = np.random.choice([i+1 for i in range(len(construction_config.patternTypes))], len(expanded_rows), p=construction_config.patternTypes)
+    patternType = np.random.choice([i+1 for i in range(len(antibiotics_config.patternTypes))], len(expanded_rows), p=antibiotics_config.patternTypes)
     
     df_treatments['treatmentId'] = expanded_rows['treatmentId']
     df_treatments['patientId'] = expanded_rows['patientId']
@@ -124,22 +124,22 @@ def treatmentGenerator(df_patients):
     for index, row in df_treatments.iterrows():
         #Fill rows with possible patterns
         if row['patternType'] == 1:
-            df_treatments.at[index, 'pattern'] = construction_config.patterns_5days
+            df_treatments.at[index, 'pattern'] = antibiotics_config.patterns_5days
             df_treatments.at[index, 'visits'] = 5
         elif row['patternType'] == 2:
-            df_treatments.at[index, 'pattern'] = construction_config.patterns_4days
+            df_treatments.at[index, 'pattern'] = antibiotics_config.patterns_4days
             df_treatments.at[index, 'visits'] = 4
         elif row['patternType'] == 3:
-            df_treatments.at[index, 'pattern'] = construction_config.patterns_3days
+            df_treatments.at[index, 'pattern'] = antibiotics_config.patterns_3days
             df_treatments.at[index, 'visits'] = 3
         elif row['patternType'] == 4:
-            df_treatments.at[index, 'pattern'] = construction_config.pattern_2daysspread
+            df_treatments.at[index, 'pattern'] = antibiotics_config.pattern_2daysspread
             df_treatments.at[index, 'visits'] = 2
         elif row['patternType'] == 5:
-            df_treatments.at[index, 'pattern'] = construction_config.patterns_2daysfollowing
+            df_treatments.at[index, 'pattern'] = antibiotics_config.patterns_2daysfollowing
             df_treatments.at[index, 'visits'] = 2
         else:
-            df_treatments.at[index, 'pattern'] = construction_config.patterns_1day
+            df_treatments.at[index, 'pattern'] = antibiotics_config.patterns_1day
             df_treatments.at[index, 'visits'] = 1
 
     file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
@@ -162,16 +162,13 @@ def visitsGenerator(df_treatments):
     df_visits['heaviness'] = expanded_rows['heaviness']
 
     # Distribution of number of activities per visit
-    A_numMax = construction_config.maxActivitiesPerVisit                        # Max number of activities per visit
-    prob = construction_config.A_numProb                                        # The probability of the number of activities per visit
+    A_numMax = len(antibiotics_config.A_numProb)                                # Max number of activities per visit
+    prob = antibiotics_config.A_numProb                                         # The probability of the number of activities per visit
     V_num = df_visits.shape[0]
-    activities = np.random.choice(range(1,A_numMax+1), size=V_num, p=prob)      # Distribution of the number of activities per visit
-    #activities = np.random.poisson(lam=construction_config.activitiesPerVisit, size=V_num)
-    # A minimum of 1 and maximum of 6 activities per visit. 
-    #activities = np.maximum(activities, 1) #gjør at ingen visits har 0 aktiviteter, MEN det gjør at snittet på antall aktivititeter per visit blir mye høyere enn planlagt.
-    #activities = np.minimum(activities, 6) 
-
-    df_visits['activities'] = activities
+    T_num =  df_treatments.shape[0]
+    for treatmentId, group in df_visits.groupby('treatmentId'):                         # Making sure all activities within a visit looks the same (only makes sense for some cases, like antibiotics)
+        activities = np.random.choice(range(1, A_numMax + 1), size=len(group), p=prob)  # Distribution of the number of activities per visit
+        df_visits.loc[group.index, 'activities'] = activities
 
     file_path = os.path.join(os.getcwd(), 'data', 'visits.csv')
     df_visits.to_csv(file_path, index=False)
@@ -214,8 +211,8 @@ def activitiesGenerator(df_visits):
 
                 # Precedence and time limit for pick-up and delivery at the start of the visit
                 activity_ids = group['activityId'].tolist()
-                mu = (construction_config.pd_min + construction_config.pd_max) / 2
-                sigma = (construction_config.pd_max - construction_config.pd_min) / 6
+                mu = (antibiotics_config.pd_min + antibiotics_config.pd_max) / 2
+                sigma = (antibiotics_config.pd_max - antibiotics_config.pd_min) / 6
                 pd_time = int(np.random.normal(mu, sigma))
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]
                 df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
@@ -227,7 +224,7 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'sameEmployeeActivityId'] = activity_ids[0]          # Start of the visit
 
                 # Overwrite location of the first activity (pick-up at the hospital)
-                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'location'] = f'{construction_config.depot}' 
+                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'location'] = f'{antibiotics_config.depot}' 
 
                 # Synchronise the two last activities if there are four activities in the visit
                 if group['numActivitiesInVisit'].iloc[0] == 4:
@@ -244,8 +241,8 @@ def activitiesGenerator(df_visits):
 
                 # Precedence and time limit for pick-up and delivery at the end of the visit
                 activity_ids = group['activityId'].tolist()
-                mu = (construction_config.pd_min + construction_config.pd_max) / 2
-                sigma = (construction_config.pd_max - construction_config.pd_min) / 6
+                mu = (antibiotics_config.pd_min + antibiotics_config.pd_max) / 2
+                sigma = (antibiotics_config.pd_max - antibiotics_config.pd_min) / 6
                 pd_time = int(np.random.normal(mu, sigma))
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]
                 df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
@@ -257,7 +254,7 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'sameEmployeeActivityId'] = activity_ids[-1]         # End of the visit
 
                 # Overwrite location of the last activity (delivery at the hospital)
-                df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'location'] = f'{construction_config.depot}' 
+                df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'location'] = f'{antibiotics_config.depot}' 
                 
                 # Synchronise the two first activities if there are four activities in the visit
                 if group['numActivitiesInVisit'].iloc[0] == 4:
@@ -276,8 +273,8 @@ def activitiesGenerator(df_visits):
             
             # Precedence and time limits for pick-up and delivery
             activity_ids = group['activityId'].tolist()
-            mu = (construction_config.pd_min + construction_config.pd_max) / 2
-            sigma = (construction_config.pd_max - construction_config.pd_min) / 6
+            mu = (antibiotics_config.pd_min + antibiotics_config.pd_max) / 2
+            sigma = (antibiotics_config.pd_max - antibiotics_config.pd_min) / 6
             pd_time1 = int(np.random.normal(mu, sigma))
             pd_time2 = int(np.random.normal(mu, sigma))
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]                                           # Pick-up and delivery at the start
@@ -296,8 +293,8 @@ def activitiesGenerator(df_visits):
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'sameEmployeeActivityId'] = activity_ids[-1]
             
             # Overwrite location of the first and last activity (pick-up and delivery at the hospital)
-            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'location'] = f'{construction_config.depot}'     # Pick-up
-            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'location'] = f'{construction_config.depot}'    # Delivery
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'location'] = f'{antibiotics_config.depot}'     # Pick-up
+            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'location'] = f'{antibiotics_config.depot}'    # Delivery
         
             # Synchronise the two activities in the middle if there are six activities in the visit
             if group['numActivitiesInVisit'].iloc[0] == 6:
@@ -312,17 +309,17 @@ def activitiesGenerator(df_visits):
     for activityType, group in df_activities.groupby('activityType'):
         if activityType == 'E':
             # Normal distribution for equipment activities
-            mu = (construction_config.minDurationEquip + construction_config.maxDurationEquip) / 2
-            sigma = (construction_config.maxDurationEquip - construction_config.minDurationEquip) / 6
+            mu = (antibiotics_config.minDurationEquip + antibiotics_config.maxDurationEquip) / 2
+            sigma = (antibiotics_config.maxDurationEquip - antibiotics_config.minDurationEquip) / 6
             duration = np.random.normal(mu, sigma, len(group))
         else:
             # Normal distribution for healthcare activities
-            mu = (construction_config.minDurationHealth + construction_config.maxDurationHealth) / 2
-            sigma = (construction_config.maxDurationHealth - construction_config.minDurationHealth) / 6
+            mu = (antibiotics_config.minDurationHealth + antibiotics_config.maxDurationHealth) / 2
+            sigma = (antibiotics_config.maxDurationHealth - antibiotics_config.minDurationHealth) / 6
             duration = np.random.normal(mu, sigma, len(group))
         
         # Integers and clipping to ensure duration within limits from config files
-        duration_clipped = np.clip(np.round(duration), construction_config.minDurationEquip, construction_config.maxDurationEquip) if activityType == 'E' else np.clip(np.round(duration), construction_config.minDurationHealth, construction_config.maxDurationHealth)
+        duration_clipped = np.clip(np.round(duration), antibiotics_config.minDurationEquip, antibiotics_config.maxDurationEquip) if activityType == 'E' else np.clip(np.round(duration), antibiotics_config.minDurationHealth, antibiotics_config.maxDurationHealth)
         df_activities.loc[group.index, 'duration'] = duration_clipped
         
     #Generate earliest and latest start times of activities

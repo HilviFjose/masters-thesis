@@ -4,10 +4,10 @@ import os
 from datageneration import employeeGeneration
 from datageneration import patientGeneration 
 from datageneration import distance_matrix
-from config import construction_config
+from config import antibiotics_config
 import random
 
-'''
+
 # DATA GENERATION
 df_employees = employeeGeneration.employeeGenerator() 
 df_patients_not_complete = patientGeneration.patientGenerator(df_employees)
@@ -38,7 +38,7 @@ file_path_visits = os.path.join(os.getcwd(), 'data', 'visits.pkl')
 df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
-
+'''
 '''
 #TEST DATA - not randomly generated
 df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
@@ -49,7 +49,7 @@ df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
 '''
 
 #GENERATING DISTANCE MATRIX
-depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config.depot]})
+depot_row = pd.DataFrame({'activityId': [0], 'location': [antibiotics_config.depot]})
 depot_row = depot_row.set_index(['activityId'])
 # Legger til depot_row i begynnelsen av df_activities
 df_activities_depot = pd.concat([depot_row, df_activities], axis=0)
