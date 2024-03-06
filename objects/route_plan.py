@@ -24,7 +24,6 @@ class RoutePlan:
         self.days = days 
         self.objective = [0,0,0,0,0]
 
-
         #self.rev = True #Dersom vi ønsker å reversere listene (Sorterer heller listene annerledes nå)
 '''
 class RoutePlan:
@@ -46,7 +45,6 @@ class RoutePlan:
 
         self.days = days 
         self.objective = [0,0,0,0,0]
-        self.objective1 = [0,0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
 
@@ -95,8 +93,6 @@ class RoutePlan:
          
             insertStatus = route.addActivity(activity)
             
-            
-            
             if insertStatus == True: 
                 #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
                 #Må gjøres på alle fordi alle kan ha blitt flyttet
@@ -128,7 +124,20 @@ class RoutePlan:
             for route in routes:
                 old_skillDiffObj = route.aggSkillDiff
                 old_travel_time = route.travel_time
+                #TODO: Update funskjonene burde sjekkes med de andre   
+                #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
+                #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
+                #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
+                
+                #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
+                
+                self.updateActivityBasedOnRoutePlanOnDay(activity, day)
                 insertStatus = route.addActivity(activity)
+                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
+                #Må gjøres på alle fordi alle kan ha blitt flyttet
+                for possiblyMovedActivity in route.route: 
+                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
+            
                 if insertStatus:
                     self.objective[3] -= old_skillDiffObj
                     self.objective[3] += route.aggSkillDiff
@@ -136,7 +145,6 @@ class RoutePlan:
                     self.objective[4] += route.travel_time
                     return True
         return False
-        '''
         '''
         #GAMMEL METODE - Itererer etter sortert skill
         # Iterer gjennom routes i den sorterte rekkefølgen basert på skill
@@ -155,16 +163,20 @@ class RoutePlan:
          
             insertStatus = route.addActivity(activity)
             
-            
-            
             if insertStatus == True: 
+                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
+                #Må gjøres på alle fordi alle kan ha blitt flyttet
+                for possiblyMovedActivity in route.route: 
+                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
+            
                 self.objective[3] -= old_skillDiffObj
                 self.objective[3] += route.aggSkillDiff
                 self.objective[4] -= old_travel_time
                 self.objective[4] += route.travel_time
                 return True
         return False
-        
+        '''
+
     def getRoutePlan(self): 
         return self.routes
  
@@ -309,16 +321,10 @@ class RoutePlan:
                 #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
                 self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day)
               
-        
-        
-
-
     def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
-        
-        
-        
+         
         for route in self.routes[day]: 
             if route.employee.id == employeeID:
                 #Beg: Må oppdatere grensene til alle i ruten som muligens kan flytte seg når vi prøver å legge til aktivtete
@@ -330,7 +336,6 @@ class RoutePlan:
                     for routeActivity in route.route: 
                         self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
-       
         
     def getObjective(self): 
         return self.objective
@@ -346,8 +351,7 @@ class RoutePlan:
             '''
             Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
             Basert på det som allerede ligger inne i routeplanen 
-            '''
-            
+            '''    
 
             #Her håndteres pick up and delivery
             if activity.getPickUpActivityID() != 0 : 
@@ -379,14 +383,11 @@ class RoutePlan:
                 if nextNodeAct != None:
                     activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
         
-            
     def updateDependentActivitiesBasedOnRoutePlanOnDay(self, activity ,day):
         for depActID in activity.dependentActivities: 
             depActivity = self.getActivity(depActID, day)
             if depActivity != None: 
                 self.updateActivityBasedOnRoutePlanOnDay(depActivity, day)
-    
-    
 
     def switchRoute(self, new_route,  day):
             for org_route in self.routes[day]: 

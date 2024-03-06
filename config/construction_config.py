@@ -1,7 +1,7 @@
 #Generelt om distributions: Mange av disse vil være ca.-tall eller maxfactor for en fordeling.1
 
 # PATIENTS
-P_num = 30                                      # Number of patients
+P_num = 1000                                      # Number of patients
 
 # Distributions
 treatmentsPerPatient = 1.05                     #Number of treatments per patient

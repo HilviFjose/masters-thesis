@@ -281,8 +281,6 @@ class LocalSearch:
                         if checkCandidateBetterThanCurrent( new_candidate.objective, best_objective ):
                             best_objective = new_candidate.objective
                             best_found_candidate = new_candidate 
-                            print( "bytter plass på aktivitet ", activity1.id, activity2.id)
-                            print("new_candidate.objective", new_candidate.objective)
         return best_found_candidate
 
     

@@ -179,6 +179,6 @@ class Activity:
         self.possibleToInsert = True
 
 
-act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 64)
-print("earliestStartTime", act70.newEeariestStartTime)
-print("newLatestStartTime", act70.newLatestStartTime)
+#act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 64)
+#print("earliestStartTime", act70.newEeariestStartTime)
+#print("newLatestStartTime", act70.newLatestStartTime)
