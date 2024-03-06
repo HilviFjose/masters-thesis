@@ -66,6 +66,11 @@ class ConstructionHeuristic:
             if state == False: 
                 self.unAssignedPatients.append(patient)
         
-
+        #TODO: Oppdatere alle dependencies når vi har konstruert løsning 
+        for day in range(1, 1+ self.days): 
+            for route in self.route_plan.routes[day]: 
+                for activity in route.route: 
+                    self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
+        
 #TODO: Endre slik at dataen ikke må hentes på denne måten
 

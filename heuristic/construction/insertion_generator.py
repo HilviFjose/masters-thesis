@@ -138,7 +138,6 @@ class PatientInsertor:
         for activityID in activitiesList: 
             #Oppreter et aktivitesobjekt basert på ID-en 
             activity = Activity(self.activites_df, activityID)
-            self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
                 return False

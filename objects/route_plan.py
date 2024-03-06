@@ -23,7 +23,7 @@ class RoutePlan:
                 self.routes[day].append(Route(day, emp))
         self.days = days 
         self.objective = [0,0,0,0,0]
-        self.objective1 = [0,0,0,0,0]
+
 
         #self.rev = True #Dersom vi ønsker å reversere listene (Sorterer heller listene annerledes nå)
 '''
@@ -83,23 +83,26 @@ class RoutePlan:
             route = routes[index]
             old_skillDiffObj = route.aggSkillDiff
             old_travel_time = route.travel_time
+
+            #TODO: Update funskjonene burde sjekkes med de andre   
+            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
+            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
+            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
+            
+            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
+            
+            self.updateActivityBasedOnRoutePlanOnDay(activity, day)
+         
             insertStatus = route.addActivity(activity)
+            
+            
+            
             if insertStatus == True: 
-                self.objective[3] -= old_skillDiffObj
-                self.objective[3] += route.aggSkillDiff
-                self.objective[4] -= old_travel_time
-                self.objective[4] += route.travel_time
-                return True
-        return False
-        '''
-        '''
-        #GAMMEL METODE - Itererer etter sortert skill
-        # Iterer gjennom routes i den sorterte rekkefølgen basert på skill
-        for route in self.routes[day]:
-            old_skillDiffObj = route.aggSkillDiff
-            old_travel_time = route.travel_time
-            insertStatus = route.addActivity(activity)
-            if insertStatus == True: 
+                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
+                #Må gjøres på alle fordi alle kan ha blitt flyttet
+                for possiblyMovedActivity in route.route: 
+                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
+            
                 self.objective[3] -= old_skillDiffObj
                 self.objective[3] += route.aggSkillDiff
                 self.objective[4] -= old_travel_time
@@ -133,6 +136,34 @@ class RoutePlan:
                     self.objective[4] += route.travel_time
                     return True
         return False
+        '''
+        '''
+        #GAMMEL METODE - Itererer etter sortert skill
+        # Iterer gjennom routes i den sorterte rekkefølgen basert på skill
+        for route in self.routes[day]:
+            old_skillDiffObj = route.aggSkillDiff
+            old_travel_time = route.travel_time
+
+            #TODO: Update funskjonene burde sjekkes med de andre   
+            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
+            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
+            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
+            
+            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
+            
+            self.updateActivityBasedOnRoutePlanOnDay(activity, day)
+         
+            insertStatus = route.addActivity(activity)
+            
+            
+            
+            if insertStatus == True: 
+                self.objective[3] -= old_skillDiffObj
+                self.objective[3] += route.aggSkillDiff
+                self.objective[4] -= old_travel_time
+                self.objective[4] += route.travel_time
+                return True
+        return False
         
     def getRoutePlan(self): 
         return self.routes
@@ -161,9 +192,9 @@ class RoutePlan:
         
         '''
         for route in self.routes[day]: 
-            for act in route.getRoute(): 
-                if act.getID() == activity.id: 
-                    return route.getEmployee().getID()
+            for act in route.route: 
+                if act.id== activity.id: 
+                    return route.employee.id
     
     #TODO: Denne fungerer ikke nå. Må endre på den sånn at den funker!!
     def getListOtherEmplIDsOnDay(self, activityID, day):  
@@ -186,7 +217,7 @@ class RoutePlan:
         activityIDinRoute = False
         otherEmpl = []
         for route in self.routes[day]: 
-            for act in route.getRoute(): 
+            for act in route.route: 
                 if act.id == activityID: 
                     activityIDinRoute = True
                     empForAct = route.employee.id
@@ -211,8 +242,8 @@ class RoutePlan:
         activity (Activity) Activity objektet som finnes i en rute på en gitt dag
         '''
         for route in self.routes[day]: 
-            for act in route.getRoute(): 
-                if act.getID() == actID: 
+            for act in route.route: 
+                if act.id == actID: 
                     return act 
         return None       
 
@@ -270,19 +301,34 @@ class RoutePlan:
 
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
+         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
+        #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
         for route in self.routes[day]: 
-            if route.employee.getID() == employee:
-                route.removeActivityID(activity.getID())
+            if route.employee.id == employee:
+                route.removeActivityID(activity.id)
+                #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
+                self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day)
+              
+        
+        
 
 
     def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
-        insert_activity.restartActivity()
-        self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
+        
+        
+        
         for route in self.routes[day]: 
-            if route.employee.getID() == employeeID:
+            if route.employee.id == employeeID:
+                #Beg: Må oppdatere grensene til alle i ruten som muligens kan flytte seg når vi prøver å legge til aktivtete
+              
+                self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
+             
                 status = route.addActivity(insert_activity)
+                if status == True: 
+                    for routeActivity in route.route: 
+                        self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
        
         
@@ -299,9 +345,9 @@ class RoutePlan:
     def updateActivityBasedOnRoutePlanOnDay(self, activity,day):
             '''
             Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
-            Basert på det som allerede ligger inne i 
+            Basert på det som allerede ligger inne i routeplanen 
             '''
-            activity.restartActivity()
+            
 
             #Her håndteres pick up and delivery
             if activity.getPickUpActivityID() != 0 : 
@@ -312,31 +358,36 @@ class RoutePlan:
             #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
             for prevNodeID in activity.PrevNode: 
                 prevNodeAct = self.getActivity(prevNodeID, day)
-                #if activity.id == 70: 
-                 #   print("prevNodeAct for 70", prevNodeAct.id)
                 if prevNodeAct != None:
-                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration())
+                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
   
             for nextNodeID in activity.NextNode: 
                 nextNodeAct = self.getActivity(nextNodeID, day)
                 if nextNodeAct != None:
-                    #TODO: Se på denne mtp at presedens innnen tid skal være fra atkivteten slutter
-                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration())
+                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
             
             #Her håndteres presedens med tidsvindu
             #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
             for PrevNodeInTimeID in activity.PrevNodeInTime: 
                 prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
                 if prevNodeAct != None:
-                    activity.setNewLatestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration + PrevNodeInTimeID[1])
+                    activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
 
 
             for NextNodeInTimeID in activity.NextNodeInTime: 
                 nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
                 if nextNodeAct != None:
-                    activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1])
+                    activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
         
             
+    def updateDependentActivitiesBasedOnRoutePlanOnDay(self, activity ,day):
+        for depActID in activity.dependentActivities: 
+            depActivity = self.getActivity(depActID, day)
+            if depActivity != None: 
+                self.updateActivityBasedOnRoutePlanOnDay(depActivity, day)
+    
+    
+
     def switchRoute(self, new_route,  day):
             for org_route in self.routes[day]: 
                 if org_route.employee.id == new_route.employee.id: 
