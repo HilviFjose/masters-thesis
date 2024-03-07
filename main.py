@@ -48,15 +48,17 @@ def main():
                     destruction_degree, constructor, rnd_state=rnd.RandomState())
 
     operators = Operators(alns)
-    print(operators)
+    
 
     alns.set_operators(operators)
 
     #RUN ALNS 
-    current_route_plan, current_objective, current_infeasible_set = alns.iterate(
+    best_route_plan = alns.iterate(
             iterations)
     
-    print("Oppdatert objektiv etter ALNS ", current_route_plan.objective)
+    print("LØSNING ETTER ALNS")
+    best_route_plan.printSolution()
+    
     
     '''
     constructor.print_new_objective(

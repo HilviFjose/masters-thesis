@@ -19,7 +19,7 @@ class ALNS:
         self.initial_infeasible_set = initial_infeasible_set 
         #Disse kommer fra config mail filen 
         self.weights = weights
-        self.route_plan = current_route_plan
+        
         self.destruction_degree = destruction_degree
         self.objective = current_objective
         self.criterion = criterion
@@ -27,14 +27,18 @@ class ALNS:
         #TODO: Finne ut om vi skal ha denn klassen med. Eller om det har noe med ALNS å gjøre
         #self.destroy_repair_updater = Destroy_Repair_Updater(constructor)
 
+        self.start_plan = current_route_plan
+        candidate_for_local_search = copy.deepcopy(current_route_plan)
+        localsearch = LocalSearch(candidate_for_local_search)
+        self.route_plan = localsearch.do_local_search()
     
     def iterate(self, num_iterations):
         weights = np.asarray(self.weights, dtype=np.float16)
         
         current_route_plan = copy.deepcopy(self.route_plan)
-        best = copy.deepcopy(self.route_plan)
-        current_objective = copy.deepcopy(self.objective)
-        best_objective = copy.deepcopy(self.objective)
+        best_route_plan = copy.deepcopy(self.start_plan)
+    
+        
         current_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
         best_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
         
@@ -66,41 +70,61 @@ class ALNS:
             #henter ut d_operator objekt fra index i destroy operator lister
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
-            print("løsning før destroy")
-            current_route_plan.printSolution()
+            
+
+
             d_operator = self.destroy_operators[destroy]
             destroyed_route_plan, removed_activities, destroyed = d_operator(
                 current_route_plan)
+            
+
             if not destroyed:
                 break
+
             d_count[destroy] += 1
-            print("løsning etter destroy")
-            destroyed_route_plan.printSolution()
-        
-            # Update solution
-            # Undersøke hva denne filen gjør. Er den kun aktuell på lunde sin?
-            #updated_route_plan = self.destroy_repair_updater.update_solution(destroyed_route_plan, index_removed, disruption_time)
-          
-            # Fix solution
-            #TODO: Lage repair iteratorer, de er kommentert ut, mens vi jobber med lokalsøket, på samme måte som destroy operatorer 
             
+        
+          
             r_operator = self.repair_operators[repair]
             candidate = r_operator(
-                destroyed_route_plan, removed_activities)
+                destroyed_route_plan)
             
     
 
             r_count[repair] += 1
+
+         
+            
            
             # Local search if solution is promising
-            local_search_requirement = 0.05 # TODO: Legge inn i main config
+            local_search_requirement = 0.02 # TODO: Legge inn i main config
         
+            '''
+            #lOKALSØKET VIL GJØRE LØSNINGEN BEDRE UANSETT SÅ SER PÅ EN VERSION HVOR VI UANSETT GJØR LOKALSØK
+
             if isPromising(candidate.objective, best_objective, local_search_requirement): 
-                print("lager local search")
+                print("LS INNE - lager local search")
                 candidate_for_local_search = copy.deepcopy(candidate)
                 localsearch = LocalSearch(candidate_for_local_search)
                 candidate = localsearch.do_local_search()
-                
+                current_route_plan = copy.deepcopy(candidate)
+            '''
+
+            
+            localsearch = LocalSearch(copy.deepcopy(candidate))
+            candidate = localsearch.do_local_search()
+            
+
+            #Vi vil endre til current hvis den er promising 
+            if isPromising(candidate.objective, current_route_plan.objective, local_search_requirement):
+                print("NY KANDIDAT ") 
+                print(candidate.objective)
+                print("notAllocatedPatients", candidate.notAllocatedPatients)
+                current_route_plan = copy.deepcopy(candidate)
+            
+            if checkCandidateBetterThanCurrent(candidate.objective, best_route_plan.objective): 
+                print("ny bedre kandidat")
+                best_route_plan = copy.deepcopy(candidate)
 
             """
             # Compare solutions
@@ -108,6 +132,7 @@ class ALNS:
                 best, best_objective, best_infeasible_set,
                 current_route_plan, current_objective, current_infeasible_set,
                 candidate, candidate_objective, candidate_infeasible_set, self.criterion)
+            
             
             # Konverterer til hexa-string for å sjekke om vi har samme løsning. Scores oppdateres kun hvis vi har en løsning som ikke er funnet før
             if hash(str(candidate)) == hash(str(current_route_plan)) and hash(str(candidate)) in found_solutions.keys():
@@ -143,7 +168,7 @@ class ALNS:
                     len(self.repair_operators), dtype=np.float16)
             """
 
-        return best, best_objective, best_infeasible_set
+        return best_route_plan
     
     def set_operators(self, operators):
         # Add destroy operators
@@ -200,3 +225,10 @@ class ALNS:
             weight_score = 0
 
         return best, best_objective, best_infeasible_set, current, current_objective, current_infeasible_set, weight_score
+
+'''
+Kommentar 07.03 
+Det er noe problem med oppdatering av kandidat, fordi den får ikke lagt inn en igjen. Det er noe med objektivet.
+Nå ser det ut som at logikken med å forsøke å ta ut også putte inn en annen ikke fungerer. 
+Må kanskje ha random genereringa
+'''

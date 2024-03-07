@@ -1,34 +1,27 @@
-import numpy as np 
-import os
-import sys
-sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
+import copy
 from objects.patterns import pattern
 from objects.activity import Activity
-import copy
-import random 
 
-'''
-Info: PatientInsertor prøver å legge til en pasient i ruteplanen som sendes inn
-TODO: Skrive mer utfyllende her
-'''
-# TODO: Må sende inn patientID
-class PatientInsertor:
-    def __init__(self, route_plan, patient_df, constructor):
+
+class Insertor:
+    def __init__(self, constructor, route_plan):
         self.constructor = constructor
-      
         self.route_plan = route_plan
-      
-        self.patient = [list(self.constructor.patients_df)[0]]
 
-        self.patients_df = patient_df
-
-        #Liste over treatments som pasienten skal gjennomgå
-        self.treatments = self.string_or_number_to_int_list(self.patients_df["treatment"])
-        #Dette er en parameter som settes for å bytte på hvilken vei det iteres over patterns. 
-        #TODO: Burde heller gjøres ved å iterere tilfeldig over rekkefølgen på patterns
         self.rev = False
 
-    def insert_patients(self):
+     
+    '''
+    Skal prøve å lage insertions på hvert nivå, og å endre slik at vi kan inserte på hvert nivå
+    '''
+
+
+#Konseptet her er at vi skal kunne sende inn all atributter vi vil legge til.
+    def insertPatients(self, patientList): 
+        for patient in patientList: 
+            self.insert_patient(patient)
+
+    def insert_patient(self, patient):
         '''
         Funksjonen forsøker å legge til alle treatments for pasienten. 
 
@@ -36,34 +29,62 @@ class PatientInsertor:
         True/False på om det var plass til pasienten på hjemmesykehus eller ikke 
         '''
          
-        #TODO: Treatments bør sorteres slik at de mest kompliserte 
-        for treatment in self.treatments: 
-            treatStatus = False
-            stringVisits = self.constructor.treatment_df.loc[treatment, 'visit']
-            visitList = self.string_or_number_to_int_list(stringVisits)
-            old_route_plan = copy.deepcopy(self.route_plan)
-
-            if self.rev == True:
-                patterns =  reversed(pattern[self.constructor.treatment_df.loc[treatment, 'pattern']])
-                self.rev = False
-            else: 
-                patterns = pattern[self.constructor.treatment_df.loc[treatment, 'pattern']]
-                self.rev = True
+        #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst 
+        treamentList = self.string_or_number_to_int_list(self.constructor.patients_df.loc[patient, 'treatment'])
+     
+        for treatment in treamentList: 
             
-            for treatPattern in patterns:
-                insertStatus = self.insert_visit_with_pattern(visitList, treatPattern) 
-                if insertStatus == True:
-                    treatStatus = True
-                    if self.patient[0] in self.route_plan.allocatedPatients.keys():
-                        self.route_plan.allocatedPatients[self.patient[0]].append(treatment)
-                    else:
-                        self.route_plan.allocatedPatients[self.patient[0]] = [treatment]
-                    self.route_plan.treatments[treatment] = visitList
-                    break
-                self.route_plan = copy.deepcopy(old_route_plan)
-            if treatStatus == False: 
+            status = self.insert_treatment(treatment)
+
+            self.updateAllocation(status, patient, treatment)
+            if status == False: 
                 return False
-        return True
+        #Må ha noe som legger til hvis den er
+        if patient in self.route_plan.notAllocatedPatients: 
+            self.route_plan.notAllocatedPatients.remove(patient)
+        return True 
+
+    def updateAllocation(self, allocated, patient, treatment): 
+        if allocated: 
+            if patient in self.route_plan.allocatedPatients.keys():
+                self.route_plan.allocatedPatients[patient].append(treatment)
+            else:
+                self.route_plan.allocatedPatients[patient] = [treatment]
+            
+        if not allocated and patient in self.route_plan.allocatedPatients.keys(): 
+            self.route_plan.illegalNotAllocatedTreatments.append(treatment)
+
+        '''
+        Hva vil vi sjekke. 
+        Når vi legger til en treatment, 
+
+        Regelen skal vel være at pasienten er allokert allokert eller ikke allokert. 
+        Dersom den er allokert, men ikke alt ligger inne, så de treatmentsene, eller andre, lagres i illegal
+        Men det ligger en liste over treatments som ikke er 
+        '''
+
+    def insert_treatment(self, treatment): 
+    
+        stringVisits = self.constructor.treatment_df.loc[treatment, 'visit']
+        visitList = self.string_or_number_to_int_list(stringVisits)
+        old_route_plan = copy.deepcopy(self.route_plan)
+
+        if self.rev == True:
+            patterns =  reversed(pattern[self.constructor.treatment_df.loc[treatment, 'pattern']])
+            self.rev = False
+        else: 
+            patterns = pattern[self.constructor.treatment_df.loc[treatment, 'pattern']]
+            self.rev = True
+        
+        for treatPattern in patterns:
+            insertStatus = self.insert_visit_with_pattern(visitList, treatPattern) 
+            if insertStatus == True:
+                
+                self.route_plan.treatments[treatment] = visitList
+                return True
+            
+            self.route_plan = copy.deepcopy(old_route_plan)
+        return False
     
 
     def insert_visit_with_pattern(self, visits, pattern):

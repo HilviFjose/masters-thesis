@@ -2,6 +2,7 @@ import pandas as pd
 import copy
 import math
 import numpy.random as rnd 
+import random 
 
 import os
 import sys
@@ -11,6 +12,7 @@ from helpfunctions import checkCandidateBetterThanCurrent
 from objects.distances import *
 from config.construction_config import *
 from heuristic.improvement.operator.repair_generator import RepairGenerator
+from heuristic.improvement.operator.insertor import Insertor
 
 class Operators:
     def __init__(self, alns):
@@ -79,34 +81,54 @@ class Operators:
         
         del destroyed_route_plan.treatments[selected_treatment]
         for key, value in list(destroyed_route_plan.allocatedPatients.items()):
+         
             if value == [selected_treatment]:
+              
                 del destroyed_route_plan.allocatedPatients[key]
                 destroyed_route_plan.notAllocatedPatients.append(key)
-            else:
+                break
+            if selected_treatment in value: 
                 destroyed_route_plan.illegalNotAllocatedTreatments += value
+                break
         destroyed_route_plan.updateObjective()
-        print("selected_treatment",selected_treatment)
         return destroyed_route_plan, removed_activities, True
     
 
     
     
 #---------- REPAIR OPERATORS ----------
-    def greedy_repair(self, destroyed_route_plan, removed_activities):
-        """
-        route_plan = copy.deepcopy(destroyed_route_plan)
-        must_insert_activities = []
+    def greedy_repair(self, destroyed_route_plan):
+        #Tar bort removed acktivitites, de trenger vi ikk e
+        repaired_route_plan = copy.deepcopy(destroyed_route_plan)
+        
         # Må sjekke om aktiviteter i removed_activities har samme pasient som noen aktiviteter i route plan.allocatedpatients (hvis denne hadde flere treatments). 
         # I så fall må alle aktiviteter i hele treatmentet som ble fjernet prioriteres til å legges inn.
         # Vil kjøre insertion på treatment-nivå (TreatmentInsertions-klasse kanskje? Agnes er usikker) for å legge inn disse som har denne sammenhengen
         # Så kjøre vanlig grådig PatientInsertion
 
-        while not removed_activities.empty:
-            route_plan, new_objective = self.repair_generator.generate_insertions(
-                route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
+        #Forsøker å legge til de aktivitetene vi har tatt ut
+        insertor = Insertor(self.constructor, repaired_route_plan)
+        for treatment in repaired_route_plan.illegalNotAllocatedTreatments: 
+            print("ikke inn her")
+            insertor.insert_treatment(treatment)
 
-            # update current objective
-            current_objective = new_objective
-        """
-        return destroyed_route_plan
+
+        #Forsøker å legge til alle pasientne som ikke ligger inne 
+        
+        #TODO: Prøve å shuffle på hvem som settes inn 
+        insertor.insertPatients(repaired_route_plan.notAllocatedPatients)
+        repaired_route_plan.updateObjective()
+        '''
+        route_plan, new_objective = self.repair_generator.generate_insertions(
+            route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
+
+        # update current objective
+        current_objective = new_objective
+        '''
+
+        '''
+        Konseptet: 
+        Vi har ulike lister med aktiviteter 
+        '''
+        return repaired_route_plan
 

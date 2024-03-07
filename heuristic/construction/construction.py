@@ -6,6 +6,7 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.route_plan import RoutePlan
 from heuristic.construction.insertion_generator import PatientInsertor
+from heuristic.improvement.operator.insertor import Insertor
 
 '''
 Info: ConstructionHeurstic klassen er selve konstruskjonsheurstikken. 
@@ -47,11 +48,18 @@ class ConstructionHeuristic:
             
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
+
+            '''
             #Oppretter et PatientInsertor objekt, hvor pasient_df og kopien av dagens ruteplan sendes inn
-            patientInsertor = PatientInsertor( route_plan_with_patient, patient_request, self.treatment_df, self.visit_df, self.activities_df)
+            patientInsertor = PatientInsertor( route_plan_with_patient, patient_request, self)
             #patientInsertor forsøker å legge til pasienten, og returnerer True hvis velykket
-            state = patientInsertor.generate_insertions()
-            
+            state = patientInsertor.insert_patients()
+            '''
+            '''
+            Kommentar: Forsøker å ta bort patient insertor og bytte den ut med Insertor, slik at vi bare har en fil i bruk 
+            '''
+            patientInsertor = Insertor(self, route_plan_with_patient)
+            state = patientInsertor.insert_patient(patient)
            
             if state == True: 
                 #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
@@ -60,11 +68,15 @@ class ConstructionHeuristic:
                 self.current_objective += patient_request["aggSuit"]
                 #Pasienten legges til i hjemmsykehusets liste med pasienter
                 self.listOfPatients.append(patient)
+                
+                #Oppdaterer ruteplanen 
+                
 
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
             if state == False: 
                 self.unAssignedPatients.append(patient)
+                self.route_plan.notAllocatedPatients.append(patient)
         
         #TODO: Oppdatere alle dependencies når vi har konstruert løsning 
         for day in range(1, 1+ self.days): 

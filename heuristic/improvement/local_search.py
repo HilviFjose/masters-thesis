@@ -31,16 +31,16 @@ class LocalSearch:
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
-        print("NY LØSNING ETTER CHANGE EMPLOYEE LOKALSØK")
-        candidate.printSolution()
+        #print("NY LØSNING ETTER CHANGE EMPLOYEE LOKALSØK")
+        #candidate.printSolution()
         
         # SWAP EMPLOYEE
         for day in range(1, self.candidate.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.candidate.days + 1):
             candidate = self.swap_employee(candidate,day)
-        print("NY LØSNING ETTER SWAP EMPLOYEE LOKALSØK")
-        candidate.printSolution()
+        #print("NY LØSNING ETTER SWAP EMPLOYEE LOKALSØK")
+        #candidate.printSolution()
         
 
         # MOVE ACTIVITY
@@ -52,8 +52,8 @@ class LocalSearch:
             for route in candidate.routes[day]:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
-        print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
-        candidate.printSolution()
+        #print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
+        #candidate.printSolution()
         
         
 
@@ -66,8 +66,8 @@ class LocalSearch:
             for route in candidate.routes[day]:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
-        print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
-        candidate.printSolution()
+        #print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
+        #candidate.printSolution()
 
         return candidate
     
@@ -153,9 +153,9 @@ class LocalSearch:
                 if status == True and new_route.travel_time < best_travel_time:
                     best_travel_time = new_route.travel_time
                     best_found_route = copy.deepcopy(new_route) 
-                    print("swap is done", activity1.id, activity2.id)
-                    print("changed objective old", old_objective, "new objective", best_travel_time)
-                    print("--------------------")
+                    #print("swap is done", activity1.id, activity2.id)
+                    #print("changed objective old", old_objective, "new objective", best_travel_time)
+                    #print("--------------------")
         return best_found_route
   
 
@@ -223,7 +223,7 @@ class LocalSearch:
                 if status == True and newer_route.travel_time < best_travel_time:
                     best_travel_time = newer_route.travel_time
                     best_found_route = copy.deepcopy(newer_route) 
-                    print("move is done", activity.id)
+                    #print("move is done", activity.id)
         return best_found_route
 
     def swap_employee(self, route_plan, day):
@@ -272,8 +272,8 @@ class LocalSearch:
                         if checkCandidateBetterThanCurrent( new_candidate.objective, best_objective ):
                             best_objective = new_candidate.objective
                             best_found_candidate = new_candidate 
-                            print( "bytter plass på aktivitet ", activity1.id, activity2.id)
-                            print("new_candidate.objective", new_candidate.objective)
+                            #print( "bytter plass på aktivitet ", activity1.id, activity2.id)
+                            #print("new_candidate.objective", new_candidate.objective)
         return best_found_candidate
 
     
