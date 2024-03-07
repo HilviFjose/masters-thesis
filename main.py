@@ -26,13 +26,12 @@ def main():
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
     print("Constructing Inital Solution")
     constructor.construct_initial()
-    
     constructor.route_plan.printSolution()
     constructor.route_plan.updateObjective()
 
     print("Dette er objektivet", constructor.route_plan.objective)
-    print("Hjemmesykehuspasienter ", constructor.listOfPatients)
-    print("Ikke allokert ", constructor.unAssignedPatients)
+    print("Hjemmesykehuspasienter", constructor.listOfPatients)
+    print("Ikke allokert", constructor.unAssignedPatients)
 
     initial_objective = constructor.route_plan.objective
     initial_route_plan = constructor.route_plan 
@@ -43,9 +42,10 @@ def main():
     
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
+    #current_route_plan, current_objective, initial_infeasible_set, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState()
+
     alns = ALNS(weights, reaction_factor, initial_route_plan, initial_objective, initial_infeasible_set, criterion,
                     destruction_degree, constructor, rnd_state=rnd.RandomState())
-
 
     operators = Operators(alns)
     print(operators)

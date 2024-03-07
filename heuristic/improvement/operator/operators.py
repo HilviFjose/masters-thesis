@@ -65,56 +65,35 @@ class Operators:
         return destroyed_route_plan, removed_activities, True
          """
     def random_treatment_removal(self, current_route_plan):
-        # TODO: Må oppdatere routeplan.allocatedPatients dersom alle pasientens treatments fjernes
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        selected_treatment = rnd.choice(destroyed_route_plan.treatments.keys())
+        selected_treatment = rnd.choice(list(destroyed_route_plan.treatments.keys()))
         removed_activities = []
         for visit in destroyed_route_plan.treatments[selected_treatment]:
             removed_activities += destroyed_route_plan.visits[visit]
-        for day in range(1, self.days +1): 
-            for route in self.routes[day]: 
-                for act in route: 
+            del destroyed_route_plan.visits[visit]
+        for day in range(1, destroyed_route_plan.days +1): 
+            for route in destroyed_route_plan.routes[day]: 
+                for act in route.route: 
                     if act.id in removed_activities:
                         route.removeActivityID(act.id)
         
+        del destroyed_route_plan.treatments[selected_treatment]
+        for key, value in list(destroyed_route_plan.allocatedPatients.items()):
+            if value == [selected_treatment]:
+                del destroyed_route_plan.allocatedPatients[key]
+                destroyed_route_plan.notAllocatedPatients.append(key)
+            else:
+                destroyed_route_plan.illegalNotAllocatedTreatments += value
+        destroyed_route_plan.updateObjective()
+        print("selected_treatment",selected_treatment)
         return destroyed_route_plan, removed_activities, True
-
     
 
-# TODO: Finne ut om vi i det hele tatt skal ha removal operatorer på aktivitetsnivå? Repair vil bli veldig conditioned i så fall. 
-    def worst_activity_removal_on_day():
-    #Removes the worst activity on a "locked" day, being the one contributing the least to the objective. (Can possibly later be used on several days, given conditional repair operators.)
-    #Only relevant objective is    
-        """
-    for day in current_route_plan:
-            for route in current_route_plan.routes[day]: 
-                for activity in route:
-
-                self.objective1[4] += route.updateObjective()
-        removed_activity = current_infeasible_set
-        destroyed = []
-        return destroyed_route_plan, removed_activity, destroyed, destroyed_on_day
-      
-        destroyed = []
-        destroyed_on_day = None
-        """
-        return None
-    
-    def worst_leg_removal_on_day():
-    #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
-    
-    def random_activity_removal_on_day():
-    #Removes one random activity on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
-
-    def random_leg_removal_on_day():
-    #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
     
     
 #---------- REPAIR OPERATORS ----------
     def greedy_repair(self, destroyed_route_plan, removed_activities):
+        """
         route_plan = copy.deepcopy(destroyed_route_plan)
         must_insert_activities = []
         # Må sjekke om aktiviteter i removed_activities har samme pasient som noen aktiviteter i route plan.allocatedpatients (hvis denne hadde flere treatments). 
@@ -128,5 +107,6 @@ class Operators:
 
             # update current objective
             current_objective = new_objective
+        """
+        return destroyed_route_plan
 
-        return route_plan, current_objective

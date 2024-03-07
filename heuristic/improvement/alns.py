@@ -51,16 +51,6 @@ class ALNS:
         d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
-        '''
-        print("lager local search")
-        candidate = current_route_plan
-        localsearch = LocalSearch(candidate)
-        candidate = localsearch.do_local_search()
-        print("NY LØSNING FRA LØKALSØK")
-        candidate.printSolution()
-        print(candidate.objective)
-        '''
-
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             #Hva er dette? Løsning vi allerede har funnet??
             already_found = False
@@ -68,26 +58,25 @@ class ALNS:
             #Select destroy method 
             destroy = self.select_operator(
                 self.destroy_operators, d_weights, self.rnd_state)
-
+           
             # Select repair method
             repair = self.select_operator(
                 self.repair_operators, r_weights, self.rnd_state)
-            
             #Destroy solution 
             #henter ut d_operator objekt fra index i destroy operator lister
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
+            print("løsning før destroy")
+            current_route_plan.printSolution()
             d_operator = self.destroy_operators[destroy]
             destroyed_route_plan, removed_activities, destroyed = d_operator(
                 current_route_plan)
-            
-            print("d_operator",d_operator)
-            
             if not destroyed:
                 break
-        
             d_count[destroy] += 1
-
+            print("løsning etter destroy")
+            destroyed_route_plan.printSolution()
+        
             # Update solution
             # Undersøke hva denne filen gjør. Er den kun aktuell på lunde sin?
             #updated_route_plan = self.destroy_repair_updater.update_solution(destroyed_route_plan, index_removed, disruption_time)
@@ -96,19 +85,23 @@ class ALNS:
             #TODO: Lage repair iteratorer, de er kommentert ut, mens vi jobber med lokalsøket, på samme måte som destroy operatorer 
             
             r_operator = self.repair_operators[repair]
-            candidate, candidate_objective  = r_operator(
-                destroyed_route_plan, removed_activities, current_route_plan)
+            candidate = r_operator(
+                destroyed_route_plan, removed_activities)
+            
     
 
             r_count[repair] += 1
            
             # Local search if solution is promising
             local_search_requirement = 0.05 # TODO: Legge inn i main config
-            if candidate_objective.isPromising(candidate_objective, best_objective, local_search_requirement): # TODO: Lage denne i helpfunctions
+        
+            if isPromising(candidate.objective, best_objective, local_search_requirement): 
                 print("lager local search")
                 candidate_for_local_search = copy.deepcopy(candidate)
                 localsearch = LocalSearch(candidate_for_local_search)
                 candidate = localsearch.do_local_search()
+                
+
             """
             # Compare solutions
             best, best_objective, best_infeasible_set, current_route_plan, current_objective, current_infeasible_set, weight_score = self.evaluate_candidate(
@@ -126,8 +119,8 @@ class ALNS:
                 # Update scores
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
-
-            
+            """
+            """
             # After a certain number of iterations, update weight
             # TODO: Noen får denne i oppgave
             if (i+1) % N_U == 0: #TODO: Se på i sammenheng med initial_improvement_config. 
@@ -149,6 +142,7 @@ class ALNS:
                 r_scores = np.ones(
                     len(self.repair_operators), dtype=np.float16)
             """
+
         return best, best_objective, best_infeasible_set
     
     def set_operators(self, operators):

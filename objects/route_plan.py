@@ -25,6 +25,7 @@ class RoutePlan:
         self.visits = {}
         self.allocatedPatients = {}
         self.notAllocatedPatients = []
+        self.illegalNotAllocatedTreatments = []
 
 
         #TODO: Revurdere om vi skal reversere listene som iterers over eller gjøre random 
@@ -157,14 +158,17 @@ class RoutePlan:
 
 
     def updateObjective(self): 
-        objective = [self.objective[0], 0, 0, 0, 0]
+        self.objective[0] = 0
+        self.objective[3] = 0
+        self.objective[4] = 0
         for day in range(1, 1+self.days): 
             for route in self.routes[day]: 
                 route.updateObjective()
-                objective[3] += route.aggSkillDiff 
-                objective[4] += route.travel_time
-        self.objective = objective
+                self.objective[0] += route.aggregated_suitability
+                self.objective[3] += route.aggSkillDiff 
+                self.objective[4] += route.travel_time
 
+    
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
          #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
         #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed

@@ -19,6 +19,7 @@ class Route:
         self.day = day
         self.travel_time = 0
         self.aggSkillDiff = 0 
+        self.suitability = 0
 
 
 
@@ -108,14 +109,17 @@ class Route:
         i = 0 
         travel_time = 0 
         aggregated_skilldiff = 0
+        aggsuit = 0
         for act in self.route: 
             j = act.getID()
             travel_time += math.ceil(T_ij[i][j])
             i = j 
             aggregated_skilldiff += self.employee.getSkillLevel() - act.getSkillreq()
+            aggsuit += act.suitability
         travel_time += math.ceil(T_ij[i][0])
         self.aggSkillDiff= aggregated_skilldiff
         self.travel_time = travel_time
+        self.aggregated_suitability = aggsuit
     
     #TODO: Oppdates ikke oppover igjen i hierarkiet
     def removeActivityID(self, activityID):

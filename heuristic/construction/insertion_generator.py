@@ -19,6 +19,7 @@ class PatientInsertor:
         self.activites_df = activities_df
         self.visit_df = visit_df
         self.patients_df = patients_df
+        self.patient = list(self.patients_df)[0]
 
         #Liste over treatments som pasienten skal gjennomgå
         self.treatments = self.string_or_number_to_int_list(patients_df["treatment"])
@@ -37,15 +38,10 @@ class PatientInsertor:
         #TODO: Treatments bør sorteres slik at de mest kompliserte 
         for treatment in self.treatments: 
             treatStatus = False
-            #Henter ut alle visits knyttet til behandlingen og legger de i en visitList
             stringVisits = self.treatment_df.loc[treatment, 'visit']
             visitList = self.string_or_number_to_int_list(stringVisits)
-            
-            #Oppretter en kopi av ruteplanen uten pasienten  
             old_route_plan = copy.deepcopy(self.route_plan)
 
-            
-            #Reverserer listen annen hver gang for å ikke alltid begynne med pattern på starten av uken
             if self.rev == True:
                 patterns =  reversed(pattern[self.treatment_df.loc[treatment, 'pattern']])
                 self.rev = False
@@ -53,27 +49,19 @@ class PatientInsertor:
                 patterns = pattern[self.treatment_df.loc[treatment, 'pattern']]
                 self.rev = True
             
-            #Iterer over alle patterns som er mulige for denne treatmenten
             for treatPattern in patterns:
-                #Forsøker å inserte visit med pattern. insertStatus settes til True hvis velykket
                 insertStatus = self.insert_visit_with_pattern(visitList, treatPattern) 
-                #Hvis insertet av visit med pattern er velykkt settes treatStaus til True. 
-                #Deretter breakes løkken fordi vi ikke trenger å sjekke for flere pattern.
                 if insertStatus == True:
-                   #TODO: må fikse slik at kun legges til dersom alle treatments for pasienten er godkjente
-                   self.route_plan.treatments[treatment] = visitList
-
-                   treatStatus = True
-                   break
-                #Kommer hit dersom patternet ikke fungerte. 
-                #Gjennoppretter da routePlanen til å være det den var før vi la til visits. 
+                    treatStatus = True
+                    if self.patient in self.route_plan.allocatedPatients.keys():
+                        self.route_plan.allocatedPatients[self.patient].append(treatment)
+                    else:
+                        self.route_plan.allocatedPatients[self.patient] = [treatment]
+                    self.route_plan.treatments[treatment] = visitList
+                    break
                 self.route_plan = copy.deepcopy(old_route_plan)
-                
-            #Returnerer False hvis det ikke var mulig å legge til treatmentet med noen av patterne
             if treatStatus == False: 
                 return False
-            
-        self.route_plan.allocatedPatients 
         return True
     
 

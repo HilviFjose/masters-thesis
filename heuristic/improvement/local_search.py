@@ -21,7 +21,7 @@ class LocalSearch:
      
     
     def do_local_search(self):
-        #TODO: Finne ut om det er noe teori på hva som burd være først 
+        # TODO: Finne ut om det er noe teori på hva som burd være først 
         candidate = self.candidate
 
         
@@ -48,15 +48,11 @@ class LocalSearch:
             for route in candidate.routes[day]:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
-        
-              
         for day in range(1, self.candidate.days + 1):
             for route in candidate.routes[day]:
                 new_route = self.move_activity_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
-        
         print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
-        
         candidate.printSolution()
         
         
@@ -71,13 +67,8 @@ class LocalSearch:
                 new_route = self.swap_activities_in_route(copy.deepcopy(route))
                 candidate.switchRoute(new_route, day)
         print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
-        
         candidate.printSolution()
 
-    
-    
-
-        
         return candidate
     
    

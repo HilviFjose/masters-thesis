@@ -60,7 +60,7 @@ class ConstructionHeuristic:
                 self.current_objective += patient_request["aggSuit"]
                 #Pasienten legges til i hjemmsykehusets liste med pasienter
                 self.listOfPatients.append(patient)
-                self.route_plan.objective[0] += patient_request["aggSuit"]
+
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
             if state == False: 

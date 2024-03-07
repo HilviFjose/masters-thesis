@@ -19,6 +19,7 @@ class Activity:
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
         self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextpresedence"])
         self.patient = df.loc[id]["patient"]
+        self.suitability = df.loc[id]["suitability"]
         
         self.startTime = None
         #self.newLatestStartTime = 1440
