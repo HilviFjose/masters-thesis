@@ -87,6 +87,10 @@ class RoutePlan:
                 route.printSoultion()
         self.updateObjective()
         print("objective ", self.objective)
+        print("allocated patients ", list(self.allocatedPatients.keys()))
+        print("not allocated ", self.notAllocatedPatients)
+
+    
 
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
@@ -164,7 +168,7 @@ class RoutePlan:
         for day in range(1, 1+self.days): 
             for route in self.routes[day]: 
                 route.updateObjective()
-                self.objective[0] += route.aggregated_suitability
+                self.objective[0] += route.suitability
                 self.objective[3] += route.aggSkillDiff 
                 self.objective[4] += route.travel_time
 

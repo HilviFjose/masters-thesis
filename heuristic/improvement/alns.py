@@ -26,12 +26,16 @@ class ALNS:
         self.constructor = constructor
         #TODO: Finne ut om vi skal ha denn klassen med. Eller om det har noe med ALNS å gjøre
         #self.destroy_repair_updater = Destroy_Repair_Updater(constructor)
-
+        '''
+        self.route_plan = current_route_plan
+        self.start_plan = current_route_plan
+        '''
         self.start_plan = current_route_plan
         candidate_for_local_search = copy.deepcopy(current_route_plan)
         localsearch = LocalSearch(candidate_for_local_search)
         self.route_plan = localsearch.do_local_search()
-    
+        
+
     def iterate(self, num_iterations):
         weights = np.asarray(self.weights, dtype=np.float16)
         
@@ -110,16 +114,16 @@ class ALNS:
                 current_route_plan = copy.deepcopy(candidate)
             '''
 
-            
-            localsearch = LocalSearch(copy.deepcopy(candidate))
-            candidate = localsearch.do_local_search()
-            
+         
+            #TODO: Hvorfor endres hovedobjektivtet når vi legger til lokalsøket 
+            #localsearch = LocalSearch(copy.deepcopy(candidate))
+            #candidate = localsearch.do_local_search()
+           
 
             #Vi vil endre til current hvis den er promising 
             if isPromising(candidate.objective, current_route_plan.objective, local_search_requirement):
-                print("NY KANDIDAT ") 
-                print(candidate.objective)
-                print("notAllocatedPatients", candidate.notAllocatedPatients)
+                print("NY PROMISING KANDIDAT ") 
+                candidate.printSolution()
                 current_route_plan = copy.deepcopy(candidate)
             
             if checkCandidateBetterThanCurrent(candidate.objective, best_route_plan.objective): 

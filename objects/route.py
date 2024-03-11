@@ -101,11 +101,13 @@ class Route:
         print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID()))
         for a in self.route: 
             print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
+        print("AGGSUIT ", self.suitability)
         print("---------------------")
 
     #TODO: Denne fungerer ikke nå for skill d
     #Dette er alternativ måte å regne ut objektivet. Slik at ikke alt ligger i routeplan 
-    def updateObjective(self): 
+    
+    def updateObjectiveG(self): 
         i = 0 
         travel_time = 0 
         aggregated_skilldiff = 0
@@ -119,10 +121,25 @@ class Route:
         travel_time += math.ceil(T_ij[i][0])
         self.aggSkillDiff= aggregated_skilldiff
         self.travel_time = travel_time
-        self.aggregated_suitability = aggsuit
-    
+        self.suitability = aggsuit
+
+    def updateObjective(self): 
+        i = 0 
+        self.travel_time = 0
+        self.aggSkillDiff = 0 
+        self.suitability = 0
+        for act in self.route: 
+            j = act.getID()
+            self.travel_time += math.ceil(T_ij[i][j])
+            i = j 
+            self.aggSkillDiff += self.employee.getSkillLevel() - act.getSkillreq()
+            self.suitability += act.suitability
+        self.travel_time += math.ceil(T_ij[i][0])
+       
     #TODO: Oppdates ikke oppover igjen i hierarkiet
     def removeActivityID(self, activityID):
+        #if activityID == 48: 
+        
         index = 0 
         for act in self.route: 
             if act.getID() == activityID: 
@@ -130,6 +147,7 @@ class Route:
                 act.employeeNotAllowedDueToPickUpDelivery = []
                 act.startTime = None
                 self.updateActivityDependenciesInRoute(act)
+                #print("FJERNER AKT ", activityID, "from DAY ", self.day, " EMPL ", self.employee.id)
                 return
             index += 1 
         #print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)

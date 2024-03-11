@@ -25,13 +25,12 @@ def main():
     #Her lages en kontruksjonsheuristikk. Våre requests vil være pasienter, og vi går gjennom alle.
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
     print("Constructing Inital Solution")
+    print("TEST INITAL OBJECTIVE ", constructor.route_plan.objective)
     constructor.construct_initial()
-    constructor.route_plan.printSolution()
     constructor.route_plan.updateObjective()
+    constructor.route_plan.printSolution()
+    
 
-    print("Dette er objektivet", constructor.route_plan.objective)
-    print("Hjemmesykehuspasienter", constructor.listOfPatients)
-    print("Ikke allokert", constructor.unAssignedPatients)
 
     initial_objective = constructor.route_plan.objective
     initial_route_plan = constructor.route_plan 
@@ -44,14 +43,19 @@ def main():
 
     #current_route_plan, current_objective, initial_infeasible_set, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState()
 
+    print("HER 0")
+
     alns = ALNS(weights, reaction_factor, initial_route_plan, initial_objective, initial_infeasible_set, criterion,
                     destruction_degree, constructor, rnd_state=rnd.RandomState())
+    print("HER 1")
 
     operators = Operators(alns)
     
+    print("HER 2")
 
     alns.set_operators(operators)
 
+    print("HER 3")
     #RUN ALNS 
     best_route_plan = alns.iterate(
             iterations)

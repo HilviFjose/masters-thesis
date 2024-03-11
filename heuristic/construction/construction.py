@@ -26,7 +26,6 @@ class ConstructionHeuristic:
         self.days = days
 
         self.route_plan = RoutePlan(days, employees_df) 
-        self.current_objective = 0 
         self.listOfPatients = []
         self.unAssignedPatients = []
         
@@ -64,8 +63,6 @@ class ConstructionHeuristic:
             if state == True: 
                 #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                 self.route_plan = patientInsertor.route_plan
-                #Objektivverdien oppdateres
-                self.current_objective += patient_request["aggSuit"]
                 #Pasienten legges til i hjemmsykehusets liste med pasienter
                 self.listOfPatients.append(patient)
                 

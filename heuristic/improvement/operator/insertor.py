@@ -42,6 +42,7 @@ class Insertor:
         #Må ha noe som legger til hvis den er
         if patient in self.route_plan.notAllocatedPatients: 
             self.route_plan.notAllocatedPatients.remove(patient)
+        #print("Insertor - Legger til pasient ", patient)
         return True 
 
     def updateAllocation(self, allocated, patient, treatment): 

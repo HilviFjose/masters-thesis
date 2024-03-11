@@ -68,8 +68,9 @@ class Operators:
          """
     def random_treatment_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        selected_treatment = rnd.choice(list(destroyed_route_plan.treatments.keys()))
+        selected_treatment = 5 #rnd.choice(list(destroyed_route_plan.treatments.keys())) #dette er samme som aktivtet 17 
         removed_activities = []
+        
         for visit in destroyed_route_plan.treatments[selected_treatment]:
             removed_activities += destroyed_route_plan.visits[visit]
             del destroyed_route_plan.visits[visit]
@@ -78,6 +79,7 @@ class Operators:
                 for act in route.route: 
                     if act.id in removed_activities:
                         route.removeActivityID(act.id)
+        print("removed_activities", removed_activities)
         
         del destroyed_route_plan.treatments[selected_treatment]
         for key, value in list(destroyed_route_plan.allocatedPatients.items()):
@@ -109,7 +111,6 @@ class Operators:
         #Forsøker å legge til de aktivitetene vi har tatt ut
         insertor = Insertor(self.constructor, repaired_route_plan)
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments: 
-            print("ikke inn her")
             insertor.insert_treatment(treatment)
 
 
