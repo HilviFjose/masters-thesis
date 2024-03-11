@@ -4,7 +4,7 @@ import os
 from datageneration import employeeGeneration
 from datageneration import patientGeneration 
 from datageneration import distance_matrix
-from config import antibiotics_config
+from config import construction_config
 import random
 
 
@@ -49,7 +49,7 @@ df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
 '''
 
 #GENERATING DISTANCE MATRIX
-depot_row = pd.DataFrame({'activityId': [0], 'location': [antibiotics_config.depot]})
+depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config.depot]})
 depot_row = depot_row.set_index(['activityId'])
 # Legger til depot_row i begynnelsen av df_activities
 df_activities_depot = pd.concat([depot_row, df_activities], axis=0)

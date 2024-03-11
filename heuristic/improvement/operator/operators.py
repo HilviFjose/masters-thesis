@@ -8,7 +8,7 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Include subfolders
 
 from objects.distances import *
-from config.antibiotics_config import *
+from config.construction_config import *
 #from heuristic.improvement.initial.initial_repair_generator import RepairGenerator
 
 class Operators:

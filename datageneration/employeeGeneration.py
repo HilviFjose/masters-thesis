@@ -5,15 +5,13 @@ import numpy as np
 import random 
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from config import antibiotics_config
+from config import construction_config
 
 def assign_shifts(employees):
     #get index lists for each skill
     skill_1=[i for i,e in enumerate(employees) if e[1]==1]
     skill_2=[i for i,e in enumerate(employees) if e[1]==2]
     skill_3=[i for i,e in enumerate(employees) if e[1]==3]
-
-    #print(len(skill_1),len(skill_1),len(skill_1))
 
     #put all skill 1 to day-shift
     for index in skill_1:
@@ -50,7 +48,7 @@ def assign_shifts(employees):
 
     #add same shift for remaining week for each employee
     for e in employees:
-        shifts=[e[2][0]+i*3 for i in range(1,antibiotics_config.days)]    #same shift each working day
+        shifts=[e[2][0]+i*3 for i in range(1,construction_config.days)]    #same shift each working day
         e[2].extend(shifts)
 
     #verify results, set to "if False:"" to disable
@@ -72,22 +70,23 @@ def assign_shifts(employees):
 def employeeGenerator():
     df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'schedule'])
 
-    profession_levels = np.random.choice(antibiotics_config.professionLevels, 
-                                         antibiotics_config.E_num, 
-                                         p=antibiotics_config.professionLevelsProb)
+    profession_levels = np.random.choice(construction_config.professionLevels, 
+                                         construction_config.E_num, 
+                                         p=construction_config.professionLevelsProb)
 
     employees = []
     for index, level in enumerate(profession_levels): 
         employees.append([index+1, level, []])          # EmployeeId, Profession Level, Schedule
 
-    shifts_assignment = assign_shifts(employees) 
+    shifts_assignment = assign_shifts(employees)       # TODO: Uncomment for shifts night, day and evening
 
     for e in employees: 
         schedule = []
+        #schedule = [2, 5, 8, 11, 14]                    # TODO: Set schedule = [] for shifts night, day and evening
         df_employees = df_employees._append({
             'employeeId': e[0],
             'professionalLevel': e[1],
-            'schedule': e[2]
+            'schedule': e[2] #schedule#
         },ignore_index=True)
     
     file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
