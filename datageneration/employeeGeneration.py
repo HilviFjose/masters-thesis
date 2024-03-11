@@ -13,8 +13,6 @@ def assign_shifts(employees):
     skill_2=[i for i,e in enumerate(employees) if e[1]==2]
     skill_3=[i for i,e in enumerate(employees) if e[1]==3]
 
-    #print(len(skill_1),len(skill_1),len(skill_1))
-
     #put all skill 1 to day-shift
     for index in skill_1:
         employees[index][2].append(2)
@@ -80,14 +78,15 @@ def employeeGenerator():
     for index, level in enumerate(profession_levels): 
         employees.append([index+1, level, []])          # EmployeeId, Profession Level, Schedule
 
-    shifts_assignment = assign_shifts(employees) 
+    shifts_assignment = assign_shifts(employees)       # TODO: Uncomment for shifts night, day and evening
 
     for e in employees: 
         schedule = []
+        #schedule = [2, 5, 8, 11, 14]                    # TODO: Set schedule = [] for shifts night, day and evening
         df_employees = df_employees._append({
             'employeeId': e[0],
             'professionalLevel': e[1],
-            'schedule': e[2]
+            'schedule': e[2] #schedule#
         },ignore_index=True)
     
     file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')

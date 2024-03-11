@@ -1,22 +1,19 @@
-#Generelt om distributions: Mange av disse vil være ca.-tall eller maxfactor for en fordeling.1
-
+# ANTIBIOTICS INFUSION CASE
+# -------------------------
 # PATIENTS
-P_num = 50                                      # Number of patients
+P_num = 30                                          # Number of patients
 
-# Distributions
-treatmentsPerPatient = 1.05                     #Number of treatments per patient
-maxTreatmentsPerPatient = 3
-V_numProb = [0.9, 0.05, 0.05]
-maxActivitiesPerVisit = 6                       #Max number of activities per visit
-A_numProb = [0.25, 0.05, 0.3, 0.05, 0.3, 0.05]    #Probability of the number of activities from 1 to 6 in a visit
+# Distributions of treatments, visits and acitivities for each patient
+T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
+A_numProb = [0.2, 0, 0.8, 0, 0, 0]                  # Probability of the number of activities from 1 to 6 in a visit
 
 # Pattern Type Distribution (5days) - Decides visits per treatment
-frequency1 = 0.2                #Five days a week
-frequency2 = 0.2                #Four days a week
-frequency3 = 0.2                #Three days spread throughout the week
-frequency4 = 0.1                #Two days spread throughout the week
-frequency5 = 0.1                #Two concecutive days
-frequency6 = 0.2                #One day a week
+frequency1 = 0.5                # Five days a week
+frequency2 = 0.0                # Four days a week
+frequency3 = 0.2                # Three days spread throughout the week
+frequency4 = 0.1                # Two days spread throughout the week
+frequency5 = 0.0                # Two concecutive days
+frequency6 = 0.2                # One day a week
 patternTypes = [frequency1, frequency2, frequency3, frequency4, frequency5, frequency6]
 
 # Patterns
@@ -28,19 +25,20 @@ patterns_2daysfollowing = [11,12,13,14]                             # Patterntyp
 patterns_1day = [15,16,17,18,19]                                    # Patterntype 6
 
 # Continuity distribution
-continuityDistribution = [0.25, 0.25, 0.5] #Top 1 employee, top 3 employees, all employees
+continuityDistribution = [0.35, 0.15, 0.5] #Top 1 employee, top 3 employees, all employees
 
 # Employee history??
 
 # Heaviness
-heavinessDistribution = [0.05, 0.2, 0.5, 0.2, 0.05] 
+heavinessDistribution = [1, 0, 0, 0, 0] 
 
 # ACTIVITIES
 pd_min = 60                     #Min pickup and delivery time limit
 pd_max = 150                    #Max pickup and delivery time limit
 
 # Profession Requirement
-professionReq1 = [0.4, 0.3, 0.3, 0] #index 0: logistics
+# If logistics workers can't deliver medicine..
+professionReq1 = [0, 0.3, 0.7, 0] #index 0: logistics
 
 # Duration in minutes 
 minDurationHealth = 15
@@ -48,11 +46,6 @@ maxDurationHealth = 120
 minDurationEquip = 5
 maxDurationEquip = 30
 #TODO: Må finne ut av hvordan dette skal fordeles?? Random eller bruke en kjent fordeling?
-
-# Starting time for health activities
-minWindowHealth = minDurationHealth
-minWindowEquip = minDurationEquip
-averageWindowHealth = 200 #average time window between earliest and latest starting time
 
 # EMPLOYEES
 # Number of employees
@@ -66,8 +59,9 @@ E_num_evening = 0.2
 professionLevels = [1, 2, 3, 4]
 professionLevelsProb =  [0.2, 0.3, 0.5, 0] #index 0: level 1
 
-# Employee Restrictions
+# Employee Restrictions and History
 employeeRestrict = 0.05
+employeeHistory = 0.90
 
 # Working period
 days = 5

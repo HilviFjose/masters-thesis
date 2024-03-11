@@ -63,8 +63,8 @@ def patientGenerator(df_employees):
         patientId.append(i+1)
         
         #Distribution of number of treatments per patient
-        T_numMax = construction_config.maxTreatmentsPerPatient                                          # Max number of activities per visit
-        prob = construction_config.V_numProb                                                            # The probability of the number of activities per visit
+        T_numMax = len(construction_config.T_numProb)                                                    # Max number of activities per visit
+        prob = construction_config.T_numProb                                                             # The probability of the number of activities per visit
         nTreatments = np.random.choice(range(1,T_numMax+1), size=construction_config.P_num, p=prob)      # Distribution of the number of activities per visit
         
         #Distribution of utility, continuity group and heaviness for patients
@@ -82,7 +82,7 @@ def patientGenerator(df_employees):
             }, ignore_index=True)
     
     # Employee Restrictions
-    num_restricted_patients = int(len(df_patients) * 0.05)      # 5 % of the patients have a restriction against an employee
+    num_restricted_patients = int(len(df_patients) * construction_config.employeeRestrict)      # 5 % of the patients have a restriction against an employee
     restricted_patient_indices = np.random.choice(df_patients.index, size=num_restricted_patients, replace=False) # Random patients get employee restrictions
     
     for index in restricted_patient_indices:
@@ -92,7 +92,7 @@ def patientGenerator(df_employees):
         df_patients.at[index, 'employeeRestriction'] = list
 
     # Employee history  TODO: Må potensielt oppdatere format på dette
-    num_history_patients = int(len(df_patients) * 0.9)          # 90 % of the patients have a treatment history with some employees
+    num_history_patients = int(len(df_patients) * construction_config.employeeHistory)          # 90 % of the patients have a treatment history with some employees
     history_patient_indices = np.random.choice(df_patients.index, size=num_history_patients, replace=False) # Random patients get employee history
 
     for index in history_patient_indices:
@@ -162,16 +162,13 @@ def visitsGenerator(df_treatments):
     df_visits['heaviness'] = expanded_rows['heaviness']
 
     # Distribution of number of activities per visit
-    A_numMax = construction_config.maxActivitiesPerVisit                        # Max number of activities per visit
-    prob = construction_config.A_numProb                                        # The probability of the number of activities per visit
+    A_numMax = len(construction_config.A_numProb)                                # Max number of activities per visit
+    prob = construction_config.A_numProb                                         # The probability of the number of activities per visit
     V_num = df_visits.shape[0]
-    activities = np.random.choice(range(1,A_numMax+1), size=V_num, p=prob)      # Distribution of the number of activities per visit
-    #activities = np.random.poisson(lam=construction_config.activitiesPerVisit, size=V_num)
-    # A minimum of 1 and maximum of 6 activities per visit. 
-    #activities = np.maximum(activities, 1) #gjør at ingen visits har 0 aktiviteter, MEN det gjør at snittet på antall aktivititeter per visit blir mye høyere enn planlagt.
-    #activities = np.minimum(activities, 6) 
-
-    df_visits['activities'] = activities
+    T_num =  df_treatments.shape[0]
+    for treatmentId, group in df_visits.groupby('treatmentId'):                         # Making sure all activities within a visit looks the same (only makes sense for some cases, like antibiotics)
+        activities = np.random.choice(range(1, A_numMax + 1), size=len(group), p=prob)  # Distribution of the number of activities per visit
+        df_visits.loc[group.index, 'activities'] = activities
 
     file_path = os.path.join(os.getcwd(), 'data', 'visits.csv')
     df_visits.to_csv(file_path, index=False)
@@ -341,7 +338,7 @@ def activitiesGenerator(df_visits):
         
         earliestStartTime = np.random.randint(0, latestStartTime-visit_duration)
                   
-
+        #TODO: Sett til genererte tidsvinduer i stedet for hele dagtid.
         df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] = earliestStartTime #0
         df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] = latestStartTime #1440
 
