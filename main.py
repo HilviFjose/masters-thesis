@@ -60,15 +60,19 @@ def main():
 
         alns.set_operators(operators)
 
+        print("HER 3")
         #RUN ALNS 
-        current_route_plan, current_objective, current_infeasible_set = alns.iterate(
+        best_route_plan = alns.iterate(
                 iterations)
         
-        print("Oppdatert objektiv etter ALNS ", current_route_plan.objective)
-        
-        
-        #constructor.print_new_objective(current_route_plan, current_infeasible_set)
-        
+        print("LØSNING ETTER ALNS")
+        best_route_plan.printSolution()
+    
+    
+        '''
+        constructor.print_new_objective(
+                current_route_plan, current_infeasible_set)
+                '''
         
         #LOCAL SEARCH
 

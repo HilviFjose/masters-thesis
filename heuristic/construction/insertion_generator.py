@@ -11,24 +11,25 @@ import random
 Info: PatientInsertor prøver å legge til en pasient i ruteplanen som sendes inn
 TODO: Skrive mer utfyllende her
 '''
-
+# TODO: Må sende inn patientID
 class PatientInsertor:
-    def __init__(self, route_plan, patients_df, treatment_df, visit_df, activities_df, patient):
-        self.treatment_df = treatment_df
+    def __init__(self, route_plan, patient_df, constructor):
+        self.constructor = constructor
+      
         self.route_plan = route_plan
-        self.activites_df = activities_df
-        self.visit_df = visit_df
-        self.patients_df = patients_df
+      
+        self.patient = [list(self.constructor.patients_df)[0]]
+
+        self.patients_df = patient_df
 
         #Liste over treatments som pasienten skal gjennomgå
         #self.treatments = self.string_or_number_to_int_list(patients_df["treatmentsIds"])
         self.treatments = self.patients_df["treatmentsIds"]
         #Dette er en parameter som settes for å bytte på hvilken vei det iteres over patterns. 
         #TODO: Burde heller gjøres ved å iterere tilfeldig over rekkefølgen på patterns
-        self.patient = patient
         self.rev = False
 
-    def generate_insertions(self):
+    def insert_patients(self):
         '''
         Funksjonen forsøker å legge til alle treatments for pasienten. 
 
@@ -45,7 +46,7 @@ class PatientInsertor:
             #Henter ut alle visits knyttet til behandlingen og legger de i en visitList
             #stringVisit = self.treatment_df.loc[treatment, 'visitsIds']
             #visitList = self.string_or_number_to_int_list(stringVisit)
-            visitList = self.treatment_df.loc[treatment, 'visitsIds']
+            visitList = self.constructor.treatment_df.loc[treatment, 'visitsIds']
             
             #Oppretter en kopi av ruteplanen uten pasienten  
             old_route_plan = copy.deepcopy(self.route_plan)
@@ -53,14 +54,14 @@ class PatientInsertor:
             '''
             #Reverserer listen annen hver gang for å ikke alltid begynne med pattern på starten av uken
             if self.rev == True:
-                patterns =  reversed(pattern[self.treatment_df.loc[treatment, 'patternType']])
+                patterns =  reversed(pattern[self.constructor.treatment_df.loc[treatment, 'patternType']])
                 self.rev = False
             else: 
-                patterns = pattern[self.treatment_df.loc[treatment, 'patternType']]
+                patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
                 self.rev = True
             '''
             #Iterer over alle patterns som er mulige for denne treatmenten
-            patterns = pattern[self.treatment_df.loc[treatment, 'patternType']]
+            patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
             index_random = [i for i in range(len(patterns))]
             random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
@@ -68,22 +69,17 @@ class PatientInsertor:
                 treatPattern = patterns[index]
                 #Forsøker å inserte visit med pattern. insertStatus settes til True hvis velykket
                 insertStatus = self.insert_visit_with_pattern(visitList, treatPattern) 
-                if self.patient == 18:
-                    print("insertion of ", treatment, " with pattern ", treatPattern)
-        
-                #Hvis insertet av visit med pattern er velykkt settes treatStaus til True. 
-                #Deretter breakes løkken fordi vi ikke trenger å sjekke for flere pattern.
                 if insertStatus == True:
-                   treatStatus = True
-                   break
-                #Kommer hit dersom patternet ikke fungerte. 
-                #Gjennoppretter da routePlanen til å være det den var før vi la til visits. 
+                    treatStatus = True
+                    if self.patient[0] in self.route_plan.allocatedPatients.keys():
+                        self.route_plan.allocatedPatients[self.patient[0]].append(treatment)
+                    else:
+                        self.route_plan.allocatedPatients[self.patient[0]] = [treatment]
+                    self.route_plan.treatments[treatment] = visitList
+                    break
                 self.route_plan = copy.deepcopy(old_route_plan)
-                
-            #Returnerer False hvis det ikke var mulig å legge til treatmentet med noen av patterne
             if treatStatus == False: 
                 return False
-        
         return True
     
 
@@ -117,7 +113,6 @@ class PatientInsertor:
 
     #Denne 
     def insert_visit_on_day(self, visit, day):  
-        ACT = [54, 55, 56, 57, 58]
         '''
         Funksjonen forsøker å legge til alle aktiviter som inngår i et visit ved å oppdatere route_self 
 
@@ -132,16 +127,17 @@ class PatientInsertor:
         #Henter ut liste med aktiviteter som inngår i vistet 
         #stringActivities = self.visit_df.loc[visit, 'activitiesIds']
         #activitesList = self.string_or_number_to_int_list(stringActivities)
-        activitiesList = self.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
 
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         for activityID in activitiesList: 
             #Oppreter et aktivitesobjekt basert på ID-en 
-            activity = Activity(self.activites_df, activityID)
+            activity = Activity(self.constructor.activites_df, activityID)
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
                 return False
-        #Dersom alle aktivitene har blitt lagt til returers true    
+        #Dersom alle aktivitene har blitt lagt til returers true  
+        self.route_plan.visits[visit] = activitesList  
         return True
     
     def string_or_number_to_int_list(self, string_or_int):

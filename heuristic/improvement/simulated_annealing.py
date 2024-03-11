@@ -13,7 +13,7 @@ class SimulatedAnnealing:
 
         # Always accept better solution
         # TODO: Legge inn en ny objektivvurdering. Må iterere oss gjennom flere objektiver. 
-        if checkCandidateBetterThanCurren(candidateObj= candidate_objective, currObj= current_objective):
+        if checkCandidateBetterThanCurrent(candidateObj= candidate_objective, currObj= current_objective):
             #print("Found better solution")
             accept = True
 

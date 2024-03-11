@@ -1,82 +1,135 @@
 import pandas as pd
 import copy
 import math
+import numpy.random as rnd 
+import random 
 
 import os
 import sys
-#sys.path.append("C:\\Users\\hilvif\\masters-thesis\\heuristic\\improvement\\operators")
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Include subfolders
 
+from helpfunctions import checkCandidateBetterThanCurrent
 from objects.distances import *
 from config.construction_config import *
-#from heuristic.improvement.initial.initial_repair_generator import RepairGenerator
+from heuristic.improvement.operator.repair_generator import RepairGenerator
+from heuristic.improvement.operator.insertor import Insertor
 
 class Operators:
     def __init__(self, alns):
-        self.destruction_degree = alns.destruction_degree
+        self.destruction_degree = alns.destruction_degree # TODO: Skal vi ha dette?
         self.constructor = alns.constructor
-        self.T_ij = T_ij #Må T_ij hentes på en smartere måte her?
-        # TODO: SE PÅ REPAIR OG INSERTION GENERELT: self.repair_generator = RepairGenerator(self.constructor)
+        self.repair_generator = RepairGenerator(self.constructor)
 
-    # TODO: Lage en funksjon som finner number of activities/visits/treatments/patients to remove based on degree of destruction
-    def activities_to_remove(self, route_plan):
-        # Count number of activities in route_plan
-        num_activities = 0
-
-        # TODO: Må hente ut unike pasienter og visits fra route_plan 
-        num_activities = []
-        for route in route_plan:
-            for activity in route: 
-                if activity not in num_activities:
-                    num_activities.append(activity)
-
-        # Calculate number of activities to remove
-        activities_remove = math.ceil(num_activities * self.destruction_degree)
-
+    # Uses destruction degree to set max cap for removal
+    def activities_to_remove(self, activities_remove):
         return activities_remove
     
 #---------- REMOVE OPERATORS ----------
-    def random_activity_removal_on_day():
-    #Removes one random activity on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
-    
-    def random_route_removal_on_day():
-    #Removes a random whole route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
-    
-    def random_leg_removal_on_day():
-    #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
-    
-    def worst_activity_removal_on_day(self, current_route_plan, current_infeasible_set):
-    #Removes the worst activity on a "locked" day, being the one contributing the least to the objective. (Can possibly later be used on several days, given conditional repair operators.)
-    #Only relevant objective is    
-        """
-    for day in current_route_plan:
-            for route in current_route_plan.routes[day]: 
-                for activity in route:
-
-                self.objective1[4] += route.updateObjective()
-        removed_activity = current_infeasible_set
-        destroyed = []
-        return destroyed_route_plan, removed_activity, destroyed, destroyed_on_day
-        """
-        destroyed = []
-        destroyed_on_day = None
-
-        return current_route_plan, current_infeasible_set, destroyed
+    """
    
+    def random_route_removal(self, current_route_plan):
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        routes = destroyed_route_plan.routes
+
+        if destroyed_route_plan:
+            index_list = list(range(len(routes)))
+            selected_index = rnd.choice(index_list)
+            removed_route = routes[selected_index]
+            destroyed_route_plan.remove(removed_route)
+       
+        removed_activities = []
+        for act in removed_route:
+            removed_activities.add(act)
+     
+        return destroyed_route_plan, removed_activities, True
+    
+    def worst_route_removal(self, current_route_plan):
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        routes = destroyed_route_plan.routes
+        worst_route = None
+        current_worst_objective = current_route_plan.objective
+
+        for route in routes:
+            route_plan_holder = copy.deepcopy(current_route_plan)
+            removed_route = route_plan_holder.routes.pop(route)
+            objective_removed_route = route_plan_holder.objective
+            
+            # If current worst objective is better than candidate, then candidate is the new current worst
+            if checkCandidateBetterThanCurrent(current_worst_objective, objective_removed_route):
+                worst_route = removed_route
+                current_worst_objective = objective_removed_route
+                destroyed_route_plan = route_plan_holder
+            
+        removed_activities = []
+        for act in worst_route:
+            removed_activities.add(act)
+
+        return destroyed_route_plan, removed_activities, True
+         """
+    def random_treatment_removal(self, current_route_plan):
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        selected_treatment = 5 #rnd.choice(list(destroyed_route_plan.treatments.keys())) #dette er samme som aktivtet 17 
+        removed_activities = []
         
+        for visit in destroyed_route_plan.treatments[selected_treatment]:
+            removed_activities += destroyed_route_plan.visits[visit]
+            del destroyed_route_plan.visits[visit]
+        for day in range(1, destroyed_route_plan.days +1): 
+            for route in destroyed_route_plan.routes[day]: 
+                for act in route.route: 
+                    if act.id in removed_activities:
+                        route.removeActivityID(act.id)
+        print("removed_activities", removed_activities)
+        
+        del destroyed_route_plan.treatments[selected_treatment]
+        for key, value in list(destroyed_route_plan.allocatedPatients.items()):
+         
+            if value == [selected_treatment]:
+              
+                del destroyed_route_plan.allocatedPatients[key]
+                destroyed_route_plan.notAllocatedPatients.append(key)
+                break
+            if selected_treatment in value: 
+                destroyed_route_plan.illegalNotAllocatedTreatments += value
+                break
+        destroyed_route_plan.updateObjective()
+        return destroyed_route_plan, removed_activities, True
     
-    def worst_route_removal_on_day():
-    #Removes the worst whole route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
-    
-    def worst_leg_removal_on_day():
-    #Removes one leg (etappe, two activities) in a route on a "locked" day. (Can possibly later be used on several days, given conditional repair operators.)
-        return None
+
     
     
 #---------- REPAIR OPERATORS ----------
-    def greedy_repair_on_day():
-        return None
+    def greedy_repair(self, destroyed_route_plan):
+        #Tar bort removed acktivitites, de trenger vi ikk e
+        repaired_route_plan = copy.deepcopy(destroyed_route_plan)
+        
+        # Må sjekke om aktiviteter i removed_activities har samme pasient som noen aktiviteter i route plan.allocatedpatients (hvis denne hadde flere treatments). 
+        # I så fall må alle aktiviteter i hele treatmentet som ble fjernet prioriteres til å legges inn.
+        # Vil kjøre insertion på treatment-nivå (TreatmentInsertions-klasse kanskje? Agnes er usikker) for å legge inn disse som har denne sammenhengen
+        # Så kjøre vanlig grådig PatientInsertion
+
+        #Forsøker å legge til de aktivitetene vi har tatt ut
+        insertor = Insertor(self.constructor, repaired_route_plan)
+        for treatment in repaired_route_plan.illegalNotAllocatedTreatments: 
+            insertor.insert_treatment(treatment)
+
+
+        #Forsøker å legge til alle pasientne som ikke ligger inne 
+        
+        #TODO: Prøve å shuffle på hvem som settes inn 
+        insertor.insertPatients(repaired_route_plan.notAllocatedPatients)
+        repaired_route_plan.updateObjective()
+        '''
+        route_plan, new_objective = self.repair_generator.generate_insertions(
+            route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
+
+        # update current objective
+        current_objective = new_objective
+        '''
+
+        '''
+        Konseptet: 
+        Vi har ulike lister med aktiviteter 
+        '''
+        return repaired_route_plan
+

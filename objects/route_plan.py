@@ -23,6 +23,11 @@ class RoutePlan:
                 self.routes[day].append(Route(day, emp))
         self.days = days 
         self.objective = [0,0,0,0,0]
+        self.treatments = {}
+        self.visits = {}
+        self.allocatedPatients = {}
+        self.notAllocatedPatients = []
+        self.illegalNotAllocatedTreatments = []
 
         #self.rev = True #Dersom vi ønsker å reversere listene (Sorterer heller listene annerledes nå)
 '''
@@ -190,6 +195,10 @@ class RoutePlan:
                 route.printSoultion()
         self.updateObjective()
         print("objective ", self.objective)
+        print("allocated patients ", list(self.allocatedPatients.keys()))
+        print("not allocated ", self.notAllocatedPatients)
+
+    
 
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
@@ -261,17 +270,18 @@ class RoutePlan:
 
 
     def updateObjective(self): 
-        objective = [self.objective[0], 0, 0, 0, 0]
+        objective = [0, 0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()
-        objective[1] = self.weeklyHeaviness
-        objective[2] = self.dailyHeaviness
+        self.objective[1] = self.weeklyHeaviness
+        self.objective[2] = self.dailyHeaviness
         for day in range(1, 1+self.days): 
             for route in self.routes[day]: 
                 route.updateObjective()
-                objective[3] += route.aggSkillDiff 
-                objective[4] += route.travel_time
-        self.objective = objective
+                self.objective[0] += route.suitability
+                self.objective[3] += route.aggSkillDiff 
+                self.objective[4] += route.travel_time
+   
         
     def calculateWeeklyHeaviness(self):
         employee_weekly_heaviness = {}

@@ -20,7 +20,9 @@ class Route:
         self.day = day
         self.travel_time = 0
         self.aggSkillDiff = 0 
-        self.totalHeaviness = 0
+        self.totalHeaviness = 0        
+        self.suitability = 0
+
 
 
 
@@ -112,7 +114,8 @@ class Route:
     def printSoultion(self): 
         print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID())+' HEAVINESS '+str(self.calculateTotalHeaviness()))
         for a in self.route: 
-            print("activity "+str(a.getID())+ " start "+ str(a.getStartTime())+' heaviness '+str(a.getHeaviness()))    
+            print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
+        print("AGGSUIT ", self.suitability)
         print("---------------------")
 
     #Dette er alternativ måte å regne ut objektivet. Slik at ikke alt ligger i routeplan 
@@ -128,13 +131,29 @@ class Route:
         travel_time += math.ceil(T_ij[i][0])
         self.aggSkillDiff= aggregated_skilldiff
         self.travel_time = travel_time
+
         
     def calculateTotalHeaviness(self):
         self.totalHeaviness = sum([act.getHeaviness() for act in self.route])
         return self.totalHeaviness
 
+    def updateObjective(self): 
+        i = 0 
+        self.travel_time = 0
+        self.aggSkillDiff = 0 
+        self.suitability = 0
+        for act in self.route: 
+            j = act.getID()
+            self.travel_time += math.ceil(T_ij[i][j])
+            i = j 
+            self.aggSkillDiff += self.employee.getSkillLevel() - act.getSkillreq()
+            self.suitability += act.suitability
+        self.travel_time += math.ceil(T_ij[i][0])
+   
     #TODO: Oppdates ikke oppover igjen i hierarkiet
     def removeActivityID(self, activityID):
+        #if activityID == 48: 
+        
         index = 0 
         for act in self.route: 
             if act.getID() == activityID: 
@@ -142,6 +161,7 @@ class Route:
                 act.employeeNotAllowedDueToPickUpDelivery = []
                 act.startTime = None
                 self.updateActivityDependenciesInRoute(act)
+                #print("FJERNER AKT ", activityID, "from DAY ", self.day, " EMPL ", self.employee.id)
                 return
             index += 1 
         #print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
