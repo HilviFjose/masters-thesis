@@ -68,7 +68,7 @@ class Operators:
          """
     def random_treatment_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        selected_treatment = 5 #rnd.choice(list(destroyed_route_plan.treatments.keys())) #dette er samme som aktivtet 17 
+        selected_treatment = rnd.choice(list(destroyed_route_plan.treatments.keys())) #dette er samme som aktivtet 17 
         removed_activities = []
         
         for visit in destroyed_route_plan.treatments[selected_treatment]:

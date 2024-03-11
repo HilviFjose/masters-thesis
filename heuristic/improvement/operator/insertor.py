@@ -1,6 +1,7 @@
 import copy
 from objects.patterns import pattern
 from objects.activity import Activity
+import random 
 
 
 class Insertor:
@@ -30,7 +31,7 @@ class Insertor:
         '''
          
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst 
-        treamentList = self.string_or_number_to_int_list(self.constructor.patients_df.loc[patient, 'treatment'])
+        treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
      
         for treatment in treamentList: 
             
@@ -66,19 +67,27 @@ class Insertor:
 
     def insert_treatment(self, treatment): 
     
-        stringVisits = self.constructor.treatment_df.loc[treatment, 'visit']
-        visitList = self.string_or_number_to_int_list(stringVisits)
+        visitList = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+
         old_route_plan = copy.deepcopy(self.route_plan)
 
-        if self.rev == True:
-            patterns =  reversed(pattern[self.constructor.treatment_df.loc[treatment, 'pattern']])
-            self.rev = False
-        else: 
-            patterns = pattern[self.constructor.treatment_df.loc[treatment, 'pattern']]
-            self.rev = True
+        '''
+            #Reverserer listen annen hver gang for å ikke alltid begynne med pattern på starten av uken
+            if self.rev == True:
+                patterns =  reversed(pattern[self.constructor.treatment_df.loc[treatment, 'patternType']])
+                self.rev = False
+            else: 
+                patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
+                self.rev = True
+        '''
+        #Iterer over alle patterns som er mulige for denne treatmenten
+        patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
+        index_random = [i for i in range(len(patterns))]
+        random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+
         
-        for treatPattern in patterns:
-            insertStatus = self.insert_visit_with_pattern(visitList, treatPattern) 
+        for index in index_random:
+            insertStatus = self.insert_visit_with_pattern(visitList, patterns[index]) 
             if insertStatus == True:
                 
                 self.route_plan.treatments[treatment] = visitList
@@ -128,17 +137,16 @@ class Insertor:
         '''
 
         #Henter ut liste med aktiviteter som inngår i vistet 
-        stringActivities = self.constructor.visit_df.loc[visit, 'nodes']
-        activitesList = self.string_or_number_to_int_list(stringActivities)
-        
+        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
-        for activityID in activitesList: 
+        for activityID in activitiesList: 
             activity = Activity(self.constructor.activities_df, activityID)
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
                 return False
         #Dersom alle aktivitene har blitt lagt til returers true  
-        self.route_plan.visits[visit] = activitesList  
+        self.route_plan.visits[visit] = activitiesList  
         return True
     
     def string_or_number_to_int_list(self, string_or_int):

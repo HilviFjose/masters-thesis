@@ -120,6 +120,7 @@ def treatmentGenerator(df_patients):
     df_treatments['location'] = expanded_rows['location']
     df_treatments['employeeRestriction'] = expanded_rows['employeeRestriction']
     df_treatments['heaviness'] = expanded_rows['heaviness']
+    df_treatments['utility'] = expanded_rows['utility']
 
     for index, row in df_treatments.iterrows():
         #Fill rows with possible patterns
@@ -160,6 +161,7 @@ def visitsGenerator(df_treatments):
     df_visits['location'] = expanded_rows['location']
     df_visits['employeeRestriction'] = expanded_rows['employeeRestriction']
     df_visits['heaviness'] = expanded_rows['heaviness']
+    df_visits['utility'] = expanded_rows['utility']
 
     # Distribution of number of activities per visit
     A_numMax = len(construction_config.A_numProb)                                # Max number of activities per visit
@@ -192,6 +194,7 @@ def activitiesGenerator(df_visits):
     df_activities['location'] = expanded_rows['location']
     df_activities['employeeRestriction'] = expanded_rows['employeeRestriction']
     df_activities['heaviness'] = expanded_rows['heaviness']
+    df_activities['utility'] = expanded_rows['utility']
            
     # Distribute activities between healthcare activities 'H' and equipment activities 'E'
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital
@@ -215,9 +218,9 @@ def activitiesGenerator(df_visits):
                 sigma = (construction_config.pd_max - construction_config.pd_min) / 6
                 pd_time = int(np.random.normal(mu, sigma))
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]
-                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}: {pd_time}, {activity_ids[0]}: {pd_time}"
                 df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = activity_ids[-1]
-                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[-1]}: {pd_time}"
                 
                 # Same Employee Requirement for pick-up and delivery activities
                 df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]          # Start of the visit
@@ -245,9 +248,9 @@ def activitiesGenerator(df_visits):
                 sigma = (construction_config.pd_max - construction_config.pd_min) / 6
                 pd_time = int(np.random.normal(mu, sigma))
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]
-                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}: {pd_time}, {activity_ids[0]}: {pd_time}"
                 df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = activity_ids[-1]
-                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time}"
+                df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[-1]}: {pd_time}"
 
                 # Same Employee Requirement for pick-up and delivery activities
                 df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'sameEmployeeActivityId'] = activity_ids[-2]         # End of the visit
@@ -278,13 +281,13 @@ def activitiesGenerator(df_visits):
             pd_time1 = int(np.random.normal(mu, sigma))
             pd_time2 = int(np.random.normal(mu, sigma))
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]                                           # Pick-up and delivery at the start
-            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}: {pd_time}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'prevPrece'] = activity_ids[-3]                                         # Pick-up and delivery at the end
-            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'prevPrece'] = f"{activity_ids[-2]}, {activity_ids[-3]}: {pd_time2}"    # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'prevPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[-3]}: {pd_time2}"    # Pick-up and delivery at the end
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'nextPrece'] = activity_ids[2]                                           # Pick-up and delivery at the start
-            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[1]}, {activity_ids[2]}: {pd_time1}"       # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[1]}: {pd_time}, {activity_ids[2]}: {pd_time1}"       # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = activity_ids[-1]                                         # Pick-up and delivery at the end
-            df_activities.loc[df_activities['activityId'] == activity_ids[-3], 'nextPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time2}"    # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-3], 'nextPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[-1]}: {pd_time2}"    # Pick-up and delivery at the end
 
             # Same Employee Requirement for åick-up and delivery activities 
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]      # The two first activities 
@@ -334,7 +337,7 @@ def activitiesGenerator(df_visits):
         latestStartTime = np.random.randint(visit_duration, latestPossible)
     
         if np.random.rand() < 0.7:  # 70% sjanse for å velge et tall innenfor 480 og 960 (08:00-16:00)
-            latestStartTime = np.random.randint(480, min(1200, latestPossible))
+            latestStartTime = np.random.randint(480, min(960, latestPossible))
         
         earliestStartTime = np.random.randint(0, latestStartTime-visit_duration)
                   

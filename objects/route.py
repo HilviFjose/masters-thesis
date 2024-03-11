@@ -112,10 +112,9 @@ class Route:
 
     #Printer ruten 
     def printSoultion(self): 
-        print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID())+' HEAVINESS '+str(self.calculateTotalHeaviness()))
+        print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID()))
         for a in self.route: 
             print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
-        print("AGGSUIT ", self.suitability)
         print("---------------------")
 
     #Dette er alternativ måte å regne ut objektivet. Slik at ikke alt ligger i routeplan 

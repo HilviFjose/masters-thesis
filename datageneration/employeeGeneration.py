@@ -27,6 +27,7 @@ def assign_shifts(employees):
     employees[skill_3.pop(0)][2].append(2)  #day
     employees[skill_3.pop(0)][2].append(3)  #evening
 
+    
     skill_23 = skill_2 + skill_3            #index of remaining skill 2 and 3 not yet assigned shift
     random.shuffle(skill_23)                #randmize the order of skill 2 and 3
 

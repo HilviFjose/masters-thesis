@@ -38,15 +38,13 @@ def main():
         constructor.construct_initial()
         
         constructor.route_plan.printSolution()
-        print("Objective Values", constructor.route_plan.objective)
-        print("Patients allocated to AHH ", constructor.listOfPatients)
-        print("Patients not allocated", constructor.unAssignedPatients)
+       
 
         initial_objective = constructor.route_plan.objective
         initial_route_plan = constructor.route_plan 
         initial_infeasible_set = constructor.unAssignedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
-            
+        '''    
         #IMPROVEMENT OF INITAL SOLUTION 
         #Parameterne er hentet fra config. 
         
@@ -60,7 +58,6 @@ def main():
 
         alns.set_operators(operators)
 
-        print("HER 3")
         #RUN ALNS 
         best_route_plan = alns.iterate(
                 iterations)
@@ -68,16 +65,11 @@ def main():
         print("LØSNING ETTER ALNS")
         best_route_plan.printSolution()
     
-    
         '''
-        constructor.print_new_objective(
-                current_route_plan, current_infeasible_set)
-                '''
+        '''
+        constructor.print_new_objective(current_route_plan, current_infeasible_set)
+        '''
         
-        #LOCAL SEARCH
-
-        
-
         # Tilbakestill sys.stdout til original
         sys.stdout = original_stdout
 

@@ -47,11 +47,17 @@ class RoutePlan:
         # Sorter routes basert på skill for hver dag
         for day in self.routes:
             self.routes[day] = [route for _, route in sorted(self.routes[day], key=lambda x: x[0])]
-
+        
         self.days = days 
         self.objective = [0,0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
+
+        self.treatments = {}
+        self.visits = {}
+        self.allocatedPatients = {}
+        self.notAllocatedPatients = []
+        self.illegalNotAllocatedTreatments = []
 
 
     def addActivityOnDay(self, activity, day):
@@ -119,36 +125,50 @@ class RoutePlan:
                 routes_grouped_by_skill[skill_level] = [route]
             else:
                 routes_grouped_by_skill[skill_level].append(route)
-        
+      
         # Iterer gjennom sorterte professionLevels og iterer i tilfeldig rekkefølge
-        for skill_level in sorted(routes_grouped_by_skill):
-            routes = routes_grouped_by_skill[skill_level]
-            random.shuffle(routes)  
+        act_skill_level = activity.skillReq
+        routes = []
+        for act_skill_level in range (act_skill_level, 4): 
+            routes_for_skill = routes_grouped_by_skill[act_skill_level]
+            random.shuffle(routes_for_skill)
+            routes += routes_for_skill
+            if act_skill_level == 2: 
+                random.shuffle(routes)
+  
+
+    
+     
+        #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
+        for route in routes:
             
-            #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
-            for route in routes:
-                old_skillDiffObj = route.aggSkillDiff
-                old_travel_time = route.travel_time
-                #TODO: Update funskjonene burde sjekkes med de andre   
-                #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
-                #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
-                #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
-                
-                #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
-                
-                self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-                insertStatus = route.addActivity(activity)
-                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
-                #Må gjøres på alle fordi alle kan ha blitt flyttet
-                for possiblyMovedActivity in route.route: 
-                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
+            #if 47 <= activity.id and activity.id <= 51: 
+            print("forsøker legge til ", activity.id , "DAY ", route.day, "EMP ", route.employee.id)
+            #print("routes", routes)
+            #print(route.printSoultion())
+            #if route.employee.id in [10, 1, 3] and activity.id == 51:
+            #    route.printSoultion()
+            #for route in self.routes[day]: 
+            #    for act in route.route: 
+            #        if act.id in [49, 50]: 
+            #            route.printSoultion()
+        
+            #TODO: Update funskjonene burde sjekkes med de andre   
+            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
+            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
+            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
             
-                if insertStatus:
-                    self.objective[3] -= old_skillDiffObj
-                    self.objective[3] += route.aggSkillDiff
-                    self.objective[4] -= old_travel_time
-                    self.objective[4] += route.travel_time
-                    return True
+            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
+            
+            self.updateActivityBasedOnRoutePlanOnDay(activity, day)
+            insertStatus = route.addActivity(activity)
+            #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
+            #Må gjøres på alle fordi alle kan ha blitt flyttet
+            for possiblyMovedActivity in route.route: 
+                self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
+        
+            if insertStatus:
+                return True
         return False
         '''
         #GAMMEL METODE - Itererer etter sortert skill
@@ -270,7 +290,7 @@ class RoutePlan:
 
 
     def updateObjective(self): 
-        objective = [0, 0, 0, 0, 0]
+        self.objective = [0, 0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()
         self.objective[1] = self.weeklyHeaviness

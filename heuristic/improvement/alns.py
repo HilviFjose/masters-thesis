@@ -103,16 +103,16 @@ class ALNS:
             # Local search if solution is promising
             local_search_requirement = 0.02 # TODO: Legge inn i main config
         
-            '''
+            
             #lOKALSØKET VIL GJØRE LØSNINGEN BEDRE UANSETT SÅ SER PÅ EN VERSION HVOR VI UANSETT GJØR LOKALSØK
 
-            if isPromising(candidate.objective, best_objective, local_search_requirement): 
+            if isPromising(candidate.objective, best_route_plan.objective, local_search_requirement): 
                 print("LS INNE - lager local search")
                 candidate_for_local_search = copy.deepcopy(candidate)
                 localsearch = LocalSearch(candidate_for_local_search)
                 candidate = localsearch.do_local_search()
                 current_route_plan = copy.deepcopy(candidate)
-            '''
+            
 
          
             #TODO: Hvorfor endres hovedobjektivtet når vi legger til lokalsøket 
