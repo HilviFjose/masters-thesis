@@ -438,6 +438,23 @@ def TimeWindowsWithTravel(df_activities, T_ij):
         (df_activities.reset_index()).to_csv(file_path, index=False)
     return df_activities
 
+def updateActivities(df_activities):
+
+    #Update precedence
+
+    #Update pickup and delivery times
+
+    #Update duration
+    #df_activities.loc[df_activities['activityType'] == 'E', 'duration'] = 5  
+    #df_activities.loc[df_activities['activityType'] == 'H', 'duration'] = 20 
+
+    #Updated csv-files
+    file_path = os.path.join(os.getcwd(), 'data', 'activitiesUpdated.csv')
+    (df_activities.reset_index()).to_csv(file_path, index=False)
+    
+
+    return df_activities
+
 #TESTING
 
 '''

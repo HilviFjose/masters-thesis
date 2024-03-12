@@ -59,3 +59,6 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 #ADDING TRAVEL DISTANCE TO TIME WINDOWS
 #Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
 df_activities = patientGeneration.TimeWindowsWithTravel(df_activities, T_ij)
+
+#UPDATING DATA
+df_activities
