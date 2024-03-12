@@ -26,13 +26,13 @@ class LocalSearch:
 
         
         # CHANGE EMPLOYEE
-        
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         for day in range(1, self.candidate.days + 1):
            candidate = self.change_employee(candidate,day)
         #print("NY LØSNING ETTER CHANGE EMPLOYEE LOKALSØK")
         #candidate.printSolution()
+        
         
         # SWAP EMPLOYEE
         for day in range(1, self.candidate.days + 1):
@@ -55,7 +55,6 @@ class LocalSearch:
         #print("NY LØSNING ETTER MOVE ACTIVITY LOKALSØK")
         #candidate.printSolution()
         
-        
 
         # SWAP ACTIVITY
         for day in range(1, self.candidate.days + 1):
@@ -68,7 +67,7 @@ class LocalSearch:
                 candidate.switchRoute(new_route, day)
         #print("NY LØSNING ETTER SWAP ACTIVITIES LOKALSØK")
         #candidate.printSolution()
-
+        
         return candidate
     
    
@@ -269,7 +268,7 @@ class LocalSearch:
                        
                             
                         
-                        if checkCandidateBetterThanCurrent( new_candidate.objective, best_objective ):
+                        if checkCandidateBetterThanBest( new_candidate.objective, best_objective ):
                             best_objective = new_candidate.objective
                             best_found_candidate = new_candidate 
                             #print( "bytter plass på aktivitet ", activity1.id, activity2.id)
@@ -281,18 +280,20 @@ class LocalSearch:
     def change_employee(self, route_plan, day):
         #TODO: Legge inn comdition som i swap_activity. Dersom del av pickup&delivery par, tas andre halvdel ut og plasseres inn igjen.
         
-        best_objective = route_plan.getObjective()
+        
       
-        best_found_candidate = route_plan
+        best_found_candidate = copy.deepcopy(route_plan)
         
         for route in route_plan.routes[day]: 
-            new_candidate = copy.deepcopy(route_plan)
+            
             for activity in route.route:
+
                 employee = route_plan.getEmployeeIDAllocatedForActivity(activity, day)
                 otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.id, day)
                 sameEmployeeActivity = route_plan.getActivity(activity.pickUpActivityID, day)
+
                 for othEmpl in otherEmployees: 
-                    
+                    new_candidate = copy.deepcopy(route_plan)
                     new_candidate.removeActivityFromEmployeeOnDay(employee, activity, day)
                     if sameEmployeeActivity != None: 
                         new_candidate.removeActivityFromEmployeeOnDay(employee, sameEmployeeActivity, day)
@@ -309,8 +310,7 @@ class LocalSearch:
                   
                     new_candidate.updateObjective()
                     
-                    if checkCandidateBetterThanCurrent(new_candidate.objective, best_objective ):
-                        best_objective = new_candidate.objective
+                    if checkCandidateBetterThanBest(new_candidate.objective, best_found_candidate.objective ):
                         best_found_candidate = new_candidate 
         return best_found_candidate
         

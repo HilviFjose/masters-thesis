@@ -7,7 +7,7 @@ import random
 class Insertor:
     def __init__(self, constructor, route_plan):
         self.constructor = constructor
-        self.route_plan = route_plan
+        self.route_plan = copy.deepcopy(route_plan)
 
         self.rev = False
 
@@ -29,7 +29,8 @@ class Insertor:
         Returns: 
         True/False på om det var plass til pasienten på hjemmesykehus eller ikke 
         '''
-         
+        route_test = copy.deepcopy(self.route_plan)
+        old_route_plan = copy.deepcopy(route_test)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst 
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
      
@@ -39,6 +40,12 @@ class Insertor:
 
             self.updateAllocation(status, patient, treatment)
             if status == False: 
+                if patient == 18: 
+                    print("pasient", patient, "prøver legge til treatment ", treatment, "får FALSE")
+                    self.route_plan.printSolution("TEST18FOR")
+                self.route_plan = old_route_plan
+                if patient == 18: 
+                    self.route_plan.printSolution("TEST18ETTER")
                 return False
         #Må ha noe som legger til hvis den er
         if patient in self.route_plan.notAllocatedPatients: 
@@ -83,7 +90,7 @@ class Insertor:
         #Iterer over alle patterns som er mulige for denne treatmenten
         patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
         index_random = [i for i in range(len(patterns))]
-        random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+        #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
         
         for index in index_random:

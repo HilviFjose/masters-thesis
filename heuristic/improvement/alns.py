@@ -26,29 +26,28 @@ class ALNS:
         self.constructor = constructor
         #TODO: Finne ut om vi skal ha denn klassen med. Eller om det har noe med ALNS å gjøre
         #self.destroy_repair_updater = Destroy_Repair_Updater(constructor)
-        '''
-        self.route_plan = current_route_plan
-        self.start_plan = current_route_plan
-        '''
-        self.start_plan = current_route_plan
-        candidate_for_local_search = copy.deepcopy(current_route_plan)
-        localsearch = LocalSearch(candidate_for_local_search)
-        self.route_plan = localsearch.do_local_search()
+        
+        self.current_route_plan = current_route_plan
+        self.best_route_plan = copy.deepcopy(current_route_plan)
+        
+        
+        self.iterationNum = 0 
         
 
     def iterate(self, num_iterations):
+        self.iterationNum += 1
         weights = np.asarray(self.weights, dtype=np.float16)
         
-        current_route_plan = copy.deepcopy(self.route_plan)
-        best_route_plan = copy.deepcopy(self.start_plan)
-    
+        candidate_route_plan = copy.deepcopy(self.current_route_plan)
         
+    
+        #TODO: Finne ut hva det skal stå her serner 
         current_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
         best_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
         
         #TODO: Forstå hva disse to parameterne gjør 
         found_solutions = {}
-        initial_route_plan = copy.deepcopy(self.route_plan)
+        initial_route_plan = copy.deepcopy(self.current_route_plan)
 
         # weights er vekter for å velge operator, score og count brukes for oppdatere weights
         d_weights = np.ones(len(self.destroy_operators), dtype=np.float16)
@@ -79,7 +78,7 @@ class ALNS:
 
             d_operator = self.destroy_operators[destroy]
             destroyed_route_plan, removed_activities, destroyed = d_operator(
-                current_route_plan)
+                candidate_route_plan)
             
 
             if not destroyed:
@@ -90,7 +89,7 @@ class ALNS:
         
           
             r_operator = self.repair_operators[repair]
-            candidate = r_operator(
+            candidate_route_plan = r_operator(
                 destroyed_route_plan)
             
     
@@ -106,29 +105,21 @@ class ALNS:
             
             #lOKALSØKET VIL GJØRE LØSNINGEN BEDRE UANSETT SÅ SER PÅ EN VERSION HVOR VI UANSETT GJØR LOKALSØK
 
-            if isPromising(candidate.objective, best_route_plan.objective, local_search_requirement): 
-                print("LS INNE - lager local search")
-                candidate_for_local_search = copy.deepcopy(candidate)
-                localsearch = LocalSearch(candidate_for_local_search)
-                candidate = localsearch.do_local_search()
-                current_route_plan = copy.deepcopy(candidate)
-            
-
+            #Hvis kandidat er promising, så skal vi gjøre lokalsøk 
+            if isPromising(candidate_route_plan.objective, self.best_route_plan.objective, local_search_requirement): 
+                localsearch = LocalSearch(candidate_route_plan)
+                candidate_route_plan = localsearch.do_local_search()
+                
+                #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
+                self.current_route_plan = copy.deepcopy(candidate_route_plan)
+                candidate_route_plan.printSolution("PROMISINGCANDIDATE"+str(self.iterationNum))
+               
          
-            #TODO: Hvorfor endres hovedobjektivtet når vi legger til lokalsøket 
-            #localsearch = LocalSearch(copy.deepcopy(candidate))
-            #candidate = localsearch.do_local_search()
-           
-
-            #Vi vil endre til current hvis den er promising 
-            if isPromising(candidate.objective, current_route_plan.objective, local_search_requirement):
-                print("NY PROMISING KANDIDAT ") 
-                candidate.printSolution()
-                current_route_plan = copy.deepcopy(candidate)
+        
             
-            if checkCandidateBetterThanCurrent(candidate.objective, best_route_plan.objective): 
+            if checkCandidateBetterThanBest(candidate_route_plan.objective, self.best_route_plan.objective): 
                 print("ny bedre kandidat")
-                best_route_plan = copy.deepcopy(candidate)
+                self.best_route_plan = copy.deepcopy(candidate_route_plan)
 
             """
             # Compare solutions
@@ -172,7 +163,7 @@ class ALNS:
                     len(self.repair_operators), dtype=np.float16)
             """
 
-        return best_route_plan
+        return self.best_route_plan
     
     def set_operators(self, operators):
         # Add destroy operators

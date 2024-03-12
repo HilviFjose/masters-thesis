@@ -8,17 +8,15 @@ import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Include subfolders
 
-from helpfunctions import checkCandidateBetterThanCurrent
+from helpfunctions import checkCandidateBetterThanBest
 from objects.distances import *
 from config.construction_config import *
-from heuristic.improvement.operator.repair_generator import RepairGenerator
 from heuristic.improvement.operator.insertor import Insertor
 
 class Operators:
     def __init__(self, alns):
         self.destruction_degree = alns.destruction_degree # TODO: Skal vi ha dette?
         self.constructor = alns.constructor
-        self.repair_generator = RepairGenerator(self.constructor)
 
     # Uses destruction degree to set max cap for removal
     def activities_to_remove(self, activities_remove):
@@ -68,7 +66,7 @@ class Operators:
          """
     def random_treatment_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        selected_treatment = rnd.choice(list(destroyed_route_plan.treatments.keys())) #dette er samme som aktivtet 17 
+        selected_treatment = 26 #rnd.choice(list(destroyed_route_plan.treatments.keys())) 
         removed_activities = []
         
         for visit in destroyed_route_plan.treatments[selected_treatment]:
@@ -79,7 +77,6 @@ class Operators:
                 for act in route.route: 
                     if act.id in removed_activities:
                         route.removeActivityID(act.id)
-        print("removed_activities", removed_activities)
         
         del destroyed_route_plan.treatments[selected_treatment]
         for key, value in list(destroyed_route_plan.allocatedPatients.items()):
@@ -118,7 +115,7 @@ class Operators:
         
         #TODO: Prøve å shuffle på hvem som settes inn 
         insertor.insertPatients(repaired_route_plan.notAllocatedPatients)
-        repaired_route_plan.updateObjective()
+        insertor.route_plan.updateObjective()
         '''
         route_plan, new_objective = self.repair_generator.generate_insertions(
             route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
@@ -131,5 +128,5 @@ class Operators:
         Konseptet: 
         Vi har ulike lister med aktiviteter 
         '''
-        return repaired_route_plan
+        return insertor.route_plan
 

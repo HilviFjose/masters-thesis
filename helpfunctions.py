@@ -1,6 +1,6 @@
 
 
-def checkCandidateBetterThanCurrent(candidateObj, currObj): 
+def checkCandidateBetterThanBest(candidateObj, currObj): 
     if candidateObj[0] > currObj[0]: 
         return True 
     if candidateObj[0] < currObj[0]: 

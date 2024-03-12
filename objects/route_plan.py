@@ -131,27 +131,17 @@ class RoutePlan:
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
-            random.shuffle(routes_for_skill)
+            #random.shuffle(routes_for_skill)
             routes += routes_for_skill
-            if act_skill_level == 2: 
-                random.shuffle(routes)
+            #if act_skill_level == 2: 
+            #    random.shuffle(routes)
   
 
     
      
         #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
         for route in routes:
-            
-            #if 47 <= activity.id and activity.id <= 51: 
-            print("forsøker legge til ", activity.id , "DAY ", route.day, "EMP ", route.employee.id)
-            #print("routes", routes)
-            #print(route.printSoultion())
-            #if route.employee.id in [10, 1, 3] and activity.id == 51:
-            #    route.printSoultion()
-            #for route in self.routes[day]: 
-            #    for act in route.route: 
-            #        if act.id in [49, 50]: 
-            #            route.printSoultion()
+            #print("forsøker legge til ", activity.id , "DAY ", route.day, "EMP ", route.employee.id)
         
             #TODO: Update funskjonene burde sjekkes med de andre   
             #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
@@ -205,18 +195,28 @@ class RoutePlan:
     def getRoutePlan(self): 
         return self.routes
  
-    def printSolution(self): 
-        '''
-        Printer alle rutene som inngår i routeplan
-        '''
-        print("Printer alle rutene")
-        for day in range(1, self.days +1): 
-            for route in self.routes[day]: 
-                route.printSoultion()
-        self.updateObjective()
-        print("objective ", self.objective)
-        print("allocated patients ", list(self.allocatedPatients.keys()))
-        print("not allocated ", self.notAllocatedPatients)
+    def printSolution(self, txtName):
+        #SKRIV TIL FIL I STEDET FOR TERMINAL
+        # Åpne filen for å skrive
+        with open(r"results\\" + txtName + ".txt", "w") as log_file:
+            # Omdiriger sys.stdout til filen
+            original_stdout = sys.stdout
+            sys.stdout = log_file
+            constructor = None 
+            '''
+            Printer alle rutene som inngår i routeplan
+            '''
+            print("Printer alle rutene")
+            for day in range(1, self.days +1): 
+                for route in self.routes[day]: 
+                    route.printSoultion()
+            self.updateObjective()
+            print("objective ", self.objective)
+            print("allocated patients ", list(self.allocatedPatients.keys()))
+            print("not allocated ", self.notAllocatedPatients)
+
+             # Tilbakestill sys.stdout til original
+            sys.stdout = original_stdout
 
     
 
@@ -343,7 +343,7 @@ class RoutePlan:
 
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
-         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
+        #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
         #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
         for route in self.routes[day]: 
             if route.employee.id == employee:
