@@ -7,7 +7,7 @@ from objects.employee import Employee
 from objects.route import Route
 import copy
 import random 
-
+import datetime
 
 '''
 Info: 
@@ -203,6 +203,12 @@ class RoutePlan:
             original_stdout = sys.stdout
             sys.stdout = log_file
             constructor = None 
+
+            # Skriver klokkeslettet til når filen ble opprettet
+            now = datetime.datetime.now() 
+            log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
+            print('-------------------------------------------------------')
+
             '''
             Printer alle rutene som inngår i routeplan
             '''

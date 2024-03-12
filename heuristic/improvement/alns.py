@@ -35,7 +35,6 @@ class ALNS:
         
 
     def iterate(self, num_iterations):
-        self.iterationNum += 1
         weights = np.asarray(self.weights, dtype=np.float16)
         
         candidate_route_plan = copy.deepcopy(self.current_route_plan)
@@ -59,6 +58,8 @@ class ALNS:
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
         for i in tqdm(range(num_iterations), colour='#39ff14'):
+            self.iterationNum += 1
+
             #Hva er dette? Løsning vi allerede har funnet??
             already_found = False
 
@@ -74,37 +75,25 @@ class ALNS:
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
             
-
-
             d_operator = self.destroy_operators[destroy]
             destroyed_route_plan, removed_activities, destroyed = d_operator(
                 candidate_route_plan)
             
-
             if not destroyed:
                 break
 
             d_count[destroy] += 1
             
-        
-          
             r_operator = self.repair_operators[repair]
             candidate_route_plan = r_operator(
                 destroyed_route_plan)
             
-    
-
             r_count[repair] += 1
 
-         
-            
-           
             # Local search if solution is promising
             local_search_requirement = 0.02 # TODO: Legge inn i main config
         
-            
             #lOKALSØKET VIL GJØRE LØSNINGEN BEDRE UANSETT SÅ SER PÅ EN VERSION HVOR VI UANSETT GJØR LOKALSØK
-
             #Hvis kandidat er promising, så skal vi gjøre lokalsøk 
             if isPromising(candidate_route_plan.objective, self.best_route_plan.objective, local_search_requirement): 
                 localsearch = LocalSearch(candidate_route_plan)
@@ -112,10 +101,7 @@ class ALNS:
                 
                 #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
                 self.current_route_plan = copy.deepcopy(candidate_route_plan)
-                candidate_route_plan.printSolution("PROMISINGCANDIDATE"+str(self.iterationNum))
-               
-         
-        
+                candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
             
             if checkCandidateBetterThanBest(candidate_route_plan.objective, self.best_route_plan.objective): 
                 print("ny bedre kandidat")
@@ -195,7 +181,7 @@ class ALNS:
         # If solution is accepted by criterion (simulated annealing)
         if criterion.accept_criterion(self.rnd_state, current_objective, candidate_objective):
             # TODO: Endre objektivvurdering
-            if checkCandidateBetterThanCurrent(candidateObj= candidate_objective, currObj= current_objective):
+            if checkCandidateBetterThanBest(candidateObj= candidate_objective, currObj= current_objective):
                 # Solution is better
                 # TODO: Legge inn som sigma123 i main_config i stedet. 
                 weight_score = 1

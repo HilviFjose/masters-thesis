@@ -43,6 +43,6 @@ def compare_files(file_path_1, file_path_2):
         print("No duplicate activities in the second file.")
 
 # Example usage
-file_path_1 = 'c:\\Users\\gurl\\masters-thesis\\results\\INITIALAFTERLS.txt'  # Replace with the actual path to your first file
-file_path_2 = 'c:\\Users\\gurl\\masters-thesis\\results\\PROMISINGCANDIDATE1.txt'  # Replace with the actual path to your second file
+file_path_1 = 'c:\\Users\\gurl\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
+file_path_2 = 'c:\\Users\\gurl\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 compare_files(file_path_1, file_path_2)

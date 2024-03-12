@@ -32,7 +32,7 @@ def main():
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
-    constructor.route_plan.printSolution("INITIAL")
+    constructor.route_plan.printSolution("initial")
     
 
     initial_objective = constructor.route_plan.objective
@@ -48,7 +48,7 @@ def main():
     #TODO: Gjør et lokalsk før ALNS
     localsearch = LocalSearch(initial_route_plan)
     initial_route_plan = localsearch.do_local_search()
-    initial_route_plan.printSolution("INITIALAFTERLS")
+    initial_route_plan.printSolution("initialLS")
    
     
     alns = ALNS(weights, reaction_factor, initial_route_plan, initial_objective, initial_infeasible_set, criterion,
@@ -63,9 +63,19 @@ def main():
     best_route_plan = alns.iterate(
             iterations)
     
-    best_route_plan.printSolution("FINISHEDALNS")
+    best_route_plan.printSolution("final")
          
 
 
 if __name__ == "__main__":
     main()
+
+
+'''
+FEIL:
+- candidate blir overskrevet for hver iterasjon i stedet for å lage nye filer (iterasjonNum funker ikke)
+- Får duplikater i finished alns og candidate
+- Litt usikker på om det alltid legges til en hel pasient (feasible løsning), så må testes litt mer.
+
+
+'''

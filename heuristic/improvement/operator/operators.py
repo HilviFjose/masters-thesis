@@ -66,7 +66,7 @@ class Operators:
          """
     def random_treatment_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        selected_treatment = 26 #rnd.choice(list(destroyed_route_plan.treatments.keys())) 
+        selected_treatment = rnd.choice(list(destroyed_route_plan.treatments.keys())) 
         removed_activities = []
         
         for visit in destroyed_route_plan.treatments[selected_treatment]:
@@ -92,9 +92,8 @@ class Operators:
         destroyed_route_plan.updateObjective()
         return destroyed_route_plan, removed_activities, True
     
+    
 
-    
-    
 #---------- REPAIR OPERATORS ----------
     def greedy_repair(self, destroyed_route_plan):
         #Tar bort removed acktivitites, de trenger vi ikk e
@@ -110,9 +109,7 @@ class Operators:
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments: 
             insertor.insert_treatment(treatment)
 
-
         #Forsøker å legge til alle pasientne som ikke ligger inne 
-        
         #TODO: Prøve å shuffle på hvem som settes inn 
         insertor.insertPatients(repaired_route_plan.notAllocatedPatients)
         insertor.route_plan.updateObjective()
@@ -129,4 +126,5 @@ class Operators:
         Vi har ulike lister med aktiviteter 
         '''
         return insertor.route_plan
+    
 
