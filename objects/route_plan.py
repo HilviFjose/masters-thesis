@@ -190,6 +190,7 @@ class RoutePlan:
                 route.printSoultion()
         self.updateObjective()
         print("objective ", self.objective)
+        print("allocated patients ", self.)
 
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
