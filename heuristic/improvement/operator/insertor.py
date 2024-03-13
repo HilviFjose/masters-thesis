@@ -40,12 +40,7 @@ class Insertor:
 
             self.updateAllocation(status, patient, treatment)
             if status == False: 
-                if patient == 18: 
-                    print("pasient", patient, "prøver legge til treatment ", treatment, "får FALSE")
-                    self.route_plan.printSolution("TEST18FOR")
                 self.route_plan = old_route_plan
-                if patient == 18: 
-                    self.route_plan.printSolution("TEST18ETTER")
                 return False
         #Må ha noe som legger til hvis den er
         if patient in self.route_plan.notAllocatedPatients: 
@@ -92,15 +87,13 @@ class Insertor:
         index_random = [i for i in range(len(patterns))]
         #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
-        
         for index in index_random:
+            self.route_plan = copy.deepcopy(old_route_plan)
             insertStatus = self.insert_visit_with_pattern(visitList, patterns[index]) 
             if insertStatus == True:
-                
                 self.route_plan.treatments[treatment] = visitList
                 return True
             
-            self.route_plan = copy.deepcopy(old_route_plan)
         return False
     
 

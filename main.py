@@ -43,6 +43,7 @@ def main():
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
     
+    
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
     #TODO: Gjør et lokalsk før ALNS
@@ -73,7 +74,6 @@ if __name__ == "__main__":
 
 '''
 FEIL:
-- candidate blir overskrevet for hver iterasjon i stedet for å lage nye filer (iterasjonNum funker ikke)
 - Får duplikater i finished alns og candidate
 - Litt usikker på om det alltid legges til en hel pasient (feasible løsning), så må testes litt mer.
 

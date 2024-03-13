@@ -18,6 +18,8 @@ class Operators:
         self.destruction_degree = alns.destruction_degree # TODO: Skal vi ha dette?
         self.constructor = alns.constructor
 
+        self.count = 0 
+
     # Uses destruction degree to set max cap for removal
     def activities_to_remove(self, activities_remove):
         return activities_remove
@@ -65,31 +67,86 @@ class Operators:
         return destroyed_route_plan, removed_activities, True
          """
     def random_treatment_removal(self, current_route_plan):
+
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        selected_treatment = rnd.choice(list(destroyed_route_plan.treatments.keys())) 
+
+  
+        print("FØR DESTROY")
+
+        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
+        print("treatments", destroyed_route_plan.treatments)
+        print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments) 
+        print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
+
+        if self.count == 0: 
+            selected_treatment = 4 
+        else: 
+            selected_treatment = rnd.choice(list(destroyed_route_plan.treatments.keys())) 
         removed_activities = []
         
         for visit in destroyed_route_plan.treatments[selected_treatment]:
             removed_activities += destroyed_route_plan.visits[visit]
             del destroyed_route_plan.visits[visit]
+
         for day in range(1, destroyed_route_plan.days +1): 
             for route in destroyed_route_plan.routes[day]: 
                 for act in route.route: 
                     if act.id in removed_activities:
                         route.removeActivityID(act.id)
         
-        del destroyed_route_plan.treatments[selected_treatment]
-        for key, value in list(destroyed_route_plan.allocatedPatients.items()):
+        #Har fjernet en treatment, men vet ikke om treatmenten utgjør hele pasienten 
+        #Alt1 treatmentet ugjør hele pasienten i utganspunktet 
+        #Alt2 Pasient har treatments både inne og i illegal
+        #Alt3 Den treatmenten som velges er den siste treatmenten for en pas
+        for patient, treatments in list(destroyed_route_plan.allocatedPatients.items()):
+            #Finne treatments i illegalNotAllocatedTreatments som også tilhører pasienten 
+            allTreatments = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+            illegalTreatments = []
+            for allTreat in allTreatments: 
+                if allTreat in destroyed_route_plan.illegalNotAllocatedTreatments: 
+                    illegalTreatments.append(allTreat)
+
+            becomes_illegal = False
+            if len(illegalTreatments) == 0: 
+                becomes_illegal = True 
+            
+            #Alt 1 Siste treatment som fjernes. Alerede ulovlig
+            if treatments == [selected_treatment] and becomes_illegal == False: 
+                del destroyed_route_plan.allocatedPatients[patient]
+                del destroyed_route_plan.treatments[selected_treatment]
+                destroyed_route_plan.notAllocatedPatients.append(patient)
+                for illegalTreat in illegalTreatments: 
+                    destroyed_route_plan.illegalNotAllocatedTreatments.remove(illegalTreat)
+                break
+
+
+            #Alt 2 Siste treatmtn som fjernes. Løsningen er lovlig 
+            if treatments == [selected_treatment] and becomes_illegal == True: 
+                #pasienten ligger ikke lenger inne 
+                #Pasient skal puttes inn i de som ikke er allokert
+                del destroyed_route_plan.allocatedPatients[patient]
+                del destroyed_route_plan.treatments[selected_treatment]
+                destroyed_route_plan.notAllocatedPatients.append(patient)
+                break
+
+            #Alt 3 Ikke siste treatment  
+            if selected_treatment in treatments and len(treatments) > 1: 
+                del destroyed_route_plan.treatments[selected_treatment]
+                destroyed_route_plan.illegalNotAllocatedTreatments.append( selected_treatment)
+                break
+
          
-            if value == [selected_treatment]:
-              
-                del destroyed_route_plan.allocatedPatients[key]
-                destroyed_route_plan.notAllocatedPatients.append(key)
-                break
-            if selected_treatment in value: 
-                destroyed_route_plan.illegalNotAllocatedTreatments += value
-                break
+
         destroyed_route_plan.updateObjective()
+        self.count += 1 
+        #print("treatment", destroyed_route_plan.treatments[selected_treatment],"før",destroyed_route_plan.treatments)
+        #del destroyed_route_plan.treatments[selected_treatment]
+        #print("etter",destroyed_route_plan.treatments)
+        print("ETTER DESTROY")
+        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
+        print("treatments", destroyed_route_plan.treatments)
+        print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments) 
+        print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
         return destroyed_route_plan, removed_activities, True
     
     
@@ -106,8 +163,28 @@ class Operators:
 
         #Forsøker å legge til de aktivitetene vi har tatt ut
         insertor = Insertor(self.constructor, repaired_route_plan)
-        for treatment in repaired_route_plan.illegalNotAllocatedTreatments: 
-            insertor.insert_treatment(treatment)
+        for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
+           
+            status = insertor.insert_treatment(treatment)
+            
+            if status == True: 
+               
+                repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
+
+                #Må legge inn informasjonen om de treament og pasient. Må hente ut pasientenførst 
+             
+        
+        #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
+                for i in range(self.constructor.patients_df.shape[0]):
+                    patient = self.constructor.patients_df.index[i] 
+                    if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
+                        break
+                repaired_route_plan.allocatedPatients[patient].append(treatment) 
+                
+
+
+                
+
 
         #Forsøker å legge til alle pasientne som ikke ligger inne 
         #TODO: Prøve å shuffle på hvem som settes inn 
