@@ -154,9 +154,11 @@ class ALNS:
     def set_operators(self, operators):
         # Add destroy operators
         self.add_destroy_operator(operators.random_treatment_removal)
+        self.add_destroy_operator(operators.random_pattern_removal)
 
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)
+        self.add_repair_operator(operators.random_repair)
 
     # Add operator to the heuristic instance
         

@@ -40,12 +40,10 @@ class Insertor:
 
             self.updateAllocation(status, patient, treatment)
             if status == False: 
-                if patient == 18: 
-                    print("pasient", patient, "prøver legge til treatment ", treatment, "får FALSE")
-                    self.route_plan.printSolution("TEST18FOR")
+                
+                 
                 self.route_plan = old_route_plan
-                if patient == 18: 
-                    self.route_plan.printSolution("TEST18ETTER")
+              
                 return False
         #Må ha noe som legger til hvis den er
         if patient in self.route_plan.notAllocatedPatients: 

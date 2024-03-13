@@ -42,7 +42,6 @@ class ConstructionHeuristic:
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
-            patient_request = unassigned_patients.iloc[i]
             
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
