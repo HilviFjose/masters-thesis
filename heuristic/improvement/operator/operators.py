@@ -179,48 +179,40 @@ class Operators:
 
 #---------- REPAIR OPERATORS ----------
     def greedy_repair(self, destroyed_route_plan):
+        #Tar bort removed acktivitites, de trenger vi ikk e
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
-
-        #Forsøker å legge til de aktivitetene vi har tatt ut ulovlig 
-        insertor = Insertor(self.constructor, repaired_route_plan)
-        for treatment in repaired_route_plan.illegalNotAllocatedTreatments: 
-            status = insertor.insert_treatment(treatment)
-            if status == True: 
-                repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
-
-            
-
-        #Forsøker å legge til pasienten som ikke er inne nå 
-        #TODO: Denne er ikke greedy nå, pasienten emå sorteres etter hvor gode de er å ha inne
-        '''
-        patient_ids = repaired_route_plan.notAllocatedPatients
-        filtered_df = self.constructor.patients_df[self.constructor.patients_df.keys().isin(patient_ids)]
-        # Sort the filtered DataFrame by 'ColumnValue'
-        sorted_filtered_df = filtered_df.sort_values(by='ColumnValue')
-        # Extracting the sorted list of patient IDs
-        sorted_patient_ids = sorted_filtered_df['patientId'].tolist()
-        '''
-        not_sorted_patients = repaired_route_plan.notAllocatedPatients
         
-        unassigned_patients = self.constructor.patients_df.sort_values(by="aggUtility", ascending=False)
 
-        sorted_patients = []
+
+        #Forsøker å legge til de aktivitetene vi har tatt ut
+        treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
+        for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
+           
+            status = treatmentInsertor.insert_treatment(treatment)
+      
+            if status == True: 
+  
+                repaired_route_plan = treatmentInsertor.route_plan
+                repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
+                
+            
+                #Må legge inn informasjonen om de treament og pasient. Må hente ut pasientenførst 
+             
+        
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
-        for i in range(unassigned_patients.shape[0]):
-            #Henter ut raden i pasient dataframes som tilhører pasienten
-            patient = unassigned_patients.index[i]
-            if patient in not_sorted_patients:
-                sorted_patients.append(patient)
-        '''
-        for patient in unassigned_patients['patientId'].tolist(): 
-            if patient in not_sorted_patients: 
-                sorted_patients.append(patient)
-        '''
-        print("sorted_patients", sorted_patients)
-        insertor.insertPatients(sorted_patients)
-        insertor.route_plan.updateObjective()
-       
-        return insertor.route_plan
+                for i in range(self.constructor.patients_df.shape[0]):
+                    patient = self.constructor.patients_df.index[i] 
+                    if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
+                        break
+                repaired_route_plan.allocatedPatients[patient].append(treatment) 
+                
+    
+        #TODO: Nå legger den ikke til disse 
+        patientInsertor = Insertor(self.constructor, repaired_route_plan)
+        repaired_route_plan = patientInsertor.insertPatients(repaired_route_plan.notAllocatedPatients)
+        repaired_route_plan.updateObjective()
+      
+        return repaired_route_plan
     
     def random_repair(self, destroyed_route_plan):
         #Tar bort removed acktivitites, de trenger vi ikk e
