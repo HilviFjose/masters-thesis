@@ -71,11 +71,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-'''
-FEIL:
-- Får duplikater i finished alns og candidate
-- Litt usikker på om det alltid legges til en hel pasient (feasible løsning), så må testes litt mer.
-
-
-'''
