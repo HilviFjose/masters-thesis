@@ -12,7 +12,6 @@ class SimulatedAnnealing:
     def accept_criterion(self, random_state, current_objective, candidate_objective):
         # Always accept better solution
         if checkCandidateBetterThanBest(candidateObj= candidate_objective, currObj= current_objective):
-            print("Found better solution")
             accept = True
         
         # Sometimes accept worse
