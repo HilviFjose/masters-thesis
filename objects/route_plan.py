@@ -58,6 +58,7 @@ class RoutePlan:
         self.allocatedPatients = {}
         self.notAllocatedPatients = []
         self.illegalNotAllocatedTreatments = []
+        self.illegalNotAllocatedVisitsWithPossibleDays = {}
 
 
     def addActivityOnDay(self, activity, day):
