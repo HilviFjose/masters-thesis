@@ -73,10 +73,12 @@ class Operators:
   
         print("FØR DESTROY")
 
-        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
-        print("treatments", destroyed_route_plan.treatments)
         print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments) 
         print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
+        print("    ")
+        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
+        print("    ")
+        print("treatments", destroyed_route_plan.treatments)
 
         if self.count == 0: 
             selected_treatment = 4 
@@ -130,12 +132,18 @@ class Operators:
                 break
 
             #Alt 3 Ikke siste treatment  
-            if selected_treatment in treatments and len(treatments) > 1: 
+            if selected_treatment in treatments: 
+                #Hvorfor fjernes ikke denne? 
                 del destroyed_route_plan.treatments[selected_treatment]
+                #Fjerne treatment 4 fra allocated patietns 
+                destroyed_route_plan.allocatedPatients[patient].remove(selected_treatment)
                 destroyed_route_plan.illegalNotAllocatedTreatments.append( selected_treatment)
                 break
 
-         
+        '''
+        Oppdate feil. Allocated patients skal ikke inneholde treatment 4, bare tratment 3 
+        Treatment 4 skal hellerikke ligge i treatments 
+        '''
 
         destroyed_route_plan.updateObjective()
         self.count += 1 
@@ -143,10 +151,13 @@ class Operators:
         #del destroyed_route_plan.treatments[selected_treatment]
         #print("etter",destroyed_route_plan.treatments)
         print("ETTER DESTROY")
-        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
-        print("treatments", destroyed_route_plan.treatments)
+        
         print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments) 
         print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
+        print("    ")
+        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
+        print("    ")
+        print("treatments", destroyed_route_plan.treatments)
         return destroyed_route_plan, removed_activities, True
     
     
