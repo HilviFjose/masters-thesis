@@ -19,7 +19,7 @@ class ALNS:
         self.initial_infeasible_set = initial_infeasible_set 
         #Disse kommer fra config mail filen 
         self.weights = weights
-        
+        self.route_plan = current_route_plan
         self.destruction_degree = destruction_degree
         self.objective = current_objective
         self.criterion = criterion
@@ -36,18 +36,17 @@ class ALNS:
 
     def iterate(self, num_iterations):
         weights = np.asarray(self.weights, dtype=np.float16)
-        
-        candidate_route_plan = copy.deepcopy(self.current_route_plan)
-        
-    
-        #TODO: Finne ut hva det skal stå her serner 
-        current_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
-        best_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
-        
-        #TODO: Forstå hva disse to parameterne gjør 
+        current_route_plan = copy.deepcopy(self.route_plan)
+        current_objective = copy.deepcopy(self.objective)
+        best_route_plan = copy.deepcopy(self.route_plan)
+        best_objective = copy.deepcopy(self.objective)
         found_solutions = {}
-        initial_route_plan = copy.deepcopy(self.current_route_plan)
 
+        # TODO: Usikker på om vi trenger dette
+        #current_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
+        #best_infeasible_set = copy.deepcopy(self.initial_infeasible_set)
+        
+        
         # weights er vekter for å velge operator, score og count brukes for oppdatere weights
         d_weights = np.ones(len(self.destroy_operators), dtype=np.float16)
         r_weights = np.ones(len(self.repair_operators), dtype=np.float16)
@@ -77,59 +76,50 @@ class ALNS:
             
             d_operator = self.destroy_operators[destroy]
             destroyed_route_plan, removed_activities, destroyed = d_operator(
-                candidate_route_plan)
+                current_route_plan)
             
             if not destroyed:
                 break
 
             d_count[destroy] += 1
-            
+
+            # Repair solution
             r_operator = self.repair_operators[repair]
             candidate_route_plan = r_operator(
                 destroyed_route_plan)
+            
             
             r_count[repair] += 1
 
             # Local search if solution is promising
             local_search_requirement = 0.02 # TODO: Legge inn i main config
         
-            #lOKALSØKET VIL GJØRE LØSNINGEN BEDRE UANSETT SÅ SER PÅ EN VERSION HVOR VI UANSETT GJØR LOKALSØK
-            #Hvis kandidat er promising, så skal vi gjøre lokalsøk 
-            if isPromising(candidate_route_plan.objective, self.best_route_plan.objective, local_search_requirement): 
+            if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, local_search_requirement) == True: 
                 localsearch = LocalSearch(candidate_route_plan)
                 candidate_route_plan = localsearch.do_local_search()
-                
-                #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
-                self.current_route_plan = copy.deepcopy(candidate_route_plan)
                 candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
-            
-            if checkCandidateBetterThanBest(candidate_route_plan.objective, self.best_route_plan.objective): 
-                print("ny bedre kandidat")
-                self.best_route_plan = copy.deepcopy(candidate_route_plan)
 
-            """
-            # Compare solutions
-            best, best_objective, best_infeasible_set, current_route_plan, current_objective, current_infeasible_set, weight_score = self.evaluate_candidate(
-                best, best_objective, best_infeasible_set,
-                current_route_plan, current_objective, current_infeasible_set,
-                candidate, candidate_objective, candidate_infeasible_set, self.criterion)
-            
-            
-            # Konverterer til hexa-string for å sjekke om vi har samme løsning. Scores oppdateres kun hvis vi har en løsning som ikke er funnet før
-            if hash(str(candidate)) == hash(str(current_route_plan)) and hash(str(candidate)) in found_solutions.keys():
+                #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
+                #self.current_route_plan = copy.deepcopy(candidate_route_plan)
+                #self.current_objective = copy.deepcopy(candidate_route_plan.objective)
+        
+            # Konverterer til hexa-string for å sjekke om vi har samme løsning. Evaluerer og scores oppdateres kun hvis vi har en løsning som ikke er funnet før
+            if hash(str(candidate_route_plan)) == hash(str(current_route_plan)) and hash(str(candidate_route_plan)) in found_solutions.keys():
                 already_found = True
             else:
                 found_solutions[hash(str(current_route_plan))] = 1
 
             if not already_found:
+                # Compare solutions
+                best_route_plan, best_objective, current_route_plan, current_objective, weight_score = self.evaluate_candidate(
+                    best_route_plan, best_objective, current_route_plan, current_objective, candidate_route_plan, candidate_route_plan.objective, self.criterion)
                 # Update scores
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
-            """
-            """
+           
+
             # After a certain number of iterations, update weight
-            # TODO: Noen får denne i oppgave
-            if (i+1) % N_U == 0: #TODO: Se på i sammenheng med initial_improvement_config. 
+            if (i+1) % iterations == 0:
                 # Update weights with scores
                 for destroy in range(len(d_weights)):
                     d_weights[destroy] = d_weights[destroy] * \
@@ -147,9 +137,8 @@ class ALNS:
                     len(self.destroy_operators), dtype=np.float16)
                 r_scores = np.ones(
                     len(self.repair_operators), dtype=np.float16)
-            """
-
-        return self.best_route_plan
+          
+        return best_route_plan
     
     def set_operators(self, operators):
         # Add destroy operators
@@ -177,9 +166,8 @@ class ALNS:
         return rnd_state.choice(a=a, p=w)
     
     # Evaluate candidate
-    def evaluate_candidate(self, best, best_objective, best_infeasible_set, current, current_objective,
-                           current_infeasible_set, candidate, candidate_objective, candidate_infeasible_set,
-                           criterion):
+    def evaluate_candidate(self, best_route_plan, best_objective, current_route_plan, current_objective, 
+                           candidate_route_plan, candidate_objective, criterion):
         # If solution is accepted by criterion (simulated annealing)
         if criterion.accept_criterion(self.rnd_state, current_objective, candidate_objective):
             # TODO: Endre objektivvurdering
@@ -190,28 +178,22 @@ class ALNS:
             else:
                 # Solution is not better, but accepted
                 weight_score = 2
-            current = copy.deepcopy(candidate)
+
+            current_route_plan = copy.deepcopy(candidate_route_plan)
             current_objective = copy.deepcopy(candidate_objective)
-            current_infeasible_set = copy.deepcopy(candidate_infeasible_set)
         else:
             # Solution is rejected
             weight_score = 3
 
-        if candidate_objective <= best_objective:
+
+        # Sjekker om candidate har bedre objektiv enn best, returnerer False hvis best er bedre
+        if checkCandidateBetterThanBest(candidateObj = candidate_objective, currObj = best_objective):
             # Solution is new global best
-            current = copy.deepcopy(candidate)
+            print("ALNS iteration ", self.iterationNum, " is new global best")
+            current_route_plan = copy.deepcopy(candidate_route_plan)
             current_objective = copy.deepcopy(candidate_objective)
-            current_infeasible_set = copy.deepcopy(candidate_infeasible_set)
-            best = copy.deepcopy(candidate)
+            best_route_plan = copy.deepcopy(candidate_route_plan)
             best_objective = copy.deepcopy(candidate_objective)
-            best_infeasible_set = copy.deepcopy(candidate_infeasible_set)
             weight_score = 0
 
-        return best, best_objective, best_infeasible_set, current, current_objective, current_infeasible_set, weight_score
-
-'''
-Kommentar 07.03 
-Det er noe problem med oppdatering av kandidat, fordi den får ikke lagt inn en igjen. Det er noe med objektivet.
-Nå ser det ut som at logikken med å forsøke å ta ut også putte inn en annen ikke fungerer. 
-Må kanskje ha random genereringa
-'''
+        return best_route_plan, best_objective, current_route_plan, current_objective, weight_score
