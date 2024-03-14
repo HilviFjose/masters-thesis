@@ -70,16 +70,6 @@ class Operators:
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
 
-  
-        print("FØR DESTROY")
-
-        print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments) 
-        print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
-        print("    ")
-        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
-        print("    ")
-        print("treatments", destroyed_route_plan.treatments)
-
         if self.count == 0: 
             selected_treatment = 4 
         else: 
@@ -140,25 +130,9 @@ class Operators:
                 destroyed_route_plan.illegalNotAllocatedTreatments.append( selected_treatment)
                 break
 
-        '''
-        Oppdate feil. Allocated patients skal ikke inneholde treatment 4, bare tratment 3 
-        Treatment 4 skal hellerikke ligge i treatments 
-        '''
-
         destroyed_route_plan.updateObjective()
         self.count += 1 
-        #print("treatment", destroyed_route_plan.treatments[selected_treatment],"før",destroyed_route_plan.treatments)
-        #del destroyed_route_plan.treatments[selected_treatment]
-        #print("etter",destroyed_route_plan.treatments)
-        print(" ")
-        print("ETTER DESTROY REMOVED TREATMENT ", selected_treatment)
-        
-        print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments) 
-        print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
-        print("    ")
-        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
-        print("    ")
-        print("treatments", destroyed_route_plan.treatments)
+      
         return destroyed_route_plan, removed_activities, True
     
     
@@ -168,27 +142,19 @@ class Operators:
         #Tar bort removed acktivitites, de trenger vi ikk e
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
-        '''
-        Nå henter vi repaired route plan fra insertoren, så den endringen som vi har gjort selv 
-        i denne funksjonen blir ikkke inkludert 
 
-        Det må returneres en ruteplan, for inserter 
-        '''
 
         #Forsøker å legge til de aktivitetene vi har tatt ut
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
            
             status = treatmentInsertor.insert_treatment(treatment)
-            if treatment == 4: 
-                print("status for å legge til treatment ", treatment, "får status ", status)
+      
             if status == True: 
-                if treatment == 4:
-                    print("illegalNotAllocatedTreatments FØR ", repaired_route_plan.illegalNotAllocatedTreatments)
+  
                 repaired_route_plan = treatmentInsertor.route_plan
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
-                if treatment == 4:
-                    print("illegalNotAllocatedTreatments ETTER ", repaired_route_plan.illegalNotAllocatedTreatments)
+                
             
                 #Må legge inn informasjonen om de treament og pasient. Må hente ut pasientenførst 
              
@@ -200,29 +166,12 @@ class Operators:
                         break
                 repaired_route_plan.allocatedPatients[patient].append(treatment) 
                 
-
-        #Den får til å legge det på treatment nivå, men ikke på illegal og allocatedPatients 
-
-                
-
-
     
         #TODO: Nå legger den ikke til disse 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
         repaired_route_plan = patientInsertor.insertPatients(repaired_route_plan.notAllocatedPatients)
         repaired_route_plan.updateObjective()
-        '''
-        route_plan, new_objective = self.repair_generator.generate_insertions(
-            route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
-
-        # update current objective
-        current_objective = new_objective
-        '''
-
-        '''
-        Konseptet: 
-        Vi har ulike lister med aktiviteter 
-        '''
+      
         return repaired_route_plan
     
 
