@@ -150,7 +150,8 @@ class Operators:
         #print("treatment", destroyed_route_plan.treatments[selected_treatment],"før",destroyed_route_plan.treatments)
         #del destroyed_route_plan.treatments[selected_treatment]
         #print("etter",destroyed_route_plan.treatments)
-        print("ETTER DESTROY")
+        print(" ")
+        print("ETTER DESTROY REMOVED TREATMENT ", selected_treatment)
         
         print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments) 
         print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
@@ -167,21 +168,28 @@ class Operators:
         #Tar bort removed acktivitites, de trenger vi ikk e
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
-        # Må sjekke om aktiviteter i removed_activities har samme pasient som noen aktiviteter i route plan.allocatedpatients (hvis denne hadde flere treatments). 
-        # I så fall må alle aktiviteter i hele treatmentet som ble fjernet prioriteres til å legges inn.
-        # Vil kjøre insertion på treatment-nivå (TreatmentInsertions-klasse kanskje? Agnes er usikker) for å legge inn disse som har denne sammenhengen
-        # Så kjøre vanlig grådig PatientInsertion
+        '''
+        Nå henter vi repaired route plan fra insertoren, så den endringen som vi har gjort selv 
+        i denne funksjonen blir ikkke inkludert 
+
+        Det må returneres en ruteplan, for inserter 
+        '''
 
         #Forsøker å legge til de aktivitetene vi har tatt ut
-        insertor = Insertor(self.constructor, repaired_route_plan)
+        treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
            
-            status = insertor.insert_treatment(treatment)
-            
+            status = treatmentInsertor.insert_treatment(treatment)
+            if treatment == 4: 
+                print("status for å legge til treatment ", treatment, "får status ", status)
             if status == True: 
-               
+                if treatment == 4:
+                    print("illegalNotAllocatedTreatments FØR ", repaired_route_plan.illegalNotAllocatedTreatments)
+                repaired_route_plan = treatmentInsertor.route_plan
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
-
+                if treatment == 4:
+                    print("illegalNotAllocatedTreatments ETTER ", repaired_route_plan.illegalNotAllocatedTreatments)
+            
                 #Må legge inn informasjonen om de treament og pasient. Må hente ut pasientenførst 
              
         
@@ -193,14 +201,16 @@ class Operators:
                 repaired_route_plan.allocatedPatients[patient].append(treatment) 
                 
 
+        #Den får til å legge det på treatment nivå, men ikke på illegal og allocatedPatients 
 
                 
 
 
-        #Forsøker å legge til alle pasientne som ikke ligger inne 
-        #TODO: Prøve å shuffle på hvem som settes inn 
-        insertor.insertPatients(repaired_route_plan.notAllocatedPatients)
-        insertor.route_plan.updateObjective()
+    
+        #TODO: Nå legger den ikke til disse 
+        patientInsertor = Insertor(self.constructor, repaired_route_plan)
+        repaired_route_plan = patientInsertor.insertPatients(repaired_route_plan.notAllocatedPatients)
+        repaired_route_plan.updateObjective()
         '''
         route_plan, new_objective = self.repair_generator.generate_insertions(
             route_plan=route_plan, activity=activity, rid=rid, infeasible_set=infeasible_set, initial_route_plan=current_route_plan, index_removed=index_removal, objectives=0)
@@ -213,6 +223,6 @@ class Operators:
         Konseptet: 
         Vi har ulike lister med aktiviteter 
         '''
-        return insertor.route_plan
+        return repaired_route_plan
     
 
