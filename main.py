@@ -61,7 +61,8 @@ def main():
 
 
 if __name__ == "__main__":
-    #main()
+    main()
+    """
     # Profiler hele programmet ditt
     cProfile.run('main()', 'program_profile')
 
@@ -69,3 +70,4 @@ if __name__ == "__main__":
     p = pstats.Stats('program_profile')
     p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
 
+    """

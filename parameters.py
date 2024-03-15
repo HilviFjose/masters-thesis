@@ -5,7 +5,6 @@ from datageneration import employeeGeneration
 from datageneration import patientGeneration 
 from datageneration import distance_matrix
 from config import construction_config
-import random
 
 
 # DATA GENERATION

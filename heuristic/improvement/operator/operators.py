@@ -9,7 +9,6 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Include subfolders
 
 from helpfunctions import checkCandidateBetterThanBest
-from objects.distances import *
 from config.construction_config import *
 from heuristic.improvement.operator.insertor import Insertor
 
@@ -416,5 +415,5 @@ class Operators:
       
         return repaired_route_plan
     
-    
+
     #TODO: Burde se på en operator som bytter å mye som mulig mellom to ansatte 
