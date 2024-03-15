@@ -80,7 +80,7 @@ def patientGenerator(df_employees):
     # Update patient allocation if number of patients > 5*number of employees TODO: Må se an denne fordelingen i testing-perioden 
     num_employees = len(df_employees)
     if len(df_patients) > num_employees * 5:
-        print("Har endret på allokeringen")
+        print("Har endret på pasientallokeringen i datagenereringen")
         # Calculate maximum patients per allocation category
         max_alloc_1 = num_employees * 1  # Max patients for allocation 1
         max_alloc_2 = num_employees * 1  # Max patients for allocation 2
@@ -133,89 +133,6 @@ def patientGenerator(df_employees):
     df_patients.to_csv(file_path, index=False)
 
     return df_patients
-
-
-'''
-def patientGenerator(df_employees):
-    df_patients = pd.DataFrame(columns=['patientId', 'nTreatments', 'utility', 'allocation','employeeRestriction', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
-     
-    patientId = []
-    nTreatments = []
-    utility = []
-    allocation = []
-    continuityGroup = []
-    heaviness = []
-
-    #Generate random location for each patient
-    locations = locationGenerator(construction_config.refLoc, construction_config.area, construction_config.P_num)
-
-    for i in range(construction_config.P_num):
-        patientId.append(i+1)
-        
-        #Distribution of number of treatments per patient
-        T_numMax = len(construction_config.T_numProb)                                                    # Max number of activities per visit
-        prob = construction_config.T_numProb                                                             # The probability of the number of activities per visit
-        nTreatments = np.random.choice(range(1,T_numMax+1), size=construction_config.P_num, p=prob)      # Distribution of the number of activities per visit
-        
-        #Distribution of utility, patient allocation, continuity group and heaviness for patients
-        utility.append(np.random.choice([j+1 for j in range(5)]))
-        continuityGroup.append(np.random.choice([j+1 for j in range(3)], p=construction_config.continuityDistribution))
-        heaviness.append(np.random.choice([j+1 for j in range(5)], p=construction_config.heavinessDistribution))
-        allocation.append(np.random.choice([j+1 for j in range(3)], p=construction_config.allocation)) #First allocation, updated later TODO: Oppdatere format på dette
-
-        df_patients = df_patients._append({
-                'patientId': i+1,
-                'nTreatments': nTreatments[i],
-                'utility': utility[i],
-                'allocation': allocation[i],
-                'continuityGroup': continuityGroup[i],
-                'heaviness': heaviness[i],
-                'location' : locations[i]
-            }, ignore_index=True)
-        
-    # Update patient allocation based on number of employees
-    i stedet for at allocation skal være satt av en sannsynlighet må det justeres for hvor mange ansatte det er dersom det er for mange pasienter i forhold til ansatte. 
-    Det betyr at ikke flere pasienter enn det er ansatte kan få tallet 1 i allocation, tallet 2 til pasienter kan tildeles en mengde lik 50 % av ansatte, og gjenværende blir da tallet 3. Dette gjelder bare om vi har mer enn 5 ganger flere pasienter enn ansatte.
-    
-    # Employee Restrictions
-    num_restricted_patients = int(len(df_patients) * construction_config.employeeRestrict)      # 5 % of the patients have a restriction against an employee
-    restricted_patient_indices = np.random.choice(df_patients.index, size=num_restricted_patients, replace=False) # Random patients get employee restrictions
-    
-    for index in restricted_patient_indices:
-        random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
-        list = []
-        list.append(random_employee_id)
-        df_patients.at[index, 'employeeRestriction'] = list
-
-    # Employee history  TODO: Må potensielt oppdatere format på dette
-    num_history_patients = int(len(df_patients) * construction_config.employeeHistory)          # 90 % of the patients have a treatment history with some employees
-    history_patient_indices = np.random.choice(df_patients.index, size=num_history_patients, replace=False) # Random patients get employee history
-
-    
-    #for index in history_patient_indices:
-    #    num_employees = np.random.randint(1, 6)             # Allowing for between 1 and 6 employees in the employee history
-    #    random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()      # Random employees
-    #    df_patients.at[index, 'employeeHistory'] = random_employee_ids
-    
-    for index in history_patient_indices:
-        continuity_group = df_patients.at[index, 'continuityGroup']
-        # max number of employees based on continuity group
-        if continuity_group == 1:
-            max_employees = 1
-        elif continuity_group == 2:
-            max_employees = 3
-        else:  # continuity_group == 3
-            max_employees = 6
-
-        num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
-        random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()  # Tilfeldige ansatte
-        df_patients.at[index, 'employeeHistory'] = random_employee_ids
-
-    file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
-    df_patients.to_csv(file_path, index=False)
-
-    return df_patients
-    '''
 
 def treatmentGenerator(df_patients):
     df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 't_complexity'])
