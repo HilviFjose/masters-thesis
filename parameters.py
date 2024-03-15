@@ -7,7 +7,7 @@ from datageneration import distance_matrix
 from config import construction_config
 import random
 
-'''
+
 # DATA GENERATION
 df_employees = employeeGeneration.employeeGenerator() 
 df_patients_not_complete = patientGeneration.patientGenerator(df_employees)
@@ -15,7 +15,7 @@ df_treatments_not_complete = patientGeneration.treatmentGenerator(df_patients_no
 df_visits_not_complete = patientGeneration.visitsGenerator(df_treatments_not_complete)
 df_activities = patientGeneration.activitiesGenerator(df_visits_not_complete)
 df_patients = patientGeneration.autofillPatient(df_patients_not_complete, df_treatments_not_complete).set_index(["patientId"])
-df_treatments = patientGeneration.autofillTreatment(df_treatments_not_complete, df_visits_not_complete).set_index(["treatmentId"])
+df_treatments = patientGeneration.autofillTreatment(df_treatments_not_complete, df_visits_not_complete, df_activities).set_index(["treatmentId"])
 df_visits = patientGeneration.autofillVisit(df_visits_not_complete, df_activities).set_index(["visitId"])  
 df_activities = df_activities.set_index(["activityId"])  
 df_employees = df_employees.set_index(["employeeId"])
@@ -38,7 +38,7 @@ file_path_visits = os.path.join(os.getcwd(), 'data', 'visits.pkl')
 df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
-
+'''
 '''
 #TEST DATA - not randomly generated
 df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 

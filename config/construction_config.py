@@ -27,7 +27,8 @@ patterns_1day = [15,16,17,18,19]                                    # Patterntyp
 # Continuity distribution
 continuityDistribution = [0.35, 0.15, 0.5] #Top 1 employee, top 3 employees, all employees
 
-# Employee history??
+# Patient allocation
+allocation = [0.3, 0.3, 0.4] #Already allocated to AHH, high priority patients to AHH, lower priority patients to AHH
 
 # Heaviness
 heavinessDistribution = [1, 0, 0, 0, 0] 
