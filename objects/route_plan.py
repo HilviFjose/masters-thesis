@@ -432,4 +432,9 @@ class RoutePlan:
                     self.routes[day].remove(org_route)
                     self.routes[day].append(new_route) 
             
-        
+    def getRouteSkillLevForActivityID(self, activityID): 
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route: 
+                    if act.id == activityID: 
+                        return route.skillLev

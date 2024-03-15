@@ -73,7 +73,7 @@ class Operators:
                     if act.id in activities:
                         route.removeActivityID(act.id)
 
-    #TODO: Finne ut hvordan vi skal evaluere hvilken treatment som er verst 
+    #TODO: Finne ut hvordan vi skal evaluere hvilken treatment som er verst, nå er det bare på hovedobjektiv 
     def worst_deviation_treatment_removal(self, current_route_plan):
         lowest_treatment_contribute = 1000
         selected_treatment = None 
@@ -158,30 +158,33 @@ class Operators:
         selected_visit = rnd.choice(list(current_route_plan.visits.keys())) 
         return self.visit_removal(selected_visit, current_route_plan)
     
-    #TODO: Lage worst_deviation_visit_removal
+    
+    def worst_deviation_visit_removal(self, current_route_plan):
+        lowest_visit_utility_contribute = 1000 
+        highest_visit_skilldiff_contribute = 0
+        selected_visit = None 
+        for visit in list(current_route_plan.visits.keys()): 
+            visit_utility_contribute = 0 
+            visit_skilldiff_contribute = 0
+            for activity in current_route_plan.visits[visit]:
+                    visit_utility_contribute += self.constructor.activities_df.loc[activity, 'utility']
+                    visit_skilldiff_contribute += current_route_plan.getRouteSkillLevForActivityID(activity) - self.constructor.activities_df.loc[activity, 'skillRequirement']
+            if visit_utility_contribute < lowest_visit_utility_contribute or (
+                visit_utility_contribute == lowest_visit_utility_contribute and visit_skilldiff_contribute > highest_visit_skilldiff_contribute): 
+         
+                selected_visit = visit
+          
 
+        return self.visit_removal(selected_visit, current_route_plan)
+
+    
     '''
-    IllegalListene: Inneholder treaments eller aktiviteter som skal allokers 
+    IllegalListene: Inneholder treaments, visits eller aktiviteter som ikke er allokert  
 
     AllocatedDict: Skal inneholde pasient, tratment eller visit, hvis det er hele eller deler som er allokert 
     '''
     def visit_removal(self, selected_visit, route_plan):
-        #Kanskje selected visits, også skal ha en liste over mulige dager den kan insertes. 
 
-        print("BEFORE REMOVAL OF VISIT ", selected_visit)
-       
-        
-        print("treatments", route_plan.treatments)
-        print("  ")
-        print("visits", route_plan.visits)
-        print("  ")
-        print("allocatedPatients", route_plan.allocatedPatients)
-        print("notAllocatedPatients",route_plan.notAllocatedPatients)
-        print("illegalNotAllocatedTreatments", route_plan.illegalNotAllocatedTreatments)
-        print("illegalNotAllocatedVisitsWithPossibleDays", route_plan.illegalNotAllocatedVisitsWithPossibleDays)
-        print("  ")
-        print(" ------------------------------------- ")
-        
         
 
         destroyed_route_plan = copy.deepcopy(route_plan)
@@ -226,20 +229,6 @@ class Operators:
             del destroyed_route_plan.visits[selected_visit]
             destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[selected_visit] = original_day
             destroyed_route_plan.treatments[treatment_for_visit].remove(selected_visit)
-            print("AFTER REMOVAL OF VISIT ", selected_visit)
-        
-            print("AFTER REMOVAL OF VISIT ", selected_visit)
-        
-            print("treatments", destroyed_route_plan.treatments)
-            print("  ")
-            print("visits", destroyed_route_plan.visits)
-            print("  ")
-            print("allocatedPatients", destroyed_route_plan.allocatedPatients)
-            print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
-            print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments)
-            print("illegalNotAllocatedVisitsWithPossibleDays", destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays)
-            print("  ")
-            print(" ------------------------------------- ")
             
             return destroyed_route_plan, removed_activities, True
     
@@ -264,31 +253,12 @@ class Operators:
         
         if last_treatment_for_patient == False: 
             destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit)
-        
-        print("AFTER REMOVAL OF VISIT ", selected_visit)
-        
-        print("treatments", destroyed_route_plan.treatments)
-        print("  ")
-        print("visits", destroyed_route_plan.visits)
-        print("  ")
-        print("allocatedPatients", destroyed_route_plan.allocatedPatients)
-        print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
-        print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments)
-        print("illegalNotAllocatedVisitsWithPossibleDays", destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays)
-        print("  ")
-        print(" ------------------------------------- ")
+
             
         return destroyed_route_plan, removed_activities, True
 
 
         
-
-
-
-
-
-
-      
 
         
 
@@ -299,20 +269,13 @@ class Operators:
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
 
-        '''
-        Vi ønsker å reparere gradvis. Så begynner med 
-        Når skal det stå i illegal. Det som er ute skal stå der. 
-        Treatmenten står der bare dersom hele treatmenten er ute. 
-        '''
-
+    
         #VISIT ILLEGAL 
         #TODO: Her burde presedensen også sjekkes, 
         #For jeg vet ikke hvordan den oppdatere seg basert på det som er i ruten 
         visitInsertor = Insertor(self.constructor, repaired_route_plan)
         for visit in list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()):  
             status = visitInsertor.insert_visit_on_day(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
-            print("LEGGER TIL VISIT", visit, "STATUS ", status)
-            print("---------------------------------------")
             if status == True: 
    
                 repaired_route_plan = visitInsertor.route_plan
@@ -325,21 +288,7 @@ class Operators:
                         break
                 repaired_route_plan.treatments[treatment].append(visit) 
             
-        #TODO: Får duplikater ved insetting på visit nivå 
-        '''
-        Det er den først aktiviteten i visitene som suplisres hvorfof det
-        Den resetter aldri
-        '''
-    
 
-
-        '''
-        Har du noen aktiviteter inne, så er du allerede allokert til sykehuset
-        Vet derfor at når et visit ligger i illegal, så ligger allerede pasienten inne på sykehuset, 
-        for hvis ikke ville det ikke vært noe i illeg
-
-
-        '''
 
 
         #TREATMENT ILLEGAL 
@@ -353,8 +302,6 @@ class Operators:
                 repaired_route_plan = treatmentInsertor.route_plan
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
                 
-            
-                #Må legge inn informasjonen om de treament og pasient. Må hente ut pasientenførst 
              
         
         #Legger til treatmenten på pasienten. 
