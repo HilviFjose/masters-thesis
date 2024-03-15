@@ -9,6 +9,7 @@ import random
 
 
 # DATA GENERATION
+'''
 df_employees = employeeGeneration.employeeGenerator() 
 df_patients_not_complete = patientGeneration.patientGenerator(df_employees)
 df_treatments_not_complete = patientGeneration.treatmentGenerator(df_patients_not_complete)
@@ -38,7 +39,7 @@ file_path_visits = os.path.join(os.getcwd(), 'data', 'visits.pkl')
 df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
-'''
+
 '''
 #TEST DATA - not randomly generated
 df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
