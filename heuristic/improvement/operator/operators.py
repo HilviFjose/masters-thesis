@@ -3,6 +3,7 @@ import copy
 import math
 import numpy.random as rnd 
 import random 
+import networkx as nx
 
 import os
 import sys
@@ -10,6 +11,7 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Inc
 
 from helpfunctions import checkCandidateBetterThanBest
 from config.construction_config import *
+from datageneration.distance_matrix import *
 from heuristic.improvement.operator.insertor import Insertor
 
 #TODO: Finne ut hva operator funksjonene skal returnere 
@@ -299,8 +301,64 @@ class Operators:
         destroyed_route_plan.updateObjective()
         return destroyed_route_plan, removed_activities, True        
 
-        
+    # ----- Guro start -----    
+    def kruskalAlgorithm(self, df):
+        travel_time_matrix = travel_matrix_without_rush(df) 
+        # Konverter reisetidsmatrisen til en graf
+        G = nx.Graph()
+        n = len(travel_time_matrix)  # Antall noder
+        for i in range(n):
+            for j in range(i + 1, n):
+                # Legg til en kant mellom hver node med vekt lik reisetiden
+                G.add_edge(i, j, weight=travel_time_matrix[i][j])
 
+        # Generer MST ved hjelp av Kruskal's algoritme
+        mst = nx.minimum_spanning_tree(G, algorithm='kruskal')
+
+        # Finn og fjern den lengste kanten
+        edges = list(mst.edges(data=True))
+        longest_edge = max(edges, key=lambda x: x[2]['weight'])
+        mst.remove_edge(longest_edge[0], longest_edge[1])
+
+        # MST er nå delt i to deler, og du kan identifisere komponentene (dvs. de to gruppene av IDer)
+        components = list(nx.connected_components(mst))
+        # Finn komponenten med færrest noder (pasienter/treaments/visits)
+        shortest_component = min(components, key=len)
+        # Konverter denne komponenten til en liste av IDer (eller indekser)
+        selected_component = list(shortest_component) # selected_component inneholder nå indeksene (eller IDene) til de id'ene som er en del av den minste komponenten
+
+    def several_patients_removal(self, patients, route_plan):
+        #TODO: Høre med agnes om dykopiering her.
+        #Ikke ferdig funksjonalitet her
+        #Hvordan fungerer slike funksjoner hvor det skal fjernes flere pasienter, treatments eller visits?
+        for patient in patients:
+            return self.patient_removal(patient, route_plan) #Denne skal gjøres for hver pasient i selected patients
+
+    def cluster_distance_patients_removal(self, current_route_plan):
+        allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
+        df_selected_patients =  self.constructor.patients_df.loc[allocatedPatientsIds]
+
+        selected_patients = self.kruskalAlgorithm(df_selected_patients)
+
+        return  self.several_patients_removal(selected_patients, current_route_plan)
+
+    def cluster_distance_treatments_removal(self, current_route_plan):
+        allocatedTreatmentsIds = list(current_route_plan.treatments.keys())
+        df_selected_treatments = self.constructor.treatment_df.loc[allocatedTreatmentsIds]
+
+        selected_treatments = self.kruskalAlgorithm(df_selected_treatments)
+        #Ikke ferdig, må ha return
+        return 
+    
+    def cluster_distance_visits_removal(self, current_route_plan):
+        allocatedVisitsIds = list(current_route_plan.visits.keys())
+        df_selected_visits = self.constructor.visit_df.loc[allocatedVisitsIds]
+
+        selected_visits = self.kruskalAlgorithm(df_selected_visits)
+        #Ikke ferdig, må ha return
+        return  
+    
+    # ----- Guro slutt -----
 
 #---------- REPAIR OPERATORS ----------
     def greedy_repair(self, destroyed_route_plan):
