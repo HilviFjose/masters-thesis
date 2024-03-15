@@ -101,6 +101,7 @@ class ALNS:
                 
                 #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
                 self.current_route_plan = copy.deepcopy(candidate_route_plan)
+                
                 candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
             
             if checkCandidateBetterThanBest(candidate_route_plan.objective, self.best_route_plan.objective): 
@@ -153,6 +154,7 @@ class ALNS:
     
     def set_operators(self, operators):
         # Add destroy operators
+     
         self.add_destroy_operator(operators.random_patient_removal)
         self.add_destroy_operator(operators.random_treatment_removal)
         
@@ -163,6 +165,9 @@ class ALNS:
 
         self.add_destroy_operator(operators.random_visit_removal)
         self.add_destroy_operator(operators.worst_deviation_visit_removal)
+      
+        self.add_destroy_operator(operators.random_activity_removal)
+        self.add_destroy_operator(operators.worst_deviation_activity_removal)
 
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)

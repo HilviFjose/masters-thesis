@@ -1,4 +1,4 @@
-Solution generated at time: 2024-03-15 10:45:45
+Solution generated at time: 2024-03-15 15:20:07
 
 -------------------------------------------------------
 Printer alle rutene
@@ -7,7 +7,8 @@ activity 244 start 496
 activity 261 start 570.0
 activity 239 start 683.0
 activity 253 start 753.0
-activity 143 start 833.0
+activity 260 start 833.0
+activity 143 start 878.0
 ---------------------
 DAG 1 ANSATT 5
 ---------------------
@@ -22,6 +23,13 @@ DAG 1 ANSATT 7
 ---------------------
 DAG 1 ANSATT 10
 ---------------------
+DAG 1 ANSATT 3
+activity 221 start 57
+activity 125 start 146.0
+activity 126 start 243.0
+activity 67 start 338.0
+activity 95 start 403
+---------------------
 DAG 1 ANSATT 8
 activity 164 start 486
 activity 257 start 543.0
@@ -35,41 +43,33 @@ activity 167 start 774.0
 activity 197 start 859.0
 ---------------------
 DAG 1 ANSATT 1
-activity 39 start 486
 activity 263 start 511.0
 activity 179 start 532.0
 activity 11 start 552.0
 activity 262 start 587.0
-activity 213 start 604.0
-activity 229 start 623.0
-activity 187 start 638.0
-activity 46 start 660.0
-activity 87 start 686.0
-activity 56 start 722
-activity 268 start 755
-activity 220 start 785
-activity 231 start 815.0
-activity 165 start 832.0
-activity 62 start 855.0
-activity 206 start 874.0
+activity 213 start 598.0
+activity 187 start 617.0
+activity 46 start 639.0
+activity 87 start 665.0
+activity 56 start 701.0
+activity 268 start 739.0
+activity 220 start 768.0
+activity 229 start 796
+activity 165 start 828.0
+activity 62 start 851.0
+activity 39 start 876.0
 activity 168 start 897.0
+activity 206 start 914.0
 activity 169 start 939
 ---------------------
-DAG 1 ANSATT 3
-activity 221 start 57
-activity 174 start 130.0
-activity 126 start 243.0
-activity 67 start 338.0
-activity 95 start 403
----------------------
 DAG 1 ANSATT 9
-activity 31 start 494
-activity 275 start 510.0
-activity 125 start 589.0
-activity 184 start 650.0
-activity 138 start 733.0
-activity 254 start 814.0
-activity 260 start 872.0
+activity 231 start 483
+activity 138 start 499.0
+activity 174 start 567.0
+activity 31 start 639.0
+activity 275 start 655.0
+activity 254 start 826.0
+activity 184 start 860.0
 activity 255 start 943
 ---------------------
 DAG 2 ANSATT 1
@@ -188,7 +188,7 @@ activity 146 start 869.0
 ---------------------
 DAG 4 ANSATT 4
 activity 90 start 483
-activity 227 start 578.0
+activity 227 start 586.0
 activity 19 start 688.0
 activity 141 start 755.0
 activity 216 start 830.0
@@ -208,9 +208,9 @@ activity 245 start 536.0
 activity 16 start 562.0
 activity 49 start 589.0
 activity 226 start 617.0
-activity 101 start 698
-activity 211 start 711.0
-activity 65 start 811.0
+activity 65 start 645.0
+activity 101 start 808.0
+activity 211 start 821.0
 activity 148 start 841.0
 activity 172 start 868
 activity 217 start 896.0
@@ -234,11 +234,11 @@ activity 166 start 483
 ---------------------
 DAG 5 ANSATT 1
 activity 66 start 484
-activity 228 start 525.0
-activity 193 start 614.0
-activity 219 start 631.0
-activity 178 start 656
-activity 252 start 686
+activity 228 start 506.0
+activity 193 start 529.0
+activity 219 start 546.0
+activity 178 start 571.0
+activity 252 start 596.0
 activity 183 start 826.0
 activity 55 start 843.0
 activity 205 start 863.0
@@ -283,6 +283,6 @@ DAG 5 ANSATT 8
 ---------------------
 DAG 5 ANSATT 10
 ---------------------
-objective  [575, 5.0, 33, 44, 1394]
-allocated patients  [11, 34, 24, 29, 23, 30, 6, 9, 7, 15, 16, 39, 21, 2, 46, 42, 41, 31, 45, 14, 48, 4, 8, 32, 17, 36, 5, 38, 28, 10, 50, 33, 27, 44, 20, 35, 37, 49, 47]
+objective  [575, 5.0, 34, 46, 1392]
+allocated patients  [11, 34, 24, 29, 23, 30, 6, 9, 7, 15, 16, 39, 21, 2, 46, 42, 41, 31, 45, 14, 48, 4, 8, 32, 17, 36, 5, 38, 28, 10, 50, 33, 27, 44, 20, 47, 35, 37, 49]
 not allocated  [18, 19, 12, 25, 3, 1, 13, 40, 43, 26, 22]
