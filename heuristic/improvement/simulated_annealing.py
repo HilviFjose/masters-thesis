@@ -17,6 +17,7 @@ class SimulatedAnnealing:
         # Sometimes accept worse
         else:
             print("Did not find better solution")
+            accept = False
             """
             # TODO: Legge inn en ny objektivvurdering
             diff = (candidate_objective.total_seconds() -

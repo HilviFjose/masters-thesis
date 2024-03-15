@@ -126,6 +126,7 @@ class ALNS:
                         (1 - self.reaction_factor) + \
                         (self.reaction_factor *
                          d_scores[destroy] / d_count[destroy])
+                    print("d_count destroy", d_count[destroy])
                 for repair in range(len(r_weights)):
                     r_weights[repair] = r_weights[repair] * \
                         (1 - self.reaction_factor) + \

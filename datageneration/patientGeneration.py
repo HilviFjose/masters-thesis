@@ -85,7 +85,7 @@ def patientGenerator(df_employees):
             }, ignore_index=True)
         
     # Update patient allocation based on number of employees
-    #i stedet for at allocation skal være satt av en sannsynlighet må det justeres for hvor mange ansatte det er. 
+    #i stedet for at allocation skal være satt av en sannsynlighet må det justeres for hvor mange ansatte det er dersom det er for mange pasienter i forhold til ansatte. 
     #Det betyr at ikke flere pasienter enn det er ansatte kan få tallet 1 i allocation, det kan kun være 
     
     # Employee Restrictions
