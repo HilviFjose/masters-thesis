@@ -143,13 +143,15 @@ class ALNS:
     
     def set_operators(self, operators):
         # Add destroy operators
-        self.add_destroy_operator(operators.random_patient_removal)
-        self.add_destroy_operator(operators.random_treatment_removal)
-        self.add_destroy_operator(operators.random_pattern_removal)
-        self.add_destroy_operator(operators.worst_deviation_patient_removal)
-        self.add_destroy_operator(operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(operators.random_visit_removal)
-        self.add_destroy_operator(operators.worst_deviation_visit_removal)
+        #self.add_destroy_operator(operators.random_patient_removal)
+        #self.add_destroy_operator(operators.random_treatment_removal)
+        #self.add_destroy_operator(operators.random_pattern_removal)
+        #self.add_destroy_operator(operators.worst_deviation_patient_removal)
+        #self.add_destroy_operator(operators.worst_deviation_treatment_removal)
+        #self.add_destroy_operator(operators.random_visit_removal)
+        #self.add_destroy_operator(operators.worst_deviation_visit_removal)
+        #self.add_destroy_operator(operators.cluster_distance_patients_removal)
+        self.add_destroy_operator(operators.cluster_distance_activities_removal)
 
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)

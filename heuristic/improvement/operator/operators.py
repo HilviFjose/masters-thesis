@@ -52,6 +52,7 @@ class Operators:
         
         #Her fjernes aktivitetne fra visits og treatments dict
         for treatment in destroyed_route_plan.allocatedPatients[selected_patient]: 
+            print('treat', treatment)
             for visit in destroyed_route_plan.treatments[treatment]:
                 removed_activities += destroyed_route_plan.visits[visit]
                 del destroyed_route_plan.visits[visit]
@@ -303,8 +304,7 @@ class Operators:
 
     # ----- Guro start -----    
     def kruskalAlgorithm(self, df):
-        travel_time_matrix = travel_matrix_without_rush(df) 
-        # Konverter reisetidsmatrisen til en graf
+        travel_time_matrix = travel_matrix_without_rush(df)
         G = nx.Graph()
         n = len(travel_time_matrix)  # Antall noder
         for i in range(n):
@@ -322,41 +322,53 @@ class Operators:
 
         # MST er nå delt i to deler, og du kan identifisere komponentene (dvs. de to gruppene av IDer)
         components = list(nx.connected_components(mst))
-        # Finn komponenten med færrest noder (pasienter/treaments/visits)
         shortest_component = min(components, key=len)
-        # Konverter denne komponenten til en liste av IDer (eller indekser)
-        selected_component = list(shortest_component) # selected_component inneholder nå indeksene (eller IDene) til de id'ene som er en del av den minste komponenten
+        longest_component = max(components,key=len)
 
-    def several_patients_removal(self, patients, route_plan):
-        #TODO: Høre med agnes om dykopiering her.
-        #Ikke ferdig funksjonalitet her
-        #Hvordan fungerer slike funksjoner hvor det skal fjernes flere pasienter, treatments eller visits?
-        for patient in patients:
-            return self.patient_removal(patient, route_plan) #Denne skal gjøres for hver pasient i selected patients
+        # Kart for å mappe indekser tilbake til IDer
+        index_to_id = {index: id for index, id in enumerate(df.index)}
+
+        # Konverter indekser til IDer
+        shortest_ids = [index_to_id[index] for index in shortest_component]
+        longest_ids = [index_to_id[index] for index in longest_component]
+
+        return shortest_ids, longest_ids
 
     def cluster_distance_patients_removal(self, current_route_plan):
         allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
+        print('allocated patients', allocatedPatientsIds)
+
         df_selected_patients =  self.constructor.patients_df.loc[allocatedPatientsIds]
 
-        selected_patients = self.kruskalAlgorithm(df_selected_patients)
+        selected_patients = self.kruskalAlgorithm(df_selected_patients)[0]  #Selecting the shortest part of the mst
+        print('selected patients', selected_patients)
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        for patientID in selected_patients: 
+            print('before',destroyed_route_plan.allocatedPatients)
+            destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
+            print('after',destroyed_route_plan.allocatedPatients)
 
-        return  self.several_patients_removal(selected_patients, current_route_plan)
+        return destroyed_route_plan, None, True
 
-    def cluster_distance_treatments_removal(self, current_route_plan):
-        allocatedTreatmentsIds = list(current_route_plan.treatments.keys())
-        df_selected_treatments = self.constructor.treatment_df.loc[allocatedTreatmentsIds]
 
-        selected_treatments = self.kruskalAlgorithm(df_selected_treatments)
-        #Ikke ferdig, må ha return
-        return 
+    def cluster_distance_activities_removal(self, current_route_plan):
+        longest_travel_time = 0
+        activities_in_longest_route = []
+        for day, routes in current_route_plan.routes.items():
+            for route in routes:  
+                if route.travel_time > longest_travel_time:
+                    longest_travel_time = route.travel_time
+                    activities_in_longest_route = [activity.id for activity in route.route]
+            
+        df_selected_activities = self.constructor.activities_df.loc[activities_in_longest_route]
+
+        selected_activities = self.kruskalAlgorithm(df_selected_activities)[1] #Selecting the longest part of the mst
+        print('selected activities ', selected_activities)
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        self.remove_activites_from_route_plan(selected_activities, destroyed_route_plan)
+
+        return destroyed_route_plan, selected_activities, True
     
-    def cluster_distance_visits_removal(self, current_route_plan):
-        allocatedVisitsIds = list(current_route_plan.visits.keys())
-        df_selected_visits = self.constructor.visit_df.loc[allocatedVisitsIds]
-
-        selected_visits = self.kruskalAlgorithm(df_selected_visits)
-        #Ikke ferdig, må ha return
-        return  
     
     # ----- Guro slutt -----
 
