@@ -48,45 +48,52 @@ def locationGenerator(locations, radius_km, num_points):
     return points
 
 def patientGenerator(df_employees):
-    df_patients = pd.DataFrame(columns=['patientId', 'nTreatments', 'utility', 'allocation','employeeRestriction', 'continuityGroup', 'employeeHistory', 'heaviness', 'location'])
-     
-    patientId = []
-    nTreatments = []
-    utility = []
-    allocation = []
-    continuityGroup = []
-    heaviness = []
-
-    #Generate random location for each patient
+    patientIds = list(range(1, construction_config.P_num + 1))
+    
+    # Generate random location for each patient
     locations = locationGenerator(construction_config.refLoc, construction_config.area, construction_config.P_num)
+    
+    # Distribution of number of treatments per patient
+    T_numMax = len(construction_config.T_numProb)  # Max number of activities per visit
+    prob = construction_config.T_numProb  # The probability of the number of activities per visit
+    nTreatments = np.random.choice(range(1, T_numMax + 1), size=construction_config.P_num, p=prob)
+    
+    # Distribution of utility, patient allocation, continuity group and heaviness for patients
+    utility = np.random.choice(range(1, 6), size=construction_config.P_num)
+    continuityGroup = np.random.choice(range(1, 4), size=construction_config.P_num, p=construction_config.continuityDistribution)
+    heaviness = np.random.choice(range(1, 6), size=construction_config.P_num, p=construction_config.heavinessDistribution)
+    allocation = np.random.choice(range(1, 4), size=construction_config.P_num, p=construction_config.allocation)
+    
+    # Prepare DataFrame
+    df_patients = pd.DataFrame({
+        'patientId': patientIds,
+        'nTreatments': nTreatments,
+        'utility': utility,
+        'allocation': allocation,
+        'employeeRestriction': None,  # Assuming no initial restrictions
+        'continuityGroup': continuityGroup,
+        'employeeHistory': None,  # Assuming no initial history
+        'heaviness': heaviness,
+        'location': locations
+    })
 
-    for i in range(construction_config.P_num):
-        patientId.append(i+1)
-        
-        #Distribution of number of treatments per patient
-        T_numMax = len(construction_config.T_numProb)                                                    # Max number of activities per visit
-        prob = construction_config.T_numProb                                                             # The probability of the number of activities per visit
-        nTreatments = np.random.choice(range(1,T_numMax+1), size=construction_config.P_num, p=prob)      # Distribution of the number of activities per visit
-        
-        #Distribution of utility, patient allocation, continuity group and heaviness for patients
-        utility.append(np.random.choice([j+1 for j in range(5)]))
-        continuityGroup.append(np.random.choice([j+1 for j in range(3)], p=construction_config.continuityDistribution))
-        heaviness.append(np.random.choice([j+1 for j in range(5)], p=construction_config.heavinessDistribution))
-        allocation.append(np.random.choice([j+1 for j in range(3)], p=construction_config.allocation)) #First allocation, updated later TODO: Oppdatere format på dette
+    # Update patient allocation if number of patients > 5*number of employees TODO: Må se an denne fordelingen i testing-perioden 
+    num_employees = len(df_employees)
+    if len(df_patients) > num_employees * 5:
+        print("Har endret på pasientallokeringen i datagenereringen")
+        # Calculate maximum patients per allocation category
+        max_alloc_1 = num_employees * 1  # Max patients for allocation 1
+        max_alloc_2 = num_employees * 1  # Max patients for allocation 2
 
-        df_patients = df_patients._append({
-                'patientId': i+1,
-                'nTreatments': nTreatments[i],
-                'utility': utility[i],
-                'allocation': allocation[i],
-                'continuityGroup': continuityGroup[i],
-                'heaviness': heaviness[i],
-                'location' : locations[i]
-            }, ignore_index=True)
-        
-    # Update patient allocation based on number of employees
-    #i stedet for at allocation skal være satt av en sannsynlighet må det justeres for hvor mange ansatte det er dersom det er for mange pasienter i forhold til ansatte. 
-    #Det betyr at ikke flere pasienter enn det er ansatte kan få tallet 1 i allocation, det kan kun være 
+        # Sort by utility for allocation adjustment TODO: Se på hva vi ønsker her
+        sorted_patients = df_patients.sort_values(by='utility', ascending=False)
+
+        # Reset allocations based on priority and limits
+        sorted_patients['allocation'] = 3  # Default to allocation 3
+        sorted_patients.iloc[:max_alloc_1, sorted_patients.columns.get_loc('allocation')] = 1
+        sorted_patients.iloc[max_alloc_1:max_alloc_1+max_alloc_2, sorted_patients.columns.get_loc('allocation')] = 2
+
+        df_patients = sorted_patients
     
     # Employee Restrictions
     num_restricted_patients = int(len(df_patients) * construction_config.employeeRestrict)      # 5 % of the patients have a restriction against an employee
@@ -94,9 +101,9 @@ def patientGenerator(df_employees):
     
     for index in restricted_patient_indices:
         random_employee_id = np.random.choice(df_employees['employeeId'])   # Random employees 
-        list = []
-        list.append(random_employee_id)
-        df_patients.at[index, 'employeeRestriction'] = list
+        list_employees = []
+        list_employees.append(random_employee_id)
+        df_patients.at[index, 'employeeRestriction'] = list_employees
 
     # Employee history  TODO: Må potensielt oppdatere format på dette
     num_history_patients = int(len(df_patients) * construction_config.employeeHistory)          # 90 % of the patients have a treatment history with some employees
@@ -128,7 +135,7 @@ def patientGenerator(df_employees):
     return df_patients
 
 def treatmentGenerator(df_patients):
-    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 't_complexity'])
+    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity'])
 
     # Generate rows for each treatment with the patientId
     expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
@@ -149,27 +156,27 @@ def treatmentGenerator(df_patients):
         if row['patternType'] == 1:
             df_treatments.at[index, 'pattern'] = construction_config.patterns_5days
             df_treatments.at[index, 'visits'] = 5
-            df_treatments.at[index, 't_complexity'] = 1
+            df_treatments.at[index, 'pattern_complexity'] = 1
         elif row['patternType'] == 2:
             df_treatments.at[index, 'pattern'] = construction_config.patterns_4days
             df_treatments.at[index, 'visits'] = 4
-            df_treatments.at[index, 't_complexity'] = 3
+            df_treatments.at[index, 'pattern_complexity'] = 3
         elif row['patternType'] == 3:
             df_treatments.at[index, 'pattern'] = construction_config.patterns_3days
             df_treatments.at[index, 'visits'] = 3
-            df_treatments.at[index, 't_complexity'] = 2
+            df_treatments.at[index, 'pattern_complexity'] = 2
         elif row['patternType'] == 4:
             df_treatments.at[index, 'pattern'] = construction_config.pattern_2daysspread
             df_treatments.at[index, 'visits'] = 2
-            df_treatments.at[index, 't_complexity'] = 4
+            df_treatments.at[index, 'pattern_complexity'] = 4
         elif row['patternType'] == 5:
             df_treatments.at[index, 'pattern'] = construction_config.patterns_2daysfollowing
             df_treatments.at[index, 'visits'] = 2
-            df_treatments.at[index, 't_complexity'] = 4
+            df_treatments.at[index, 'pattern_complexity'] = 4
         else:
             df_treatments.at[index, 'pattern'] = construction_config.patterns_1day
             df_treatments.at[index, 'visits'] = 1
-            df_treatments.at[index, 't_complexity'] = 5
+            df_treatments.at[index, 'pattern_complexity'] = 5
 
     file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
     df_treatments.to_csv(file_path, index=False)
@@ -386,36 +393,81 @@ def activitiesGenerator(df_visits):
             df_activities.loc[shuffled_indices[:half_point], 'skillRequirement'] = 2
             df_activities.loc[shuffled_indices[half_point:], 'skillRequirement'] = 3       
     
-    # Generate complexity for treatments
-    results = []
-    for treatmentId, treatment_group in df_activities.groupby('treatmentId'):
+    # Generate complexity for treatments, visits and activities
+    # Activity complexity - only based on duration and time windows
+    df_activities['a_complexity'] = round((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration'])
+    for treatmentId, treatment_group in df_activities.groupby('treatmentId'):       
         treatmentDuration = 0
         treatmentTimeWindow = 0
-        numActInTreat = len(treatment_group)
-        numActWithPrece = treatment_group['nextPrece'].notna().sum()
-        preceRatio = 0
-        if numActWithPrece > 0:     
-            preceRatio = numActInTreat / numActWithPrece        
-
+               
         for visitId, visit_group in treatment_group.groupby('visitId'):
+            # Precedence visit
+            v_preceRatio = 0
+            if visit_group['nextPrece'].notna().sum() > 0:
+                v_preceRatio = len(visit_group) / visit_group['nextPrece'].notna().sum()
+            
+            # Duration and time windows ratio - Visit
             visit_duration = visit_group['duration'].sum()
             treatmentDuration += visit_duration
             visitTimeWindow = visit_group['latestStartTime'].max() - visit_group['earliestStartTime'].min()
             treatmentTimeWindow += visitTimeWindow
-        
-        timeRatio = round(treatmentTimeWindow / treatmentDuration, 1)
+            v_timeRatio = round(treatmentTimeWindow / treatmentDuration, 1)
 
-        complexity = int(numActInTreat + preceRatio + timeRatio)
+            # Visit complexity
+            v_complexity = len(visit_group) + v_timeRatio + v_preceRatio #TODO: Finne en måte å regne ut denne på
+            df_activities.loc[df_activities['visitId'] == visitId, 'v_complexity'] = v_complexity
 
-        df_activities.loc[df_activities['treatmentId'] == treatmentId, 'numActInTreat'] = numActInTreat
-        df_activities.loc[df_activities['treatmentId'] == treatmentId, 'preceRatio'] = preceRatio
-        df_activities.loc[df_activities['treatmentId'] == treatmentId, 'timeRatio'] = timeRatio
-        df_activities.loc[df_activities['treatmentId'] == treatmentId, 'a_complexity'] = complexity
+        # Duration and time windows ratio - Treatment
+        t_timeRatio = round(treatmentTimeWindow / treatmentDuration, 1)
+
+        # Precedence treatment
+        numActInTreat = len(treatment_group)
+        numActWithPrece = treatment_group['nextPrece'].notna().sum()
+        t_preceRatio = 0
+        if numActWithPrece > 0:     
+            t_preceRatio = numActInTreat / numActWithPrece 
+
+        # Treatment complexity
+        t_complexity = int(numActInTreat + t_preceRatio + t_timeRatio) #TODO: Finne en måte å regne ut denne på
+        #df_activities.loc[df_activities['treatmentId'] == treatmentId, 'numActInTreat'] = numActInTreat
+        #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_preceRatio'] = t_preceRatio
+        #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_timeRatio'] = t_timeRatio
+        df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_complexity'] = t_complexity
 
     file_path = os.path.join(os.getcwd(), 'data', 'activities.csv')
     df_activities.to_csv(file_path, index=False)
 
     return df_activities
+
+def autofillVisit(df_visits, df_activities):
+    # Adding complexity to df_treatments calculated in df_activities
+    v_complexity = df_activities[['visitId', 'v_complexity']].drop_duplicates()
+    df_visits_merged = pd.merge(df_visits, v_complexity, on='visitId', how='left')
+
+    #Adding acitivity ids
+    activities_grouped = df_activities.groupby('visitId')['activityId'].apply(list).reset_index(name='activitiesIds')
+    df_visits_merged = pd.merge(df_visits_merged, activities_grouped, on='visitId', how='left')
+
+    file_path = os.path.join(os.getcwd(), 'data', 'visits.csv')
+    df_visits_merged.to_csv(file_path, index=False)
+    return df_visits_merged
+
+def autofillTreatment(df_treatments, df_visits, df_activities):
+    # Adding complexity to df_treatments calculated in df_activities
+    t_complexity = df_activities[['treatmentId', 't_complexity']].drop_duplicates()
+    df_treatments_merged = pd.merge(df_treatments, t_complexity, on='treatmentId', how='left')
+
+    # Calculating complexity based on complexity in df_activities and df_treatments
+    df_treatments_merged['complexity'] = df_treatments_merged['pattern_complexity'] + df_treatments_merged['t_complexity']
+
+    # Adding visits Ids to df_treatments
+    visits_grouped = df_visits.groupby('treatmentId')['visitId'].apply(list).reset_index(name='visitsIds')
+    df_treatments_merged = pd.merge(df_treatments_merged, visits_grouped, on='treatmentId', how='left')
+
+    file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
+    df_treatments_merged.to_csv(file_path, index=False)
+    
+    return df_treatments_merged
 
 def autofillPatient(df_patients, df_treatments):
     #Treatment IDs
@@ -430,35 +482,15 @@ def autofillPatient(df_patients, df_treatments):
 
     #Aggregated Utility - patient utility times the number of visits per patient
     df_patients_merged['aggUtility'] = df_patients_merged['nVisits'] * df_patients_merged['utility']
+
+    # Adding complexity to df_patients as the complexity in sum of the complexity of all treatments per patient
+    p_complexity = df_treatments.groupby('patientId')['complexity'].sum().reset_index(name='p_complexity')
+    df_patients_merged = pd.merge(df_patients_merged, p_complexity, on='patientId', how='left')
     
     file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
     df_patients_merged.to_csv(file_path, index=False)
 
     return df_patients_merged
-
-def autofillTreatment(df_treatments, df_visits, df_activities):
-    # Adding complexity calculated in df_activities
-    a_complexity = df_activities[['treatmentId', 'a_complexity']].drop_duplicates()
-    df_treatments_merged = pd.merge(df_treatments, a_complexity, on='treatmentId', how='left')
-
-    # Calculating complexity based on complexity in df_activities and df_treatments
-    df_treatments_merged['complexity'] = df_treatments_merged['a_complexity'] + df_treatments_merged['t_complexity']
-
-    # Adding visits Ids to df_treatments
-    visits_grouped = df_visits.groupby('treatmentId')['visitId'].apply(list).reset_index(name='visitsIds')
-    df_treatments_merged = pd.merge(df_treatments_merged, visits_grouped, on='treatmentId', how='left')
-
-    file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
-    df_treatments_merged.to_csv(file_path, index=False)
-    
-    return df_treatments_merged
-
-def autofillVisit(df_visits, df_activities):
-    activities_grouped = df_activities.groupby('visitId')['activityId'].apply(list).reset_index(name='activitiesIds')
-    df_visits_merged = pd.merge(df_visits, activities_grouped, on='visitId', how='left')
-    file_path = os.path.join(os.getcwd(), 'data', 'visits.csv')
-    df_visits_merged.to_csv(file_path, index=False)
-    return df_visits_merged
 
 def TimeWindowsWithTravel(df_activities, T_ij):
     T_ij_max = round(max([max(row) for row in T_ij]))          # Max travel distance between two activities

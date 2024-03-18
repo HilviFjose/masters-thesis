@@ -9,8 +9,11 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Include subfolders
 
 from helpfunctions import checkCandidateBetterThanBest
+
+from objects.activity import Activity
 from config.construction_config import *
 from heuristic.improvement.operator.insertor import Insertor
+from parameters import T_ij
 
 #TODO: Finne ut hva operator funksjonene skal returnere 
 class Operators:
@@ -260,50 +263,180 @@ class Operators:
         return destroyed_route_plan, removed_activities, True
 
 
-#Dette er også en treatment removal 
+#RANDOM
+    def random_activity_removal(self, route_plan): 
+        selected_activity = rnd.choice([item for sublist in route_plan.visits.values() for item in sublist])
+        return self.activity_removal(selected_activity, route_plan)
+
+    #TODO: Finne ut hva vi skal ha på worst på aktivitetsnivå 
+    def worst_deviation_activity_removal(self, route_plan): 
+
+        lowest_activity_utility_contribute = 1000 
+        highest_activity_skilldiff_contribute = 0
+        highest_activity_travel_time = 0
+        selected_activity = None 
+        #Her er det kanskje letter å gå gjennom aktivitene i rutene 
+        for day in range(1, route_plan.days +1): 
+            for route in route_plan.routes[day]: 
+                for activity_index in range(len(route.route)):
+                    activity = route.route[activity_index] 
+                    before_activity_id = 0 
+                    after_actitivy_id = 0 
+                    if activity_index != 0: 
+                        before_activity_id = route.route[activity_index-1].id
+                    if activity_index != len(route.route)-1: 
+                        after_actitivy_id = route.route[activity_index+1].id
+                    activity_utility_contribute = self.constructor.activities_df.loc[activity.id, 'utility']
+                    activity_skilldiff_contribute = route_plan.getRouteSkillLevForActivityID(activity.id) - self.constructor.activities_df.loc[activity.id, 'skillRequirement']
+                    activity_travel_time = T_ij[before_activity_id][activity.id] + T_ij[activity.id][after_actitivy_id] - T_ij[before_activity_id][after_actitivy_id]
+                    if activity_utility_contribute < lowest_activity_utility_contribute or (
+                        activity_utility_contribute == lowest_activity_utility_contribute and activity_skilldiff_contribute > highest_activity_skilldiff_contribute) or (
+                            activity_utility_contribute == lowest_activity_utility_contribute and activity_skilldiff_contribute ==  highest_activity_skilldiff_contribute and activity_travel_time > highest_activity_travel_time):
+                        lowest_activity_utility_contribute = activity_utility_contribute
+                        highest_activity_skilldiff_contribute = activity_skilldiff_contribute
+                        highest_activity_travel_time = activity_travel_time
+                        selected_activity = activity.id
+                      
+                   
+       
+        return self.activity_removal(selected_activity, route_plan)
+
+
+    def activity_removal(self, selected_activity, route_plan):
+
+        destroyed_route_plan = copy.deepcopy(route_plan)
+         
+        print("FJERNER AKTIVITET ", selected_activity)
+        
+        #Vi vet at vi bare har valgt ett visit, så dagen vil være en 
+        original_day = destroyed_route_plan.removeActivityIDgetRemoveDay(selected_activity)
+        
+        
+     
+    #To alternativer
+        #1) Selected activity er en del av et visit der flere aktiviteter ligger inne. -> Legger til i illegalActivity
+        #2) Selected activity er siste som ligger inne på visit, men visit er ikke det siste som ligger inne på treatment. -> Legger til i illegalVisits 
+        #3) Visitet er det siste for ligger inne på treatment. -> Legger til i illegalTreatments
+        #4) Treatmentet er det siste som ligger på pasienten. -> Pasienten ut av allokeringen, pasienten inn i notAllocated 
+
+      
+            #TODO: Finne ut om det har noe å si at det er den første aktivtene som blir flyttet ut 
+
+        
+        last_activity_in_visit = False 
+        visit_for_activity = None 
+        for visit, activities in list(destroyed_route_plan.visits.items()): 
+            if activities == [selected_activity]: 
+                last_activity_in_visit = True 
+            if selected_activity in activities: 
+                visit_for_activity = visit
+                break
+
+        #Alt 1, det er ikke den siste aktiviteten innne i for visitetet 
+        if last_activity_in_visit == False: 
+            #Sjer ingneting på pasientnivå
+            #Sjer ingenting på treatment nivå 
+            destroyed_route_plan.visits[visit_for_activity].remove(selected_activity) #Fjernes fra visit dict 
+            destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[selected_activity] = original_day #Legges til i illegalpå Aktivitet
+            print("illegalNotAllocatedActivitiesWithPossibleDays", destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
+            return destroyed_route_plan, None, True
+
+        
+        last_visit_in_treatment = False
+        treatment_for_visit = None 
+        #Ønsker å finne treatmenten 
+        for treatment, visits in list(destroyed_route_plan.treatments.items()):
+            #Finne treatments i illegalNotAllocatedTreatments som også tilhører pasienten 
+            if visits == [visit_for_activity]: 
+                last_visit_in_treatment = True 
+            if visit_for_activity in visits: 
+                treatment_for_visit = treatment
+                break
+
+
+        #ALTERNATIV 2
+        if last_visit_in_treatment == False: 
+            #Sjer ingenting på pasient nivå
+            destroyed_route_plan.treatments[treatment_for_visit].remove(visit_for_activity) # Visit fjernes fra treatment dict 
+            destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_for_activity] = original_day #Legges til i illegalVisit with possible day 
+            del destroyed_route_plan.visits[visit_for_activity] # Visit fjernes fra visit dict
+            print("illegalNotAllocatedVisitsWithPossibleDays", destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays)
+           
+            return destroyed_route_plan, None, True
+    
+
+        #Legger til treatmentet i illegal 
+        last_treatment_for_patient = False
+        patient_for_treatment = None
+        for patient, treatments in list(destroyed_route_plan.allocatedPatients.items()):
+            if treatments == [treatment_for_visit]:
+                last_treatment_for_patient = True 
+            if treatment_for_visit in treatments: 
+                patient_for_treatment = patient
+                break
+        
+        #TODO: Denn må fjerne flere så blir ikke riktig å ha her 
+        #ALTERNATIV 3 
+        if last_treatment_for_patient == False: 
+            destroyed_route_plan.allocatedPatients[patient_for_treatment].remove(treatment_for_visit) #Treatment fjernes fra pasient 
+            destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit) #Treatment legges til 
+            del destroyed_route_plan.treatments[treatment_for_visit] #treatment fjernes fra treatment list med tilhørende visits
+            del destroyed_route_plan.visits[visit_for_activity] #Fjerne vistet som lå under treatments 
+            print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments)
+         
+            
+            return destroyed_route_plan, None, True
+
+     
+        #AlTERNATIV 4 - dette var siste aktivtet for denne pasienten 
+        destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment) #Legger til pasienten i ikke allokert, 
+        del destroyed_route_plan.allocatedPatients[patient_for_treatment] #Fjerner pasent fra allocated Patenst 
+        del destroyed_route_plan.treatments[treatment_for_visit] #Fjerner treatmetnen fr treatmetns 
+        del destroyed_route_plan.visits[visit_for_activity] #Fjerner visitet 
+        print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
+        return destroyed_route_plan, None, True
+
+
     def random_pattern_removal(self, current_route_plan):
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        #Må endres når vi endrer pattern 
-        selected_pattern = random.randint(1, len(patternTypes))
-        removed_activities = []
-        new_treatments = copy.deepcopy(destroyed_route_plan.treatments)
-        for treatment in destroyed_route_plan.treatments.keys(): 
-            pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
-            if pattern_for_treatment != selected_pattern: 
-                continue
+            destroyed_route_plan = copy.deepcopy(current_route_plan)
+            #Må endres når vi endrer pattern 
+            selected_pattern = random.randint(1, len(patternTypes))
+            removed_activities = []
+            new_treatments = copy.deepcopy(destroyed_route_plan.treatments)
+            for treatment in destroyed_route_plan.treatments.keys(): 
+                pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
+                if pattern_for_treatment != selected_pattern: 
+                    continue
 
-            for visit in destroyed_route_plan.treatments[treatment]:
-                removed_activities += destroyed_route_plan.visits[visit]
-                #Tar bort visitene som ligger i rute planen 
-                del destroyed_route_plan.visits[visit]
+                for visit in destroyed_route_plan.treatments[treatment]:
+                    removed_activities += destroyed_route_plan.visits[visit]
+                    #Tar bort visitene som ligger i rute planen 
+                    del destroyed_route_plan.visits[visit]
 
-            del new_treatments[treatment]
+                del new_treatments[treatment]
 
-            for key, value in list(destroyed_route_plan.allocatedPatients.items()):
-                if value == [treatment]:
-                
-                    del destroyed_route_plan.allocatedPatients[key]
-                    destroyed_route_plan.notAllocatedPatients.append(key)
-                    break
-                if treatment in value: 
-                    destroyed_route_plan.illegalNotAllocatedTreatments += value
-                    break
-        
-        destroyed_route_plan.treatments = new_treatments
+                for key, value in list(destroyed_route_plan.allocatedPatients.items()):
+                    if value == [treatment]:
+                    
+                        del destroyed_route_plan.allocatedPatients[key]
+                        destroyed_route_plan.notAllocatedPatients.append(key)
+                        break
+                    if treatment in value: 
+                        destroyed_route_plan.illegalNotAllocatedTreatments += value
+                        break
+            
+            destroyed_route_plan.treatments = new_treatments
 
-        #Fjerning av aktivitetene skjer tillutt. 
-        for day in range(1, destroyed_route_plan.days +1): 
-            for route in destroyed_route_plan.routes[day]: 
-                for act in route.route: 
-                    if act.id in removed_activities:
-                        route.removeActivityID(act.id)
+            #Fjerning av aktivitetene skjer tillutt. 
+            for day in range(1, destroyed_route_plan.days +1): 
+                for route in destroyed_route_plan.routes[day]: 
+                    for act in route.route: 
+                        if act.id in removed_activities:
+                            route.removeActivityID(act.id)
 
-        
-        destroyed_route_plan.updateObjective()
-        return destroyed_route_plan, removed_activities, True        
-
-        
-
+            
+            destroyed_route_plan.updateObjective()
+            return destroyed_route_plan, removed_activities, True 
 
 #---------- REPAIR OPERATORS ----------
     def greedy_repair(self, destroyed_route_plan):
@@ -311,10 +444,27 @@ class Operators:
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
 
-    
+        #ACTIVITY ILLEGAL (trenger ikke insertor klassen her)
+        activityIterationDict = copy.copy(repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
+        for activityID, day in activityIterationDict.items():
+            activity = Activity(self.constructor.activities_df, activityID)
+            repaired_route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
+            status = repaired_route_plan.addActivityOnDay(activity,day)
+            if status == True: 
+                del repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activityID]
+
+                #Legger til aktiviteten på treatmentet 
+                for i in range(self.constructor.visit_df.shape[0]):
+                    visit = self.constructor.visit_df.index[i] 
+                    if activityID in self.constructor.visit_df.loc[visit, 'activitiesIds']: 
+                        break
+                repaired_route_plan.visits[visit].append(activityID) 
+
+
         #VISIT ILLEGAL 
         #TODO: Her burde presedensen også sjekkes, 
         #For jeg vet ikke hvordan den oppdatere seg basert på det som er i ruten 
+        
         visitInsertor = Insertor(self.constructor, repaired_route_plan)
         for visit in list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()):  
             status = visitInsertor.insert_visit_on_day(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
@@ -329,7 +479,7 @@ class Operators:
                     if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
                         break
                 repaired_route_plan.treatments[treatment].append(visit) 
-            
+          
 
 
 
@@ -362,6 +512,63 @@ class Operators:
       
         return repaired_route_plan
     
+    def random_repair(self, destroyed_route_plan):
+        #Tar bort removed acktivitites, de trenger vi ikk e
+        repaired_route_plan = copy.deepcopy(destroyed_route_plan)
+        
+
+    
+        #VISIT ILLEGAL 
+        #TODO: Her burde presedensen også sjekkes, 
+        #For jeg vet ikke hvordan den oppdatere seg basert på det som er i ruten 
+        
+        visitInsertor = Insertor(self.constructor, repaired_route_plan)
+        for visit in list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()):  
+            status = visitInsertor.insert_visit_on_day(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
+            if status == True: 
+   
+                repaired_route_plan = visitInsertor.route_plan
+                del repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit]
+
+                #Legger til visitet på treatmenten 
+                for i in range(self.constructor.treatment_df.shape[0]):
+                    treatment = self.constructor.treatment_df.index[i] 
+                    if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
+                        break
+                repaired_route_plan.treatments[treatment].append(visit) 
+          
+
+
+
+        #TREATMENT ILLEGAL 
+        treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
+        for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
+           
+            status = treatmentInsertor.insert_treatment(treatment)
+      
+            if status == True: 
+  
+                repaired_route_plan = treatmentInsertor.route_plan
+                repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
+                
+             
+        
+        #Legger til treatmenten på pasienten. 
+                for i in range(self.constructor.patients_df.shape[0]):
+                    patient = self.constructor.patients_df.index[i] 
+                    if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
+                        break
+                repaired_route_plan.allocatedPatients[patient].append(treatment) 
+                
+    
+        #LEGGER TIL PASIENTER 
+        patientInsertor = Insertor(self.constructor, repaired_route_plan)
+        #TODO: Sortere slik at den setter inn de beste først
+        repaired_route_plan = patientInsertor.insertPatients(repaired_route_plan.notAllocatedPatients)
+        repaired_route_plan.updateObjective()
+      
+        return repaired_route_plan
+
     def random_repair(self, destroyed_route_plan):
         #Tar bort removed acktivitites, de trenger vi ikk e
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
@@ -418,5 +625,7 @@ class Operators:
       
         return repaired_route_plan
     
+
+    #TODO: Burde se på en operator som bytter å mye som mulig mellom to ansatte 
 
     #TODO: Burde se på en operator som bytter å mye som mulig mellom to ansatte 
