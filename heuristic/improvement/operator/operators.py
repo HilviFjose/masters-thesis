@@ -436,12 +436,14 @@ class Operators:
             return destroyed_route_plan, removed_activities, True 
 
 #---------- REPAIR OPERATORS ----------
-    def greedy_repair(self, destroyed_route_plan):
-        #TODO: Her burde funskjonene inni kalles fra andre funskjoner 
-        repaired_route_plan = copy.deepcopy(destroyed_route_plan)
-        
+    
 
-        #ACTIVITY ILLEGAL (trenger ikke insertor klassen her)
+    '''
+    Ma forsøke å lage repair funskjoner for repair på de forskjellige lagene 
+
+    TODO: Skal vi ha insertor på hvert nivå, eller kan vi beholde den inserteren som er. 
+    '''
+    def illegal_activity_repair(self, repaired_route_plan): 
         activityIterationDict = copy.copy(repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
         for activityID, day in activityIterationDict.items():
             activity = Activity(self.constructor.activities_df, activityID)
@@ -456,14 +458,12 @@ class Operators:
                     if activityID in self.constructor.visit_df.loc[visit, 'activitiesIds']: 
                         break
                 repaired_route_plan.visits[visit].append(activityID) 
-
-
-        #VISIT ILLEGAL 
-        #TODO: Her burde presedensen også sjekkes, 
-        #For jeg vet ikke hvordan den oppdatere seg basert på det som er i ruten 
-        
+    
+    def illegal_visit_repair(self, repaired_route_plan): 
+        #TODO: Her burde presedensen også sjekkes, usikker på om riktig nå 
         visitInsertor = Insertor(self.constructor, repaired_route_plan)
-        for visit in list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()):  
+        illegal_visit_iteration_list = list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
+        for visit in illegal_visit_iteration_list:  
             status = visitInsertor.insert_visit_on_day(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
             if status == True: 
    
@@ -476,11 +476,8 @@ class Operators:
                     if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
                         break
                 repaired_route_plan.treatments[treatment].append(visit) 
-          
-
-
-
-        #TREATMENT ILLEGAL 
+    
+    def illegal_treatment_repair(self, repaired_route_plan): 
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
            
@@ -491,20 +488,35 @@ class Operators:
                 repaired_route_plan = treatmentInsertor.route_plan
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
                 
-             
-        
         #Legger til treatmenten på pasienten. 
                 for i in range(self.constructor.patients_df.shape[0]):
                     patient = self.constructor.patients_df.index[i] 
                     if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
                         break
                 repaired_route_plan.allocatedPatients[patient].append(treatment) 
-                
+
+        #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
+        #TODO: Må straffe basert på hva som ikke kommer inn. Den funksjonaliteten er ikke riktig 
+    def greedy_repair(self, destroyed_route_plan):
+        #TODO: Her burde funskjonene inni kalles fra andre funskjoner 
+        repaired_route_plan = copy.deepcopy(destroyed_route_plan)
+        
+
+        #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
+        self.illegal_activity_repair(repaired_route_plan)
+
+
+        #VISIT ILLEGAL (forsøker legge inn illegal visits )
+        self.illegal_visit_repair(repaired_route_plan)
+
+        #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
+        self.illegal_treatment_repair(repaired_route_plan)      
     
         #LEGGER TIL PASIENTER 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
-        #TODO: Sortere slik at den setter inn de beste først
-        repaired_route_plan = patientInsertor.insertPatients(repaired_route_plan.notAllocatedPatients)
+        #TODO: Sortere slik at den setter inn de beste først. Den er ikkke grådig nå vel? 
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
+        repaired_route_plan = patientInsertor.insertPatients(sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get))
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
@@ -513,58 +525,55 @@ class Operators:
         #Tar bort removed acktivitites, de trenger vi ikk e
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
+        #TODO: Skal den ha random elementer også i innsettingen av det som er ulovlig 
+        #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
+        self.illegal_activity_repair(repaired_route_plan)
 
+
+        #VISIT ILLEGAL (forsøker legge inn illegal visits )
+        self.illegal_visit_repair(repaired_route_plan)
+
+        #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
+        self.illegal_treatment_repair(repaired_route_plan)      
     
-        #VISIT ILLEGAL 
-        #TODO: Her burde presedensen også sjekkes, 
-        #For jeg vet ikke hvordan den oppdatere seg basert på det som er i ruten 
-        
-        visitInsertor = Insertor(self.constructor, repaired_route_plan)
-        for visit in list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()):  
-            status = visitInsertor.insert_visit_on_day(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
-            if status == True: 
-   
-                repaired_route_plan = visitInsertor.route_plan
-                del repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit]
-
-                #Legger til visitet på treatmenten 
-                for i in range(self.constructor.treatment_df.shape[0]):
-                    treatment = self.constructor.treatment_df.index[i] 
-                    if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
-                        break
-                repaired_route_plan.treatments[treatment].append(visit) 
-          
-
-
-
-        #TREATMENT ILLEGAL 
-        treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
-        for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
-           
-            status = treatmentInsertor.insert_treatment(treatment)
-      
-            if status == True: 
-  
-                repaired_route_plan = treatmentInsertor.route_plan
-                repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
-                
-             
-        
-        #Legger til treatmenten på pasienten. 
-                for i in range(self.constructor.patients_df.shape[0]):
-                    patient = self.constructor.patients_df.index[i] 
-                    if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
-                        break
-                repaired_route_plan.allocatedPatients[patient].append(treatment) 
-                
-    
-        #LEGGER TIL PASIENTER 
+        #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
-        #TODO: Sortere slik at den setter inn de beste først
-        repaired_route_plan = patientInsertor.insertPatients(repaired_route_plan.notAllocatedPatients)
+        randomNotAllocatedPatients = repaired_route_plan.notAllocatedPatients
+        random.shuffle(randomNotAllocatedPatients)
+        repaired_route_plan = patientInsertor.insertPatients(randomNotAllocatedPatients)
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
+    
+
+    def complexity_repair(self, destroyed_route_plan):
+        #Tar bort removed acktivitites, de trenger vi ikk e
+        repaired_route_plan = copy.deepcopy(destroyed_route_plan)
+        
+        
+    
+        #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
+        patientInsertor = Insertor(self.constructor, repaired_route_plan)
+        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'sum_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
+        repaired_route_plan = patientInsertor.insertPatients(sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get))
+        repaired_route_plan.updateObjective()
+
+        #TODO: Skal vi ha disse under i denne
+        #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
+        self.illegal_treatment_repair(repaired_route_plan)  
+
+        #VISIT ILLEGAL (forsøker legge inn illegal visits )
+        self.illegal_visit_repair(repaired_route_plan)
+
+        #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
+        self.illegal_activity_repair(repaired_route_plan)
+      
+        return repaired_route_plan
+    
+
+    '''
+    FORSTÅR IKKE HVA DETTE UNDER ER, KOMMENTERT UT 
+  
 
     def random_repair(self, destroyed_route_plan):
         #Tar bort removed acktivitites, de trenger vi ikk e
@@ -621,8 +630,6 @@ class Operators:
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
-    
+    '''
 
-    #TODO: Burde se på en operator som bytter å mye som mulig mellom to ansatte 
-
-    #TODO: Burde se på en operator som bytter å mye som mulig mellom to ansatte 
+    #TODO: Burde se på en operator som bytter å mye som mulig mellom to ansatte. Hvorfor det? 
