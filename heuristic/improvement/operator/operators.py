@@ -394,46 +394,63 @@ class Operators:
         return destroyed_route_plan, None, True
 
 
+    #TODO: Denne må testes opp mot gammel 
     def random_pattern_removal(self, current_route_plan):
-            destroyed_route_plan = copy.deepcopy(current_route_plan)
-            #Må endres når vi endrer pattern 
-            selected_pattern = random.randint(1, len(patternTypes))
-            removed_activities = []
-            new_treatments = copy.deepcopy(destroyed_route_plan.treatments)
-            for treatment in destroyed_route_plan.treatments.keys(): 
-                pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
-                if pattern_for_treatment != selected_pattern: 
-                    continue
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        #Må endres når vi endrer pattern 
+        selected_pattern = random.randint(1, len(patternTypes))
+        selected_treatments = []
+        for treatment in destroyed_route_plan.treatments.keys(): 
+            pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
+            if pattern_for_treatment == selected_pattern: 
+                selected_treatments.append(treatment)
+        
+        for treatment in selected_treatments: 
+            destroyed_route_plan = self.treatment_removal(treatment, destroyed_route_plan)[0]
+        
+        return destroyed_route_plan, None, True
 
-                for visit in destroyed_route_plan.treatments[treatment]:
-                    removed_activities += destroyed_route_plan.visits[visit]
-                    #Tar bort visitene som ligger i rute planen 
-                    del destroyed_route_plan.visits[visit]
+    
+    def random_pattern_removalG(self, current_route_plan):
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        #Må endres når vi endrer pattern 
+        selected_pattern = random.randint(1, len(patternTypes))
+        removed_activities = []
+        new_treatments = copy.deepcopy(destroyed_route_plan.treatments)
+        for treatment in destroyed_route_plan.treatments.keys(): 
+            pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
+            if pattern_for_treatment != selected_pattern: 
+                continue
 
-                del new_treatments[treatment]
+            for visit in destroyed_route_plan.treatments[treatment]:
+                removed_activities += destroyed_route_plan.visits[visit]
+                #Tar bort visitene som ligger i rute planen 
+                del destroyed_route_plan.visits[visit]
 
-                for key, value in list(destroyed_route_plan.allocatedPatients.items()):
-                    if value == [treatment]:
-                    
-                        del destroyed_route_plan.allocatedPatients[key]
-                        destroyed_route_plan.notAllocatedPatients.append(key)
-                        break
-                    if treatment in value: 
-                        destroyed_route_plan.illegalNotAllocatedTreatments += value
-                        break
-            
-            destroyed_route_plan.treatments = new_treatments
+            del new_treatments[treatment]
 
-            #Fjerning av aktivitetene skjer tillutt. 
-            for day in range(1, destroyed_route_plan.days +1): 
-                for route in destroyed_route_plan.routes[day]: 
-                    for act in route.route: 
-                        if act.id in removed_activities:
-                            route.removeActivityID(act.id)
+            for key, value in list(destroyed_route_plan.allocatedPatients.items()):
+                if value == [treatment]:
+                
+                    del destroyed_route_plan.allocatedPatients[key]
+                    destroyed_route_plan.notAllocatedPatients.append(key)
+                    break
+                if treatment in value: 
+                    destroyed_route_plan.illegalNotAllocatedTreatments += value
+                    break
+        
+        destroyed_route_plan.treatments = new_treatments
 
-            
-            destroyed_route_plan.updateObjective()
-            return destroyed_route_plan, removed_activities, True 
+        #Fjerning av aktivitetene skjer tillutt. 
+        for day in range(1, destroyed_route_plan.days +1): 
+            for route in destroyed_route_plan.routes[day]: 
+                for act in route.route: 
+                    if act.id in removed_activities:
+                        route.removeActivityID(act.id)
+
+        
+        destroyed_route_plan.updateObjective()
+        return destroyed_route_plan, removed_activities, True 
 
 #---------- REPAIR OPERATORS ----------
     def greedy_repair(self, destroyed_route_plan):
