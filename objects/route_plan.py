@@ -9,28 +9,7 @@ import copy
 import random 
 import datetime
 
-'''
-Info: 
-Dette er selve løsningen som inneholder routes. 
-'''
-'''
-class RoutePlan:
-    def __init__(self, days, employee_df):
-        self.routes = {day: [] for day in range(1, days+1)}
-        for  key, value in employee_df.iterrows():
-            emp = Employee(employee_df, key)
-            for day in self.routes: 
-                self.routes[day].append(Route(day, emp))
-        self.days = days 
-        self.objective = [0,0,0,0,0]
-        self.treatments = {}
-        self.visits = {}
-        self.allocatedPatients = {}
-        self.notAllocatedPatients = []
-        self.illegalNotAllocatedTreatments = []
 
-        #self.rev = True #Dersom vi ønsker å reversere listene (Sorterer heller listene annerledes nå)
-'''
 class RoutePlan:
     def __init__(self, days, employee_df):
         self.employee_df = employee_df
@@ -59,6 +38,7 @@ class RoutePlan:
         self.notAllocatedPatients = []
         self.illegalNotAllocatedTreatments = []
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
+        self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
 
     def addActivityOnDay(self, activity, day):
@@ -438,3 +418,15 @@ class RoutePlan:
                 for act in route.route: 
                     if act.id == activityID: 
                         return route.skillLev
+                    
+    def removeActivityIDgetRemoveDay(self, activityID):
+        #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
+        #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route:
+                    if act.id == activityID: 
+                        route.removeActivityID(activityID)
+                        #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
+                        self.updateDependentActivitiesBasedOnRoutePlanOnDay(act, day)
+                        return day
