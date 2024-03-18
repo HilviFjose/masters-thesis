@@ -8,6 +8,7 @@ from objects.route import Route
 import copy
 import random 
 import datetime
+from config.construction_config import depot
 
 
 class RoutePlan:
@@ -40,6 +41,20 @@ class RoutePlan:
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
+    def sortRoutesByAcitivyLocation(self, routes, activity):
+        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
+      
+        split_strings = str(activity.location).strip("()").split(", ")
+
+            # Convert to float and create a tuple
+        activity_coordinates = tuple(float(num) for num in split_strings)
+        if activity_coordinates == depot: 
+            return random.shuffle(routes)
+   
+        return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity_coordinates[0]) + abs(route.averageLocation[1]- activity_coordinates[1]))
+
+
+            
 
     def addActivityOnDay(self, activity, day):
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
@@ -53,50 +68,6 @@ class RoutePlan:
 
         Return: 
         True/False på om innsettingen av aktiviteten var velykket 
-        '''
-
-        ''' #GAMMEL METODE - Reverserer rekkefølgen på routes for å ikke alltid begynne med samme ansatt på den gitte dagen
-        if self.rev == True:
-            routes =  reversed(self.routes[day])
-            self.rev = False
-        else: 
-            routes = self.routes[day]
-            self.rev = True
-        '''
-        '''
-         #GAMMEL METODE - Itererer helt tilfeldig
-        routes = self.routes[day]
-        index_random = [i for i in range(len(routes))]
-        random.shuffle(index_random)
-
-        for index in index_random: #Disse to linjene erstattes med første linje i for-løkken nedenfor
-            route = routes[index]
-            old_skillDiffObj = route.aggSkillDiff
-            old_travel_time = route.travel_time
-
-            #TODO: Update funskjonene burde sjekkes med de andre   
-            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
-            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
-            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
-            
-            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
-            
-            self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-         
-            insertStatus = route.addActivity(activity)
-            
-            if insertStatus == True: 
-                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
-                #Må gjøres på alle fordi alle kan ha blitt flyttet
-                for possiblyMovedActivity in route.route: 
-                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
-            
-                self.objective[3] -= old_skillDiffObj
-                self.objective[3] += route.aggSkillDiff
-                self.objective[4] -= old_travel_time
-                self.objective[4] += route.travel_time
-                return True
-        return False
         '''
         # Grupperer ruter basert på profesjonen til den ansatte
         routes_grouped_by_skill = {}
@@ -112,12 +83,23 @@ class RoutePlan:
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
+            #TODO: Sortere hvor mange som er 
+            print("--------------")
+            print("routes_for_skill", routes_for_skill)
+            routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
             #random.shuffle(routes_for_skill)
-            routes += routes_for_skill
+            try:
+                routes += routes_for_skill
+            except: 
+                print("routes", routes)
+                print("routes_for_skill", routes_for_skill)
+            #For å omrokkere på de som er fra før 
             #if act_skill_level == 2: 
-            #    random.shuffle(routes)
+            #   random.shuffle(routes)
   
-
+        '''
+        Har hatt det random for hver som settes inn tidligere. Usikkert hva som er mest effektivit av det og å 
+        '''
     
      
         #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 

@@ -9,6 +9,7 @@ from objects.activity import Activity
 from parameters import T_ij
 import math
 import copy 
+from config.construction_config import depot
 
 class Route:
     def __init__(self, day, employee):
@@ -22,9 +23,19 @@ class Route:
         self.aggSkillDiff = 0 
         self.totalHeaviness = 0        
         self.suitability = 0
+        #TODO: Må finne ut hvordan man vil ha det med depoet. Nå vil depoet fortrekkes ovenfor en aktivitet som allerde har noen ute. 
+        #Men det er vel kanskje fint for å få moblisert de som ikke har fått noen enda 
+        self.locations = []
+        self.averageLocation = depot
 
 
+    '''
+    Ønsker å sortere rutene etter den som har best lokasjon i forhold til aktiviteten som skal legges inn.
+    Hvordan skal det sees i sammenheng med hvordan det velges nå. Må vel fortsatt kunn være på skill? 
 
+    TODO: Oppdater gjennomsnittslokasjonen når nye aktiviteter puttes inn. 
+    Dersom den får noen andre aktiviter enn depoet, så settes den 
+    '''
 
 #TODO: Denne klassen kan omstrukturers slik at addActivity bruker add activity on index. Slik at det blir færre funskjoner
     def addActivity(self, activity_in):
@@ -65,6 +76,9 @@ class Route:
                 max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j.getID()]) <= j.getStartTime()):  
                 activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
                 self.route = np.insert(self.route, index_count, activity)
+                if activity.location != depot: 
+                    self.locations.append(activity.location)
+                    self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
                 return True
          
             
@@ -74,7 +88,10 @@ class Route:
                 S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][j.getID()]) <= j.getStartTime()): 
                 activity.setStartTime(S_i + D_i + math.ceil(T_ia))
                 self.route = np.insert(self.route, index_count, activity)
-       
+                if activity.location != depot: 
+                    self.locations.append(activity.location)
+                    self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+      
                 return True
             S_i = j.getStartTime()
             T_ia = math.ceil(T_ij[j.getID()][activity.getID()])
@@ -95,7 +112,10 @@ class Route:
             max(activity.earliestStartTime, activity.getNewEarliestStartTime())+ activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
             self.route = np.insert(self.route, index_count, activity)
-          
+            if activity.location != depot: 
+                self.locations.append(activity.location)
+                self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+    
             return True
    
         if (activity.possibleToInsert == True) and (
@@ -104,7 +124,10 @@ class Route:
             S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(S_i + D_i + math.ceil(T_ia))
             self.route = np.insert(self.route, index_count, activity)
-           
+            if activity.location != depot: 
+                self.locations.append(activity.location)
+                self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+        
             return True
 
         return False 
@@ -200,6 +223,10 @@ class Route:
             max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.getDuration() + math.ceil(T_ij[activity.getID()][j_id]) <= S_j): 
             activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
             self.route = np.insert(self.route, index, activity)
+            if activity.location != depot: 
+                self.locations.append(activity.location)
+                self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+    
             return True
         
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia and (
@@ -207,6 +234,10 @@ class Route:
             S_i + D_i + T_ia + activity.getDuration() + math.ceil(T_ij[activity.getID()][j_id]) <= S_j): 
             activity.setStartTime(S_i + D_i + math.ceil(T_ia))
             self.route = np.insert(self.route, index, activity)
+            if activity.location != depot: 
+                self.locations.append(activity.location)
+                self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+      
             return True
         return False 
     
@@ -216,6 +247,10 @@ class Route:
             max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(max(activity.earliestStartTime, activity.getNewEarliestStartTime()))
             self.route = np.insert(self.route, 0, activity)
+            if activity.location != depot: 
+                self.locations.append(activity.location)
+                self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+    
             return True
    
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= self.start_time + T_ij[0][activity.id] and (
@@ -223,6 +258,10 @@ class Route:
             self.start_time + T_ij[0][activity.id] + activity.getDuration() + math.ceil(T_ij[activity.getID()][0]) <= self.end_time): 
             activity.setStartTime(self.start_time + math.ceil(T_ij[0][activity.id]))
             self.route = np.insert(self.route, 0, activity)
+            if activity.location != depot: 
+                self.locations.append(activity.location)
+                self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+      
             return True
         return False 
     
