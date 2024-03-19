@@ -201,6 +201,9 @@ class RoutePlan:
             print("objective ", self.objective)
             print("allocated patients ", list(self.allocatedPatients.keys()))
             print("not allocated ", self.notAllocatedPatients)
+            print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
+            print("illegalNotAllocatedVisits", list(self.illegalNotAllocatedVisitsWithPossibleDays.keys()))
+            print("illegalNotAllocatedActivities", list(self.illegalNotAllocatedActivitiesWithPossibleDays.keys()))
 
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
