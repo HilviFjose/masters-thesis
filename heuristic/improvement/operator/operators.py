@@ -4,6 +4,8 @@ import math
 import numpy.random as rnd 
 import random 
 import networkx as nx
+from sklearn.cluster import KMeans
+
 
 import os
 import sys
@@ -486,12 +488,55 @@ class Operators:
 
         return shortest_ids, longest_ids
 
+    def k_means_clustering(self, df, location_col='location', n_clusters=2):
+        """
+        Clusters activities based on their geographical coordinates using k-means clustering.
+        n_clusters: Number of clusters to divide the data into, default is 2.
+
+        Returns:
+        - A list of indices for the activities in the smallest cluster.
+        """
+
+        # Preprocess data: location-column both string and tuple as type
+        coordinates = []
+        for x in df[location_col]:
+            if isinstance(x, str):
+                # Hvis x er en streng, fjern parenteser og splitt
+                lat_str, lon_str = x.strip("()").split(",")
+                lat, lon = float(lat_str), float(lon_str)
+            elif isinstance(x, tuple):
+                # Hvis x er en tuple, bruk verdien direkte
+                lat, lon = x
+            else:
+                raise ValueError("Ukjent datatype i 'location'-kolonnen")
+            coordinates.append((lat, lon))
+        
+        coordinates = np.array(coordinates)
+        
+        # Perform k-means clustering
+        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(coordinates)
+        labels = kmeans.labels_
+
+        # Identify and select the indices of the activities in the smallest cluster
+        df['cluster_label'] = labels  # Temporarily add a column for cluster labels
+        cluster_sizes = df['cluster_label'].value_counts()
+        smallest_cluster_label = cluster_sizes.idxmin()
+        selected_indices = df[df['cluster_label'] == smallest_cluster_label].index.tolist()
+        
+        # Remove the temporary column
+        df.drop(columns=['cluster_label'], inplace=True)
+
+        return selected_indices
+
+
     def cluster_distance_patients_removal(self, current_route_plan):
         allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
 
         df_selected_patients =  self.constructor.patients_df.loc[allocatedPatientsIds]
 
-        selected_patients = self.kruskalAlgorithm(df_selected_patients)[0]  #Selecting the shortest part of the mst
+        #selected_patients = self.kruskalAlgorithm(df_selected_patients)[0]  #Selecting the shortest part of the mst       
+        selected_patients = self.k_means_clustering(df_selected_patients)
+
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for patientID in selected_patients: 
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
@@ -510,14 +555,15 @@ class Operators:
             
         df_selected_activities = self.constructor.activities_df.loc[activities_in_longest_route]
 
-        selected_activities = self.kruskalAlgorithm(df_selected_activities)[1] #Selecting the longest part of the mst
+        #selected_activities = self.kruskalAlgorithm(df_selected_activities)[1] #Selecting the longest part of the mst
+        selected_activities = self.k_means_clustering(df_selected_activities)
+
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         self.remove_activites_from_route_plan(selected_activities, destroyed_route_plan)
 
         return destroyed_route_plan, selected_activities, True
     
     
-
 #---------- REPAIR OPERATORS ----------
     
 

@@ -8,7 +8,7 @@ from config import construction_config
 
 
 # DATA GENERATION
-
+'''
 df_employees = employeeGeneration.employeeGenerator() 
 df_patients_not_complete = patientGeneration.patientGenerator(df_employees)
 df_treatments_not_complete = patientGeneration.treatmentGenerator(df_patients_not_complete)
@@ -43,7 +43,7 @@ file_path_visits = os.path.join(os.getcwd(), 'data', 'visits.pkl')
 df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
-'''
+
 '''
 #TEST DATA - not randomly generated
 df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
@@ -65,5 +65,4 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 #Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
 df_activities = patientGeneration.TimeWindowsWithTravel(df_activities, T_ij)
 
-#UPDATING DATA
-df_activities
+
