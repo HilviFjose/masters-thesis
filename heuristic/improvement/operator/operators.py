@@ -55,7 +55,6 @@ class Operators:
         
         #Her fjernes aktivitetne fra visits og treatments dict
         for treatment in destroyed_route_plan.allocatedPatients[selected_patient]: 
-            print('treat', treatment)
             for visit in destroyed_route_plan.treatments[treatment]:
                 removed_activities += destroyed_route_plan.visits[visit]
                 del destroyed_route_plan.visits[visit]
@@ -489,17 +488,13 @@ class Operators:
 
     def cluster_distance_patients_removal(self, current_route_plan):
         allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
-        print('allocated patients', allocatedPatientsIds)
 
         df_selected_patients =  self.constructor.patients_df.loc[allocatedPatientsIds]
 
         selected_patients = self.kruskalAlgorithm(df_selected_patients)[0]  #Selecting the shortest part of the mst
-        print('selected patients', selected_patients)
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for patientID in selected_patients: 
-            print('before',destroyed_route_plan.allocatedPatients)
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
-            print('after',destroyed_route_plan.allocatedPatients)
 
         return destroyed_route_plan, None, True
 
@@ -516,7 +511,6 @@ class Operators:
         df_selected_activities = self.constructor.activities_df.loc[activities_in_longest_route]
 
         selected_activities = self.kruskalAlgorithm(df_selected_activities)[1] #Selecting the longest part of the mst
-        print('selected activities ', selected_activities)
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         self.remove_activites_from_route_plan(selected_activities, destroyed_route_plan)
 
@@ -643,7 +637,7 @@ class Operators:
     
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
-        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'sum_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
+        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
         repaired_route_plan = patientInsertor.insertPatients(sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get))
         repaired_route_plan.updateObjective()
 
