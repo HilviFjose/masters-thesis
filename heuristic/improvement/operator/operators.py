@@ -560,6 +560,7 @@ class Operators:
                         break
                 repaired_route_plan.treatments[treatment].append(visit) 
     
+
     def illegal_treatment_repair(self, repaired_route_plan): 
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
@@ -578,6 +579,13 @@ class Operators:
                         break
                 repaired_route_plan.allocatedPatients[patient].append(treatment) 
 
+    
+    def illegal_patient_repair(self, repaired_route_plan): 
+        patientInsertor = Insertor(self.constructor, repaired_route_plan)
+        repaired_route_plan = patientInsertor.insertPatients(repaired_route_plan.illegalNotAllocatedPatients)
+
+
+
         #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
         #TODO: Må straffe basert på hva som ikke kommer inn. Den funksjonaliteten er ikke riktig 
     def greedy_repair(self, destroyed_route_plan):
@@ -594,12 +602,16 @@ class Operators:
 
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
         self.illegal_treatment_repair(repaired_route_plan)      
+
+        #ILLEGAL PATIENT 
+        self.illegal_patient_repair(repaired_route_plan)
     
         #LEGGER TIL PASIENTER 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
         #TODO: Sortere slik at den setter inn de beste først. Den er ikkke grådig nå vel? 
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
         repaired_route_plan = patientInsertor.insertPatients(sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get))
+        
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
@@ -617,7 +629,10 @@ class Operators:
         self.illegal_visit_repair(repaired_route_plan)
 
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
-        self.illegal_treatment_repair(repaired_route_plan)      
+        self.illegal_treatment_repair(repaired_route_plan)     
+
+        #ILLEGAL PATIENT 
+        self.illegal_patient_repair(repaired_route_plan) 
     
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -641,6 +656,9 @@ class Operators:
         repaired_route_plan = patientInsertor.insertPatients(sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get))
         repaired_route_plan.updateObjective()
 
+        #ILLEGAL PATIENT 
+        self.illegal_patient_repair(repaired_route_plan)
+        
         #TODO: Skal vi ha disse under i denne
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
         self.illegal_treatment_repair(repaired_route_plan)  

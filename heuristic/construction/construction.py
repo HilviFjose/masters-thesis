@@ -36,12 +36,14 @@ class ConstructionHeuristic:
         '''
 
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by="aggUtility", ascending=False)
+        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
+
         
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
+            allocation = unassigned_patients.loc[patient, 'allocation']
             
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
@@ -64,14 +66,16 @@ class ConstructionHeuristic:
                 #Pasienten legges til i hjemmsykehusets liste med pasienter
                 self.listOfPatients.append(patient)
                 
-                #Oppdaterer ruteplanen 
-                
 
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
+            #TODO: Hva trenger egentlig å konstrueres i dette
             if state == False: 
                 self.unAssignedPatients.append(patient)
-                self.route_plan.notAllocatedPatients.append(patient)
+                if allocation == 0: 
+                    self.route_plan.notAllocatedPatients.append(patient)
+                else: 
+                    self.route_plan.illegalNotAllocatedPatients.append(patient)
         
         #TODO: Oppdatere alle dependencies når vi har konstruert løsning 
         for day in range(1, 1+ self.days): 

@@ -36,6 +36,7 @@ class RoutePlan:
         self.visits = {}
         self.allocatedPatients = {}
         self.notAllocatedPatients = []
+        self.illegalNotAllocatedPatients = []
         self.illegalNotAllocatedTreatments = []
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
@@ -200,7 +201,8 @@ class RoutePlan:
             self.updateObjective()
             print("objective ", self.objective)
             print("allocated patients ", list(self.allocatedPatients.keys()))
-            print("not allocated ", self.notAllocatedPatients)
+            print("notAllocatedPatients ", self.notAllocatedPatients)
+            print("illegalNotAllocatedPatients ", self.illegalNotAllocatedPatients)
             print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
             print("illegalNotAllocatedVisits", list(self.illegalNotAllocatedVisitsWithPossibleDays.keys()))
             print("illegalNotAllocatedActivities", list(self.illegalNotAllocatedActivitiesWithPossibleDays.keys()))
