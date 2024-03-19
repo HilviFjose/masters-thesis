@@ -316,7 +316,6 @@ class RoutePlan:
 
         self.weeklyHeaviness = sum(weekly_diffs)
 
-
     def calculateDailyHeaviness(self):
         daily_diffs = []
         for day, routes in self.routes.items():    
@@ -330,7 +329,6 @@ class RoutePlan:
             for profession, heaviness in profession_groups.items():
                 daily_diffs.append(max(heaviness) - min(heaviness))
         self.dailyHeaviness = sum(daily_diffs)
-
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 

@@ -88,7 +88,6 @@ class ALNS:
             candidate_route_plan = r_operator(
                 destroyed_route_plan)
             
-            
             r_count[repair] += 1
 
             # Local search if solution is promising
@@ -102,7 +101,13 @@ class ALNS:
                 #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
                 #self.current_route_plan = copy.deepcopy(candidate_route_plan)
                 #self.current_objective = copy.deepcopy(candidate_route_plan.objective)
-        
+            '''
+            if checkCandidateBetterThanBest(candidate_route_plan.objective, self.best_route_plan.objective): 
+                print("ny bedre kandidat")
+                self.best_route_plan = copy.deepcopy(candidate_route_plan)
+
+            '''
+
             # Konverterer til hexa-string for å sjekke om vi har samme løsning. Evaluerer og scores oppdateres kun hvis vi har en løsning som ikke er funnet før
             if hash(str(candidate_route_plan)) == hash(str(current_route_plan)) and hash(str(candidate_route_plan)) in found_solutions.keys():
                 already_found = True
@@ -110,6 +115,12 @@ class ALNS:
                 found_solutions[hash(str(current_route_plan))] = 1
 
             if not already_found:
+                # Add penalty to first objective if the solution is illegal
+                # PENALTY: Beregn straff for ulovlige løsninger og oppdater kandidatens objektiv
+                penalty, updated_first_objective = self.calculatePenaltyIllegalSolution(candidate_route_plan, self.iterationNum, num_iterations)
+                candidate_route_plan.objective[0] = updated_first_objective #TODO: Undersøke om vi må ta vare på det opprinnelige objektivet eller ikke
+                if penalty != 0:
+                    print("First objective was updated with penalty ", penalty)
                 # Compare solutions
                 best_route_plan, best_objective, current_route_plan, current_objective, weight_score = self.evaluate_candidate(
                     best_route_plan, best_objective, current_route_plan, current_objective, candidate_route_plan, candidate_route_plan.objective, self.criterion)
@@ -120,7 +131,7 @@ class ALNS:
 
             # After a certain number of iterations, update weight
             if (i+1) % iterations == 0:
-                # Update weights with scores
+                # Update weights with scores              
                 for destroy in range(len(d_weights)):
                     d_weights[destroy] = d_weights[destroy] * \
                         (1 - self.reaction_factor) + \
@@ -138,7 +149,7 @@ class ALNS:
                     len(self.destroy_operators), dtype=np.float16)
                 r_scores = np.ones(
                     len(self.repair_operators), dtype=np.float16)
-          
+            
         return best_route_plan
     
     def set_operators(self, operators):
@@ -211,3 +222,26 @@ class ALNS:
             weight_score = 0
 
         return best_route_plan, best_objective, current_route_plan, current_objective, weight_score
+        
+    def calculatePenaltyIllegalSolution(self, candidate_route_plan, current_iteration, total_iterations):
+        # Penalty in first objective per illegal treatment, visit or activity 
+        penalty_treat = 10
+        penalty_visit = 5
+        penalty_act = 3
+        penalty = 0
+        if (len(candidate_route_plan.illegalNotAllocatedTreatments)
+            + len(candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays) 
+            + len(candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)) > 0:
+            print("illegal treatments ", candidate_route_plan.illegalNotAllocatedTreatments, 
+                  " illegal visits ", candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays, 
+                  " illegal activities ", candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
+
+            iteration_factor = (total_iterations - current_iteration) / total_iterations
+            penalty = iteration_factor * (len(candidate_route_plan.illegalNotAllocatedTreatments) * penalty_treat 
+                    + len(candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays) * penalty_visit
+                    + len(candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays) * penalty_act)
+            
+            updated_first_objective = candidate_route_plan.objective[0] - penalty
+
+            return penalty, updated_first_objective
+        return penalty, candidate_route_plan.objective[0]
