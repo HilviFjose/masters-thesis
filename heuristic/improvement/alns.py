@@ -145,7 +145,7 @@ class ALNS:
         # Add destroy operators
         self.add_destroy_operator(operators.random_patient_removal)
         self.add_destroy_operator(operators.random_treatment_removal)
-        self.add_destroy_operator(operators.random_pattern_removal)
+        #self.add_destroy_operator(operators.random_pattern_removal)
         self.add_destroy_operator(operators.worst_deviation_patient_removal)
         self.add_destroy_operator(operators.worst_deviation_treatment_removal)
         self.add_destroy_operator(operators.random_visit_removal)

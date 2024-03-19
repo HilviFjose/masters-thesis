@@ -27,7 +27,6 @@ def process_location(x):
     return lat, lon
 
 def travel_matrix(df):
-        
         # Radians distance matrix
         df['lat'], df['lon'] = zip(*df['location'].apply(process_location))
 
