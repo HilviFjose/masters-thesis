@@ -303,8 +303,6 @@ class Operators:
 
         destroyed_route_plan = copy.deepcopy(route_plan)
          
-        print("FJERNER AKTIVITET ", selected_activity)
-        
         #Vi vet at vi bare har valgt ett visit, så dagen vil være en 
         original_day = destroyed_route_plan.removeActivityIDgetRemoveDay(selected_activity)
         
@@ -335,7 +333,6 @@ class Operators:
             #Sjer ingenting på treatment nivå 
             destroyed_route_plan.visits[visit_for_activity].remove(selected_activity) #Fjernes fra visit dict 
             destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[selected_activity] = original_day #Legges til i illegalpå Aktivitet
-            print("illegalNotAllocatedActivitiesWithPossibleDays", destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
             return destroyed_route_plan, None, True
 
         
@@ -357,7 +354,6 @@ class Operators:
             destroyed_route_plan.treatments[treatment_for_visit].remove(visit_for_activity) # Visit fjernes fra treatment dict 
             destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_for_activity] = original_day #Legges til i illegalVisit with possible day 
             del destroyed_route_plan.visits[visit_for_activity] # Visit fjernes fra visit dict
-            print("illegalNotAllocatedVisitsWithPossibleDays", destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays)
            
             return destroyed_route_plan, None, True
     
@@ -379,7 +375,6 @@ class Operators:
             destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit) #Treatment legges til 
             del destroyed_route_plan.treatments[treatment_for_visit] #treatment fjernes fra treatment list med tilhørende visits
             del destroyed_route_plan.visits[visit_for_activity] #Fjerne vistet som lå under treatments 
-            print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments)
          
             
             return destroyed_route_plan, None, True
@@ -390,7 +385,6 @@ class Operators:
         del destroyed_route_plan.allocatedPatients[patient_for_treatment] #Fjerner pasent fra allocated Patenst 
         del destroyed_route_plan.treatments[treatment_for_visit] #Fjerner treatmetnen fr treatmetns 
         del destroyed_route_plan.visits[visit_for_activity] #Fjerner visitet 
-        print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
         return destroyed_route_plan, None, True
 
 
