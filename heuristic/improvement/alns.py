@@ -77,7 +77,7 @@ class ALNS:
             d_operator = self.destroy_operators[destroy]
             destroyed_route_plan, removed_activities, destroyed = d_operator(
                 current_route_plan)
-            
+            print("DESTROY: iteration", self.iterationNum, "operator:", destroy, "removed:", removed_activities)
             if not destroyed:
                 break
 
@@ -87,7 +87,7 @@ class ALNS:
             r_operator = self.repair_operators[repair]
             candidate_route_plan = r_operator(
                 destroyed_route_plan)
-            
+            print("REPAIR: iteration", self.iterationNum, "operator:", repair)
             
             r_count[repair] += 1
 
@@ -126,7 +126,7 @@ class ALNS:
                         (1 - self.reaction_factor) + \
                         (self.reaction_factor *
                          d_scores[destroy] / d_count[destroy])
-                    print("d_count destroy", d_count[destroy])
+                    print("destroy", destroy, "d_count destroy", d_count[destroy])
                 for repair in range(len(r_weights)):
                     r_weights[repair] = r_weights[repair] * \
                         (1 - self.reaction_factor) + \
@@ -145,18 +145,17 @@ class ALNS:
         # Add destroy operators
      
         self.add_destroy_operator(operators.random_patient_removal)
+        self.add_destroy_operator(operators.random_visit_removal)
         self.add_destroy_operator(operators.random_treatment_removal)
-        #self.add_destroy_operator(operators.random_pattern_removal)
+        self.add_destroy_operator(operators.random_pattern_removal)
         self.add_destroy_operator(operators.worst_deviation_patient_removal)
+        self.add_destroy_operator(operators.worst_deviation_visit_removal)
         self.add_destroy_operator(operators.worst_deviation_treatment_removal)
-        
         self.add_destroy_operator(operators.random_visit_removal)
         self.add_destroy_operator(operators.worst_deviation_visit_removal)
       
         self.add_destroy_operator(operators.random_activity_removal)
         self.add_destroy_operator(operators.worst_deviation_activity_removal)
-        self.add_destroy_operator(operators.cluster_distance_patients_removal)
-        self.add_destroy_operator(operators.cluster_distance_activities_removal)
 
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)

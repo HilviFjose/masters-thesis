@@ -171,8 +171,11 @@ class Operators:
             visit_utility_contribute = 0 
             visit_skilldiff_contribute = 0
             for activity in current_route_plan.visits[visit]:
-                    visit_utility_contribute += self.constructor.activities_df.loc[activity, 'utility']
-                    visit_skilldiff_contribute += current_route_plan.getRouteSkillLevForActivityID(activity) - self.constructor.activities_df.loc[activity, 'skillRequirement']
+                    try:
+                        visit_utility_contribute += self.constructor.activities_df.loc[activity, 'utility']
+                        visit_skilldiff_contribute += current_route_plan.getRouteSkillLevForActivityID(activity) - self.constructor.activities_df.loc[activity, 'skillRequirement']
+                    except:
+                        print("Not working on activity", activity, "in visit", visit)
             if visit_utility_contribute < lowest_visit_utility_contribute or (
                 visit_utility_contribute == lowest_visit_utility_contribute and visit_skilldiff_contribute > highest_visit_skilldiff_contribute): 
          
