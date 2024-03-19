@@ -38,7 +38,6 @@ class Operators:
         for patient in list(current_route_plan.allocatedPatients.keys()): 
             if self.constructor.patients_df.loc[patient, 'aggUtility'] < lowest_patient_contribute: 
                 selected_patient = patient
-
         return self.patient_removal(selected_patient, current_route_plan)
     
     def random_patient_removal(self, current_route_plan):
@@ -86,13 +85,14 @@ class Operators:
                     treatment_contribute += self.constructor.activities_df.loc[activity, 'utility']
             if treatment_contribute < lowest_treatment_contribute: 
                 selected_treatment = treatment
-
         return self.treatment_removal(selected_treatment, current_route_plan)
+    
     
     
     def random_treatment_removal(self, current_route_plan):
         selected_treatment = rnd.choice(list(current_route_plan.treatments.keys())) 
         return self.treatment_removal(selected_treatment, current_route_plan)
+
 
     #TODO: Denne kan skrives ned, mange like kodelinjer
     def treatment_removal(self, selected_treatment, route_plan):
@@ -159,7 +159,7 @@ class Operators:
     def random_visit_removal(self, current_route_plan):
         selected_visit = rnd.choice(list(current_route_plan.visits.keys())) 
         return self.visit_removal(selected_visit, current_route_plan)
-    
+
     
     def worst_deviation_visit_removal(self, current_route_plan):
         lowest_visit_utility_contribute = 1000 
@@ -173,7 +173,11 @@ class Operators:
                         visit_utility_contribute += self.constructor.activities_df.loc[activity, 'utility']
                         visit_skilldiff_contribute += current_route_plan.getRouteSkillLevForActivityID(activity) - self.constructor.activities_df.loc[activity, 'skillRequirement']
                     except:
-                        print("Not working on activity", activity, "in visit", visit)
+                        print("Unable to remove worst visi3", visit)
+                        print("Activity making it hard", activity)           
+                        print("Visit in route plan", current_route_plan.visits[visit])
+                        print("Allocated patients in current route plan", current_route_plan.allocatedPatients)
+                        print("Not allocated patients in current route plan", current_route_plan.notAllocatedPatients)
             if visit_utility_contribute < lowest_visit_utility_contribute or (
                 visit_utility_contribute == lowest_visit_utility_contribute and visit_skilldiff_contribute > highest_visit_skilldiff_contribute): 
          
@@ -513,7 +517,7 @@ class Operators:
                     patient = self.constructor.patients_df.index[i] 
                     if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
                         break
-                repaired_route_plan.allocatedPatients[patient].append(treatment) 
+                    repaired_route_plan.allocatedPatients[patient].append(treatment) 
 
         #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
         #TODO: Må straffe basert på hva som ikke kommer inn. Den funksjonaliteten er ikke riktig 
