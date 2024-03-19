@@ -1,4 +1,4 @@
-Solution generated at time: 2024-03-19 16:47:43
+Solution generated at time: 2024-03-19 16:48:40
 
 -------------------------------------------------------
 Printer alle rutene
@@ -6,8 +6,8 @@ DAG 1 ANSATT 2
 activity 91 start 58
 activity 47 start 163.0
 activity 87 start 233.0
-activity 120 start 322.0
-activity 218 start 390.0
+activity 15 start 365
+activity 120 start 392.0
 ---------------------
 DAG 1 ANSATT 3
 activity 134 start 489.0
@@ -36,11 +36,13 @@ activity 56 start 749.0
 activity 55 start 771.0
 ---------------------
 DAG 1 ANSATT 5
+activity 218 start 487
 activity 82 start 626.0
 activity 27 start 703.0
 activity 66 start 759.0
 ---------------------
 DAG 1 ANSATT 9
+activity 13 start 488
 activity 76 start 664
 ---------------------
 DAG 1 ANSATT 8
@@ -53,26 +55,26 @@ activity 48 start 705.0
 activity 121 start 736.0
 ---------------------
 DAG 1 ANSATT 10
-activity 32 start 483
-activity 111 start 506.0
-activity 197 start 572
-activity 135 start 592.0
-activity 52 start 618.0
-activity 136 start 637.0
-activity 144 start 685.0
-activity 126 start 710.0
-activity 145 start 739.0
-activity 159 start 777.0
-activity 213 start 801.0
-activity 88 start 825.0
+activity 145 start 485
+activity 32 start 529.0
+activity 111 start 552.0
+activity 197 start 573.0
+activity 135 start 593.0
+activity 52 start 619.0
+activity 136 start 638.0
+activity 144 start 716.0
+activity 126 start 741.0
+activity 159 start 779.0
+activity 213 start 803.0
+activity 88 start 827
 activity 172 start 887
 activity 51 start 929.0
 ---------------------
 DAG 2 ANSATT 2
-activity 21 start 21
 activity 28 start 144
-activity 207 start 323
-activity 65 start 371.0
+activity 16 start 230.0
+activity 65 start 306.0
+activity 207 start 388.0
 ---------------------
 DAG 2 ANSATT 6
 ---------------------
@@ -80,6 +82,7 @@ DAG 2 ANSATT 7
 ---------------------
 DAG 2 ANSATT 5
 activity 105 start 488
+activity 21 start 777.0
 activity 271 start 862
 ---------------------
 DAG 2 ANSATT 1
@@ -144,7 +147,8 @@ activity 45 start 519
 activity 272 start 586.0
 ---------------------
 DAG 3 ANSATT 9
-activity 267 start 482
+activity 79 start 485
+activity 17 start 548
 activity 215 start 828
 ---------------------
 DAG 3 ANSATT 5
@@ -155,10 +159,16 @@ activity 208 start 772
 DAG 3 ANSATT 8
 activity 93 start 488
 activity 115 start 504
-activity 127 start 545.0
-activity 79 start 570
+activity 127 start 738.0
+activity 267 start 765
+---------------------
+DAG 4 ANSATT 2
+activity 273 start 109
+activity 116 start 239
+activity 175 start 403.0
 ---------------------
 DAG 4 ANSATT 3
+activity 216 start 487
 activity 109 start 531
 activity 160 start 625
 activity 202 start 710.0
@@ -176,10 +186,17 @@ DAG 4 ANSATT 9
 activity 209 start 485
 activity 150 start 719
 ---------------------
+DAG 4 ANSATT 8
+activity 268 start 482
+activity 94 start 699.0
+activity 61 start 717
+---------------------
 DAG 4 ANSATT 10
 activity 141 start 512.0
 ---------------------
 DAG 4 ANSATT 4
+activity 18 start 488
+activity 14 start 598
 activity 30 start 659
 activity 67 start 861.0
 ---------------------
@@ -187,17 +204,6 @@ DAG 4 ANSATT 5
 activity 23 start 500
 activity 161 start 723.0
 activity 162 start 737
----------------------
-DAG 4 ANSATT 2
-activity 273 start 109
-activity 116 start 239
-activity 175 start 318.0
-activity 268 start 390.0
----------------------
-DAG 4 ANSATT 8
-activity 216 start 487
-activity 94 start 699.0
-activity 61 start 717
 ---------------------
 DAG 5 ANSATT 1
 activity 210 start 480
@@ -216,6 +222,7 @@ activity 205 start 965
 ---------------------
 DAG 5 ANSATT 2
 activity 269 start 5
+activity 19 start 99
 activity 212 start 183.0
 activity 49 start 290.0
 activity 46 start 368.0
@@ -250,9 +257,9 @@ DAG 5 ANSATT 9
 activity 31 start 493
 activity 123 start 769.0
 ---------------------
-objective  [494, 5.199999999999999, 51, 23, 1322]
-allocated patients  [36, 18, 40, 32, 21, 39, 25, 24, 20, 50, 5, 12, 19, 28, 6, 27, 10, 14, 34, 49, 22, 17, 13, 9, 4, 26, 30, 42, 8, 31, 11, 41, 16]
-not allocated  [1, 29, 45, 44, 48, 35, 33, 46, 7, 15, 43, 23, 37, 47, 2, 38, 3]
+objective  [529, 5.199999999999999, 52, 25, 1372]
+allocated patients  [3, 36, 18, 40, 32, 21, 39, 25, 24, 20, 50, 5, 12, 19, 28, 6, 27, 10, 14, 34, 49, 22, 17, 13, 9, 4, 26, 30, 42, 8, 31, 11, 41]
+not allocated  [1, 44, 29, 46, 15, 43, 33, 16, 2, 45, 23, 37, 47, 38, 35, 7, 48]
 illegalNotAllocatedTreatments []
 illegalNotAllocatedVisits []
 illegalNotAllocatedActivities []
