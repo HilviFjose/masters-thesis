@@ -44,14 +44,16 @@ class RoutePlan:
     def sortRoutesByAcitivyLocation(self, routes, activity):
         #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
       
-        split_strings = str(activity.location).strip("()").split(", ")
+        
 
             # Convert to float and create a tuple
-        activity_coordinates = tuple(float(num) for num in split_strings)
-        if activity_coordinates == depot: 
-            return random.shuffle(routes)
+        
+        if activity.location == depot: 
+            random.shuffle(routes)
+            return routes
+  
    
-        return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity_coordinates[0]) + abs(route.averageLocation[1]- activity_coordinates[1]))
+        return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity.location[0]) + abs(route.averageLocation[1]- activity.location[1]))
 
 
             
@@ -84,15 +86,12 @@ class RoutePlan:
         for act_skill_level in range (act_skill_level, 4): 
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
             #TODO: Sortere hvor mange som er 
-            print("--------------")
-            print("routes_for_skill", routes_for_skill)
+     
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
             #random.shuffle(routes_for_skill)
-            try:
-                routes += routes_for_skill
-            except: 
-                print("routes", routes)
-                print("routes_for_skill", routes_for_skill)
+            
+            routes += routes_for_skill
+          
             #For å omrokkere på de som er fra før 
             #if act_skill_level == 2: 
             #   random.shuffle(routes)

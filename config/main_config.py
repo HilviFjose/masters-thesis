@@ -12,7 +12,7 @@ weights = [3, 2, 1, 0.5]
 #TODO: sigma_scores
 
 #Antall iterasjoner i ALNSen
-iterations = 0
+iterations = 4
 
 #Sendes inn i ALNS og handler om hvor mye du skal destroye med operatorer altså hvor mange aktiviteter som skal ryke?
 #Maxen du kan fjerne er halve løsningen
