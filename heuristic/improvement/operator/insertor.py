@@ -13,15 +13,20 @@ class Insertor:
 
      
     '''
-    Skal prøve å lage insertions på hvert nivå, og å endre slik at vi kan inserte på hvert nivå
+    Insertor skal ikke gjøre noen oppdatering av matrisene. Det skal kunn skje i constructor og operators
+
+    Her må altså alle oppdateringer flyttes ut til operators. Denne inserter bare, så vil aldri fjerne elemener 
+
+    Mulig insertPatients må fjernes. Fordi den vil bare legge inn, også oppdateres det ikke basert på hva som skjer 
     '''
 
-
+    '''
 #Konseptet her er at vi skal kunne sende inn all atributter vi vil legge til.
     def insertPatients(self, patientList): 
         for patient in patientList: 
             self.insert_patient(patient)
         return self.route_plan
+    '''
 
     def insert_patient(self, patient):
         '''
@@ -30,24 +35,23 @@ class Insertor:
         Returns: 
         True/False på om det var plass til pasienten på hjemmesykehus eller ikke 
         '''
+
         route_test = copy.deepcopy(self.route_plan)
         old_route_plan = copy.deepcopy(route_test)
-        #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst 
+        #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
      
         for treatment in treamentList: 
             
             status = self.insert_treatment(treatment)
 
-            self.updateAllocation(status, patient, treatment)
+            
             if status == False: 
                 self.route_plan = old_route_plan
                 return False
-        #Må ha noe som legger til hvis den er
-        if patient in self.route_plan.notAllocatedPatients: 
-            self.route_plan.notAllocatedPatients.remove(patient)
-        #print("Insertor - Legger til pasient ", patient)
+   
         return True 
+
 
     def updateAllocation(self, allocated, patient, treatment): 
         if allocated: 
@@ -59,14 +63,6 @@ class Insertor:
         if not allocated and patient in self.route_plan.allocatedPatients.keys(): 
             self.route_plan.illegalNotAllocatedTreatments.append(treatment)
 
-        '''
-        Hva vil vi sjekke. 
-        Når vi legger til en treatment, 
-
-        Regelen skal vel være at pasienten er allokert allokert eller ikke allokert. 
-        Dersom den er allokert, men ikke alt ligger inne, så de treatmentsene, eller andre, lagres i illegal
-        Men det ligger en liste over treatments som ikke er 
-        '''
 
     def insert_treatment(self, treatment): 
     
@@ -92,7 +88,7 @@ class Insertor:
             self.route_plan = copy.deepcopy(old_route_plan)
             insertStatus = self.insert_visit_with_pattern(visitList, patterns[index]) 
             if insertStatus == True:
-                self.route_plan.treatments[treatment] = visitList
+                
                 return True
             
         return False
@@ -147,9 +143,10 @@ class Insertor:
             if activityStatus == False: 
                 return False
         #Dersom alle aktivitene har blitt lagt til returers true  
-        self.route_plan.visits[visit] = activitiesList  
         return True
     
+
+    #TODO: Kan denne slettes? 
     def string_or_number_to_int_list(self, string_or_int):
         '''
         Denne funksjonen brukes til å lage liste basert på string eller int dataen som kommer fra dataframe
