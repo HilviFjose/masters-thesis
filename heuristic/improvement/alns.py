@@ -116,7 +116,6 @@ class ALNS:
 
             if not already_found:
                 # Add penalty to first objective if the solution is illegal
-                # PENALTY: Beregn straff for ulovlige løsninger og oppdater kandidatens objektiv
                 penalty, updated_first_objective = self.calculatePenaltyIllegalSolution(candidate_route_plan, self.iterationNum, num_iterations)
                 candidate_route_plan.objective[0] = updated_first_objective #TODO: Undersøke om vi må ta vare på det opprinnelige objektivet eller ikke
                 if penalty != 0:
@@ -225,9 +224,6 @@ class ALNS:
         
     def calculatePenaltyIllegalSolution(self, candidate_route_plan, current_iteration, total_iterations):
         # Penalty in first objective per illegal treatment, visit or activity 
-        penalty_treat = 10
-        penalty_visit = 5
-        penalty_act = 3
         penalty = 0
         if (len(candidate_route_plan.illegalNotAllocatedTreatments)
             + len(candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays) 
