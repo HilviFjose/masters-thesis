@@ -12,7 +12,7 @@ weights = [3, 2, 1, 0.5]
 #TODO: sigma_scores
 
 #Antall iterasjoner i ALNSen
-iterations = 1000
+iterations = 100
 
 #Sendes inn i ALNS og handler om hvor mye du skal destroye med operatorer altså hvor mange aktiviteter som skal ryke?
 #Maxen du kan fjerne er halve løsningen
@@ -21,7 +21,7 @@ destruction_degree = 0.5
 # Simulated annealing temperatures -- TODO: these must be tuned
 start_temperature = 50 
 end_temperature = 10
-cooling_rate = 0.999
+cooling_rate = 0.97
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
