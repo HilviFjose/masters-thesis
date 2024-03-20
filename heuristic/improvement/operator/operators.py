@@ -415,46 +415,6 @@ class Operators:
         return destroyed_route_plan, None, True
 
     
-    def random_pattern_removalG(self, current_route_plan):
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        #Må endres når vi endrer pattern 
-        selected_pattern = random.randint(1, len(patternTypes))
-        removed_activities = []
-        new_treatments = copy.deepcopy(destroyed_route_plan.treatments)
-        for treatment in destroyed_route_plan.treatments.keys(): 
-            pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
-            if pattern_for_treatment != selected_pattern: 
-                continue
-
-            for visit in destroyed_route_plan.treatments[treatment]:
-                removed_activities += destroyed_route_plan.visits[visit]
-                #Tar bort visitene som ligger i rute planen 
-                del destroyed_route_plan.visits[visit]
-
-            del new_treatments[treatment]
-
-            for key, value in list(destroyed_route_plan.allocatedPatients.items()):
-                if value == [treatment]:
-                
-                    del destroyed_route_plan.allocatedPatients[key]
-                    destroyed_route_plan.notAllocatedPatients.append(key)
-                    break
-                if treatment in value: 
-                    destroyed_route_plan.illegalNotAllocatedTreatments += value
-                    break
-        
-        destroyed_route_plan.treatments = new_treatments
-
-        #Fjerning av aktivitetene skjer tillutt. 
-        for day in range(1, destroyed_route_plan.days +1): 
-            for route in destroyed_route_plan.routes[day]: 
-                for act in route.route: 
-                    if act.id in removed_activities:
-                        route.removeActivityID(act.id)
-
-        
-        destroyed_route_plan.updateObjective()
-        return destroyed_route_plan, removed_activities, True 
 
     
     def kruskalAlgorithm(self, df):
@@ -597,14 +557,19 @@ class Operators:
             if status == True: 
    
                 repaired_route_plan = visitInsertor.route_plan
+
+                #Fjerner visitet som illegal Visits 
                 del repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit]
 
-                #Legger til visitet på treatmenten 
+                #Legger til visitet på treatmenten. Vet at treatmenten ligger inne, for hvis ikke så ville ikke visitet vært illegal 
                 for i in range(self.constructor.treatment_df.shape[0]):
                     treatment = self.constructor.treatment_df.index[i] 
                     if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
                         break
                 repaired_route_plan.treatments[treatment].append(visit) 
+
+                #Legge til visit og activities som hører til treatmentet 
+                repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
     
     def illegal_treatment_repair(self, repaired_route_plan): 
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -615,14 +580,21 @@ class Operators:
             if status == True: 
   
                 repaired_route_plan = treatmentInsertor.route_plan
+
+                #Fjerner treatmenten fra illegal Treatments 
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
                 
-        #Legger til treatmenten på pasienten. 
+                #Legger til treatmenten på pasienten. Vet at pasienten allerede ligger inne, for hvis ikke ville ikke treatmenten i utgnaspunktet vært illegal 
                 for i in range(self.constructor.patients_df.shape[0]):
                     patient = self.constructor.patients_df.index[i] 
                     if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
                         break
-                repaired_route_plan.allocatedPatients[patient].append(treatment) 
+                repaired_route_plan.allocatedPatients[patient].append(treatment)
+
+                #Legge til visit og activities som hører til treatmentet 
+                repaired_route_plan.treatments[treatment] = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+                for visit in [item for sublist in repaired_route_plan.treatments.values() for item in sublist]: 
+                    repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds'] 
 
         #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
         #TODO: Må straffe basert på hva som ikke kommer inn. Den funksjonaliteten er ikke riktig 
@@ -645,7 +617,15 @@ class Operators:
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
         #TODO: Sortere slik at den setter inn de beste først. Den er ikkke grådig nå vel? 
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
-        repaired_route_plan = patientInsertor.insertPatients(sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get))
+        descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
+        
+        for patient in descendingUtilityNotAllocatedPatients: 
+            status = patientInsertor.insert_patient(patient)
+            
+            if status == True: 
+                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
+        
+        
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
@@ -669,11 +649,31 @@ class Operators:
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
         randomNotAllocatedPatients = repaired_route_plan.notAllocatedPatients
         random.shuffle(randomNotAllocatedPatients)
-        repaired_route_plan = patientInsertor.insertPatients(randomNotAllocatedPatients)
+
+        for patient in randomNotAllocatedPatients: 
+            status = patientInsertor.insert_patient(patient)
+        
+            if status == True: 
+                repaired_route_plan = patientInsertor.route_plan
+                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
+
+    
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
-    
+
+    def updateAllocationAfterPatientInsertor(self, route_plan, patient): 
+        #Oppdaterer allokerings dictionariene 
+        route_plan.allocatedPatients[patient] = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
+            route_plan.treatments[treatment] = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+        for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 
+            route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
+
+        #Fjerner pasienten fra ikkeAllokert listen 
+        if patient in route_plan.notAllocatedPatients: 
+            route_plan.notAllocatedPatients.remove(patient)
+
 
     def complexity_repair(self, destroyed_route_plan):
         #Tar bort removed acktivitites, de trenger vi ikk e
@@ -684,8 +684,15 @@ class Operators:
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
-        repaired_route_plan = patientInsertor.insertPatients(sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get))
-        repaired_route_plan.updateObjective()
+        descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get)
+
+
+        for patient in descendingComplexityNotAllocatedPatients: 
+            status = patientInsertor.insert_patient(patient)
+            
+            if status == True: 
+                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
+        
 
         #TODO: Skal vi ha disse under i denne
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
@@ -696,6 +703,8 @@ class Operators:
 
         #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
         self.illegal_activity_repair(repaired_route_plan)
+
+        repaired_route_plan.updateObjective()
       
         return repaired_route_plan
     
