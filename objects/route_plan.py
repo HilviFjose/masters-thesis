@@ -40,7 +40,6 @@ class RoutePlan:
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
-        self.activityCache = {}  
 
 
     def addActivityOnDay(self, activity, day):
@@ -114,18 +113,11 @@ class RoutePlan:
         return list(otherEmpl) 
     
     def getActivity(self, actID, day): 
-        cacheKey = (actID, day)
-        if cacheKey in self.activityCache:
-            return self.activityCache[cacheKey]
-
-        for route in self.routes[day]: 
-            for act in route.route: 
-                if act.id == actID: 
-                    self.activityCache[cacheKey] = act
-                    return act
-
-        self.activityCache[cacheKey] = None
-        return None
+            for route in self.routes[day]: 
+                for act in route.route: 
+                    if act.id == actID: 
+                        return act 
+            return None 
 
     def updateObjective(self): 
         self.objective = [0, 0, 0, 0, 0]

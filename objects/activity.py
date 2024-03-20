@@ -28,7 +28,7 @@ class Activity:
         self.suitability = df.loc[id]["utility"]
         self.startTime = None
         #self.newLatestStartTime = 1440
-        #self.newEeariestStartTime = 0
+        #self.newEarliestStartTime = 0
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
 
