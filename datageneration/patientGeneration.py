@@ -62,8 +62,15 @@ def patientGenerator(df_employees):
     utility = np.random.choice(range(1, 6), size=construction_config.P_num)
     continuityGroup = np.random.choice(range(1, 4), size=construction_config.P_num, p=construction_config.continuityDistribution)
     heaviness = np.random.choice(range(1, 6), size=construction_config.P_num, p=construction_config.heavinessDistribution)
-    allocation = np.random.choice(range(1, 4), size=construction_config.P_num, p=construction_config.allocation)
-    
+    if construction_config.P_num <= 5* construction_config.E_num:
+        print('Number of patients <= 5* number of employees')
+        allocation = [1] * round(construction_config.P_num * construction_config.allocation)
+    else:
+        print('Number of patients > 5* number of employees')
+        allocation = [1] * round(construction_config.E_num * 1.5)
+    allocation.extend([0] * (construction_config.P_num - len(allocation)))
+    random.shuffle(allocation)
+
     # Prepare DataFrame
     df_patients = pd.DataFrame({
         'patientId': patientIds,
@@ -76,24 +83,6 @@ def patientGenerator(df_employees):
         'heaviness': heaviness,
         'location': locations
     })
-
-    # Update patient allocation if number of patients > 5*number of employees TODO: Må se an denne fordelingen i testing-perioden 
-    num_employees = len(df_employees)
-    if len(df_patients) > num_employees * 5:
-        print("Har endret på pasientallokeringen i datagenereringen")
-        # Calculate maximum patients per allocation category
-        max_alloc_1 = num_employees * 1  # Max patients for allocation 1
-        max_alloc_2 = num_employees * 1  # Max patients for allocation 2
-
-        # Sort by utility for allocation adjustment TODO: Se på hva vi ønsker her
-        sorted_patients = df_patients.sort_values(by='utility', ascending=False)
-
-        # Reset allocations based on priority and limits
-        sorted_patients['allocation'] = 3  # Default to allocation 3
-        sorted_patients.iloc[:max_alloc_1, sorted_patients.columns.get_loc('allocation')] = 1
-        sorted_patients.iloc[max_alloc_1:max_alloc_1+max_alloc_2, sorted_patients.columns.get_loc('allocation')] = 2
-
-        df_patients = sorted_patients
     
     # Employee Restrictions
     num_restricted_patients = int(len(df_patients) * construction_config.employeeRestrict)      # 5 % of the patients have a restriction against an employee
@@ -395,7 +384,10 @@ def activitiesGenerator(df_visits):
     
     # Generate complexity for treatments, visits and activities
     # Activity complexity - only based on duration and time windows
-    df_activities['a_complexity'] = round((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration'])
+    #df_activities['a_complexity'] = round((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration'])
+    #df_activities['a_complexity'] = ((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration']).round()
+    df_activities['a_complexity'] = (df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration']
+    
     for treatmentId, treatment_group in df_activities.groupby('treatmentId'):       
         treatmentDuration = 0
         treatmentTimeWindow = 0
