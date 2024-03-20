@@ -27,7 +27,6 @@ class Route:
 
     def addActivity(self, activity_in):
         activity = copy.deepcopy(activity_in)
-
         # Initial checks to see if the activity can be inserted into the route
         if (self.employee.getID() == activity.employeeRestrictions or
             self.employee.getID() in activity.employeeNotAllowedDueToPickUpDelivery or
@@ -36,8 +35,8 @@ class Route:
         
         for index in range(len(self.route) + 1):
             # Before trying to insert, make space for the activity and update dependencies if necessary
-            self.makeSpaceForIndex(index)
-            self.updateActivityBasedOnDependenciesInRoute(activity)
+            #self.makeSpaceForIndex(index)
+            #self.updateActivityBasedOnDependenciesInRoute(activity)
             
             # Try to insert the activity using insertActivityOnIndex
             if self.insertActivityOnIndex(activity, index):

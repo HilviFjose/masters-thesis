@@ -56,15 +56,12 @@ class Activity:
         PrevNode = []
         PrevNodeInTime = []
         
-        # Early return for empty input or unsupported types to avoid further checks
         if not input_data or not isinstance(input_data, (int, str)):
             return PrevNode, PrevNodeInTime
 
-        # Process integer input_data directly
         if isinstance(input_data, int):
             PrevNode.append(input_data)
         else:
-            # Split once and iterate through the result for string input_data
             strList = input_data.split(",")
             for elem in strList:
                 if ":" in elem:
@@ -72,7 +69,6 @@ class Activity:
                     PrevNodeInTime.append(tuple(int(part.strip()) for part in parts))
                 else:
                     PrevNode.append(int(elem.strip()))
-
         return PrevNode, PrevNodeInTime
 
     def setStartTime(self, startTime): 
@@ -83,8 +79,6 @@ class Activity:
  
     def getNewLatestStartTime(self): 
         return min(self.newLatestStartTime.values(), default=1440)
-    
-    #set og add funsksjonene oppdatere aktivtetens parametere
 
     def checkActivityFeasibility(self):
         # Check if the activity can be scheduled within the updated time constraints.
