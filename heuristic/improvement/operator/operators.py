@@ -3,6 +3,9 @@ import copy
 import math
 import numpy.random as rnd 
 import random 
+import networkx as nx
+from sklearn.cluster import KMeans
+
 
 import os
 import sys
@@ -12,6 +15,7 @@ from helpfunctions import checkCandidateBetterThanBest
 
 from objects.activity import Activity
 from config.construction_config import *
+from datageneration.distance_matrix import *
 from heuristic.improvement.operator.insertor import Insertor
 from parameters import T_ij
 
@@ -405,47 +409,115 @@ class Operators:
         return destroyed_route_plan, None, True
 
     
-    def random_pattern_removalG(self, current_route_plan):
+
+    
+    def kruskalAlgorithm(self, df):
+        travel_time_matrix = travel_matrix_without_rush(df)
+        G = nx.Graph()
+        n = len(travel_time_matrix)  # Antall noder
+        for i in range(n):
+            for j in range(i + 1, n):
+                # Legg til en kant mellom hver node med vekt lik reisetiden
+                G.add_edge(i, j, weight=travel_time_matrix[i][j])
+
+        # Generer MST ved hjelp av Kruskal's algoritme
+        mst = nx.minimum_spanning_tree(G, algorithm='kruskal')
+
+        # Finn og fjern den lengste kanten
+        edges = list(mst.edges(data=True))
+        longest_edge = max(edges, key=lambda x: x[2]['weight'])
+        mst.remove_edge(longest_edge[0], longest_edge[1])
+
+        # MST er nå delt i to deler, og du kan identifisere komponentene (dvs. de to gruppene av IDer)
+        components = list(nx.connected_components(mst))
+        shortest_component = min(components, key=len)
+        longest_component = max(components,key=len)
+
+        # Kart for å mappe indekser tilbake til IDer
+        index_to_id = {index: id for index, id in enumerate(df.index)}
+
+        # Konverter indekser til IDer
+        shortest_ids = [index_to_id[index] for index in shortest_component]
+        longest_ids = [index_to_id[index] for index in longest_component]
+
+        return shortest_ids, longest_ids
+
+    def k_means_clustering(self, df, location_col='location', n_clusters=2):
+        """
+        Clusters activities based on their geographical coordinates using k-means clustering.
+        n_clusters: Number of clusters to divide the data into, default is 2.
+
+        Returns:
+        - A list of indices for the activities in the smallest cluster.
+        """
+
+        # Preprocess data: location-column both string and tuple as type
+        coordinates = []
+        for x in df[location_col]:
+            if isinstance(x, str):
+                # Hvis x er en streng, fjern parenteser og splitt
+                lat_str, lon_str = x.strip("()").split(",")
+                lat, lon = float(lat_str), float(lon_str)
+            elif isinstance(x, tuple):
+                # Hvis x er en tuple, bruk verdien direkte
+                lat, lon = x
+            else:
+                raise ValueError("Ukjent datatype i 'location'-kolonnen")
+            coordinates.append((lat, lon))
+        
+        coordinates = np.array(coordinates)
+        
+        # Perform k-means clustering
+        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(coordinates)
+        labels = kmeans.labels_
+
+        # Identify and select the indices of the activities in the smallest cluster
+        df['cluster_label'] = labels  # Temporarily add a column for cluster labels
+        cluster_sizes = df['cluster_label'].value_counts()
+        smallest_cluster_label = cluster_sizes.idxmin()
+        selected_indices = df[df['cluster_label'] == smallest_cluster_label].index.tolist()
+        
+        # Remove the temporary column
+        df.drop(columns=['cluster_label'], inplace=True)
+
+        return selected_indices
+
+
+    def cluster_distance_patients_removal(self, current_route_plan):
+        allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
+
+        df_selected_patients =  self.constructor.patients_df.loc[allocatedPatientsIds]
+
+        #selected_patients = self.kruskalAlgorithm(df_selected_patients)[0]  #Selecting the shortest part of the mst       
+        selected_patients = self.k_means_clustering(df_selected_patients)
+
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        #Må endres når vi endrer pattern 
-        selected_pattern = random.randint(1, len(patternTypes))
-        removed_activities = []
-        new_treatments = copy.deepcopy(destroyed_route_plan.treatments)
-        for treatment in destroyed_route_plan.treatments.keys(): 
-            pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
-            if pattern_for_treatment != selected_pattern: 
-                continue
+        for patientID in selected_patients: 
+            destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
 
-            for visit in destroyed_route_plan.treatments[treatment]:
-                removed_activities += destroyed_route_plan.visits[visit]
-                #Tar bort visitene som ligger i rute planen 
-                del destroyed_route_plan.visits[visit]
+        return destroyed_route_plan, None, True
 
-            del new_treatments[treatment]
 
-            for key, value in list(destroyed_route_plan.allocatedPatients.items()):
-                if value == [treatment]:
-                
-                    del destroyed_route_plan.allocatedPatients[key]
-                    destroyed_route_plan.notAllocatedPatients.append(key)
-                    break
-                if treatment in value: 
-                    destroyed_route_plan.illegalNotAllocatedTreatments += value
-                    break
-        
-        destroyed_route_plan.treatments = new_treatments
+    def cluster_distance_activities_removal(self, current_route_plan):
+        longest_travel_time = 0
+        activities_in_longest_route = []
+        for day, routes in current_route_plan.routes.items():
+            for route in routes:  
+                if route.travel_time > longest_travel_time:
+                    longest_travel_time = route.travel_time
+                    activities_in_longest_route = [activity.id for activity in route.route]
+            
+        df_selected_activities = self.constructor.activities_df.loc[activities_in_longest_route]
 
-        #Fjerning av aktivitetene skjer tillutt. 
-        for day in range(1, destroyed_route_plan.days +1): 
-            for route in destroyed_route_plan.routes[day]: 
-                for act in route.route: 
-                    if act.id in removed_activities:
-                        route.removeActivityID(act.id)
+        #selected_activities = self.kruskalAlgorithm(df_selected_activities)[1] #Selecting the longest part of the mst
+        selected_activities = self.k_means_clustering(df_selected_activities)
 
-        
-        destroyed_route_plan.updateObjective()
-        return destroyed_route_plan, removed_activities, True 
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        self.remove_activites_from_route_plan(selected_activities, destroyed_route_plan)
 
+        return destroyed_route_plan, selected_activities, True
+    
+    
 #---------- REPAIR OPERATORS ----------
     
 
@@ -479,14 +551,19 @@ class Operators:
             if status == True: 
    
                 repaired_route_plan = visitInsertor.route_plan
+
+                #Fjerner visitet som illegal Visits 
                 del repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit]
 
-                #Legger til visitet på treatmenten 
+                #Legger til visitet på treatmenten. Vet at treatmenten ligger inne, for hvis ikke så ville ikke visitet vært illegal 
                 for i in range(self.constructor.treatment_df.shape[0]):
                     treatment = self.constructor.treatment_df.index[i] 
                     if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
                         break
                 repaired_route_plan.treatments[treatment].append(visit) 
+
+                #Legge til visit og activities som hører til treatmentet 
+                repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
     
     def illegal_treatment_repair(self, repaired_route_plan): 
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -497,14 +574,21 @@ class Operators:
             if status == True: 
   
                 repaired_route_plan = treatmentInsertor.route_plan
+
+                #Fjerner treatmenten fra illegal Treatments 
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
                 
-        #Legger til treatmenten på pasienten. 
+                #Legger til treatmenten på pasienten. Vet at pasienten allerede ligger inne, for hvis ikke ville ikke treatmenten i utgnaspunktet vært illegal 
                 for i in range(self.constructor.patients_df.shape[0]):
                     patient = self.constructor.patients_df.index[i] 
                     if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
                         break
-                repaired_route_plan.allocatedPatients[patient].append(treatment) 
+                repaired_route_plan.allocatedPatients[patient].append(treatment)
+
+                #Legge til visit og activities som hører til treatmentet 
+                repaired_route_plan.treatments[treatment] = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+                for visit in [item for sublist in repaired_route_plan.treatments.values() for item in sublist]: 
+                    repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds'] 
 
         #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
         #TODO: Må straffe basert på hva som ikke kommer inn. Den funksjonaliteten er ikke riktig 
@@ -527,7 +611,15 @@ class Operators:
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
         #TODO: Sortere slik at den setter inn de beste først. Den er ikkke grådig nå vel? 
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
-        repaired_route_plan = patientInsertor.insertPatients(sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get))
+        descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
+        
+        for patient in descendingUtilityNotAllocatedPatients: 
+            status = patientInsertor.insert_patient(patient)
+            
+            if status == True: 
+                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
+        
+        
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
@@ -551,11 +643,31 @@ class Operators:
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
         randomNotAllocatedPatients = repaired_route_plan.notAllocatedPatients
         random.shuffle(randomNotAllocatedPatients)
-        repaired_route_plan = patientInsertor.insertPatients(randomNotAllocatedPatients)
+
+        for patient in randomNotAllocatedPatients: 
+            status = patientInsertor.insert_patient(patient)
+        
+            if status == True: 
+                repaired_route_plan = patientInsertor.route_plan
+                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
+
+    
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
-    
+
+    def updateAllocationAfterPatientInsertor(self, route_plan, patient): 
+        #Oppdaterer allokerings dictionariene 
+        route_plan.allocatedPatients[patient] = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
+            route_plan.treatments[treatment] = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+        for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 
+            route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
+
+        #Fjerner pasienten fra ikkeAllokert listen 
+        if patient in route_plan.notAllocatedPatients: 
+            route_plan.notAllocatedPatients.remove(patient)
+
 
     def complexity_repair(self, destroyed_route_plan):
         #Tar bort removed acktivitites, de trenger vi ikk e
@@ -565,9 +677,16 @@ class Operators:
     
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
-        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'sum_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
-        repaired_route_plan = patientInsertor.insertPatients(sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get))
-        repaired_route_plan.updateObjective()
+        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
+        descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get)
+
+
+        for patient in descendingComplexityNotAllocatedPatients: 
+            status = patientInsertor.insert_patient(patient)
+            
+            if status == True: 
+                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
+        
 
         #TODO: Skal vi ha disse under i denne
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
@@ -578,6 +697,8 @@ class Operators:
 
         #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
         self.illegal_activity_repair(repaired_route_plan)
+
+        repaired_route_plan.updateObjective()
       
         return repaired_route_plan
     
