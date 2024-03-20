@@ -33,6 +33,12 @@ class Operators:
     def activities_to_remove(self, activities_remove):
         return activities_remove
     
+
+    '''
+    Fremgangsmåte for å feilsøke: 
+    Gå gjennom hver operator og sjekke om den oppdaterer riktig. Forsøke å lage en generalisert funskjonalitet som kan oppdateres
+    Skrive testkode for å sjekke hvilke aktiviteter som er borte i de ulike kandidatene
+    '''
 #---------- REMOVE OPERATORS ----------
  
     
@@ -50,25 +56,49 @@ class Operators:
         return self.patient_removal(selected_patient, current_route_plan)
     
 
+    def relatedIllegalRemovalAfterPatientRemoval(self, route_plan, patient): 
+        for treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
+            if treatment in route_plan.illegalNotAllocatedTreatments: 
+                route_plan.illegalNotAllocatedTreatments.remove(treatment)
+                continue
+            self.relatedIllegalRemovalAfterTreatmentRemoval(route_plan, treatment)
+            
+    def relatedIllegalRemovalAfterTreatmentRemoval(self, route_plan, treatment): 
+        for visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']:
+            if visit in list(route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()): 
+                del route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit]
+                continue 
+            for activity in self.constructor.visit_df.loc[visit, 'activitiesIds']: 
+                if activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
+                    del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activity]
+
+
     def patient_removal(self, selected_patient, route_plan): 
+        '''
+        Kommentar: Tror denne skal være riktig nå. 
+        '''
         destroyed_route_plan = copy.deepcopy(route_plan)
         
         removed_activities = []
         
-        #Her fjernes aktivitetne fra visits og treatments dict
+       
+        #1- Finner aktivitenen som skal fjernes og 2 - fjerne på nivåene under og eget nivå
         for treatment in destroyed_route_plan.allocatedPatients[selected_patient]: 
             for visit in destroyed_route_plan.treatments[treatment]:
                 removed_activities += destroyed_route_plan.visits[visit]
                 del destroyed_route_plan.visits[visit]
             del destroyed_route_plan.treatments[treatment]
+        del destroyed_route_plan.allocatedPatients[selected_patient]
         
-        #Her fjernes aktivitetne fra selve ruten 
+        #2- Her fjernes aktivitetne fra selve ruten 
         self.remove_activites_from_route_plan(removed_activities, destroyed_route_plan)
 
-        #Ta bort fra allocatedpatients dict
-        del destroyed_route_plan.allocatedPatients[selected_patient]
-        #legge til i not allocated listen 
+        #3- Flytte i dict på dette nivået 4- fjern mulige relaterte illegal lenger ned i hierarkiet
+        
         destroyed_route_plan.notAllocatedPatients.append(selected_patient)
+
+        self.relatedIllegalRemovalAfterPatientRemoval(destroyed_route_plan, selected_patient)
+
 
         return destroyed_route_plan, removed_activities, True
 
@@ -103,18 +133,44 @@ class Operators:
         destroyed_route_plan = copy.deepcopy(route_plan)
         removed_activities = []
         
+        #0 - Henter ut om det er siste 
+        last_treatment_for_patient = False 
+        patient_for_treatment = None
+        for patient, treatments in list(destroyed_route_plan.allocatedPatients.items()):
+            #Finne treatments i illegalNotAllocatedTreatments som også tilhører pasienten 
+            if treatments == [selected_treatment]: 
+                last_treatment_for_patient = True 
+            if selected_treatment in treatments: 
+                patient_for_treatment = patient 
+                break 
+
+            
+        #1 - Finner aktivitetene som skal fjernes og fjerner lenger ned i hierarkiet og eget lag 
         for visit in destroyed_route_plan.treatments[selected_treatment]:
             removed_activities += destroyed_route_plan.visits[visit]
             del destroyed_route_plan.visits[visit]
+        del destroyed_route_plan.treatments[selected_treatment]
 
+        #2 - Fjerner aktivitene fra selve ruten 
         self.remove_activites_from_route_plan(removed_activities, destroyed_route_plan)
         
-        #Har fjernet en treatment, men vet ikke om treatmenten utgjør hele pasienten 
-        #Alt1 treatmentet ugjør hele pasienten i utganspunktet 
-        #Alt2 Pasient har treatments både inne og i illegal
-        #Alt3 Den treatmenten som velges er den siste treatmenten for en pas
-        for patient, treatments in list(destroyed_route_plan.allocatedPatients.items()):
-            #Finne treatments i illegalNotAllocatedTreatments som også tilhører pasienten 
+     
+        #3.1 - Flytte i dict på dette nivået  4- fjern mulige relaterte illegal lenger ned i hierarkiet
+        if last_treatment_for_patient == False: 
+            destroyed_route_plan.illegalNotAllocatedTreatments.append(selected_treatment)
+
+            self.relatedIllegalRemovalAfterTreatmentRemoval(destroyed_route_plan, selected_treatment)
+
+        #3.2 Flytte i dict på nivået over hvis siste  4- fjern mulige relaterte illegal lenger ned i hierarkiet
+        if last_treatment_for_patient == True: 
+            destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment)
+            del destroyed_route_plan.allocatedPatients[patient_for_treatment]
+
+            self.relatedIllegalRemovalAfterPatientRemoval(destroyed_route_plan, patient_for_treatment)
+
+        return destroyed_route_plan, None, True 
+            
+        '''
             allTreatments = self.constructor.patients_df.loc[patient, 'treatmentsIds']
             illegalTreatments = []
             for allTreat in allTreatments: 
@@ -159,6 +215,7 @@ class Operators:
         self.count += 1 
       
         return destroyed_route_plan, removed_activities, True
+        '''
     
     def random_visit_removal(self, current_route_plan):
         selected_visit = rnd.choice(list(current_route_plan.visits.keys())) 
