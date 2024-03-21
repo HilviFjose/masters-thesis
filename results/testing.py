@@ -67,31 +67,21 @@ def compare_dictionaries(candidate, dict1, dict2):
     dictionary_2 = extract_visit_dictionary(dict2)
     act_equal_dict1 = sorted(list(activities)) == sorted(dictionary_1)
     act_equal_dict2 = sorted(list(activities)) == sorted(dictionary_2)
-    dict1_equal_dict2 = sorted(dictionary_1) == sorted(dictionary_2)
+    dict1_equal_dict2 = sorted(list(dict1)) == sorted(dictionary_2)
     if act_equal_dict1:
+        print("act",sorted(list(activities))) 
+        print("dict1",sorted(dictionary_1)) 
         print("Candidate activities similar to activities in visit dictionary before LS")
     else: 
         print("ERROR: Candidate activities NOT similar to activities in visit dictionary before LS")
-        set_act = set(list(activities))
-        set_dict1 = set(dictionary_1)
-        different_elements = set_act.symmetric_difference(set_dict1)
-        print("Elements that are different in the two lists:", different_elements)
     if act_equal_dict2:
         print("Candidate activities similar to activities in visit dictionary after LS")
     else: 
         print("ERROR: Candidate activities NOT similar to activities in visit dictionary after LS")
-        set_act = set(list(activities))
-        set_dict2 = set(dictionary_2)
-        different_elements = set_act.symmetric_difference(set_dict2)
-        print("Elements that are different in the two lists:", different_elements)
     if dict1_equal_dict2:
         print("Activities in visit dictionary before LS similar to activities in visit dictionary after LS")
     else: 
-        print("ERROR: Activities in visit dictionary before LS NOT similar to activities in visit dictionary after LS")
-        set_dict1 = set(dictionary_1)
-        set_dict2 = set(dictionary_2)
-        different_elements = set_dict1.symmetric_difference(set_dict2)
-        print("Elements that are different in the two lists:", different_elements)
+         print("ERROR: Activities in visit dictionary before LS NOT similar to activities in visit dictionary after LS")
     
 # Example usage
 file_path_1 = 'c:\\Users\\hilvif\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
