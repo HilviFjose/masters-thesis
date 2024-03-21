@@ -189,7 +189,7 @@ class RoutePlan:
             now = datetime.datetime.now() 
             log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
             print('-------------------------------------------------------')
-            print("visit", self.visits.keys)
+            print("visit", self.visits)
             print("treatments", self.treatments)
             print("allocated patients ", self.allocatedPatients)
             print("not allocated ", self.notAllocatedPatients)
