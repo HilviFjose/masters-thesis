@@ -139,6 +139,7 @@ def compare_dictionaries(file):
 
     
 # Example usage
+<<<<<<< HEAD
 username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
@@ -147,6 +148,10 @@ file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candida
 file_path_dict = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+str(cand)+'dict.txt'  
 
 print("COMPARING CANDIDATE FILES")
+=======
+file_path_1 = 'c:\\Users\\gurl\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
+file_path_2 = 'c:\\Users\\gurl\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
+>>>>>>> 7d6711bc9589d43bec837574eb3716ef86d256bc
 compare_files(file_path_1, file_path_2)
 print("---------------------------")
 
