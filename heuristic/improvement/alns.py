@@ -57,6 +57,8 @@ class ALNS:
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
         for i in tqdm(range(num_iterations), colour='#39ff14'):
+            print('Allocated patients before destroy',len(current_route_plan.allocatedPatients.keys()))
+
             self.iterationNum += 1
 
             #Hva er dette? Løsning vi allerede har funnet??
@@ -83,15 +85,25 @@ class ALNS:
 
             d_count[destroy] += 1
 
+            print('Allocated patients after destroy',len(destroyed_route_plan.allocatedPatients.keys()))
+            print('First objective after destroy',destroyed_route_plan.objective)
+
+
             # Repair solution
             r_operator = self.repair_operators[repair]
             candidate_route_plan = r_operator(
                 destroyed_route_plan)
             
-            
             r_count[repair] += 1
 
             candidate_route_plan.printDictionaryTest("candidate"+str(self.iterationNum)+"dict1")
+            
+            print('Allocated patients after repair',len(candidate_route_plan.allocatedPatients.keys()))
+            print('Infeasible treat after repair',len(candidate_route_plan.illegalNotAllocatedTreatments))
+            print('Infeasible visits after repair',candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
+            print('Infeasible act after repair',candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys())
+            print('First objective after repair',candidate_route_plan.objective)
+             
 
             # Local search if solution is promising
             local_search_requirement = 0.02 # TODO: Legge inn i main config
@@ -160,6 +172,10 @@ class ALNS:
 
         self.add_destroy_operator(operators.cluster_distance_patients_removal)
         self.add_destroy_operator(operators.cluster_distance_activities_removal)
+
+        self.add_destroy_operator(operators.spread_distance_patients_removal)
+        self.add_destroy_operator(operators.spread_distance_activities_removal)
+
 
         #self.add_destroy_operator(operators.random_pattern_removal)
         

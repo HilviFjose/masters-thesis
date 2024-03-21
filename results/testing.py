@@ -96,15 +96,8 @@ def compare_dictionaries_with_candidate(candidate, dict1, dict2):
 
     
 # Example usage
-file_path_1 = 'c:\\Users\\hilvif\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
-file_path_2 = 'c:\\Users\\hilvif\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
-cand = 5
-file_path_candidate = 'c:\\Users\\hilvif\\masters-thesis\\results\\candidate'+str(cand)+'.txt'  
-file_path_dict1 = 'c:\\Users\\hilvif\\masters-thesis\\results\\candidate'+str(cand)+'dict1.txt'  
-file_path_dict2 = 'c:\\Users\\hilvif\\masters-thesis\\results\\candidate'+str(cand)+'dict2.txt'  
-
-print("Comparing candidate files")
-print("---------------------------")
+file_path_1 = 'c:\\Users\\gurl\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
+file_path_2 = 'c:\\Users\\gurl\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 compare_files(file_path_1, file_path_2)
 
 print("Comparing dictionaries with candidate")

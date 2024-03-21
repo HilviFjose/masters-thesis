@@ -458,7 +458,7 @@ def autofillTreatment(df_treatments, df_visits, df_activities):
     
     return df_treatments_merged
 
-def autofillPatient(df_patients, df_treatments):
+def autofillPatient(df_patients, df_treatments, df_activities):
     #Treatment IDs
     treatments_grouped = df_treatments.groupby('patientId')['treatmentId'].apply(list).reset_index(name='treatmentsIds')
 
@@ -475,6 +475,10 @@ def autofillPatient(df_patients, df_treatments):
     # Adding complexity to df_patients as the complexity in sum of the complexity of all treatments per patient
     p_complexity = df_treatments.groupby('patientId')['complexity'].sum().reset_index(name='p_complexity')
     df_patients_merged = pd.merge(df_patients_merged, p_complexity, on='patientId', how='left')
+
+    #Adding number of activities per patient
+    nActivities = df_activities.groupby('patientId').size().reset_index(name='nActivities')
+    df_patients_merged = pd.merge(df_patients_merged, nActivities, on='patientId', how='left')
     
     file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
     df_patients_merged.to_csv(file_path, index=False)

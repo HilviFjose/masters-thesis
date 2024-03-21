@@ -17,7 +17,7 @@ df_visits_not_complete = patientGeneration.visitsGenerator(df_treatments_not_com
 df_activities = patientGeneration.activitiesGenerator(df_visits_not_complete)
 df_visits = patientGeneration.autofillVisit(df_visits_not_complete, df_activities)
 df_treatments = patientGeneration.autofillTreatment(df_treatments_not_complete, df_visits, df_activities)
-df_patients = patientGeneration.autofillPatient(df_patients_not_complete, df_treatments)
+df_patients = patientGeneration.autofillPatient(df_patients_not_complete, df_treatments, df_activities)
 
 #correcting index to start at id 1
 df_patients = df_patients.set_index(["patientId"])
