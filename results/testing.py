@@ -81,37 +81,18 @@ def compare_files(file_path_1, file_path_2):
 
 def compare_dictionary_with_candidate(candidate, dict):
     activities, duplicates = extract_activities(candidate)
-<<<<<<< HEAD
-    dictionary_1 = extract_visit_dictionary(dict1)
-    dictionary_2 = extract_visit_dictionary(dict2)
-    act_equal_dict1 = sorted(list(activities)) == sorted(dictionary_1)
-    act_equal_dict2 = sorted(list(activities)) == sorted(dictionary_2)
-    dict1_equal_dict2 = sorted(dictionary_1) == sorted(dictionary_2)
-    #print("act", list(activities))
-    #print("dict1", dictionary_1)
-    #print("dict2", dictionary_2)
-    set_act = set(activities)
-    set_dict1 = set(dictionary_1)
-    set_dict2 = set(dictionary_2)
-    if act_equal_dict1:
-        print("YEY! Candidate activities similar to activities in visit dictionary before LS")
-=======
     keys1, dictionary = extract_dictionary(dict, 'visits')
     missing_act, missing_in_act, missing_dict, missing_in_dict = compare_missing_elements(activities, dictionary)
     #print("act", list(activities))
     #print("dict1", dictionary_1)
     if missing_act == False and missing_dict == False:
         print("YEY! Candidate activities similar to activities in visit dictionary")
->>>>>>> Hilvi.DictionaryTest
     else: 
         print("ERROR: Candidate activities NOT similar to activities in visit dictionary")
         if missing_act:
             print("Elements present in dictionary but missing in candidate:", missing_in_act)
         if missing_dict:
             print("Elements present in candidate but missing in dictionary:", missing_in_dict)
-
-
-        
 
 
 def compare_dictionaries(file):
@@ -139,19 +120,14 @@ def compare_dictionaries(file):
 
     
 # Example usage
-<<<<<<< HEAD
 username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
-cand = 1
+cand = 2
 file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+str(cand)+'.txt'  
 file_path_dict = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+str(cand)+'dict.txt'  
 
 print("COMPARING CANDIDATE FILES")
-=======
-file_path_1 = 'c:\\Users\\gurl\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
-file_path_2 = 'c:\\Users\\gurl\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
->>>>>>> 7d6711bc9589d43bec837574eb3716ef86d256bc
 compare_files(file_path_1, file_path_2)
 print("---------------------------")
 

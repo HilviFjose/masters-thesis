@@ -96,10 +96,6 @@ class ALNS:
             
             r_count[repair] += 1
 
-<<<<<<< HEAD
-            
-=======
-            candidate_route_plan.printDictionaryTest("candidate"+str(self.iterationNum)+"dict1")
             
             print('Allocated patients after repair',len(candidate_route_plan.allocatedPatients.keys()))
             print('Infeasible treat after repair',len(candidate_route_plan.illegalNotAllocatedTreatments))
@@ -107,7 +103,6 @@ class ALNS:
             print('Infeasible act after repair',candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys())
             print('First objective after repair',candidate_route_plan.objective)
              
->>>>>>> 7d6711bc9589d43bec837574eb3716ef86d256bc
 
             # Local search if solution is promising
             local_search_requirement = 0.02 # TODO: Legge inn i main config
@@ -177,15 +172,11 @@ class ALNS:
         self.add_destroy_operator(operators.cluster_distance_patients_removal)
         self.add_destroy_operator(operators.cluster_distance_activities_removal)
 
-<<<<<<< HEAD
-        self.add_destroy_operator(operators.random_pattern_removal)
-=======
         self.add_destroy_operator(operators.spread_distance_patients_removal)
         self.add_destroy_operator(operators.spread_distance_activities_removal)
 
 
         #self.add_destroy_operator(operators.random_pattern_removal)
->>>>>>> 7d6711bc9589d43bec837574eb3716ef86d256bc
         
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)
