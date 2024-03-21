@@ -95,6 +95,7 @@ class ALNS:
             local_search_requirement = 0.02 # TODO: Legge inn i main config
         
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, local_search_requirement) == True: 
+                print("kommer hit")
                 localsearch = LocalSearch(candidate_route_plan)
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.printSolution("candidate"+str(self.iterationNum))

@@ -608,15 +608,19 @@ class Operators:
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
         for patient in descendingUtilityNotAllocatedPatients: 
+            print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
             status = patientInsertor.insert_patient(patient)
             
 
             if status == True: 
+                #TODO: Denne gjøres på en annen ruteplan enn den vi er inne i. 
                 self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
                 repaired_route_plan = patientInsertor.route_plan
+                print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
         
         
         repaired_route_plan.updateObjective()
+        print("objective etter innsetting", repaired_route_plan.objective[0])
       
         return repaired_route_plan
     
@@ -651,11 +655,6 @@ class Operators:
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
-
-
-        #Fjerner pasienten fra ikkeAllokert listen 
-        if patient in route_plan.notAllocatedPatients: 
-            route_plan.notAllocatedPatients.remove(patient)
 
 
     def complexity_repair(self, destroyed_route_plan):
