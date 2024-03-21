@@ -46,3 +46,4 @@ def compare_files(file_path_1, file_path_2):
 file_path_1 = 'c:\\Users\\gurl\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\gurl\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 compare_files(file_path_1, file_path_2)
+

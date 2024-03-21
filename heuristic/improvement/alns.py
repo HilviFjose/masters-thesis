@@ -98,6 +98,10 @@ class ALNS:
                 localsearch = LocalSearch(candidate_route_plan)
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
+                print("allocatedPatients", candidate_route_plan.allocatedPatients)
+                print("treatments", candidate_route_plan.treatments)
+                print("visits", candidate_route_plan.visits)
+
 
                 #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
                 #self.current_route_plan = copy.deepcopy(candidate_route_plan)
@@ -146,7 +150,7 @@ class ALNS:
      
         self.add_destroy_operator(operators.random_patient_removal)
         self.add_destroy_operator(operators.random_treatment_removal)
-        #self.add_destroy_operator(operators.random_pattern_removal)
+        self.add_destroy_operator(operators.random_pattern_removal)
         self.add_destroy_operator(operators.worst_deviation_patient_removal)
         self.add_destroy_operator(operators.worst_deviation_treatment_removal)
         
