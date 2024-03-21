@@ -91,7 +91,7 @@ class ALNS:
             
             r_count[repair] += 1
 
-            candidate_route_plan.printDictionaryTest("candidate"+str(self.iterationNum)+"dict1")
+            
 
             # Local search if solution is promising
             local_search_requirement = 0.02 # TODO: Legge inn i main config
@@ -99,9 +99,9 @@ class ALNS:
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, local_search_requirement) == True: 
                 localsearch = LocalSearch(candidate_route_plan)
                 candidate_route_plan = localsearch.do_local_search()
-                candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
-            
-            candidate_route_plan.printDictionaryTest("candidate"+str(self.iterationNum)+"dict2")
+                
+            candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
+            candidate_route_plan.printDictionaryTest("candidate"+str(self.iterationNum)+"dict")
 
                 #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
                 #self.current_route_plan = copy.deepcopy(candidate_route_plan)
@@ -155,13 +155,13 @@ class ALNS:
         
         self.add_destroy_operator(operators.worst_deviation_patient_removal)
         self.add_destroy_operator(operators.worst_deviation_treatment_removal)
-        #self.add_destroy_operator(operators.worst_deviation_visit_removal)
+        self.add_destroy_operator(operators.worst_deviation_visit_removal)
         self.add_destroy_operator(operators.worst_deviation_activity_removal)
 
         self.add_destroy_operator(operators.cluster_distance_patients_removal)
         self.add_destroy_operator(operators.cluster_distance_activities_removal)
 
-        #self.add_destroy_operator(operators.random_pattern_removal)
+        self.add_destroy_operator(operators.random_pattern_removal)
         
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)
