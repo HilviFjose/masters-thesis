@@ -175,6 +175,30 @@ class RoutePlan:
 
     def getRoutePlan(self): 
         return self.routes
+    
+    def printDictionaryTest(self, txtName):
+        #SKRIV TIL FIL I STEDET FOR TERMINAL
+        # Åpne filen for å skrive
+        with open(r"results\\" + txtName + ".txt", "w") as log_file:
+            # Omdiriger sys.stdout til filen
+            original_stdout = sys.stdout
+            sys.stdout = log_file
+            constructor = None 
+
+            # Skriver klokkeslettet til når filen ble opprettet
+            now = datetime.datetime.now() 
+            log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
+            print('-------------------------------------------------------')
+            print("visit", self.visits.keys)
+            print("treatments", self.treatments)
+            print("allocated patients ", self.allocatedPatients)
+            print("not allocated ", self.notAllocatedPatients)
+            print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
+            print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
+            print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
+
+             # Tilbakestill sys.stdout til original
+            sys.stdout = original_stdout
  
     def printSolution(self, txtName):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
