@@ -37,7 +37,8 @@ def main():
     initial_infeasible_set = constructor.route_plan.notAllocatedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
     print('Allocated patients in initial solution',len(constructor.route_plan.allocatedPatients.keys()))
-    print('First objective in initial solution',constructor.route_plan.objective)
+    print('First objective in initial solution',constructor.route_plan.objective[0])
+    print('-----------------------------------------')
 
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 

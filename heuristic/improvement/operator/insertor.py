@@ -7,8 +7,8 @@ import random
 class Insertor:
     def __init__(self, constructor, route_plan):
         self.constructor = constructor
-        #self.route_plan = copy.deepcopy(route_plan)
-        self.route_plan = route_plan
+        self.route_plan = copy.deepcopy(route_plan)
+        #self.route_plan = route_plan
         self.rev = False
 
      

@@ -811,6 +811,8 @@ class Operators:
 
                 #Legge til visit og activities som hører til treatmentet 
                 repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
+            
+        
     
     def illegal_treatment_repair(self, repaired_route_plan): 
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -871,7 +873,7 @@ class Operators:
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
         for patient in descendingUtilityNotAllocatedPatients: 
-            print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
+            #print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
             status = patientInsertor.insert_patient(patient)
             
 
@@ -879,11 +881,10 @@ class Operators:
                 #TODO: Denne gjøres på en annen ruteplan enn den vi er inne i. 
                 self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
                 repaired_route_plan = patientInsertor.route_plan
-                print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
+                #print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
         
         
         repaired_route_plan.updateObjective()
-        print("objective etter innsetting", repaired_route_plan.objective[0])
       
         return repaired_route_plan
     

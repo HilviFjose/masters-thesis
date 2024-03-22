@@ -58,6 +58,7 @@ class ALNS:
 
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             print('Allocated patients before destroy',len(current_route_plan.allocatedPatients.keys()))
+            print('First objective before destroy', current_route_plan.objective[0])
 
             self.iterationNum += 1
 
@@ -85,8 +86,11 @@ class ALNS:
 
             d_count[destroy] += 1
 
+            print('-----------------------------------------')
+            print('Destroy operator: ', d_operator.__name__)
             print('Allocated patients after destroy',len(destroyed_route_plan.allocatedPatients.keys()))
-            print('First objective after destroy',destroyed_route_plan.objective)
+            destroyed_route_plan.updateObjective()
+            print('First objective after destroy',destroyed_route_plan.objective[0])
 
 
             # Repair solution
@@ -95,12 +99,14 @@ class ALNS:
                 destroyed_route_plan)
             
             r_count[repair] += 1
-            
+
+            print('-----------------------------------------')
+            print('Repair operator: ', r_operator.__name__)
             print('Allocated patients after repair',len(candidate_route_plan.allocatedPatients.keys()))
             print('Infeasible treat after repair',len(candidate_route_plan.illegalNotAllocatedTreatments))
             print('Infeasible visits after repair',candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
             print('Infeasible act after repair',candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys())
-            print('First objective after repair',candidate_route_plan.objective)
+            print('First objective after repair',candidate_route_plan.objective[0])
              
 
             candidate_route_plan.printDictionaryTest("candidate"+str(self.iterationNum)+"dict1")
@@ -168,11 +174,14 @@ class ALNS:
         
         self.add_destroy_operator(operators.worst_deviation_patient_removal)
         self.add_destroy_operator(operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(operators.worst_deviation_visit_removal)
+        #self.add_destroy_operator(operators.worst_deviation_visit_removal)
         self.add_destroy_operator(operators.worst_deviation_activity_removal)
 
         self.add_destroy_operator(operators.cluster_distance_patients_removal)
         self.add_destroy_operator(operators.cluster_distance_activities_removal)
+
+        self.add_destroy_operator(operators.spread_distance_patients_removal)
+        self.add_destroy_operator(operators.spread_distance_activities_removal)
 
         self.add_destroy_operator(operators.random_pattern_removal)
         
