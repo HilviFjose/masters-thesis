@@ -15,8 +15,8 @@ def extract_activities(file_path):
     duplicates = [item for item, count in Counter(activities).items() if count > 1]
     return set(activities), duplicates
 
-def extract_visit_dictionary(file_path):
-    dict_name = "visit" 
+def extract_dictionary(file_path, str_item):
+    dict_name = str_item
     specific_dict = None
     with open(file_path, 'r') as file:
         for line in file:
@@ -25,13 +25,31 @@ def extract_visit_dictionary(file_path):
                 specific_dict = ast.literal_eval(dict_content)
                 break
     values_list = []
+    keys_list = []
     for value in specific_dict.values():
         if isinstance(value, list): 
             values_list.extend(value) 
         else:
             values_list.append(value) 
-    return values_list
-    
+    for key in specific_dict.keys():
+        if isinstance(key, list): 
+            keys_list.extend(key) 
+        else:
+            keys_list.append(key) 
+    return keys_list, values_list
+
+def compare_missing_elements(list1, list2):
+    set1 = set(list1)
+    set2 = set(list2)
+    missing1 = False
+    missing2 = False
+    missing_in_list1 = set2.difference(set1)
+    missing_in_list2 = set1.difference(set2)
+    if missing_in_list1:
+        missing1 = True
+    if missing_in_list2:
+        missing2 = True
+    return missing1, missing_in_list1, missing2, missing_in_list2
 
 def compare_files(file_path_1, file_path_2):
     """Compare two files, print added/removed activities, and check for duplicates."""
@@ -61,52 +79,63 @@ def compare_files(file_path_1, file_path_2):
     else:
         print("No duplicate activities in the second file.")
 
-def compare_dictionaries_with_candidate(candidate, dict1, dict2):
+def compare_dictionary_with_candidate(candidate, dict):
     activities, duplicates = extract_activities(candidate)
-    dictionary_1 = extract_visit_dictionary(dict1)
-    dictionary_2 = extract_visit_dictionary(dict2)
-    act_equal_dict1 = sorted(list(activities)) == sorted(dictionary_1)
-    act_equal_dict2 = sorted(list(activities)) == sorted(dictionary_2)
-    dict1_equal_dict2 = sorted(dictionary_1) == sorted(dictionary_2)
+    keys1, dictionary = extract_dictionary(dict, 'visits')
+    missing_act, missing_in_act, missing_dict, missing_in_dict = compare_missing_elements(activities, dictionary)
     #print("act", list(activities))
     #print("dict1", dictionary_1)
-    #print("dict2", dictionary_2)
-    set_act = set(activities)
-    set_dict1 = set(dictionary_1)
-    set_dict2 = set(dictionary_2)
-    if act_equal_dict1:
-        print("YEY! Candidate activities similar to activities in visit dictionary before LS")
+    if missing_act == False and missing_dict == False:
+        print("YEY! Candidate activities similar to activities in visit dictionary")
     else: 
-        print("ERROR: Candidate activities NOT similar to activities in visit dictionary before LS")
-        different_elements = set_act.symmetric_difference(set_dict1)
-        print("Elements that are different in the two lists:", different_elements)
-    if act_equal_dict2:
-        print("YEY! Candidate activities similar to activities in visit dictionary after LS")
-    else: 
-        print("ERROR: Candidate activities NOT similar to activities in visit dictionary after LS")
-        different_elements = set_act.symmetric_difference(set_dict2)
-        print("Elements that are different in the two lists:", different_elements)
-    if dict1_equal_dict2:
-        print("YEY! Activities in visit dictionary before LS similar to activities in visit dictionary after LS")
-    else: 
-        print("ERROR: Activities in visit dictionary before LS NOT similar to activities in visit dictionary after LS")
-        different_elements = set_dict1.symmetric_difference(set_dict2)
-        print("Elements that are different in the two lists:", different_elements)
+        print("ERROR: Candidate activities NOT similar to activities in visit dictionary")
+        if missing_act:
+            print("Elements present in dictionary but missing in candidate:", missing_in_act)
+        if missing_dict:
+            print("Elements present in candidate but missing in dictionary:", missing_in_dict)
 
+
+def compare_dictionaries(file):
+    visit_keys, visit_values = extract_dictionary(file, 'visits')
+    treatment_keys, treatment_values = extract_dictionary(file, 'treatments')
+    patient_keys, patient_values = extract_dictionary(file, 'allocated patients')
+    missing_visitkeys, missing_in_visitkeys, missing_treatmentval, missing_in_treatmentval = compare_missing_elements(visit_keys, treatment_values)
+    missing_treatmentkeys, missing_in_treatmentkeys, missing_patientval, missing_in_patientval = compare_missing_elements(treatment_keys, patient_values)
+    if missing_visitkeys == False and missing_treatmentval == False:
+        print("YEY! Visits dictionary similar to treatment dictionary")
+    else: 
+        print("ERROR: Visits dictionary NOT similar to treatment dictionary")
+        if missing_visitkeys:
+            print("Elements present in treatment dictionary but missing in visit dictionary:", missing_in_visitkeys)
+        if missing_treatmentval:
+            print("Elements present in visit dictionary but missing in treatment dictionary:", missing_in_treatmentval)
+    if missing_treatmentkeys == False and missing_patientval == False:
+        print("YEY! Treatment dictionary similar to patient dictionary")
+    else: 
+        print("ERROR:Treatment dictionary NOT similar to patient dictionary")
+        if missing_treatmentkeys:
+            print("Elements present in patient dictionary but missing in treatment dictionary:", missing_in_treatmentkeys)
+        if missing_patientval:
+            print("Elements present in treatment dictionary but missing in patient dictionary:", missing_in_patientval)
 
     
 # Example usage
-file_path_1 = 'c:\\Users\\agnesost\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
-file_path_2 = 'c:\\Users\\agnesost\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
-cand = 5
-file_path_candidate = 'c:\\Users\\agnesost\\masters-thesis\\results\\candidate'+str(cand)+'.txt'  
-file_path_dict1 = 'c:\\Users\\agnesost\\masters-thesis\\results\\candidate'+str(cand)+'dict1.txt'  
-file_path_dict2 = 'c:\\Users\\agnesost\\masters-thesis\\results\\candidate'+str(cand)+'dict2.txt'  
+username = 'hilvif'
+file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
+file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
+cand = 2
+file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+str(cand)+'.txt'  
+file_path_dict = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+str(cand)+'dict.txt'  
 
-print("Comparing candidate files")
-print("---------------------------")
+print("COMPARING CANDIDATE FILES")
 compare_files(file_path_1, file_path_2)
-
-print("Comparing dictionaries with candidate")
 print("---------------------------")
-compare_dictionaries_with_candidate(file_path_candidate, file_path_dict1, file_path_dict2)
+
+print("COMPARING DICTIONARIES WITH CANDIDATE")
+compare_dictionary_with_candidate(file_path_candidate, file_path_dict)
+print("---------------------------")
+
+print("COMPARING THE DIFFERENT DICTIONARIES")
+compare_dictionaries(file_path_dict)
+print("---------------------------")
+
