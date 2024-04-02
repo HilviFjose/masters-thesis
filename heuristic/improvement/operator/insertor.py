@@ -80,7 +80,9 @@ class Insertor:
                 self.rev = True
         '''
         #Iterer over alle patterns som er mulige for denne treatmenten
-        patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
+        #patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
+        patternType = self.constructor.treatment_df.loc[treatment, 'patternType']
+        patterns = pattern[patternType]
         index_random = [i for i in range(len(patterns))]
         #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
@@ -88,7 +90,7 @@ class Insertor:
             self.route_plan = copy.deepcopy(old_route_plan)
             insertStatus = self.insert_visit_with_pattern(visitList, patterns[index]) 
             if insertStatus == True:
-                
+                                          
                 return True
             
         return False

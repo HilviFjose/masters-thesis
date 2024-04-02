@@ -457,3 +457,10 @@ class RoutePlan:
                         #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
                         self.updateDependentActivitiesBasedOnRoutePlanOnDay(act, day)
                         return day
+                    
+    def getDayForActivityID(self, activityID):
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route:
+                    if act.id == activityID: 
+                        return day
