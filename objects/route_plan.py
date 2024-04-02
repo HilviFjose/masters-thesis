@@ -223,11 +223,13 @@ class RoutePlan:
                     route.printSoultion()
             self.updateObjective()
             print("objective ", self.objective)
-            print("allocated patients ", list(self.allocatedPatients.keys()))
+            print("visits", self.visits)
+            print("treatments", self.treatments)
+            print("allocated patients ", self.allocatedPatients)
             print("not allocated ", self.notAllocatedPatients)
             print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
-            print("illegalNotAllocatedVisits", list(self.illegalNotAllocatedVisitsWithPossibleDays.keys()))
-            print("illegalNotAllocatedActivities", list(self.illegalNotAllocatedActivitiesWithPossibleDays.keys()))
+            print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
+            print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
 
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout

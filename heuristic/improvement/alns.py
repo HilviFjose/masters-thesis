@@ -75,11 +75,16 @@ class ALNS:
             #henter ut d_operator objekt fra index i destroy operator lister
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
+            current_route_plan.printSolution("candidate_before_destroy"+str(self.iterationNum))
+
             
             d_operator = self.destroy_operators[destroy]
+            print("destroy operator", d_operator.__name__)
             destroyed_route_plan, removed_activities, destroyed = d_operator(
                 current_route_plan)
             
+            destroyed_route_plan.printSolution("candidate_after_destroy"+str(self.iterationNum))
+
             if not destroyed:
                 break
 
@@ -91,18 +96,14 @@ class ALNS:
 
             # Repair solution
             r_operator = self.repair_operators[repair]
+            print("repair operator", r_operator.__name__)
             candidate_route_plan = r_operator(
                 destroyed_route_plan)
             
             r_count[repair] += 1
-
             
-            print('Allocated patients after repair',len(candidate_route_plan.allocatedPatients.keys()))
-            print('Infeasible treat after repair',len(candidate_route_plan.illegalNotAllocatedTreatments))
-            print('Infeasible visits after repair',candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
-            print('Infeasible act after repair',candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys())
-            print('First objective after repair',candidate_route_plan.objective)
-             
+            candidate_route_plan.printSolution("candidate_after_repair"+str(self.iterationNum))
+    
 
             # Local search if solution is promising
             local_search_requirement = 0.02 # TODO: Legge inn i main config
@@ -111,8 +112,7 @@ class ALNS:
                 localsearch = LocalSearch(candidate_route_plan)
                 candidate_route_plan = localsearch.do_local_search()
                 
-            candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
-            candidate_route_plan.printDictionaryTest("candidate"+str(self.iterationNum)+"dict")
+            candidate_route_plan.printSolution("candidate_final"+str(self.iterationNum))
 
                 #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
                 #self.current_route_plan = copy.deepcopy(candidate_route_plan)
@@ -159,23 +159,22 @@ class ALNS:
     def set_operators(self, operators):
         # Add destroy operators
      
-        self.add_destroy_operator(operators.random_patient_removal)
-        self.add_destroy_operator(operators.random_treatment_removal)
-        self.add_destroy_operator(operators.random_visit_removal)
-        self.add_destroy_operator(operators.random_activity_removal)
+        #self.add_destroy_operator(operators.random_patient_removal)
+        #self.add_destroy_operator(operators.random_treatment_removal)
+        #self.add_destroy_operator(operators.random_visit_removal)
+        #self.add_destroy_operator(operators.random_activity_removal)
         
-        self.add_destroy_operator(operators.worst_deviation_patient_removal)
-        self.add_destroy_operator(operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(operators.worst_deviation_visit_removal)
-        self.add_destroy_operator(operators.worst_deviation_activity_removal)
+        #self.add_destroy_operator(operators.worst_deviation_patient_removal)
+        #self.add_destroy_operator(operators.worst_deviation_treatment_removal)
+        #self.add_destroy_operator(operators.worst_deviation_visit_removal)
+        #self.add_destroy_operator(operators.worst_deviation_activity_removal)
+       
+        #self.add_destroy_operator(operators.cluster_distance_patients_removal)
+        #self.add_destroy_operator(operators.cluster_distance_activities_removal)
 
-        self.add_destroy_operator(operators.cluster_distance_patients_removal)
-        self.add_destroy_operator(operators.cluster_distance_activities_removal)
-
-        self.add_destroy_operator(operators.spread_distance_patients_removal)
+        #self.add_destroy_operator(operators.spread_distance_patients_removal)
         self.add_destroy_operator(operators.spread_distance_activities_removal)
-
-
+    
         #self.add_destroy_operator(operators.random_pattern_removal)
         
         # Add repair operators
