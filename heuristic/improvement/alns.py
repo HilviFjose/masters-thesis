@@ -97,7 +97,6 @@ class ALNS:
             local_search_requirement = 0.02 # TODO: Legge inn i main config
         
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, local_search_requirement) == True: 
-                print("kommer hit")
                 localsearch = LocalSearch(candidate_route_plan)
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.printSolution("candidate"+str(self.iterationNum))
@@ -149,25 +148,25 @@ class ALNS:
     def set_operators(self, operators):
         # Add destroy operators
      
-        self.add_destroy_operator(operators.random_patient_removal)
-        self.add_destroy_operator(operators.random_treatment_removal)
-        self.add_destroy_operator(operators.random_visit_removal)
-        self.add_destroy_operator(operators.random_activity_removal)
+        #self.add_destroy_operator(operators.random_patient_removal)
+        #self.add_destroy_operator(operators.random_treatment_removal)
+        #self.add_destroy_operator(operators.random_visit_removal)
+        #self.add_destroy_operator(operators.random_activity_removal)
         
         self.add_destroy_operator(operators.worst_deviation_patient_removal)
-        self.add_destroy_operator(operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(operators.worst_deviation_visit_removal)
-        self.add_destroy_operator(operators.worst_deviation_activity_removal)
+        #self.add_destroy_operator(operators.worst_deviation_treatment_removal)
+        #self.add_destroy_operator(operators.worst_deviation_visit_removal)
+        #self.add_destroy_operator(operators.worst_deviation_activity_removal)
 
-        self.add_destroy_operator(operators.cluster_distance_patients_removal)
-        self.add_destroy_operator(operators.cluster_distance_activities_removal)
+        #self.add_destroy_operator(operators.cluster_distance_patients_removal)
+        #self.add_destroy_operator(operators.cluster_distance_activities_removal)
 
-        self.add_destroy_operator(operators.random_pattern_removal)
+        #self.add_destroy_operator(operators.random_pattern_removal)
         
         # Add repair operators
         self.add_repair_operator(operators.greedy_repair)
-        self.add_repair_operator(operators.random_repair)
-        self.add_repair_operator(operators.complexity_repair)
+        #self.add_repair_operator(operators.random_repair)
+        #self.add_repair_operator(operators.complexity_repair)
 
     # Add operator to the heuristic instance
         

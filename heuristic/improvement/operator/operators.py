@@ -104,7 +104,7 @@ class Operators:
         for patient in list(current_route_plan.allocatedPatients.keys()): 
             if self.constructor.patients_df.loc[patient, 'aggUtility'] < lowest_patient_contribute: 
                 selected_patient = patient
-
+        print("pasient som fjernes", selected_patient)
         return self.patient_removal(selected_patient, current_route_plan)
     
     def random_patient_removal(self, current_route_plan):
@@ -608,7 +608,7 @@ class Operators:
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
         for patient in descendingUtilityNotAllocatedPatients: 
-            print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
+            
             status = patientInsertor.insert_patient(patient)
             
 
@@ -616,11 +616,11 @@ class Operators:
                 #TODO: Denne gjøres på en annen ruteplan enn den vi er inne i. 
                 self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
                 repaired_route_plan = patientInsertor.route_plan
-                print("objective før pasient ", patient, "innsetting", repaired_route_plan.objective[0])
+             
         
         
         repaired_route_plan.updateObjective()
-        print("objective etter innsetting", repaired_route_plan.objective[0])
+      
       
         return repaired_route_plan
     
