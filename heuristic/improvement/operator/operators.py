@@ -827,7 +827,8 @@ class Operators:
         '''
         - DONE - liste med visits same day
         - DONE - liste med visits med same max skill req
-        - liste med visits med total timewindow -- Hvordan skal vi vurdere her??
+        - liste med visits med overlappende total timewindow -- Hvordan skal vi vurdere her??
+        - liste med visits med relaterte starttidspunkter
         - liste med visits med lignende employee history (kun aktuelt for de med høy continuity?)
         - DONE - liste med visits med likt antall aktiviteter
         - liste med visits med samme mengde presedens
@@ -850,7 +851,7 @@ class Operators:
 
                 # Visits with the same max professional requirement as the primary visit
                 maxSkillReq = 0
-                for actId in activitiesIds:#current_route_plan.visits[visitId]: 
+                for actId in activitiesIds:
                     act = current_route_plan.getActivityFromEntireRoutePlan(actId)
                     skillReq = act.skillReq
                     if skillReq > maxSkillReq:
