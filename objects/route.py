@@ -151,8 +151,6 @@ class Route:
    
     #TODO: Oppdates ikke oppover igjen i hierarkiet
     def removeActivityID(self, activityID):
-        #if activityID == 48: 
-        
         index = 0 
         for act in self.route: 
             if act.getID() == activityID: 
@@ -160,10 +158,8 @@ class Route:
                 act.employeeNotAllowedDueToPickUpDelivery = []
                 act.startTime = None
                 self.updateActivityDependenciesInRoute(act)
-                #print("FJERNER AKT ", activityID, "from DAY ", self.day, " EMPL ", self.employee.id)
                 return
             index += 1 
-        #print("Activity", activity.getID() , " not found in route employee", self.getEmployee().getID(), "on day", self.day)
         return
 
     

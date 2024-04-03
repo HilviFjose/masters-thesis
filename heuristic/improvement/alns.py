@@ -33,13 +33,15 @@ class ALNS:
         
         self.iterationNum = 0 
         
-
+    #TODO: Det er noe rart med at vi definerer disse på nytt på starten av hver iterajspn
+    #TODO: Hvor sammenlignes de andre 
     def iterate(self, num_iterations):
         weights = np.asarray(self.weights, dtype=np.float16)
-        current_route_plan = copy.deepcopy(self.route_plan)
-        current_objective = copy.deepcopy(self.objective)
-        best_route_plan = copy.deepcopy(self.route_plan)
-        best_objective = copy.deepcopy(self.objective)
+        candidate_route_plan = copy.deepcopy(self.current_route_plan)
+        #current_route_plan = copy.deepcopy(self.route_plan)
+        #current_objective = copy.deepcopy(self.objective)
+        #best_route_plan = copy.deepcopy(self.route_plan)
+        #best_objective = copy.deepcopy(self.objective)
         found_solutions = {}
 
         # TODO: Usikker på om vi trenger dette
@@ -57,7 +59,7 @@ class ALNS:
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
         for i in tqdm(range(num_iterations), colour='#39ff14'):
-            print('Allocated patients before destroy',len(current_route_plan.allocatedPatients.keys()))
+            #print('Allocated patients before destroy',len(current_route_plan.allocatedPatients.keys()))
 
             self.iterationNum += 1
 
@@ -75,30 +77,26 @@ class ALNS:
             #henter ut d_operator objekt fra index i destroy operator lister
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
-            current_route_plan.printSolution("candidate_before_destroy"+str(self.iterationNum))
+            candidate_route_plan.printSolution("candidate_before_destroy"+str(self.iterationNum))
 
             
             d_operator = self.destroy_operators[destroy]
-            print("destroy operator", d_operator.__name__)
-            destroyed_route_plan, removed_activities, destroyed = d_operator(
-                current_route_plan)
+            #print("destroy operator", d_operator.__name__)
+            candidate_route_plan, removed_activities, destroyed = d_operator(
+                candidate_route_plan)
             
-            destroyed_route_plan.printSolution("candidate_after_destroy"+str(self.iterationNum))
+            candidate_route_plan.printSolution("candidate_after_destroy"+str(self.iterationNum))
 
             if not destroyed:
                 break
 
             d_count[destroy] += 1
 
-            print('Allocated patients after destroy',len(destroyed_route_plan.allocatedPatients.keys()))
-            print('First objective after destroy',destroyed_route_plan.objective)
-
-
             # Repair solution
             r_operator = self.repair_operators[repair]
-            print("repair operator", r_operator.__name__)
+            #print("repair operator", r_operator.__name__)
             candidate_route_plan = r_operator(
-                destroyed_route_plan)
+                candidate_route_plan)
             
             r_count[repair] += 1
             
@@ -119,15 +117,15 @@ class ALNS:
                 #self.current_objective = copy.deepcopy(candidate_route_plan.objective)
         
             # Konverterer til hexa-string for å sjekke om vi har samme løsning. Evaluerer og scores oppdateres kun hvis vi har en løsning som ikke er funnet før
-            if hash(str(candidate_route_plan)) == hash(str(current_route_plan)) and hash(str(candidate_route_plan)) in found_solutions.keys():
+            if hash(str(candidate_route_plan)) == hash(str(self.current_route_plan)) and hash(str(candidate_route_plan)) in found_solutions.keys():
                 already_found = True
             else:
-                found_solutions[hash(str(current_route_plan))] = 1
+                found_solutions[hash(str(self.current_route_plan))] = 1
 
             if not already_found:
                 # Compare solutions
-                best_route_plan, best_objective, current_route_plan, current_objective, weight_score = self.evaluate_candidate(
-                    best_route_plan, best_objective, current_route_plan, current_objective, candidate_route_plan, candidate_route_plan.objective, self.criterion)
+                best_route_plan, best_objective, self.current_route_plan, current_objective, weight_score = self.evaluate_candidate(
+                    self.best_route_plan, self.best_route_plan.objective , self.current_route_plan, self.current_route_plan.objective, candidate_route_plan, candidate_route_plan.objective, self.criterion)
                 # Update scores
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
@@ -141,7 +139,6 @@ class ALNS:
                         (1 - self.reaction_factor) + \
                         (self.reaction_factor *
                          d_scores[destroy] / d_count[destroy])
-                    print("d_count destroy", d_count[destroy])
                 for repair in range(len(r_weights)):
                     r_weights[repair] = r_weights[repair] * \
                         (1 - self.reaction_factor) + \
@@ -156,31 +153,31 @@ class ALNS:
           
         return best_route_plan
     
-    def set_operators(self, operators):
+    def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
-     
-        self.add_destroy_operator(operators.random_patient_removal)
-        self.add_destroy_operator(operators.random_treatment_removal)
-        self.add_destroy_operator(operators.random_visit_removal)
-        self.add_destroy_operator(operators.random_activity_removal)
-        
-        self.add_destroy_operator(operators.worst_deviation_patient_removal)
-        self.add_destroy_operator(operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(operators.worst_deviation_visit_removal)
-        self.add_destroy_operator(operators.worst_deviation_activity_removal)
        
-        self.add_destroy_operator(operators.cluster_distance_patients_removal)
-        self.add_destroy_operator(operators.cluster_distance_activities_removal)
+        self.add_destroy_operator(destroy_operators.random_patient_removal)
+        self.add_destroy_operator(destroy_operators.random_treatment_removal)
+        self.add_destroy_operator(destroy_operators.random_visit_removal)
+        self.add_destroy_operator(destroy_operators.random_activity_removal)
+        
+        self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
+        self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
+        self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
+        self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
+       
+        self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
+        self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
 
-        self.add_destroy_operator(operators.spread_distance_patients_removal)
-        self.add_destroy_operator(operators.spread_distance_activities_removal)
+        self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
+        self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
     
         #self.add_destroy_operator(operators.random_pattern_removal)
         
         # Add repair operators
-        self.add_repair_operator(operators.greedy_repair)
-        self.add_repair_operator(operators.random_repair)
-        self.add_repair_operator(operators.complexity_repair)
+        self.add_repair_operator(repair_operators.greedy_repair)
+        self.add_repair_operator(repair_operators.random_repair)
+        self.add_repair_operator(repair_operators.complexity_repair)
 
     # Add operator to the heuristic instance
         
