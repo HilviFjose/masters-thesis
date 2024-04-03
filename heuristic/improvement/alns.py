@@ -76,6 +76,7 @@ class ALNS:
             #Har en liste over funskjoner og henter ut en av de og kaller denne funskjoenen d_operator 
             #deretter kalles denne ufnskjoenen med de gitte parameterne 
             
+            print("----- DESTROY -----")
             d_operator = self.destroy_operators[destroy]
             destroyed_route_plan, removed_activities, destroyed = d_operator(
                 current_route_plan)
@@ -90,6 +91,7 @@ class ALNS:
 
 
             # Repair solution
+            print("----- REPAIR -----")
             r_operator = self.repair_operators[repair]
             candidate_route_plan = r_operator(
                 destroyed_route_plan)
@@ -175,8 +177,8 @@ class ALNS:
         #self.add_destroy_operator(operators.spread_distance_patients_removal)
         #self.add_destroy_operator(operators.spread_distance_activities_removal)
 
-        self.add_destroy_operator(operators.related_treatments_removal)
-
+        #self.add_destroy_operator(operators.related_treatments_removal)
+        self.add_destroy_operator(operators.related_visits_removal)
 
         #self.add_destroy_operator(operators.random_pattern_removal)
         

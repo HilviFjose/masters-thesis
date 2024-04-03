@@ -791,12 +791,129 @@ class Operators:
     
     #-- RELATED REMOVAL --
     def related_visits_removal(self, current_route_plan):
+        # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
+        num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
+        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
+
+        # Forberede liste med visits
+        allocatedVisitsIds = list(current_route_plan.visits.keys())
+
+        primary_visitId = random.choice(allocatedVisitsIds)
+        p_firstActId = current_route_plan.visits[primary_visitId][0] #Henter ut første aktivitet for gitt visit
+        p_lastActId = current_route_plan.visits[primary_visitId][-1] #Henter ut siste aktivitet for gitt visit
+        p_day = current_route_plan.getDayForActivityID(p_firstActId)
+
+        # Get the highest professional reequirement for the primary visit
+        p_maxSkillReq = 0
+        for p_actId in current_route_plan.visits[primary_visitId]: 
+            p_act = current_route_plan.getActivity(p_actId, p_day)
+            p_skillReq = p_act.skillReq
+            if p_skillReq > p_maxSkillReq:
+                p_maxSkillReq = p_skillReq
+
+        # Time windows and duration for the primary visit
+        p_firstAct = current_route_plan.getActivityFromEntireRoutePlan(p_firstActId)
+        p_lastAct = current_route_plan.getActivityFromEntireRoutePlan(p_lastActId)
+        p_visitStarted = p_firstAct.getStartTime()
+        p_visitFinished = p_lastAct.getStartTime() + p_lastAct.getDuration()
+        p_visitDuration = 0
+        for p_actId in current_route_plan.visits[primary_visitId]:
+            p_act = current_route_plan.getActivityFromEntireRoutePlan(p_actId)
+            p_visitDuration += p_act.getDuration()
+        p_visitEarliestStart = p_firstAct.earliestStartTime
+        p_visitLatestStart = p_firstAct.latestStartTime        
         
+
+        '''
+        - DONE - liste med visits same day
+        - DONE - liste med visits med same max skill req
+        - liste med visits med total timewindow -- Hvordan skal vi vurdere her??
+        - liste med visits med lignende employee history (kun aktuelt for de med høy continuity?)
+        - DONE - liste med visits med likt antall aktiviteter
+        - liste med visits med samme mengde presedens
+        '''
+
+        visitsSameDay = []
+        visitsSameSkillReq = []
+        visitsSameNumAct = []
+        visitsOverlapTW = []
+        visitsRelatedStartTimes = []
+        related_visit_dict = {}
+        for visitId, activitiesIds in current_route_plan.visits.items(): 
+            if visitId != primary_visitId:
+                related_score = 0
+                # Visits on the same day as the primary visit
+                #NOTE: SKAL ALLE DE UNDER EGENTLIG KUN SKJE OM DET ER SAMME DAG?? DVS AT ALLE IF UNDER DENNE SKAL INN ET HAKK
+                if ((current_route_plan.getDayForActivityID(activitiesIds[0]) == p_day) and (visitId not in visitsSameDay)):
+                    visitsSameDay.append(visitId)
+                    related_score += 1
+
+                # Visits with the same max professional requirement as the primary visit
+                maxSkillReq = 0
+                for actId in activitiesIds:#current_route_plan.visits[visitId]: 
+                    act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                    skillReq = act.skillReq
+                    if skillReq > maxSkillReq:
+                        maxSkillReq = skillReq
+                if (maxSkillReq == p_maxSkillReq and visitId not in visitsSameSkillReq):
+                    visitsSameSkillReq.append(visitId)
+                    related_score += 1
+
+                # Visits with the same amount of activities as the primary visit
+                if (len(activitiesIds) == len(current_route_plan.visits[primary_visitId]) and (visitId not in visitsSameNumAct)):
+                    visitsSameNumAct.append(visitId)
+                    related_score += 1
+
+                # Data for checks regarding time windows, start times and durations
+                firstAct = current_route_plan.getActivityFromEntireRoutePlan(activitiesIds[0])
+                lastAct = current_route_plan.getActivityFromEntireRoutePlan(activitiesIds[-1])
+                visitStarted = firstAct.getStartTime()
+                visitFinished = lastAct.getStartTime() + lastAct.getDuration()
+                visitDuration = 0
+                for actId in activitiesIds:
+                    act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                    visitDuration += act.getDuration()
+                visitEarliestStart = firstAct.earliestStartTime
+                visitLatestStart = firstAct.latestStartTime
+
+                # Visits where the time windows overlap with the primary visit's time window
+                if ((visitEarliestStart < p_visitLatestStart) and (visitLatestStart > p_visitEarliestStart)     #legge inn duration her?
+                    and (p_visitEarliestStart < visitLatestStart) and (p_visitLatestStart > visitEarliestStart) #legge inn duration her?
+                    and (visitId not in visitsOverlapTW)):
+                    visitsOverlapTW.append(visitId)
+                    related_score += 1
+
+                    # Visits with start times related with the primary visit
+                    if ((visitStarted + visitDuration < p_visitLatestStart) and (visitStarted > p_visitEarliestStart)     
+                        and (p_visitStarted + visitDuration < visitLatestStart) and (p_visitStarted > visitEarliestStart) 
+                        and (visitId not in visitsRelatedStartTimes)):                     
+                        visitsRelatedStartTimes.append(visitId)
+                        #related_score += 1
+
+                # Add visit and score to related visit dictionary
+                related_visit_dict[visitId] = related_score
+        print('TESTING visitsRelatedStartTimes',visitsRelatedStartTimes)
+        sorted_related_visit_dict = dict(sorted(related_visit_dict.items(), key=lambda item: item[1], reverse=True))
+        print('sorted_related_visit_dict', list(sorted_related_visit_dict.keys()))
+
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        activities_to_remove = []
+        # Removing primary visit
+        self.visit_removal(primary_visitId, destroyed_route_plan) 
+        activities_count = len(current_route_plan.visits[primary_visitId])
+        # Removing visits with the highest relatedness score
+        removed_visits = [primary_visitId]
+        for visitId in list(sorted_related_visit_dict.keys()): 
+            if activities_count >= total_num_activities_to_remove:
+                break
+            # Visits are only removed if the relatedness score is higher than 0
+            if sorted_related_visit_dict[visitId] > 0:
+                self.visit_removal(visitId, destroyed_route_plan)
+                activities_count += len(current_route_plan.visits[visitId])
+                removed_visits.append(visitId)
+        print(f'Removed visits: ', removed_visits)
+        print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
 
-
-        return destroyed_route_plan, activities_to_remove, True
+        return destroyed_route_plan, None, True
 
     def related_treatments_removal(self, current_route_plan):
         # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
@@ -806,53 +923,50 @@ class Operators:
         # Forberede liste med treatments og deres aktiviteter
         allocatedTreatmentsIds = list(current_route_plan.treatments.keys())
 
-        random_treatment = random.choice(allocatedTreatmentsIds)
-        filtered_row = self.constructor.treatment_df.loc[[random_treatment]]
-        patternType = self.constructor.treatment_df.loc[random_treatment, 'patternType']
-        print('Valgt patterntype', patternType)
-        possibleTreatmentsIds = self.constructor.treatment_df[self.constructor.treatment_df['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
-        first_activity = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
-        firstAct = Activity(self.constructor.activities_df, first_activity)
-        firstDay = current_route_plan.getDayForActivityID(firstAct)
-        
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        #self.treatment_removal(random_treatment, destroyed_route_plan) #Fjerner treatmenten som er utgangspunktet
-        #self.activity_removal(first_activity, destroyed_route_plan)
-        actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(possibleTreatmentsIds)].index.tolist()
-        actSamePatternAndDay = {}
+        # Velger en random treatment og finner hvilket pattern og patterntype det har i ruteplanen.
+        primary_treatmentId = random.choice(allocatedTreatmentsIds)
+        filtered_row = self.constructor.treatment_df.loc[[primary_treatmentId]]
+        patternType = self.constructor.treatment_df.loc[primary_treatmentId, 'patternType']
+        TreatSamePatternType = self.constructor.treatment_df[self.constructor.treatment_df['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
+        firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
+        firstDay = current_route_plan.getDayForActivityID(firstActId)  #First day of a treatment and the patterntype decide which pattern is choosen for the treatment
+        related_treatment_list = [primary_treatmentId]
+        activities_count = self.constructor.treatment_df.loc[primary_treatmentId]['nActivities']
+
+        # Fjerner treatments som har samme pattern
+        actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
         for actId in actSamePatternType:
-            act = Activity(self.constructor.activities_df, actId)
-            if current_route_plan.getDayForActivityID(act) == firstDay and act != firstAct:
-                    #self.activity_removal(actId, destroyed_route_plan)
-                    related_score = 1
-                    actSamePatternAndDay.append(act.id, 1)
-
-        actAllocated = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(allocatedTreatmentsIds)].index.tolist()
-        actSameDay = {}
-        for actId in actSameDay:
-            act = Activity(self.constructor.activities_df, actId)
-            if current_route_plan.getDayForActivityID(act) == firstDay and act != firstAct:
-                    #self.activity_removal(actId, destroyed_route_plan)
-                    related_score = 2
-                    actSameDay.append(act.id)
-        
-
-        print('removed activties', activities_to_remove)
-
-        ''' 
-        removed_activities_count = 0
-        for treatId in treatments_to_remove:
-            if removed_activities_count >= total_num_activities_to_remove:
+            if activities_count >= total_num_activities_to_remove:
                 break
-            num_activities_for_patient = df_selected_treatments.loc[treatId, 'nActivities']
-            removed_activities_count += num_activities_for_patient
-            treatments_to_remove.append(treatId) 
 
-        print(f'Removed {removed_activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
-        print("treatments_to_remove", treatments_to_remove)
+            act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+            if current_route_plan.getDayForActivityID(actId) == firstDay:
+                actSamePatternType.remove(actId)
+                if act.treatmentId not in related_treatment_list:
+                    related_treatment_list.append(act.treatmentId)
+                    print(f'Removed patterntype {patternType} on day {firstDay}. Removed treatment {act.treatmentId}')
+                    activities_count += self.constructor.treatment_df.loc[act.treatmentId]['nActivities']
         
-        '''
-        return destroyed_route_plan, activities_to_remove, True
+        # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
+        for actId in actSamePatternType:
+            if activities_count >= total_num_activities_to_remove:
+                break
+
+            act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+            if act.treatmentId not in related_treatment_list:
+                actSamePatternType.remove(actId)
+                related_treatment_list.append(act.treatmentId)
+                print(f'Removed treatment from patterntype {patternType}. Removed treatment {act.treatmentId}')
+                activities_count += self.constructor.treatment_df.loc[act.treatmentId]['nActivities']
+        
+        # Removing related treatments
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        for treatId in related_treatment_list:
+            self.treatment_removal(treatId, destroyed_route_plan) 
+
+        print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
+        
+        return destroyed_route_plan, None, True
 
 #---------- REPAIR OPERATORS ----------
     

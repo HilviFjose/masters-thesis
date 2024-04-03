@@ -25,6 +25,7 @@ class Activity:
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
         self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextPrece"])
         self.patient = df.loc[id]["patientId"]
+        self.treatmentId = df.loc[id]["treatmentId"]
         self.suitability = df.loc[id]["utility"]
         
         self.startTime = None
@@ -33,7 +34,6 @@ class Activity:
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
 
-        
 
 
         #Lager dependent activities. Som er aktiviteter som denne noden påvirkes av 

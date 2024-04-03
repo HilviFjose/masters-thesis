@@ -84,7 +84,7 @@ class Insertor:
         patternType = self.constructor.treatment_df.loc[treatment, 'patternType']
         patterns = pattern[patternType]
         index_random = [i for i in range(len(patterns))]
-        #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+        random.shuffle(index_random)  
 
         for index in index_random:
             self.route_plan = copy.deepcopy(old_route_plan)
