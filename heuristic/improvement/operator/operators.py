@@ -889,13 +889,13 @@ class Operators:
                         and (p_visitStarted + visitDuration < visitLatestStart) and (p_visitStarted > visitEarliestStart) 
                         and (visitId not in visitsRelatedStartTimes)):                     
                         visitsRelatedStartTimes.append(visitId)
-                        #related_score += 1
+                        related_score += 1
 
                 # Add visit and score to related visit dictionary
                 related_visit_dict[visitId] = related_score
-        print('TESTING visitsRelatedStartTimes',visitsRelatedStartTimes)
+                
         sorted_related_visit_dict = dict(sorted(related_visit_dict.items(), key=lambda item: item[1], reverse=True))
-        print('sorted_related_visit_dict', list(sorted_related_visit_dict.keys()))
+        print('sorted_related_visit_dict', sorted_related_visit_dict)
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         # Removing primary visit
