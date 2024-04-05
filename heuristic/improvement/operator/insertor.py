@@ -29,27 +29,15 @@ class Insertor:
     '''
 
     def insert_patient(self, patient):
-        '''
-        Funksjonen forsøker å legge til alle treatments for pasienten. 
-
-        Returns: 
-        True/False på om det var plass til pasienten på hjemmesykehus eller ikke 
-        '''
-
         route_test = copy.deepcopy(self.route_plan)
         old_route_plan = copy.deepcopy(route_test)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
-     
         for treatment in treamentList: 
-            
             status = self.insert_treatment(treatment)
-
-            
             if status == False: 
                 self.route_plan = old_route_plan
                 return False
-   
         return True 
 
 
@@ -88,7 +76,6 @@ class Insertor:
             self.route_plan = copy.deepcopy(old_route_plan)
             insertStatus = self.insert_visit_with_pattern(visitList, patterns[index]) 
             if insertStatus == True:
-                
                 return True
             
         return False
@@ -120,27 +107,15 @@ class Insertor:
         return True   
                 
 
-    #Denne 
     def insert_visit_on_day(self, visit, day):  
-        '''
-        Funksjonen forsøker å legge til alle aktiviter som inngår i et visit ved å oppdatere route_self 
-
-        Arg: 
-        visit (int): Et visit som skal legges til i self.route_plan eks: 6
-        day (int): Dagen visitet skal gjennomføres, eks: 3
-
-        Returns: 
-        True/False på om det var plass til visitet på hjemmesykehuset denn dagen
-        '''
-
-        #Henter ut liste med aktiviteter som inngår i vistet 
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
-
+        old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         for activityID in activitiesList: 
             activity = Activity(self.constructor.activities_df, activityID)
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
+                self.route_plan = old_route_plan
                 return False
         #Dersom alle aktivitene har blitt lagt til returers true  
         return True
