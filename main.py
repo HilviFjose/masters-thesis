@@ -71,5 +71,6 @@ if __name__ == "__main__":
     # Last inn og analyser profildata, fokusert på dine funksjoner
     p = pstats.Stats('program_profile')
     p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
+    
 
     """

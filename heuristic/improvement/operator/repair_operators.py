@@ -38,29 +38,25 @@ class RepairOperators:
         
         #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
-
+        
         #VISIT ILLEGAL (forsøker legge inn illegal visits )
         repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
-
+        
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
         repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)      
-    
-        #LEGGER TIL PASIENTER 
-        patientInsertor = Insertor(self.constructor, repaired_route_plan)
+  
         #TODO: Sortere slik at den setter inn de beste først. Den er ikkke grådig nå vel? 
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
-        
-        old_route_plan = copy.deepcopy(repaired_route_plan)
         for patient in descendingUtilityNotAllocatedPatients: 
+            #LEGGER TIL PASIENTER 
+            route_plan_with_patient = copy.deepcopy(repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, route_plan_with_patient)
             status = patientInsertor.insert_patient(patient)
-            
             if status == True: 
                 repaired_route_plan = patientInsertor.route_plan
-                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
-            else:
-                repaired_route_plan = old_route_plan
-        
+                repaired_route_plan.updateAllocationAfterPatientInsertor(patient, self.constructor)
+    
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
@@ -84,20 +80,16 @@ class RepairOperators:
         randomNotAllocatedPatients = repaired_route_plan.notAllocatedPatients
         random.shuffle(randomNotAllocatedPatients)
 
-        old_route_plan = copy.deepcopy(repaired_route_plan)
         for patient in randomNotAllocatedPatients: 
+            #LEGGER TIL PASIENTER 
+            route_plan_with_patient = copy.deepcopy(repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, route_plan_with_patient)
             status = patientInsertor.insert_patient(patient)
-        
             if status == True: 
                 repaired_route_plan = patientInsertor.route_plan
-                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
-
-            else:
-                repaired_route_plan = old_route_plan
-
+                repaired_route_plan.updateAllocationAfterPatientInsertor(patient, self.constructor)
     
         repaired_route_plan.updateObjective()
-      
         return repaired_route_plan
 
 
@@ -119,18 +111,15 @@ class RepairOperators:
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get)
 
-        old_route_plan = copy.deepcopy(repaired_route_plan)
         for patient in descendingComplexityNotAllocatedPatients: 
-            
+            #LEGGER TIL PASIENTER 
+            route_plan_with_patient = copy.deepcopy(repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, route_plan_with_patient)
             status = patientInsertor.insert_patient(patient)
-            
             if status == True: 
                 repaired_route_plan = patientInsertor.route_plan
-                self.updateAllocationAfterPatientInsertor(repaired_route_plan, patient)
-            
-            else: 
-                repaired_route_plan = old_route_plan
-
+                repaired_route_plan.updateAllocationAfterPatientInsertor(patient, self.constructor)
+    
         repaired_route_plan.updateObjective()
       
         return repaired_route_plan
@@ -146,6 +135,7 @@ class RepairOperators:
             activity = Activity(self.constructor.activities_df, activityID)
             repaired_route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
             status = repaired_route_plan.addActivityOnDay(activity,day)
+            
             if status == True: 
                 del repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activityID]
 
@@ -206,14 +196,3 @@ class RepairOperators:
                     repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds'] 
         return repaired_route_plan
     
-    def updateAllocationAfterPatientInsertor(self, route_plan, patient): 
-        #Oppdaterer allokerings dictionariene 
-        route_plan.allocatedPatients[patient] = self.constructor.patients_df.loc[patient, 'treatmentsIds']
-        for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
-            route_plan.treatments[treatment] = self.constructor.treatment_df.loc[treatment, 'visitsIds']
-        for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 
-            route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
-
-        #Fjerner pasienten fra ikkeAllokert listen 
-        if patient in route_plan.notAllocatedPatients: 
-            route_plan.notAllocatedPatients.remove(patient)
