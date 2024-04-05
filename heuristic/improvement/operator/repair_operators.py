@@ -37,13 +37,13 @@ class RepairOperators:
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
         #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
-        self.illegal_activity_repair(repaired_route_plan)
+        repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
 
         #VISIT ILLEGAL (forsøker legge inn illegal visits )
-        self.illegal_visit_repair(repaired_route_plan)
+        repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
 
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
-        self.illegal_treatment_repair(repaired_route_plan)      
+        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)      
     
         #LEGGER TIL PASIENTER 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -71,13 +71,13 @@ class RepairOperators:
         
         #TODO: Skal den ha random elementer også i innsettingen av det som er ulovlig 
         #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
-        self.illegal_activity_repair(repaired_route_plan)
+        repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
 
         #VISIT ILLEGAL (forsøker legge inn illegal visits )
-        self.illegal_visit_repair(repaired_route_plan)
+        repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
 
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
-        self.illegal_treatment_repair(repaired_route_plan)      
+        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)      
     
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -106,13 +106,13 @@ class RepairOperators:
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
 
         #ACTIVITY ILLEGAL (forsøker legge inn illegal activites )
-        self.illegal_activity_repair(repaired_route_plan)
+        repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
 
         #VISIT ILLEGAL (forsøker legge inn illegal visits )
-        self.illegal_visit_repair(repaired_route_plan)
+        repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
 
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
-        self.illegal_treatment_repair(repaired_route_plan)  
+        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)  
 
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -146,8 +146,6 @@ class RepairOperators:
             activity = Activity(self.constructor.activities_df, activityID)
             repaired_route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
             status = repaired_route_plan.addActivityOnDay(activity,day)
-            print("Status", status)
-            print("activityID", activityID)
             if status == True: 
                 del repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activityID]
 
@@ -157,10 +155,12 @@ class RepairOperators:
                     if activityID in self.constructor.visit_df.loc[visit, 'activitiesIds']: 
                         break
                 repaired_route_plan.visits[visit].append(activityID) 
+        return repaired_route_plan
 
   
     def illegal_visit_repair(self, repaired_route_plan): 
         #TODO: Her burde presedensen også sjekkes, usikker på om riktig nå 
+
         visitInsertor = Insertor(self.constructor, repaired_route_plan)
         illegal_visit_iteration_list = list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
         for visit in illegal_visit_iteration_list:  
@@ -181,6 +181,7 @@ class RepairOperators:
                 repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
             else: 
                 repaired_route_plan = copy.deepcopy(old_route_plan)
+        return repaired_route_plan
     
     def illegal_treatment_repair(self, repaired_route_plan): 
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -203,7 +204,7 @@ class RepairOperators:
                 repaired_route_plan.treatments[treatment] = self.constructor.treatment_df.loc[treatment, 'visitsIds']
                 for visit in [item for sublist in repaired_route_plan.treatments.values() for item in sublist]: 
                     repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds'] 
-    
+        return repaired_route_plan
     
     def updateAllocationAfterPatientInsertor(self, route_plan, patient): 
         #Oppdaterer allokerings dictionariene 

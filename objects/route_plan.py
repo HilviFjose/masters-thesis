@@ -168,7 +168,15 @@ class RoutePlan:
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
     
-
+    def printSolution1(self, day):
+            '''
+            Printer alle rutene som inngår i routeplan
+            '''
+            print("Printer alle rutene")
+            for route in self.routes[day]: 
+                route.printSoultion()
+            self.updateObjective()
+            
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
         returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
