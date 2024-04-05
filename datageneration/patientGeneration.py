@@ -112,7 +112,7 @@ def patientGenerator(df_employees):
         elif continuity_group == 2:
             max_employees = 3
         else:  # continuity_group == 3
-            max_employees = 6
+            max_employees = 5
 
         num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
         random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()  # Tilfeldige ansatte
@@ -355,19 +355,16 @@ def activitiesGenerator(df_visits):
         visit_duration = int(group['duration'].sum())
 
         #Earliest and latest possible starting times within a day
-        startDay = 0
-        endDay = 1400
-        latestPossible = 1440 - visit_duration
-        latestStartTime = np.random.randint(visit_duration, latestPossible)
+        startDay = construction_config.startday
+        endDay = construction_config.endday
+        latestPossible = endDay - visit_duration
     
-        if np.random.rand() < 0.7:  # 70% sjanse for å velge et tall innenfor 480 og 960 (08:00-16:00)
-            latestStartTime = np.random.randint(480, min(960, latestPossible))
-        
-        earliestStartTime = np.random.randint(0, latestStartTime-visit_duration)
-                  
+        latestStartTime = np.random.randint(480+visit_duration, endDay - visit_duration)
+        earliestStartTime = np.random.randint(480, latestStartTime-visit_duration)        
+     
         #TODO: Sett til genererte tidsvinduer i stedet for hele dagtid.
-        df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] = earliestStartTime #0
-        df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] = latestStartTime #1440
+        df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] = earliestStartTime 
+        df_activities.loc[df_activities['visitId'] == visitId, 'latestStartTime'] = latestStartTime
 
        
     # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
@@ -461,7 +458,7 @@ def autofillTreatment(df_treatments, df_visits, df_activities):
     
     return df_treatments_merged
 
-def autofillPatient(df_patients, df_treatments):
+def autofillPatient(df_patients, df_treatments, df_activities):
     #Treatment IDs
     treatments_grouped = df_treatments.groupby('patientId')['treatmentId'].apply(list).reset_index(name='treatmentsIds')
 
@@ -478,6 +475,10 @@ def autofillPatient(df_patients, df_treatments):
     # Adding complexity to df_patients as the complexity in sum of the complexity of all treatments per patient
     p_complexity = df_treatments.groupby('patientId')['complexity'].sum().reset_index(name='p_complexity')
     df_patients_merged = pd.merge(df_patients_merged, p_complexity, on='patientId', how='left')
+
+    #Adding number of activities per patient
+    nActivities = df_activities.groupby('patientId').size().reset_index(name='nActivities')
+    df_patients_merged = pd.merge(df_patients_merged, nActivities, on='patientId', how='left')
     
     file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
     df_patients_merged.to_csv(file_path, index=False)
@@ -495,9 +496,9 @@ def TimeWindowsWithTravel(df_activities, T_ij):
         visit_duration = int(group['duration'].sum())
 
         #Earliest and latest possible starting times within a day
-        startDay = 0
-        endDay = 1400
-        latestPossible = 1440 - visit_duration
+        startDay = construction_config.startday
+        endDay = construction_config.endday
+        latestPossible = endDay - visit_duration
 
         #Generated values without travel distances
         earliestStartTime = df_activities.loc[df_activities['visitId'] == visitId, 'earliestStartTime'] 

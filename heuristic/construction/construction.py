@@ -25,9 +25,13 @@ class ConstructionHeuristic:
         self.days = days
 
         self.route_plan = RoutePlan(days, employees_df) 
-        self.listOfPatients = []
-        self.unAssignedPatients = []
         
+        
+    '''
+    Oppdatering av matrisene. I dette statidiet vil vi bare godekjenne inserting av pasienter som fullstendig legges inn på hjemmesykehuset 
+
+    Dersom pasientne allokeres legges nå alle de tilhørende treatments, visits og aktiviteter til 
+    '''
  
     def construct_initial(self): 
         '''
@@ -48,29 +52,23 @@ class ConstructionHeuristic:
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
 
-            '''
-            #Oppretter et PatientInsertor objekt, hvor pasient_df og kopien av dagens ruteplan sendes inn
-            patientInsertor = PatientInsertor( route_plan_with_patient, patient_request, self)
-            #patientInsertor forsøker å legge til pasienten, og returnerer True hvis velykket
-            state = patientInsertor.insert_patients()
-            '''
-            '''
-            Kommentar: Forsøker å ta bort patient insertor og bytte den ut med Insertor, slik at vi bare har en fil i bruk 
-            '''
             patientInsertor = Insertor(self, route_plan_with_patient)
             state = patientInsertor.insert_patient(patient)
            
             if state == True: 
                 #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                 self.route_plan = patientInsertor.route_plan
+                
                 #Pasienten legges til i hjemmsykehusets liste med pasienter
                 self.listOfPatients.append(patient)
-                
-
+                self.updateAllocationInformation(patient)
+                #Oppdaterer ruteplanen 
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
             #TODO: Hva trenger egentlig å konstrueres i dette
             if state == False: 
+                
+                self.route_plan.notAllocatedPatients.append(patient)
                 self.unAssignedPatients.append(patient)
                 if allocation == 0: 
                     self.route_plan.notAllocatedPatients.append(patient)
@@ -82,6 +80,14 @@ class ConstructionHeuristic:
             for route in self.route_plan.routes[day]: 
                 for activity in route.route: 
                     self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
+
+    
+    def updateAllocationInformation(self, patient): 
+        self.route_plan.allocatedPatients[patient] = self.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in [item for sublist in self.route_plan.allocatedPatients.values() for item in sublist]: 
+            self.route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']
+        for visit in [item for sublist in self.route_plan.treatments.values() for item in sublist]: 
+            self.route_plan.visits[visit] = self.visit_df.loc[visit, 'activitiesIds']
         
 #TODO: Endre slik at dataen ikke må hentes på denne måten
 

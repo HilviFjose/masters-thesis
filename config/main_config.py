@@ -6,13 +6,11 @@ from datetime import datetime, timedelta
 #Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
 reaction_factor = 0.2
 
-#Adaptive Weights: Gitte vektmuligheter, brukes til å velge operator
-#Har en liste med alle operatorer hvor de innehar en av disse verdiene
-weights = [3, 2, 1, 0.5]
-#TODO: sigma_scores
-
 #Antall iterasjoner i ALNSen
 iterations = 10
+
+#Krav til hvor bra løsning er før vi kjører lokalsøk. Må tunes
+local_search_req = 0.02
 
 #Sendes inn i ALNS og handler om hvor mye du skal destroye med operatorer altså hvor mange aktiviteter som skal ryke?
 #Maxen du kan fjerne er halve løsningen
@@ -21,9 +19,12 @@ destruction_degree = 0.5
 # Simulated annealing temperatures -- TODO: these must be tuned
 start_temperature = 50 
 end_temperature = 10
-cooling_rate = 0.999
+cooling_rate = 0.90
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
 speed = 40
 rush_factor = 2
+
+# Weight score for Acceptance Criterion and giving weights [sigma1, sigma2, sigma3, 0]. Må se på hva disse tallene skal være
+weight_scores = [1, 2, 3, 0]

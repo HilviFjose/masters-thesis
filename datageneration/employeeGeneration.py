@@ -95,4 +95,41 @@ def employeeGenerator():
     
     return df_employees
 
+def employeeGeneratorOnlyDay():
+    df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'schedule'])
+
+    if construction_config.E_num > 5:
+        first_levels = np.array([1, 2, 2, 3, 3])
+        remaining_levels = np.random.choice(construction_config.professionLevels, 
+                                         construction_config.E_num-5, 
+                                         p=construction_config.professionLevelsProb)
+        profession_levels = np.concatenate([first_levels, remaining_levels])
+    elif construction_config.E_num == 5:
+        profession_levels = np.array([1, 2, 2, 3, 3])
+    elif construction_config.E_num == 4:
+        profession_levels = np.array([1, 2, 3, 3])
+    elif construction_config.E_num == 3:
+        profession_levels = np.array([2, 3, 3])
+    elif construction_config.E_num == 2:
+        profession_levels = np.array([2, 3])
+    else:
+        profession_levels = np.array([3])
+
+    employees = []
+    for index, level in enumerate(profession_levels): 
+        employees.append([index+1, level, [2, 5, 8, 11, 14]])          # EmployeeId, Profession Level, Schedule
+
+
+    for e in employees: 
+        df_employees = df_employees._append({
+            'employeeId': e[0],
+            'professionalLevel': e[1],
+            'schedule': e[2]
+        },ignore_index=True)
+    
+    file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
+    df_employees.to_csv(file_path, index=False)
+    
+    return df_employees
+
 #employeeGenerator()

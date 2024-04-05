@@ -50,7 +50,7 @@ maxDurationEquip = 30
 
 # EMPLOYEES
 # Number of employees
-E_num = 10
+E_num = 5
 # Distributions of employees
 E_num_night = 0.1
 E_num_day = 0.7
@@ -83,6 +83,9 @@ StHanshaugen = (59.9329, 10.7506)
 Majorstuen = (59.9282, 10.7126)
 refLoc = [depot, Ullern, Ris, Holmenkollen, Sogn, Bjerke, Haugerud, Boler, Lambergseter, Grunerlokka, StHanshaugen, Majorstuen]
 
+# DAY
+startday = 480
+endday = 960
 
 
 
