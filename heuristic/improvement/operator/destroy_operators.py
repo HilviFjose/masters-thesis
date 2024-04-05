@@ -205,6 +205,7 @@ class DestroyOperators:
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         removed_activities_count = 0
+        selected_activities = []
 
         while removed_activities_count < total_num_activities_to_remove and sorted_routes:
             # Ta for seg ruten med lengst kjøretid
@@ -224,15 +225,17 @@ class DestroyOperators:
                 continue
             
             df_selected_activities = self.constructor.activities_df.loc[activities_in_current_route]
-            selected_activities = self.k_means_clustering(df_selected_activities)
+            selected_activities += self.k_means_clustering(df_selected_activities)
 
             removed_activities_count += len(selected_activities)
     
-            for activityID in selected_activities:
-                destroyed_route_plan = self.activity_removal(activityID, destroyed_route_plan)[0]
-            
+           
             if removed_activities_count >= total_num_activities_to_remove:
                 break
+
+        for activityID in selected_activities:
+            destroyed_route_plan = self.activity_removal(activityID, destroyed_route_plan)[0]
+            
 
         return destroyed_route_plan, None, True
 

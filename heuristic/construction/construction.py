@@ -50,15 +50,6 @@ class ConstructionHeuristic:
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
 
-            '''
-            #Oppretter et PatientInsertor objekt, hvor pasient_df og kopien av dagens ruteplan sendes inn
-            patientInsertor = PatientInsertor( route_plan_with_patient, patient_request, self)
-            #patientInsertor forsøker å legge til pasienten, og returnerer True hvis velykket
-            state = patientInsertor.insert_patients()
-            '''
-            '''
-            Kommentar: Forsøker å ta bort patient insertor og bytte den ut med Insertor, slik at vi bare har en fil i bruk 
-            '''
             patientInsertor = Insertor(self, route_plan_with_patient)
             state = patientInsertor.insert_patient(patient)
            
@@ -68,8 +59,6 @@ class ConstructionHeuristic:
                 
                 self.updateAllocationInformation(patient)
                 #Oppdaterer ruteplanen 
-                
-
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
             if state == False: 

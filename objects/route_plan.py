@@ -168,7 +168,15 @@ class RoutePlan:
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
     
-
+    def printSolution1(self, day):
+            '''
+            Printer alle rutene som inngår i routeplan
+            '''
+            print("Printer alle rutene")
+            for route in self.routes[day]: 
+                route.printSoultion()
+            self.updateObjective()
+            
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
         returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
@@ -392,3 +400,26 @@ class RoutePlan:
                         #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
                         self.updateDependentActivitiesBasedOnRoutePlanOnDay(act, day)
                         return day
+                    
+    def updateAllocationAfterPatientInsertor(self, patient, constructor): 
+        #Oppdaterer allokerings dictionariene 
+        '''
+        if patient == 49:
+            print("visit mellom status REPAIRED", self.visits[70])
+            print("visit mellom status INSERTORPLAN", self.visits[70])
+        
+        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in [item for sublist in self.allocatedPatients.values() for item in sublist]: 
+            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
+        for visit in [item for sublist in self.treatments.values() for item in sublist]: 
+            self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
+        '''
+        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in self.allocatedPatients[patient]:
+            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
+            for visit in self.treatments[treatment]: 
+                self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
+
+        #Fjerner pasienten fra ikkeAllokert listen 
+        if patient in self.notAllocatedPatients: 
+            self.notAllocatedPatients.remove(patient)

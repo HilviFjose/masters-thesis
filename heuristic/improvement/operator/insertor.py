@@ -29,8 +29,7 @@ class Insertor:
     '''
 
     def insert_patient(self, patient):
-        route_test = copy.deepcopy(self.route_plan)
-        old_route_plan = copy.deepcopy(route_test)
+        old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
         for treatment in treamentList: 
@@ -39,17 +38,6 @@ class Insertor:
                 self.route_plan = old_route_plan
                 return False
         return True 
-
-
-    def updateAllocation(self, allocated, patient, treatment): 
-        if allocated: 
-            if patient in self.route_plan.allocatedPatients.keys():
-                self.route_plan.allocatedPatients[patient].append(treatment)
-            else:
-                self.route_plan.allocatedPatients[patient] = [treatment]
-            
-        if not allocated and patient in self.route_plan.allocatedPatients.keys(): 
-            self.route_plan.illegalNotAllocatedTreatments.append(treatment)
 
 
     def insert_treatment(self, treatment): 
@@ -121,20 +109,6 @@ class Insertor:
         return True
     
 
-    #TODO: Kan denne slettes? 
-    def string_or_number_to_int_list(self, string_or_int):
-        '''
-        Denne funksjonen brukes til å lage liste basert på string eller int dataen som kommer fra dataframe
 
-        Return: 
-        List of int values 
-        '''
-        
-        if type(string_or_int) == str and "," in string_or_int: 
-            stringList = string_or_int.split(',')
-        else: 
-            stringList = [string_or_int]
-        return  [int(x) for x in stringList]
-       
 
     
