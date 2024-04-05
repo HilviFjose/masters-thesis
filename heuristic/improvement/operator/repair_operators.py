@@ -164,6 +164,7 @@ class RepairOperators:
         visitInsertor = Insertor(self.constructor, repaired_route_plan)
         illegal_visit_iteration_list = list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
         for visit in illegal_visit_iteration_list:  
+            old_route_plan = copy.deepcopy(repaired_route_plan)
             status = visitInsertor.insert_visit_on_day(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
             if status == True: 
                 repaired_route_plan = visitInsertor.route_plan
@@ -178,6 +179,8 @@ class RepairOperators:
 
                 #Legge til visit og activities som hører til treatmentet 
                 repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
+            else: 
+                repaired_route_plan = copy.deepcopy(old_route_plan)
     
     def illegal_treatment_repair(self, repaired_route_plan): 
         treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
