@@ -43,7 +43,9 @@ class RepairOperators:
         repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
         
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
-        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)      
+        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)   
+
+        repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)   
   
         #TODO: Sortere slik at den setter inn de beste først. Den er ikkke grådig nå vel? 
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
@@ -73,7 +75,9 @@ class RepairOperators:
         repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
 
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
-        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)      
+        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)   
+
+        repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)   
     
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
         patientInsertor = Insertor(self.constructor, repaired_route_plan)
@@ -106,8 +110,9 @@ class RepairOperators:
         #TREATMENT ILLEGAL (forsøker legge inn illegal treatments )
         repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)  
 
+        repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
+
         #LEGGER TIL PASIENTER I RANDOM REKKEFØLGE 
-        patientInsertor = Insertor(self.constructor, repaired_route_plan)
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get)
 
@@ -196,3 +201,20 @@ class RepairOperators:
                     repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds'] 
         return repaired_route_plan
     
+
+
+    def illegal_patient_repair(self, repaired_route_plan): 
+         
+        
+        for patient in repaired_route_plan.illegalNotAllocatedPatients:  
+            route_plan_with_patient = copy.deepcopy(repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, route_plan_with_patient)
+            status = patientInsertor.insert_patient(patient)
+            
+            if status == True: 
+                repaired_route_plan = patientInsertor.route_plan
+                repaired_route_plan.updateAllocationAfterPatientInsertor(patient, self.constructor)
+    
+        return repaired_route_plan
+        
+      

@@ -162,6 +162,7 @@ class RoutePlan:
             print("treatments", self.treatments)
             print("allocated patients ", self.allocatedPatients)
             print("not allocated ", self.notAllocatedPatients)
+            print("illegalNotAllocatedPatients", self.illegalNotAllocatedPatients)
             print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
             print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
             print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
