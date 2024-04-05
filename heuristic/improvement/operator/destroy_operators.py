@@ -87,6 +87,9 @@ class DestroyOperators:
             for activity in current_route_plan.visits[visit]:
                     visit_utility_contribute += self.constructor.activities_df.loc[activity, 'utility']
                     visit_skilldiff_contribute += current_route_plan.getRouteSkillLevForActivityID(activity) - self.constructor.activities_df.loc[activity, 'skillRequirement']
+                    #print("Funker ikke!")
+                    #print("Route plan", current_route_plan)
+                    #print("activity", activity)
             if visit_utility_contribute < lowest_visit_utility_contribute or (
                 visit_utility_contribute == lowest_visit_utility_contribute and visit_skilldiff_contribute > highest_visit_skilldiff_contribute): 
                 selected_visit = visit
@@ -439,8 +442,9 @@ class DestroyOperators:
 
         # Selected visit er del av treatment hvor flere visits ligger inne. Skal kun fjerne enkelt visit.
         if last_visit_in_treatment == False: 
-            route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_removed] = original_day
+            #print("Hopper inn i Alt2")
             route_plan.treatments[treatment_for_visit].remove(visit_removed)
+            route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_removed] = original_day
             return route_plan, None, True
         
         # Visit er siste i treatmentet, så skal slette på treatment nivå eller høyere
@@ -456,7 +460,7 @@ class DestroyOperators:
         last_activity_in_visit = False 
         visit_for_activity = None 
         for visit, activities in list(route_plan.visits.items()): 
-            if activities == [route_plan]: 
+            if activities == [activity_removed]: 
                 last_activity_in_visit = True 
             if activity_removed in activities: 
                 visit_for_activity = visit
@@ -464,6 +468,7 @@ class DestroyOperators:
 
         #Alt 1, det er ikke den siste aktiviteten innne i for visitetet. -> Trenger ikke rokkere på noen av de andre. Har ingen søsken som ligger igjen 
         if last_activity_in_visit == False: 
+            #print("Hopper inn i Alt 1")
             route_plan.visits[visit_for_activity].remove(activity_removed) #Fjernes fra visit dict 
             route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activity_removed] = original_day #Legges til i illegalpå Aktivitet
             return route_plan, None, True
@@ -474,7 +479,7 @@ class DestroyOperators:
             if possible_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
                 del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[possible_illegal_activity]
 
-        return self.updateDictionariesForRoutePlanVisitLevel(visit_for_activity, route_plan)
+        return self.updateDictionariesForRoutePlanVisitLevel(visit_for_activity, route_plan, original_day)
 
 # Help funtions for cluster and spread  
     def k_means_clustering(self, df, location_col='location', n_clusters=2):

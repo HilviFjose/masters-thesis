@@ -133,7 +133,7 @@ class RoutePlan:
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
  
-    def printSolution(self, txtName):
+    def printSolution(self, txtName, operator_string):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
         # Åpne filen for å skrive
         with open(r"results\\" + txtName + ".txt", "w") as log_file:
@@ -155,6 +155,7 @@ class RoutePlan:
                 for route in self.routes[day]: 
                     route.printSoultion()
             self.updateObjective()
+            print("operator brukt:", operator_string)
             print("objective ", self.objective)
             print("visits", self.visits)
             print("treatments", self.treatments)

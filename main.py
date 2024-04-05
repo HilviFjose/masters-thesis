@@ -31,11 +31,9 @@ def main():
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
-    constructor.route_plan.printSolution("initial")
+    constructor.route_plan.printSolution("initial", "ingen operator")
 
-    initial_objective = constructor.route_plan.objective
     initial_route_plan = constructor.route_plan 
-    initial_infeasible_set = constructor.route_plan.notAllocatedPatients #Usikker på om dette blir riktig. TODO: Finn ut mer om hva infeasible_set er.
 
     print('Allocated patients in initial solution',len(constructor.route_plan.allocatedPatients.keys()))
     print('First objective in initial solution',constructor.route_plan.objective)
@@ -47,10 +45,9 @@ def main():
     #Gjør et lokalsøk før ALNS. TODO: Har lite hensikt (?), så det kan fjernes slik at det bare gjøres lokalsøk inne i ALNS-en
     localsearch = LocalSearch(initial_route_plan)
     initial_route_plan = localsearch.do_local_search()
-    initial_route_plan.printSolution("initialLS")
+    initial_route_plan.printSolution("initialLS","ingen operator")
    
-    alns = ALNS(weights, reaction_factor, initial_route_plan, initial_objective, initial_infeasible_set, criterion,
-                    destruction_degree, constructor, rnd_state=rnd.RandomState())
+    alns = ALNS(reaction_factor, initial_route_plan, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState())
 
     destroy_operators = DestroyOperators(alns)
     repair_operators = RepairOperators(alns)
@@ -61,7 +58,7 @@ def main():
     best_route_plan = alns.iterate(
             iterations)
     
-    best_route_plan.printSolution("final")
+    best_route_plan.printSolution("final", "no operator")
          
 
 

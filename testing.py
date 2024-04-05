@@ -190,7 +190,7 @@ def check_consistency(file):
 
     
 # Example usage
-username = 'agnesost'
+username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 #cand = 3
@@ -206,11 +206,11 @@ print("---------------------------")
 for cand in range(1, iterations+1): 
     print("---------------------------")
     for file_name in file_name_list: 
-        file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+file_name+str(cand)+'.txt'  
+        file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+str(cand)+'candidate'+file_name+'.txt'  
         #file_path_dict = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+file_name+str(cand)+'dict.txt' 
         print("ROUND ", cand, "IN STEP", file_name)
         compare_dictionary_with_candidate(file_path_candidate)
         compare_allocated_dictionaries(file_path_candidate)
-        print("Ny sjekk kommer her")
-        check_consistency(file_path_candidate)
+        #print("Ny sjekk kommer her")
+        #check_consistency(file_path_candidate)
     
