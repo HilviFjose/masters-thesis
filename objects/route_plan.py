@@ -273,6 +273,25 @@ class RoutePlan:
         return None       
 
 
+    def getActivityFromEntireRoutePlan(self, actID): 
+        '''
+        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
+        
+        Arg: 
+        actID (int): ID til en aktivitet som gjøres en gitt dag
+        day (int): dagen aktiviten finnes i en rute  
+
+        Return: 
+        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
+        '''
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route: 
+                    if act.id == actID: 
+                        return act 
+        return None       
+
+
     def updateObjective(self): 
         self.objective = [0, 0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
