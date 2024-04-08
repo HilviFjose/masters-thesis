@@ -32,13 +32,57 @@ class Insertor:
         old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+        inAllocation = False 
+        if (self.constructor.patients_df.loc[patient, 'allocation'] == 1): 
+            inAllocation = True 
+     
         for treatment in treamentList: 
             status = self.insert_treatment(treatment)
             if status == False: 
                 self.route_plan = old_route_plan
                 return False
+            
+        #Nå har den kommet hit så da er det 
+        '''
+        Har fjernet de hvis de ligger i listen. Må legge de til hvs
+        '''
+        if patient in self.route_plan.notAllocatedPatients: 
+            self.route_plan.notAllocatedPatients.remove(patient)
+        
+        if patient in self.route_plan.illegalNotAllocatedPatients: 
+            self.route_plan.illegalNotAllocatedPatients.remove(patient)
+        
+        self.route_plan.allocatedPatients[patient] = treamentList
+        
         return True 
 
+    #TODO: Sjekke denne funksjonen. Finne ut hvor denne funksjonaliteten skal ligge, for i de andre illegal funksjonene så er det 
+    
+    '''
+    def updateAllocation(self, allocated, patient, treatment): 
+        if allocated: 
+            if patient in self.route_plan.allocatedPatients.keys():
+                self.route_plan.allocatedPatients[patient].append(treatment)
+            else:
+                self.route_plan.allocatedPatients[patient] = [treatment]
+            
+        if not allocated and patient in self.route_plan.allocatedPatients.keys(): 
+            self.route_plan.illegalNotAllocatedTreatments.append(treatment)
+
+        
+        Hva vil vi sjekke. Vi forsøker å legge til en pasient. Den er altså helt utenfor allokeringen. 
+        
+        Jeg forstår ikke hvorfor allokeringen gjøres gradvis her. det er vel feil? 
+
+
+
+        Hva vil vi sjekke. 
+        Når vi legger til en treatment, 
+
+        Regelen skal vel være at pasienten er allokert allokert eller ikke allokert. 
+        Dersom den er allokert, men ikke alt ligger inne, så de treatmentsene, eller andre, lagres i illegal
+        Men det ligger en liste over treatments som ikke er 
+        '''
 
     def insert_treatment(self, treatment): 
     

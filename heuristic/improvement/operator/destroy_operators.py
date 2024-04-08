@@ -381,8 +381,14 @@ class DestroyOperators:
         # Activities for patient removed from route
         destroyed_route_plan.remove_activityIDs_from_route_plan(removed_activities)
         # Patient removed from allocated and added in not allocated dictionary 
-
+        allocation = self.constructor.patients_df.loc[selected_patient, 'allocation']
+        if allocation == 0: 
+            destroyed_route_plan.notAllocatedPatients.append(selected_patient)
+        else: 
+            destroyed_route_plan.illegalNotAllocatedPatients.append(selected_patient)
+        del destroyed_route_plan.allocatedPatients[selected_patient]
         return self.updateDictionariesForRoutePlanPatientLevel(selected_patient, destroyed_route_plan)
+
     
     
     def treatment_removal(self, selected_treatment, route_plan):
@@ -459,6 +465,17 @@ class DestroyOperators:
             return route_plan, None, True
         
         # hvis dette var siste treatmentet for denne pasienten 
+        treatments_for_patient = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+        for possible_illegal_treatment in treatments_for_patient: 
+            if possible_illegal_treatment in route_plan.illegalNotAllocatedTreatments: 
+                route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
+        # Hele patienten slettes fra allocated dict
+        allocation = self.constructor.patients_df.loc[patient_for_treatment, 'allocation']
+        if allocation == 0: 
+            route_plan.notAllocatedPatients.append(patient_for_treatment)
+        else: 
+            route_plan.illegalNotAllocatedPatients.append(patient_for_treatment) 
+        del route_plan.allocatedPatients[patient_for_treatment] 
         return self.updateDictionariesForRoutePlanPatientLevel(patient_for_treatment, route_plan)
     
         
@@ -749,7 +766,11 @@ class DestroyOperators:
         #Dersom pasienten ikke er den samme
         if last_treatment_for_patient == True: 
             del destroyed_route_plan.allocatedPatients[patient_for_treatment]
-            destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment)
+            allocation = self.constructor.patients_df.loc[patient_for_treatment, 'allocation']
+            if allocation == 0: 
+                destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment)
+            else: 
+                destroyed_route_plan.illegalNotAllocatedPatients.append(patient_for_treatment)
         
         if last_treatment_for_patient == False: 
             destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit)
@@ -859,10 +880,12 @@ class DestroyOperators:
 
      
         #AlTERNATIV 4 - dette var siste aktivtet for denne pasienten 
-        if selected_activity == 80: 
-            print("kommer hit og slår ut på alternativ 4 for 80")
-            print("visits", destroyed_route_plan.visits)
-        destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment) #Legger til pasienten i ikke allokert, 
+    
+        allocation = self.constructor.patients_df.loc[patient_for_treatment, 'allocation']
+        if allocation == 0: 
+            destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment)
+        else: 
+            destroyed_route_plan.illegalNotAllocatedPatients.append(patient_for_treatment)        
         del destroyed_route_plan.allocatedPatients[patient_for_treatment] #Fjerner pasent fra allocated Patenst 
         del destroyed_route_plan.treatments[treatment_for_visit] #Fjerner treatmetnen fr treatmetns 
         del destroyed_route_plan.visits[visit_for_activity] #Fjerner visitet 

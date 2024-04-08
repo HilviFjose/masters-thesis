@@ -40,12 +40,14 @@ class ConstructionHeuristic:
         '''
 
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by="aggUtility", ascending=False)
+        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
+
         
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
+            allocation = unassigned_patients.loc[patient, 'allocation']
             
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
@@ -57,13 +59,19 @@ class ConstructionHeuristic:
                 #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                 self.route_plan = patientInsertor.route_plan
                 
-                self.updateAllocationInformation(patient)
+                #Pasienten legges til i hjemmsykehusets liste med pasienter
+                self.updateConstructionAllocationInformation(patient)
                 #Oppdaterer ruteplanen 
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
+            #TODO: Hva trenger egentlig å konstrueres i dette
             if state == False: 
                 
-                self.route_plan.notAllocatedPatients.append(patient)
+            
+                if allocation == 0: 
+                    self.route_plan.notAllocatedPatients.append(patient)
+                else: 
+                    self.route_plan.illegalNotAllocatedPatients.append(patient)
         
         #TODO: Oppdatere alle dependencies når vi har konstruert løsning 
         for day in range(1, 1+ self.days): 
@@ -72,7 +80,7 @@ class ConstructionHeuristic:
                     self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
 
     
-    def updateAllocationInformation(self, patient): 
+    def updateConstructionAllocationInformation(self, patient): 
         self.route_plan.allocatedPatients[patient] = self.patients_df.loc[patient, 'treatmentsIds']
         for treatment in [item for sublist in self.route_plan.allocatedPatients.values() for item in sublist]: 
             self.route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']

@@ -67,7 +67,7 @@ def patientGenerator(df_employees):
         allocation = [1] * round(construction_config.P_num * construction_config.allocation)
     else:
         print('Number of patients > 5* number of employees')
-        allocation = [1] * round(construction_config.E_num * 1.5)
+        allocation = [1] * round(construction_config.E_num * 0.75)
     allocation.extend([0] * (construction_config.P_num - len(allocation)))
     random.shuffle(allocation)
 

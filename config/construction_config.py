@@ -28,7 +28,7 @@ patterns_1day = [15,16,17,18,19]                                    # Patterntyp
 continuityDistribution = [0.35, 0.15, 0.5] #Top 1 employee, top 3 employees, all employees
 
 # Patient allocation
-allocation = 0.3 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
+allocation = 0.15 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
 
 # Heaviness
 heavinessDistribution = [1, 0, 0, 0, 0] 
