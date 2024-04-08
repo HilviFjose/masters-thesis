@@ -8,6 +8,7 @@ from objects.route import Route
 import copy
 import random 
 import datetime
+from config.construction_config import depot
 
 
 class RoutePlan:
@@ -41,6 +42,22 @@ class RoutePlan:
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
+    def sortRoutesByAcitivyLocation(self, routes, activity):
+        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
+      
+        
+
+            # Convert to float and create a tuple
+        
+        if activity.location == depot: 
+            random.shuffle(routes)
+            return routes
+  
+   
+        return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity.location[0]) + abs(route.averageLocation[1]- activity.location[1]))
+
+
+            
 
     def addActivityOnDay(self, activity, day):
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
@@ -59,12 +76,20 @@ class RoutePlan:
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
+            #TODO: Sortere hvor mange som er 
+     
+            routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
             #random.shuffle(routes_for_skill)
+            
             routes += routes_for_skill
+          
+            #For å omrokkere på de som er fra før 
             #if act_skill_level == 2: 
-            #    random.shuffle(routes)
+            #   random.shuffle(routes)
   
-
+        '''
+        Har hatt det random for hver som settes inn tidligere. Usikkert hva som er mest effektivit av det og å 
+        '''
     
      
         #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
