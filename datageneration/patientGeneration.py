@@ -305,13 +305,13 @@ def activitiesGenerator(df_visits):
             pd_time1 = int(np.random.normal(mu, sigma))
             pd_time2 = int(np.random.normal(mu, sigma))
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = activity_ids[0]                                           # Pick-up and delivery at the start
-            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}: {pd_time}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}: {pd_time1}, {activity_ids[0]}: {pd_time1}"       # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'prevPrece'] = activity_ids[-3]                                         # Pick-up and delivery at the end
-            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'prevPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[-3]}: {pd_time2}"    # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'prevPrece'] = f"{activity_ids[-2]}: {pd_time2}, {activity_ids[-3]}: {pd_time2}"    # Pick-up and delivery at the end
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'nextPrece'] = activity_ids[2]                                           # Pick-up and delivery at the start
-            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[1]}: {pd_time}, {activity_ids[2]}: {pd_time1}"       # Pick-up and delivery at the start
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[1]}: {pd_time1}, {activity_ids[2]}: {pd_time1}"       # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = activity_ids[-1]                                         # Pick-up and delivery at the end
-            df_activities.loc[df_activities['activityId'] == activity_ids[-3], 'nextPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[-1]}: {pd_time2}"    # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-3], 'nextPrece'] = f"{activity_ids[-2]}: {pd_time2}, {activity_ids[-1]}: {pd_time2}"    # Pick-up and delivery at the end
 
             # Same Employee Requirement for åick-up and delivery activities 
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]      # The two first activities 

@@ -42,13 +42,94 @@ class RoutePlan:
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
-    def sortRoutesByAcitivyLocation(self, routes, activity):
-        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
-      
+    '''
+    Hvor skal innsettingen komme fra: 
+
+    Kan man basert på hva som kalles funskjonene bestemme hvilken den skal bruke? 
+    Ja det kan man, så vi kan ha ulike funskjoner som kan bruke de forkjellige. 
+
+    Den kommer fra aillegalAktiviy: 
+    Da er det allerede noe fra visitet som ligger inne, så rammene for innsettingen er allerede satt av den 
+
+    Ledig tid egen rute, det må matche behovet
+
+    Ledig tid annen rute. 
+
+    Første i et visit-> Kartlegge at det blir plass til alle de andre
+    Andre til nest siste -> Kartlegge at det er plass til alle sameNext, og prøve å legge seg så tett opp mot forrige som mulig
+    Siste -> Vannlig innsetting 
+
+    Problem: Kombinere denne funskjonaliteten med å velge mest komplisert aktivitet å legge til først
+
+
+    Du legger til den første aktiviteten, 
+    '''
+
+
+    def insertFirstActivityInVisit(self, activity, laterAcitivitesInVisit, day): 
+
+        #Denne fungerer, fordi det er lenket presendens, så de neste vil ikke være 
+        if len(activity.dependentActivities) == 0: 
+            return self.addActivityOnDay(activity, day)
+        
+        #har den beste ruten som heter 
+        #trenger bare lagre best route og ikke tidspunkt, fordi den kan flyttes på senre i space funskjonene
+        best_route = None 
+        best_index_place = None 
+
+        test_activity = copy.deepcopy(activity)
+        test_laterActivitiesInVisit = copy.deepcopy(laterAcitivitesInVisit)
+        test_route_plan = copy.deepcopy(self)
+        
+        #Skal se etter plass i rutene 
+        for route in self.routes[day]: 
+            for index_place in range(len(route.route)): 
+
+                #Returnerer om det finnes plass for denne aktivitetn i ruten, og hvor starttidspunktet burde være 
+                
+                for later_activites in laterAcitivitesInVisit: 
+                    test_route_plan
+
+
+                best_other_routes = {}
+            
+        #Finne ut om det med denne ruten og denne plassen i ruten blir plass til seg self
+        #Burde itererer seg gjennom de resterende aktivitetene og prøver å finne et sted de kan være
+            #Sjekke om de får plass i en annen rute.
+            #Dersom vi finner en måte de får plass - > Denne må huskes eller slås opp på nytt i de etterfølgende iterasjonene 
+
+            #Ha et startidsattributt i hver liste osm den beveger seg videre fra og ha det for slutttidspuntk også 
+
+            #Går gjennom en index i ruten og prøver å finne 
+            #Gitt denne plasseringen er det mulig å legge til 
+
+        return 
+    '''
+    Gå gjennom hver 
+
+    Første aktivitet, finne den som den har same employee aktivitet med, og sjekke at det er plass til den. Det må ikke være i samme tids
+
+    Spørsmål/Problemer: 
+    * Den må jo iterere seg både gjennom tidspunkter og plasser i ruten. Det er altså tre ting å velge: rute, plass i rekkefølgen og starttidspunkt. 
+
+    Kan sjekke rutene og holde styr på hvordan viduene for innsetting ser ut, basert på det som ligger der.
+    Eller bare kjøre deepcopy av ruteplanen og sjekke om de neste innsettingen vil gå gjennom 
+    Da må vi også dypkopiere aktiviteten for, dette er ikke de ekte aktiviteen 
+
+    Dette kan nok kjøres rekursivt på noen måte.
+
+    Poenget er velge plass, 
+        Neste må velge plass,
+            Neste velge plass, 
+
+    for hver rute og hver indeks så: 
         
 
-            # Convert to float and create a tuple
+    '''
         
+
+    def sortRoutesByAcitivyLocation(self, routes, activity):
+        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
         if activity.location == depot: 
             random.shuffle(routes)
             return routes
@@ -57,7 +138,8 @@ class RoutePlan:
         return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity.location[0]) + abs(route.averageLocation[1]- activity.location[1]))
 
 
-            
+                
+
 
     def addActivityOnDay(self, activity, day):
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 

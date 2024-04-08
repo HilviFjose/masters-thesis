@@ -143,8 +143,9 @@ class Insertor:
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
         old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
-        for activityID in activitiesList: 
-            activity = Activity(self.constructor.activities_df, activityID)
+        # Create a list of activity objects
+        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        for activity in activities: 
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
                 self.route_plan = old_route_plan
@@ -152,7 +153,64 @@ class Insertor:
         #Dersom alle aktivitene har blitt lagt til returers true  
         return True
     
+    #Tror den skal fungere nå, men er usikker. 
+
+    def best_insert_visit_on_day(self, visit, day):
+        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        test_route_plan = copy.deepcopy(self.route_plan)
+
+        #Prøver uten dictionaries 
+        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activity = activities[0]
+        following_activities = activities - activity
+ 
+        for route in test_route_plan.routes[day]: 
+            for index_place in range(len(route.route)): 
+                test_route_plan = copy.deepcopy(test_route_plan)
+                status = self.flytt(activity, following_activities, index_place, test_route_plan, status)
+                if status == True: 
+                    return True
+        return False
+
+        #Her vil den hoppe videre helt tid den 
+        #Problem 
+        
 
 
+    def flytt(self, activity, next_activities, employee, index_place, route_plan, day): 
+        #TODO: Denne ruten er ikke i route_plan, så må se på kopieringsting 
+        insertStatus = route_plan.routes[day][employee].insertActivityOnIndex(activity, index_place)
+        if insertStatus == False: 
+            return False
+        
+        #TODO: Dette kan skje flere ganger fordi det er mange veier som kan nå helt nederst i treet 
+        if len(next_activities) == 0: 
+            self.route_plan = route_plan
+            return True
+        
+        activity = next_activities[0]
+        next_activities = next_activities - activity
+        
+        for route in route_plan.routes: 
+            for index_place in range(len(route.route)): 
+                route_plan = copy.deepcopy(route_plan)
+                status = self.flytt(activity, next_activities, route, index_place, route_plan)
+                if status == True: 
+                    return True
 
     
+    '''
+    Hva vil vi sjekke for hver aktivitet 
+
+    Prøver å komme helt ned til bunnen av treet. 
+    Hvis du kommer helt ned til bunnen av treeet da, 
+    har du funnet ruten og indeksen til hver av aktivtenene, så da trenger man ikke 
+
+    Tenke at hvert steg skal kunne rekursivt kalle seg selv, så må begnne 
+    Må tenkte at vi skal ha en. Den skal vite hvilken aktivitet den er på. 
+    Egenskaper: 
+    Egen aktivitet 
+    Videre aktiviteter nedover 
+
+    Returnere nåværende status 
+    '''
