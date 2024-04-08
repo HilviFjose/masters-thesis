@@ -381,12 +381,7 @@ class DestroyOperators:
         # Activities for patient removed from route
         destroyed_route_plan.remove_activityIDs_from_route_plan(removed_activities)
         # Patient removed from allocated and added in not allocated dictionary 
-        allocation = self.constructor.patients_df.loc[selected_patient, 'allocation']
-        if allocation == 0: 
-            destroyed_route_plan.notAllocatedPatients.append(selected_patient)
-        else: 
-            destroyed_route_plan.illegalNotAllocatedPatients.append(selected_patient)
-        del destroyed_route_plan.allocatedPatients[selected_patient]
+    
         return self.updateDictionariesForRoutePlanPatientLevel(selected_patient, destroyed_route_plan)
 
     
@@ -416,8 +411,13 @@ class DestroyOperators:
         return self.updateDictionariesForRoutePlanActivityLevel(selected_activity, destroyed_route_plan, original_day)
 
     def updateDictionariesForRoutePlanPatientLevel(self, patient_removed, route_plan):
-        route_plan.notAllocatedPatients.append(patient_removed) 
-        del route_plan.allocatedPatients[patient_removed]        
+        allocation = self.constructor.patients_df.loc[patient_removed, 'allocation']
+        if allocation == 0: 
+            route_plan.notAllocatedPatients.append(patient_removed)
+        else: 
+            route_plan.illegalNotAllocatedPatients.append(patient_removed) 
+        del route_plan.allocatedPatients[patient_removed] 
+           
 
         #TODO: Fikse her 
         treatments_for_patient = self.constructor.patients_df.loc[patient_removed, 'treatmentsIds']
@@ -470,12 +470,7 @@ class DestroyOperators:
             if possible_illegal_treatment in route_plan.illegalNotAllocatedTreatments: 
                 route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
         # Hele patienten slettes fra allocated dict
-        allocation = self.constructor.patients_df.loc[patient_for_treatment, 'allocation']
-        if allocation == 0: 
-            route_plan.notAllocatedPatients.append(patient_for_treatment)
-        else: 
-            route_plan.illegalNotAllocatedPatients.append(patient_for_treatment) 
-        del route_plan.allocatedPatients[patient_for_treatment] 
+        
         return self.updateDictionariesForRoutePlanPatientLevel(patient_for_treatment, route_plan)
     
         
