@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.2
 
 #Antall iterasjoner i ALNSen
-iterations = 100
+iterations = 200
 
 #Krav til hvor bra løsning er før vi kjører lokalsøk. Må tunes
 local_search_req = 0.02
@@ -28,3 +28,5 @@ rush_factor = 2
 
 # Weight score for Acceptance Criterion and giving weights [sigma1, sigma2, sigma3, 0]. Må se på hva disse tallene skal være
 weight_scores = [1, 2, 3, 0]
+
+iterations_update = 50

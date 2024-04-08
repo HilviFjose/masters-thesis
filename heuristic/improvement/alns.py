@@ -46,15 +46,16 @@ class ALNS:
             #Select destroy method 
             destroy = self.select_operator(
                 self.destroy_operators, d_weights, self.rnd_state)
-           
+    
             # Select repair method
             repair = self.select_operator(
                 self.repair_operators, r_weights, self.rnd_state)
+
             
             #Destroy solution 
             d_operator = self.destroy_operators[destroy]
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
-            #print("destroy operator", d_operator.__name__)
+            print("destroy operator", d_operator.__name__)
             candidate_route_plan, removed_activities, destroyed = d_operator(
                 candidate_route_plan)   
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
@@ -66,7 +67,7 @@ class ALNS:
 
             # Repair solution
             r_operator = self.repair_operators[repair]
-            #print("repair operator", r_operator.__name__)
+            print("repair operator", r_operator.__name__)
             candidate_route_plan = r_operator(
                 candidate_route_plan)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
@@ -99,7 +100,7 @@ class ALNS:
            
 
             # After a certain number of iterations, update weight
-            if (i+1) % iterations == 0:
+            if (i+1) % iterations_update == 0:
                 # Update weights with scores
                 for destroy in range(len(d_weights)):
                     d_weights[destroy] = d_weights[destroy] * \
