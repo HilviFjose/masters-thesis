@@ -144,7 +144,13 @@ class RepairOperators:
                     visit = self.constructor.visit_df.index[i] 
                     if activityID in self.constructor.visit_df.loc[visit, 'activitiesIds']: 
                         break
-                repaired_route_plan.visits[visit].append(activityID) 
+                try:
+                    repaired_route_plan.visits[visit].append(activityID) 
+                except:
+                    print("key error activity nivå", activityID)
+                    print("allocated patients rep", repaired_route_plan.allocatedPatients)
+                    print("treatments rep", repaired_route_plan.treatments)
+                    print("visits repaired", repaired_route_plan.visits)
         return repaired_route_plan
 
   
@@ -165,7 +171,16 @@ class RepairOperators:
                     treatment = self.constructor.treatment_df.index[i] 
                     if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
                         break
-                repaired_route_plan.treatments[treatment].append(visit) 
+                try:
+                    repaired_route_plan.treatments[treatment].append(visit) 
+                except:
+                    print("key error visit nivå", visit)
+                    print("allocated patients rep", repaired_route_plan.allocatedPatients)
+                    print("treatments rep", repaired_route_plan.treatments)
+                    print("visits repaired", repaired_route_plan.visits)
+                    print("allocated patients old", old_route_plan.allocatedPatients)
+                    print("treatments old", old_route_plan.treatments)
+                    print("visits old", old_route_plan.visits )
 
                 #Legge til visit og activities som hører til treatmentet 
                 repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']

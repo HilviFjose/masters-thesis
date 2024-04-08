@@ -473,7 +473,7 @@ class DestroyOperators:
         if last_activity_in_visit == False: 
             #print("Hopper inn i Alt 1")
             route_plan.visits[visit_for_activity].remove(activity_removed) #Fjernes fra visit dict 
-            route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activity_removed] = original_day #Legges til i illegalpå Aktivitet
+            route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activity_removed] = original_day #Legges til i illegal på Aktivitet
             return route_plan, None, True
 
         #Har activites in visit, og vi vet at illegal skal ligge på visit nivå eller høyere

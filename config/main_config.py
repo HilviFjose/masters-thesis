@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.2
 
 #Antall iterasjoner i ALNSen
-iterations = 10
+iterations = 25
 
 #Krav til hvor bra løsning er før vi kjører lokalsøk. Må tunes
 local_search_req = 0.02
@@ -19,7 +19,7 @@ destruction_degree = 0.5
 # Simulated annealing temperatures -- TODO: these must be tuned
 start_temperature = 50 
 end_temperature = 10
-cooling_rate = 0.90
+cooling_rate = 0.95
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
