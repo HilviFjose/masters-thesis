@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.2
 
 #Antall iterasjoner i ALNSen
-iterations = 25
+iterations = 100
 
 #Krav til hvor bra løsning er før vi kjører lokalsøk. Må tunes
 local_search_req = 0.02

@@ -35,6 +35,16 @@ class DestroyOperators:
         self.constructor = alns.constructor
         self.count = 0 
 
+
+    '''
+    I removal: Når vi fjerner på visit nivå, henter ut en. 
+    Når vi legger inn på illegal visit nivå, så må de aktivitene som ligger i illegla activity fjernes 
+    Når vi legger inn på illegal treatment nivå, så må aktiviteten som ligger på illegal visits eller illegal activities fjeres 
+    Når vi fjerner pasienter 
+
+    Update funskjonene fungerer både slik at du beveger deg nedenfra også hopper du oppover til riktig nivå
+    Oppdateringen nedover bør defor skje når du kommer deg til det nivået du gjør endringer. 
+    '''
 #---------- RANDOM REMOVAL ----------
                         
     def random_patient_removal(self, current_route_plan):
@@ -371,9 +381,8 @@ class DestroyOperators:
         # Activities for patient removed from route
         destroyed_route_plan.remove_activityIDs_from_route_plan(removed_activities)
         # Patient removed from allocated and added in not allocated dictionary 
-        destroyed_route_plan.notAllocatedPatients.append(selected_patient)
-        del destroyed_route_plan.allocatedPatients[selected_patient]
-        return destroyed_route_plan, removed_activities, True
+
+        return self.updateDictionariesForRoutePlanPatientLevel(selected_patient, destroyed_route_plan)
     
     
     def treatment_removal(self, selected_treatment, route_plan):
@@ -400,6 +409,26 @@ class DestroyOperators:
         original_day = destroyed_route_plan.removeActivityIDgetRemoveDay(selected_activity)
         return self.updateDictionariesForRoutePlanActivityLevel(selected_activity, destroyed_route_plan, original_day)
 
+    def updateDictionariesForRoutePlanPatientLevel(self, patient_removed, route_plan):
+        route_plan.notAllocatedPatients.append(patient_removed) 
+        del route_plan.allocatedPatients[patient_removed]        
+
+        #TODO: Fikse her 
+        treatments_for_patient = self.constructor.patients_df.loc[patient_removed, 'treatmentsIds']
+        for possible_illegal_treatment in treatments_for_patient: 
+            if possible_illegal_treatment in route_plan.illegalNotAllocatedTreatments: 
+                route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
+            visits_in_treatment = self.constructor.treatment_df.loc[possible_illegal_treatment, 'visitsIds']
+            for not_longer_illegal_visit in visits_in_treatment: 
+                if not_longer_illegal_visit in list(route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()): 
+                    del route_plan.illegalNotAllocatedVisitsWithPossibleDays[not_longer_illegal_visit]
+                activities_in_visits = self.constructor.visit_df.loc[not_longer_illegal_visit, 'activitiesIds']
+                for not_longer_illegal_activity  in activities_in_visits: 
+                    if not_longer_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
+                        del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[not_longer_illegal_activity]
+
+        return route_plan, None, True
+
 
     def updateDictionariesForRoutePlanTreatmentLevel(self, treatment_removed, route_plan):
         del route_plan.treatments[treatment_removed]
@@ -417,18 +446,22 @@ class DestroyOperators:
         if last_treatment_for_patient == False:   
             route_plan.allocatedPatients[patient_for_treatment].remove(treatment_removed) 
             route_plan.illegalNotAllocatedTreatments.append(treatment_removed) 
+
+            visits_in_treatment = self.constructor.treatment_df.loc[treatment_removed, 'visitsIds']
+            for not_longer_illegal_visit in visits_in_treatment: 
+                if not_longer_illegal_visit in list(route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()): 
+                    del route_plan.illegalNotAllocatedVisitsWithPossibleDays[not_longer_illegal_visit]
+                activities_in_visits = self.constructor.visit_df.loc[not_longer_illegal_visit, 'activitiesIds']
+                for not_longer_illegal_activity  in activities_in_visits: 
+                    if not_longer_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
+                        del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[not_longer_illegal_activity]
+            
             return route_plan, None, True
         
         # hvis dette var siste treatmentet for denne pasienten 
-        treatments_for_patient = self.constructor.patients_df.loc[patient, 'treatmentsIds']
-        for possible_illegal_treatment in treatments_for_patient: 
-            if possible_illegal_treatment in route_plan.illegalNotAllocatedTreatments: 
-                route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
-        # Hele patienten slettes fra allocated dict
-        route_plan.notAllocatedPatients.append(patient_for_treatment) 
-        del route_plan.allocatedPatients[patient_for_treatment] 
+        return self.updateDictionariesForRoutePlanPatientLevel(patient_for_treatment, route_plan)
     
-        return route_plan, None, True
+        
     
 
     def updateDictionariesForRoutePlanVisitLevel(self,  visit_removed, route_plan, original_day): 
@@ -448,13 +481,16 @@ class DestroyOperators:
             #print("Hopper inn i Alt2")
             route_plan.treatments[treatment_for_visit].remove(visit_removed)
             route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_removed] = original_day
+            #Fjerner aktiviteter som var ullovlige tidligere, men som nå er inkludert i det ulovlige visitet, og ikke står som egen uiloglig aktiviteter 
+            
+            activities_in_visits = self.constructor.visit_df.loc[visit_removed, 'activitiesIds']
+            for not_longer_illegal_activity  in activities_in_visits: 
+                if not_longer_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
+                    del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[not_longer_illegal_activity]
+            
             return route_plan, None, True
         
         # Visit er siste i treatmentet, så skal slette på treatment nivå eller høyere
-        visits_in_treatment = self.constructor.treatment_df.loc[treatment, 'visitsIds']
-        for possible_illegal_visit in visits_in_treatment: 
-            if possible_illegal_visit in list(route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()): 
-                del route_plan.illegalNotAllocatedVisitsWithPossibleDays[possible_illegal_visit]
 
         return self.updateDictionariesForRoutePlanTreatmentLevel(treatment_for_visit, route_plan)
    
@@ -476,11 +512,6 @@ class DestroyOperators:
             route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activity_removed] = original_day #Legges til i illegal på Aktivitet
             return route_plan, None, True
 
-        #Har activites in visit, og vi vet at illegal skal ligge på visit nivå eller høyere
-        activities_in_visit = self.constructor.visit_df.loc[visit, 'activitiesIds']
-        for possible_illegal_activity in activities_in_visit: 
-            if possible_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
-                del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[possible_illegal_activity]
 
         return self.updateDictionariesForRoutePlanVisitLevel(visit_for_activity, route_plan, original_day)
 
