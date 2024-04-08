@@ -176,6 +176,7 @@ class ALNS:
             current_route_plan = copy.deepcopy(candidate_route_plan)
         else:
             # Solution is rejected
+            print("Candidate very bad and not accepted.")
             weight_score = weight_scores[2]
 
         # Check if solution is new global best
