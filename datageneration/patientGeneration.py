@@ -139,6 +139,9 @@ def treatmentGenerator(df_patients):
     df_treatments['employeeRestriction'] = expanded_rows['employeeRestriction']
     df_treatments['heaviness'] = expanded_rows['heaviness']
     df_treatments['utility'] = expanded_rows['utility']
+    df_treatments['allocation'] = expanded_rows['allocation'] #Lagt til for Gurobi
+    df_treatments['employeeHistory'] = expanded_rows['employeeHistory'] #Lagt til for Gurobi
+    df_treatments['continuityGroup'] = expanded_rows['continuityGroup'] #Lagt til for Gurobi
 
     for index, row in df_treatments.iterrows():
         #Fill rows with possible patterns
@@ -186,6 +189,10 @@ def visitsGenerator(df_treatments):
     df_visits['employeeRestriction'] = expanded_rows['employeeRestriction']
     df_visits['heaviness'] = expanded_rows['heaviness']
     df_visits['utility'] = expanded_rows['utility']
+    df_visits['allocation'] = expanded_rows['allocation'] #Lagt til for Gurobi
+    df_visits['patternType'] = expanded_rows['patternType'] #Lagt til for Gurobi
+    df_visits['employeeHistory'] = expanded_rows['employeeHistory'] #Lagt til for Gurobi
+    df_visits['continuityGroup'] = expanded_rows['continuityGroup'] #Lagt til for Gurobi
 
     # Distribution of number of activities per visit
     A_numMax = len(construction_config.A_numProb)                                # Max number of activities per visit
@@ -219,6 +226,10 @@ def activitiesGenerator(df_visits):
     df_activities['employeeRestriction'] = expanded_rows['employeeRestriction']
     df_activities['heaviness'] = expanded_rows['heaviness']
     df_activities['utility'] = expanded_rows['utility']
+    df_activities['allocation'] = expanded_rows['allocation'] #Lagt til for Gurobi
+    df_activities['patternType'] = expanded_rows['patternType'] #Lagt til for Gurobi
+    df_activities['employeeHistory'] = expanded_rows['employeeHistory'] #Lagt til for Gurobi
+    df_activities['continuityGroup'] = expanded_rows['continuityGroup'] #Lagt til for Gurobi
            
     # Distribute activities between healthcare activities 'H' and equipment activities 'E'
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital
