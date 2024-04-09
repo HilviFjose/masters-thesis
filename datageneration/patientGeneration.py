@@ -461,6 +461,10 @@ def autofillTreatment(df_treatments, df_visits, df_activities):
     nActivities = df_activities.groupby('treatmentId').size().reset_index(name='nActivities')
     df_treatments_merged = pd.merge(df_treatments_merged, nActivities, on='treatmentId', how='left')
 
+    # Adding list of activities for each treatment
+    activities_list = df_activities.groupby('treatmentId')['activityId'].agg(list).reset_index(name='activitiesIds')
+    df_treatments_merged = pd.merge(df_treatments_merged, activities_list, on='treatmentId', how='left')
+
     file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
     df_treatments_merged.to_csv(file_path, index=False)
     

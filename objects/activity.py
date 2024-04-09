@@ -25,10 +25,12 @@ class Activity:
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
         self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextPrece"])
         self.patient = df.loc[id]["patientId"]
+        self.treatmentId = df.loc[id]["treatmentId"]
 
         self.nActInPatient = df.loc[id]["nActInPatient"]
         self.nActInTreat = df.loc[id]["nActInTreat"]
         self.nActInVisit = df.loc[id]["numActivitiesInVisit"]
+
         self.suitability = df.loc[id]["utility"]
         
         self.startTime = None

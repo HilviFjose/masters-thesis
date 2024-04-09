@@ -469,3 +469,10 @@ class RoutePlan:
         #Fjerner pasienten fra ikkeAllokert listen 
         if patient in self.notAllocatedPatients: 
             self.notAllocatedPatients.remove(patient)
+              
+    def getDayForActivityID(self, activityID):
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route:
+                    if act.id == activityID: 
+                        return day
