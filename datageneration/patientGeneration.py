@@ -418,10 +418,14 @@ def activitiesGenerator(df_visits):
 
         # Treatment complexity
         t_complexity = int(numActInTreat + t_preceRatio + t_timeRatio) #TODO: Finne en måte å regne ut denne på
-        #df_activities.loc[df_activities['treatmentId'] == treatmentId, 'numActInTreat'] = numActInTreat
+        df_activities.loc[df_activities['treatmentId'] == treatmentId, 'nActInTreat'] = numActInTreat
         #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_preceRatio'] = t_preceRatio
         #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_timeRatio'] = t_timeRatio
         df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_complexity'] = t_complexity
+
+    for patientId, patient_group in df_activities.groupby('patientId'):
+        numActInPatient = len(patient_group)
+        df_activities.loc[df_activities['patientId'] == patientId, 'nActInPatient'] = numActInPatient
 
     file_path = os.path.join(os.getcwd(), 'data', 'activities.csv')
     df_activities.to_csv(file_path, index=False)
@@ -452,6 +456,14 @@ def autofillTreatment(df_treatments, df_visits, df_activities):
     # Adding visits Ids to df_treatments
     visits_grouped = df_visits.groupby('treatmentId')['visitId'].apply(list).reset_index(name='visitsIds')
     df_treatments_merged = pd.merge(df_treatments_merged, visits_grouped, on='treatmentId', how='left')
+
+    #Adding number of activities per patient
+    nActivities = df_activities.groupby('treatmentId').size().reset_index(name='nActivities')
+    df_treatments_merged = pd.merge(df_treatments_merged, nActivities, on='treatmentId', how='left')
+
+    # Adding list of activities for each treatment
+    activities_list = df_activities.groupby('treatmentId')['activityId'].agg(list).reset_index(name='activitiesIds')
+    df_treatments_merged = pd.merge(df_treatments_merged, activities_list, on='treatmentId', how='left')
 
     file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
     df_treatments_merged.to_csv(file_path, index=False)
