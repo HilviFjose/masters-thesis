@@ -29,4 +29,4 @@ rush_factor = 2
 weight_scores = [10, 5, 0, 15]
 
 # Iterations between each weight update in ALNS
-iterations_update = 2
+iterations_update = 10
