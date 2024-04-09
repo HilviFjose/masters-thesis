@@ -171,15 +171,6 @@ class RoutePlan:
             # Skriver klokkeslettet til når filen ble opprettet
             now = datetime.datetime.now() 
             log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
-            print('-------------------------------------------------------')
-
-            '''
-            Printer alle rutene som inngår i routeplan
-            '''
-            print("Printer alle rutene")
-            for day in range(1, self.days +1): 
-                for route in self.routes[day]: 
-                    route.printSoultion()
             self.updateObjective()
             print("operator brukt:", operator_string)
             print("objective ", self.objective)
@@ -191,6 +182,16 @@ class RoutePlan:
             print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
             print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
             print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
+
+            print('-------------------------------------------------------')
+
+            '''
+            Printer alle rutene som inngår i routeplan
+            '''
+            print("Printer alle rutene")
+            for day in range(1, self.days +1): 
+                for route in self.routes[day]: 
+                    route.printSoultion()
 
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
@@ -466,9 +467,8 @@ class RoutePlan:
             for visit in self.treatments[treatment]: 
                 self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
 
-        #Fjerner pasienten fra ikkeAllokert listen 
-        if patient in self.notAllocatedPatients: 
-            self.notAllocatedPatients.remove(patient)
+   
+            
               
     def getDayForActivityID(self, activityID):
         for day in range(1, self.days +1): 

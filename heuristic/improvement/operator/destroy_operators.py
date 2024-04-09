@@ -529,10 +529,11 @@ class DestroyOperators:
 
     #TODO: Denne må testes opp mot den Guro har laget
     #TODO: Undersøke om det trengs destruction degree her
-    def random_pattern_removal(self, current_route_plan):
+    def random_pattern_type_removal(self, current_route_plan):
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         #Må endres når vi endrer pattern 
-        selected_pattern = random.randint(1, len(patternTypes))
+        #selected_pattern = random.randint(1, len(patternTypes))
+        selected_pattern = 1
         selected_treatments = []
         for treatment in destroyed_route_plan.treatments.keys(): 
             pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
@@ -649,7 +650,6 @@ class DestroyOperators:
                 related_visit_dict[visitId] = related_score
                 
         sorted_related_visit_dict = dict(sorted(related_visit_dict.items(), key=lambda item: item[1], reverse=True))
-        print('sorted_related_visit_dict', sorted_related_visit_dict)
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         # Removing primary visit
@@ -721,7 +721,7 @@ class DestroyOperators:
         # Removing related treatments
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for treatId in related_treatment_list:
-            self.treatment_removal(treatId, destroyed_route_plan) 
+            destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan) 
 
         #print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
         
