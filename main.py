@@ -33,6 +33,7 @@ def main():
     
     constructor.route_plan.printSolution("initial", "ingen operator")
 
+    '''
     initial_route_plan = constructor.route_plan 
 
     print('Allocated patients in initial solution',len(constructor.route_plan.allocatedPatients.keys()))
@@ -59,7 +60,7 @@ def main():
             iterations)
     
     best_route_plan.printSolution("final", "no operator")
-         
+    '''     
 
 
 if __name__ == "__main__":

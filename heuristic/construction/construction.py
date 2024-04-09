@@ -25,6 +25,8 @@ class ConstructionHeuristic:
         self.days = days
 
         self.route_plan = RoutePlan(days, employees_df) 
+
+        self.test_count = 0 
         
         
     '''
@@ -45,6 +47,9 @@ class ConstructionHeuristic:
         
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
+            self.test_count += 1
+            if self.test_count > 3: 
+                break
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
             allocation = unassigned_patients.loc[patient, 'allocation']
@@ -75,7 +80,7 @@ class ConstructionHeuristic:
         
         #TODO: Oppdatere alle dependencies når vi har konstruert løsning 
         for day in range(1, 1+ self.days): 
-            for route in self.route_plan.routes[day]: 
+            for route in self.route_plan.routes[day].values(): 
                 for activity in route.route: 
                     self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
 

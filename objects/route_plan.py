@@ -1,3 +1,4 @@
+
 import pandas as pd
 import numpy as np
 import os
@@ -14,21 +15,35 @@ from config.construction_config import depot
 class RoutePlan:
     def __init__(self, days, employee_df):
         self.employee_df = employee_df
-        self.routes = {day: [] for day in range(1, days+1)}
+        
         employee_skills = {} # For å holde styr på ansattes ferdigheter
 
+        self.employees = [] #Antar at de alle ansatte jobber alle dager
+
+        #Lager employees objektene og lagerer de i en liste 
         for key, value in employee_df.iterrows():
             emp = Employee(employee_df, key)
             employee_skills[key] = value['professionalLevel'] 
+            self.employees.append(emp)
 
-            for day in self.routes:
-                self.routes[day].append((emp.skillLevel, Route(day, emp))) # Lagrer professionalLevel sammen med Route
+        print("self.employees", self.employees)
+        print("employeesid", [emp.id for emp in self.employees])
 
-        # Sorter routes basert på skill for hver dag
-        for day in self.routes:
-            self.routes[day] = [route for _, route in sorted(self.routes[day], key=lambda x: x[0])]
-        
+
+        self.routes = {day: {employee.id: None for employee in self.employees} for day in range(1, days+1)}
         self.days = days 
+        for day in range (1, self.days +1):
+            for employee in self.employees:
+                self.routes[day][employee.id] =  Route(day, employee) # Lagrer professionalLevel sammen med Route
+
+        # Sorter routes basert på skill for hver dag - TODO: Burde muligens sorteres på en annen måte
+        #for day in self.routes:
+        #    self.routes[day] = [route for _, route in sorted(self.routes[day], key=lambda x: x[0])]
+
+        #OBS: Jeg forstår ikke hvorfor denne er slik: 
+        #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
+        
+        
         self.objective = [0,0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
@@ -43,68 +58,10 @@ class RoutePlan:
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
     '''
-    Hvor skal innsettingen komme fra: 
+    Hvordan vil vi endre klassen med nye route_plan -> Vil ikke ha noen endringer i funksjonalitet, så fikser på oppsettet, men ingen 
+   
 
-    Kan man basert på hva som kalles funskjonene bestemme hvilken den skal bruke? 
-    Ja det kan man, så vi kan ha ulike funskjoner som kan bruke de forkjellige. 
-
-    Den kommer fra aillegalAktiviy: 
-    Da er det allerede noe fra visitet som ligger inne, så rammene for innsettingen er allerede satt av den 
-
-    Ledig tid egen rute, det må matche behovet
-
-    Ledig tid annen rute. 
-
-    Første i et visit-> Kartlegge at det blir plass til alle de andre
-    Andre til nest siste -> Kartlegge at det er plass til alle sameNext, og prøve å legge seg så tett opp mot forrige som mulig
-    Siste -> Vannlig innsetting 
-
-    Problem: Kombinere denne funskjonaliteten med å velge mest komplisert aktivitet å legge til først
-
-
-    Du legger til den første aktiviteten, 
-    '''
-
-
-    def insertFirstActivityInVisit(self, activity, laterAcitivitesInVisit, day): 
-
-        #Denne fungerer, fordi det er lenket presendens, så de neste vil ikke være 
-        if len(activity.dependentActivities) == 0: 
-            return self.addActivityOnDay(activity, day)
-        
-        #har den beste ruten som heter 
-        #trenger bare lagre best route og ikke tidspunkt, fordi den kan flyttes på senre i space funskjonene
-        best_route = None 
-        best_index_place = None 
-
-        test_activity = copy.deepcopy(activity)
-        test_laterActivitiesInVisit = copy.deepcopy(laterAcitivitesInVisit)
-        test_route_plan = copy.deepcopy(self)
-        
-        #Skal se etter plass i rutene 
-        for route in self.routes[day]: 
-            for index_place in range(len(route.route)): 
-
-                #Returnerer om det finnes plass for denne aktivitetn i ruten, og hvor starttidspunktet burde være 
-                
-                for later_activites in laterAcitivitesInVisit: 
-                    test_route_plan
-
-
-                best_other_routes = {}
-            
-        #Finne ut om det med denne ruten og denne plassen i ruten blir plass til seg self
-        #Burde itererer seg gjennom de resterende aktivitetene og prøver å finne et sted de kan være
-            #Sjekke om de får plass i en annen rute.
-            #Dersom vi finner en måte de får plass - > Denne må huskes eller slås opp på nytt i de etterfølgende iterasjonene 
-
-            #Ha et startidsattributt i hver liste osm den beveger seg videre fra og ha det for slutttidspuntk også 
-
-            #Går gjennom en index i ruten og prøver å finne 
-            #Gitt denne plasseringen er det mulig å legge til 
-
-        return 
-    '''
+    Notater Agnes: 
     Gå gjennom hver 
 
     Første aktivitet, finne den som den har same employee aktivitet med, og sjekke at det er plass til den. Det må ikke være i samme tids
@@ -145,8 +102,10 @@ class RoutePlan:
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
         # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
         # Grupperer ruter basert på profesjonen til den ansatte
+        '''
         routes_grouped_by_skill = {}
-        for route in self.routes[day]:
+        
+        for route in self.routes[day].values():
             skill_level = route.skillLev 
             if skill_level not in routes_grouped_by_skill:
                 routes_grouped_by_skill[skill_level] = [route]
@@ -157,7 +116,11 @@ class RoutePlan:
         act_skill_level = activity.skillReq
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
-            routes_for_skill = routes_grouped_by_skill[act_skill_level]
+            try:
+                routes_for_skill = routes_grouped_by_skill[act_skill_level]
+            except: 
+                print(self.routes)
+                print(routes_grouped_by_skill)
             #TODO: Sortere hvor mange som er 
      
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
@@ -169,13 +132,13 @@ class RoutePlan:
             #if act_skill_level == 2: 
             #   random.shuffle(routes)
   
-        '''
+        
         Har hatt det random for hver som settes inn tidligere. Usikkert hva som er mest effektivit av det og å 
+        
         '''
-    
      
         #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
-        for route in routes:
+        for route in self.routes[day].values():
             #print("forsøker legge til ", activity.id , "DAY ", route.day, "EMP ", route.employee.id)
         
             #TODO: Update funskjonene burde sjekkes med de andre   
@@ -260,7 +223,7 @@ class RoutePlan:
             '''
             print("Printer alle rutene")
             for day in range(1, self.days +1): 
-                for route in self.routes[day]: 
+                for route in self.routes[day].values(): 
                     route.printSoultion()
             self.updateObjective()
             print("operator brukt:", operator_string)
@@ -323,14 +286,14 @@ class RoutePlan:
         empForAct = None
         activityIDinRoute = False
         otherEmpl = []
-        for route in self.routes[day]: 
+        for route in self.routes[day].values(): 
             for act in route.route: 
                 if act.id == activityID: 
                     activityIDinRoute = True
                     empForAct = route.employee.id
         if not activityIDinRoute: 
             return otherEmpl
-        for route in self.routes[day]: 
+        for route in self.routes[day].values(): 
             if route.employee.id != empForAct: 
                 otherEmpl.append(route.employee.id)
         return otherEmpl
@@ -348,7 +311,7 @@ class RoutePlan:
         Return: 
         activity (Activity) Activity objektet som finnes i en rute på en gitt dag
         '''
-        for route in self.routes[day]: 
+        for route in self.routes[day].values(): 
             for act in route.route: 
                 if act.id == actID: 
                     return act 
@@ -362,7 +325,7 @@ class RoutePlan:
         self.objective[1] = self.weeklyHeaviness
         self.objective[2] = self.dailyHeaviness
         for day in range(1, 1+self.days): 
-            for route in self.routes[day]: 
+            for route in self.routes[day].values(): 
                 route.updateObjective()
                 self.objective[0] += route.suitability
                 self.objective[3] += route.aggSkillDiff 
@@ -372,8 +335,11 @@ class RoutePlan:
     def calculateWeeklyHeaviness(self):
         employee_weekly_heaviness = {}
 
-        for day, routes in self.routes.items():
-            for route in routes:
+        #for day, routes in self.routes.items():
+        #    for route in routes:
+        
+        for day in range (1, self.days +1): 
+            for route in self.routes[day].values():
                 employee_id = route.employee.id
                 profession = route.skillLev  
                 if profession not in employee_weekly_heaviness:
@@ -395,9 +361,11 @@ class RoutePlan:
 
     def calculateDailyHeaviness(self):
         daily_diffs = []
-        for day, routes in self.routes.items():    
+        #for day, routes in self.routes.items():    
+        for day in range(1, self.days+1):
             profession_groups = {}
-            for route in routes:
+            #for route in routes:
+            for route in self.routes[day].values():
                 profession = route.skillLev
                 if profession not in profession_groups:
                     profession_groups[profession] = []
@@ -411,7 +379,7 @@ class RoutePlan:
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
         #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
-        for route in self.routes[day]: 
+        for route in self.routes[day].values(): 
             if route.employee.id == employee:
                 route.removeActivityID(activity.id)
                 #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
@@ -421,7 +389,7 @@ class RoutePlan:
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
         insert_activity = copy.deepcopy(activity)
          
-        for route in self.routes[day]: 
+        for route in self.routes[day].values(): 
             if route.employee.id == employeeID:
                 #Beg: Må oppdatere grensene til alle i ruten som muligens kan flytte seg når vi prøver å legge til aktivtete
               
@@ -448,6 +416,8 @@ class RoutePlan:
             Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
             Basert på det som allerede ligger inne i routeplanen 
             '''    
+            if activity.id == 86: 
+                print("1 -kommer inn ")
 
             #Her håndteres pick up and delivery
             if activity.getPickUpActivityID() != 0 : 
@@ -456,7 +426,9 @@ class RoutePlan:
                 
             #Her håndteres presedens.   
             #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
+
             for prevNodeID in activity.PrevNode: 
+                
                 prevNodeAct = self.getActivity(prevNodeID, day)
                 if prevNodeAct != None:
                     activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
@@ -469,6 +441,8 @@ class RoutePlan:
             #Her håndteres presedens med tidsvindu
             #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
             for PrevNodeInTimeID in activity.PrevNodeInTime: 
+                if activity.id == 86: 
+                    print("2 - updateActivity Kommer inn ")
                 prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
                 if prevNodeAct != None:
                     activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
@@ -532,3 +506,52 @@ class RoutePlan:
         #Fjerner pasienten fra ikkeAllokert listen 
         if patient in self.notAllocatedPatients: 
             self.notAllocatedPatients.remove(patient)
+
+
+    def updateActivityBasedOnRoutePlanOnDay0904(self, activity,day):
+            '''
+            Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
+            Basert på det som allerede ligger inne i routeplanen 
+            '''    
+            if activity.id == 86: 
+                print("1 -kommer inn ")
+
+            #Her håndteres pick up and delivery
+            if activity.getPickUpActivityID() != 0 : 
+                otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
+                activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
+                
+            #Her håndteres presedens.   
+            #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
+
+            for prevNodeID in activity.PrevNode: 
+                
+                prevNodeAct = self.getActivity(prevNodeID, day)
+                if prevNodeAct != None:
+                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
+  
+            for nextNodeID in activity.NextNode: 
+                nextNodeAct = self.getActivity(nextNodeID, day)
+                if nextNodeAct != None:
+                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
+            
+            #Her håndteres presedens med tidsvindu
+            #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
+            for PrevNodeInTimeID in activity.PrevNodeInTime: 
+                if activity.id == 9: 
+                    print("9-PRES")
+                    print(PrevNodeInTimeID)
+                prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
+                if prevNodeAct != None:
+                    print("FØR newEeariestStartTime", activity.newEeariestStartTime)
+
+                    activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
+                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
+                    print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
+
+
+            for NextNodeInTimeID in activity.NextNodeInTime: 
+                nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
+                if nextNodeAct != None:
+                    activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
+        

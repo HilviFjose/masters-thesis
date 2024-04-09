@@ -11,6 +11,9 @@ class Insertor:
         self.route_plan = route_plan
         self.rev = False
 
+        self.InsertionFound_BestInsertVisit = False
+        
+
      
     '''
     Insertor skal ikke gjøre noen oppdatering av matrisene. Det skal kunn skje i constructor og operators
@@ -131,7 +134,8 @@ class Insertor:
             #hvis patternet på den gitte dagen er 1, så forsøker vi å inserte visittet på den gitte dagen
             #Dersom insert ikke er mulig returerer funkjsonen False
             if pattern[day_index] == 1: 
-                insertStatus = self.insert_visit_on_day(visits[visit_index], day_index+1) 
+                insertStatus = self.best_insert_visit_on_day(visits[visit_index], day_index+1)
+                #insertStatus = self.insert_visit_on_day(visits[visit_index], day_index+1) 
                 if insertStatus == False: 
                     return False
                 #Øker indeksen for å betrakte neste visit i visitlisten
@@ -153,64 +157,124 @@ class Insertor:
         #Dersom alle aktivitene har blitt lagt til returers true  
         return True
     
-    #Tror den skal fungere nå, men er usikker. 
+    '''
+    Det er to feil: 
+
+    1 - Følgefeil ved innsetting, tar med seg innsettingen fra forrige ruteplan 
+    2 - Feil i presendens ved innsetting, den klarer ikke varsle de andre tilstrekkelig
+
+    84 legger seg til på 518, det er ikke riktig fordi den har tidsvindu 534
+
+    Det er veldig rart med tidsviduene hvorfor de er feil når vi ser på de
+
+    1) Gå gjennom for å sjekke om de manipuleres ved en feil noe sted 
+    '''
 
     def best_insert_visit_on_day(self, visit, day):
+        self.InsertionFound_BestInsertVisit = False 
+
+
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
         test_route_plan = copy.deepcopy(self.route_plan)
 
-        #Prøver uten dictionaries 
+        
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         activity = activities[0]
-        following_activities = activities - activity
- 
-        for route in test_route_plan.routes[day]: 
-            for index_place in range(len(route.route)): 
-                test_route_plan = copy.deepcopy(test_route_plan)
-                status = self.flytt(activity, following_activities, index_place, test_route_plan, status)
-                if status == True: 
-                    return True
-        return False
+        rest_acitivites = activities[1:]
+      
+        old_route_plan = copy.deepcopy(test_route_plan)
+        for route in test_route_plan.routes[day].values():
+            if self.InsertionFound_BestInsertVisit == True: 
+                break 
+            for index_place in range(len(route.route)+1): 
+            
+                test_route_plan = copy.deepcopy(old_route_plan)
+              
 
-        #Her vil den hoppe videre helt tid den 
-        #Problem 
+                if self.InsertionFound_BestInsertVisit == False: 
+                    self.flytt(activity, rest_acitivites, test_route_plan, day, route.employee.id, index_place)
+                    if self.InsertionFound_BestInsertVisit == True: 
+                        break
+                else: 
+                    break
         
+        return self.InsertionFound_BestInsertVisit
 
 
-    def flytt(self, activity, next_activities, employee, index_place, route_plan, day): 
-        #TODO: Denne ruten er ikke i route_plan, så må se på kopieringsting 
-        insertStatus = route_plan.routes[day][employee].insertActivityOnIndex(activity, index_place)
+
+    def flytt(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
+        print("inserter", activity.id, " og har disse på rest ", rest_acitivites)
+        #print("restactivites.id", [a.id for a in rest_acitivites])
+        if activity.id == 86: 
+            print("FØR - getNewEarliestStartTime", activity.getNewEarliestStartTime()) 
+      
+            route_plan.routes[1][1].printSoultion()
+        #TODO: Den henter starttidspunkt fra feil rute_plan. Se på imorgen
+        route_plan.updateActivityBasedOnRoutePlanOnDay0904(activity, day)
+
+        if activity.id == 86: 
+            print("ETTER - getNewEarliestStartTime", activity.getNewEarliestStartTime()) 
+            print("86 - prevNode ", activity.PrevNode)
+            print("86 - PrevNodeInTime ", activity.PrevNodeInTime)
+        insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
+        
         if insertStatus == False: 
-            return False
+            return
         
         #TODO: Dette kan skje flere ganger fordi det er mange veier som kan nå helt nederst i treet 
-        if len(next_activities) == 0: 
+        if not isinstance(rest_acitivites, list):
+            rest_acitivites = [rest_acitivites]
+
+        #Vet at vi har klart å legge til aktiviteten 
+
+        if len(rest_acitivites) == 0: 
             self.route_plan = route_plan
-            return True
+            self.InsertionFound_BestInsertVisit = True
+            print("finner løsning")
+            return
+            
         
-        activity = next_activities[0]
-        next_activities = next_activities - activity
+        next_actitivy = rest_acitivites[0]
+        rest_acitivites = rest_acitivites[1:] 
         
-        for route in route_plan.routes: 
-            for index_place in range(len(route.route)): 
-                route_plan = copy.deepcopy(route_plan)
-                status = self.flytt(activity, next_activities, route, index_place, route_plan)
-                if status == True: 
-                    return True
+       
+        old_route_plan = copy.deepcopy(route_plan)
+        for route in route_plan.routes[day].values(): 
+            if self.InsertionFound_BestInsertVisit == True: 
+                break
+            for index_place in range(len(route.route)+1): 
+                route_plan = copy.deepcopy(old_route_plan)
+    
+                if self.InsertionFound_BestInsertVisit == False: 
+                    self.flytt(next_actitivy, rest_acitivites, route_plan, day, route.employee.id, index_place)
+                    if self.InsertionFound_BestInsertVisit == True: 
+                        break
+                else: 
+                    break
+
+          
+             
+            
+    
 
     
     '''
-    Hva vil vi sjekke for hver aktivitet 
+    Blir dette et bredde først søk? Nei fordi den søker seg
 
-    Prøver å komme helt ned til bunnen av treet. 
-    Hvis du kommer helt ned til bunnen av treeet da, 
-    har du funnet ruten og indeksen til hver av aktivtenene, så da trenger man ikke 
+    Den komme seg ned, finner løsningen. Men på vei opp så må den gjøre alle de andre 
+    
+    Må ha en form for while, slik at den bare kjører hvis den forrige ikke fill true 
+    Begynne på laveste nivå
 
-    Tenke at hvert steg skal kunne rekursivt kalle seg selv, så må begnne 
-    Må tenkte at vi skal ha en. Den skal vite hvilken aktivitet den er på. 
-    Egenskaper: 
-    Egen aktivitet 
-    Videre aktiviteter nedover 
+    Hva skal true returnere. Den setter ruteplanen og den setter den globale verdien, så vi trenger ikke ha de andre true/false lenger? 
 
-    Returnere nåværende status 
+    Må ha en eller annen global variabel som sier om vi har funnet dette punktet 
+
+
+    Teste med å printe hvert steg når en aktivitet legges til. 
+
+    Videre arbeid: 
+    Dette er ikke en best insertion. 
+    Hvordan skulle man laget best insertion: Kan bruke mye av det samme som nå, bare at man endrer til at den går gjennom alle muligheter, og velger den som gir best resultat. 
+    Jeg er veldig usikker på hvor lang tid det tar å kjøre disse insertionene.
     '''
