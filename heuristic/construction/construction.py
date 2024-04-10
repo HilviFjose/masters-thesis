@@ -44,12 +44,12 @@ class ConstructionHeuristic:
         #Lager en liste med pasienter i prioritert rekkefølge. 
         unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
 
-        
+    
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
             self.test_count += 1
-            if self.test_count > 3: 
-                break
+            #if self.test_count > 3: 
+            #    break
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
             allocation = unassigned_patients.loc[patient, 'allocation']

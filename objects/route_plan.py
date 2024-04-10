@@ -96,15 +96,13 @@ class RoutePlan:
 
 
                 
-
-
-    def addActivityOnDay(self, activity, day):
+    def getSortedRoutes(self, activity, day): 
+        
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
         # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
         # Grupperer ruter basert på profesjonen til den ansatte
-        '''
-        routes_grouped_by_skill = {}
         
+        routes_grouped_by_skill = {}
         for route in self.routes[day].values():
             skill_level = route.skillLev 
             if skill_level not in routes_grouped_by_skill:
@@ -116,11 +114,7 @@ class RoutePlan:
         act_skill_level = activity.skillReq
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
-            try:
-                routes_for_skill = routes_grouped_by_skill[act_skill_level]
-            except: 
-                print(self.routes)
-                print(routes_grouped_by_skill)
+            routes_for_skill = routes_grouped_by_skill[act_skill_level]
             #TODO: Sortere hvor mange som er 
      
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
@@ -131,15 +125,12 @@ class RoutePlan:
             #For å omrokkere på de som er fra før 
             #if act_skill_level == 2: 
             #   random.shuffle(routes)
-  
-        
-        Har hatt det random for hver som settes inn tidligere. Usikkert hva som er mest effektivit av det og å 
-        
-        '''
+        return routes
+
+    def addActivityOnDay(self, activity, day):
      
-        #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
-        for route in self.routes[day].values():
-            #print("forsøker legge til ", activity.id , "DAY ", route.day, "EMP ", route.employee.id)
+     
+        for route in self.getSortedRoutes(activity, day):
         
             #TODO: Update funskjonene burde sjekkes med de andre   
             #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
@@ -416,8 +407,6 @@ class RoutePlan:
             Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
             Basert på det som allerede ligger inne i routeplanen 
             '''    
-            if activity.id == 86: 
-                print("1 -kommer inn ")
 
             #Her håndteres pick up and delivery
             if activity.getPickUpActivityID() != 0 : 
@@ -441,17 +430,22 @@ class RoutePlan:
             #Her håndteres presedens med tidsvindu
             #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
             for PrevNodeInTimeID in activity.PrevNodeInTime: 
-                if activity.id == 86: 
-                    print("2 - updateActivity Kommer inn ")
                 prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
                 if prevNodeAct != None:
                     activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
+                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
 
 
             for NextNodeInTimeID in activity.NextNodeInTime: 
                 nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
                 if nextNodeAct != None:
                     activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
+                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
+
+
+
+                    #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
+
         
     def updateDependentActivitiesBasedOnRoutePlanOnDay(self, activity ,day):
         for depActID in activity.dependentActivities: 
@@ -513,9 +507,6 @@ class RoutePlan:
             Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
             Basert på det som allerede ligger inne i routeplanen 
             '''    
-            if activity.id == 86: 
-                print("1 -kommer inn ")
-
             #Her håndteres pick up and delivery
             if activity.getPickUpActivityID() != 0 : 
                 otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
@@ -538,20 +529,20 @@ class RoutePlan:
             #Her håndteres presedens med tidsvindu
             #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
             for PrevNodeInTimeID in activity.PrevNodeInTime: 
-                if activity.id == 9: 
-                    print("9-PRES")
-                    print(PrevNodeInTimeID)
                 prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
                 if prevNodeAct != None:
-                    print("FØR newEeariestStartTime", activity.newEeariestStartTime)
+                    
+                    #print("FØR newEeariestStartTime", activity.newEeariestStartTime)
 
                     activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
                     activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
-                    print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
+                    #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
 
 
             for NextNodeInTimeID in activity.NextNodeInTime: 
                 nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
                 if nextNodeAct != None:
                     activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
-        
+                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
+            
+            #Du har en aktivitet som må gjøres innen et 
