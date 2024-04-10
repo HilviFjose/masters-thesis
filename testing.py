@@ -6,6 +6,7 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..'))  # Include subfolders
 from config.main_config import *
 import parameters
+import pandas as pd
 
 df_employees = parameters.df_employees
 df_patients = parameters.df_patients
@@ -25,6 +26,19 @@ def extract_activities(file_path):
     # Identify duplicates by counting occurrences and filtering those with count > 1
     duplicates = [item for item, count in Counter(activities).items() if count > 1]
     return set(activities), duplicates
+
+def extract_activities_with_start_time(file_path):
+    """Extract activity numbers from a given file and identify duplicates."""
+    activity_tuples = []
+    pattern = re.compile(r"activity (\d+) start (\d+\.?\d*)")
+    with open(file_path, 'r') as file:
+        for line in file:
+            match = pattern.search(line)
+            if match:
+                activity = int(match.group(1))
+                start = float(match.group(2))
+                activity_tuples.append((activity, start))
+    return activity_tuples
 
 def extract_dictionary(file_path, str_item):
     dict_name = str_item
@@ -77,7 +91,6 @@ def extract_list(file_path, str_item):
                         return []
     # Return an empty list if the specified string item is not found
     return []
-
 
 def compare_missing_elements(list1, list2):
     set1 = set(list1)
@@ -185,21 +198,89 @@ def check_consistency(file):
                     if (activityID not in [item for sublist in visit_dict.values() for item in sublist]) and activityID not in illegal_activity_list: 
                         print("ERROR: activity ", activityID, "in visit ", visitID, "in treatment ", treatmentID, "for patient ", patientID, "er borte!!!!")
 
+def check_objective(file):
+    status = False
+    activities_in_candidate, duplicates = extract_activities
+    return status
 
-    
+
+def check_precedence(file):
+    status1 = True
+    status2 = True
+    status3 = True
+
+    # Create the lists needed
+    activities_in_candidate = extract_activities_with_start_time(file)
+    cand_dict = dict(activities_in_candidate)
+    earliestStart = list(df_activities['earliestStartTime'])
+    latestStart = list(df_activities['latestStartTime'])
+    nextPrece = list(df_activities['nextPrece'])
+    prec_act_list = [None] * len(nextPrece)
+    prec_times_list = [None] * len(nextPrece)
+    pattern = re.compile(r'(\d+): (\d+)')
+    for idx, item in enumerate(nextPrece):
+        if pd.notna(item) and isinstance(item, str):  
+            matches = pattern.findall(item)
+            if matches:
+                keys, values = zip(*[(int(k), int(v)) for k, v in matches])
+                prec_act_list[idx] = keys
+                prec_times_list[idx] = values
+        if isinstance(item, int):
+            prec_act_list[idx] = item
+
+
+    # 1 - Checking if start times are within time windows
+    for (activity_id, start_time) in activities_in_candidate:
+        index = activity_id - 1  
+        if not (earliestStart[index] <= start_time <= latestStart[index]):
+            print("ERROR - START TIME NOT IN TIME WINDOW: activity", activity_id, "with start time", start_time)
+            status1 = False
+
+
+    # 2 - Checking if start times are correct in terms of which order they have to happen in
+    for activity_id, following in enumerate(prec_act_list, start=1):
+        if following is None:
+            continue
+        following_activities = (following,) if isinstance(following, int) else following
+        current_start_time = cand_dict.get(activity_id)
+        if current_start_time is None:
+            continue
+        for following_act_id in following_activities:
+            following_start_time = cand_dict.get(following_act_id)
+            if following_start_time is None or following_start_time <= current_start_time:
+                print(f"ERROR - FOLLOWING ACTIVITY STARTING EARLIER THAN CURRENT: Activity {following_act_id} starting at {following_start_time}, starts before activity {activity_id} starting at {current_start_time}.")
+                status2 = False
+
+    # 3 - Check if the start times that do not have an error over here are withing the time frames in nexttimes
+    for activity_id, following in enumerate(prec_act_list, start=1):
+        if following is None or prec_times_list[activity_id - 1] is None:
+            continue
+        following_activities = (following,) if isinstance(following, int) else following
+        timing_constraints = prec_times_list[activity_id - 1]
+        current_start_time = cand_dict.get(activity_id)
+        if current_start_time is None:
+            continue 
+        for i, following_act_id in enumerate(following_activities):
+            following_start_time = cand_dict.get(following_act_id)
+            if following_start_time is None:
+                continue 
+            max_allowed_start_time_after = timing_constraints[i] if isinstance(timing_constraints, tuple) else timing_constraints
+            start_time_difference = following_start_time - current_start_time
+            if start_time_difference > max_allowed_start_time_after:
+                print(f"ERROR - FOLLOWING ACTIVITY DOES NOT START WITHIN THE PRECEDENCE REQUIREMENT: Activity {following_act_id} starting at {following_start_time} starts more than {max_allowed_start_time_after} time units after activity {activity_id} starting at {current_start_time}.")
+                status3 = False
+    return status1, status2, status3
+
 # Example usage
-username = 'agnesost'
+username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
-#cand = 3
-#file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+str(cand)+'.txt'  
-#file_path_dict = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate'+str(cand)+'dict.txt'  
-
 file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_final"]
 
 for cand in range(1, iterations+1): 
     for file_name in file_name_list: 
         file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+str(cand)+'candidate'+file_name+'.txt'  
+        
         status1 = compare_dictionary_with_candidate(file_path_candidate)
         if status1 == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
@@ -208,4 +289,9 @@ for cand in range(1, iterations+1):
         if status2 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
+       
+        status3, status4, status5 = check_precedence(file_path_candidate)
+        if status3 == False or status4 == False or status5 == False:
+            print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+            print("---------------------------") 
 
