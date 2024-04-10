@@ -8,7 +8,7 @@ from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self,reaction_factor, current_route_plan, criterion,
+    def __init__(self,weights, reaction_factor, current_route_plan, criterion,
                     destruction_degree, constructor, rnd_state=rnd.RandomState()): 
         self.destroy_operators = []
         self.repair_operators = []
@@ -23,6 +23,7 @@ class ALNS:
         self.constructor = constructor
         self.local_search_req = local_search_req
         self.iterationNum = 0
+        self.weight_scores = weights
         
         
     def iterate(self, num_iterations):
@@ -55,8 +56,7 @@ class ALNS:
             d_operator = self.destroy_operators[destroy]
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
             #print("destroy operator", d_operator.__name__)
-            candidate_route_plan, removed_activities, destroyed = d_operator(
-                candidate_route_plan)   
+            candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan)   
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
 
             if not destroyed:
@@ -67,8 +67,7 @@ class ALNS:
             # Repair solution
             r_operator = self.repair_operators[repair]
             #print("repair operator", r_operator.__name__)
-            candidate_route_plan = r_operator(
-                candidate_route_plan)
+            candidate_route_plan = r_operator(candidate_route_plan)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
             r_count[repair] += 1
             
@@ -78,10 +77,6 @@ class ALNS:
                 candidate_route_plan = localsearch.do_local_search()
                 
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
-
-                #Har funnet en kandidat som er god nok til å bli current, så setter den til den 
-                #self.current_route_plan = copy.deepcopy(candidate_route_plan)
-                #self.current_objective = copy.deepcopy(candidate_route_plan.objective)
         
             # Konverterer til hexa-string for å sjekke om vi har samme løsning. Evaluerer og scores oppdateres kun hvis vi har en løsning som ikke er funnet før
             if hash(str(candidate_route_plan)) == hash(str(self.current_route_plan)) and hash(str(candidate_route_plan)) in found_solutions.keys():
@@ -90,27 +85,27 @@ class ALNS:
                 found_solutions[hash(str(self.current_route_plan))] = 1
 
             if not already_found:
+                # Add penalty to first objective if the solution is illegal
+                penalty, updated_first_objective, original_first_objective = self.calculatePenaltyIllegalSolution(candidate_route_plan, self.iterationNum, num_iterations)
+                candidate_route_plan.objective[0] = updated_first_objective #TODO: Undersøke om vi må ta vare på det opprinnelige objektivet eller ikke
+                if penalty != 0:
+                    print(f'PENALTY IN FIRST OBJECTIVE: {penalty}. Original objective: {original_first_objective}, Updated objective: {updated_first_objective}')
                 # Compare solutions
                 self.best_route_plan, self.current_route_plan, weight_score = self.evaluate_candidate(
                     self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
                 # Update scores
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
-           
 
             # After a certain number of iterations, update weight
-            if (i+1) % iterations == 0:
+            if (i+1) % iterations_update == 0:
                 # Update weights with scores
                 for destroy in range(len(d_weights)):
-                    d_weights[destroy] = d_weights[destroy] * \
-                        (1 - self.reaction_factor) + \
-                        (self.reaction_factor *
-                         d_scores[destroy] / d_count[destroy])
+                    if d_count[destroy] != 0: 
+                        d_weights[destroy] = d_weights[destroy] * (1 - self.reaction_factor) + (self.reaction_factor * d_scores[destroy] / d_count[destroy])
                 for repair in range(len(r_weights)):
-                    r_weights[repair] = r_weights[repair] * \
-                        (1 - self.reaction_factor) + \
-                        (self.reaction_factor *
-                         r_scores[repair] / r_count[repair])
+                    if r_count[repair] != 0: 
+                        r_weights[repair] = r_weights[repair] * (1 - self.reaction_factor) + (self.reaction_factor * r_scores[repair] / r_count[repair])
 
                 # Reset scores
                 d_scores = np.ones(
@@ -130,8 +125,8 @@ class ALNS:
         
         self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
-        self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
+        #self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
+        #self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
 
         self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
@@ -139,7 +134,9 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
-        #self.add_destroy_operator(operators.random_pattern_removal)
+        self.add_destroy_operator(destroy_operators.random_pattern_type_removal)
+        #self.add_destroy_operator(destroy_operators.related_treatments_removal)
+        #self.add_destroy_operator(destroy_operators.related_visits_removal)
         
         # Add repair operators
         self.add_repair_operator(repair_operators.greedy_repair)
@@ -185,4 +182,20 @@ class ALNS:
             best_route_plan = copy.deepcopy(candidate_route_plan)
             weight_score = weight_scores[3]
 
-        return best_route_plan, current_route_plan, weight_score
+        return best_route_plan, current_route_plan, weight_score        
+    def calculatePenaltyIllegalSolution(self, candidate_route_plan, current_iteration, total_iterations):
+        # Penalty in first objective per illegal treatment, visit or activity 
+        original_first_objective = candidate_route_plan.objective[0]
+        penalty = 0
+        if (len(candidate_route_plan.illegalNotAllocatedTreatments)
+            + len(candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays) 
+            + len(candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)) > 0:
+
+            iteration_factor = (total_iterations - current_iteration) / total_iterations
+            penalty = iteration_factor * (len(candidate_route_plan.illegalNotAllocatedTreatments) * penalty_treat 
+                    + len(candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays) * penalty_visit
+                    + len(candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays) * penalty_act)
+            
+            updated_first_objective = candidate_route_plan.objective[0] - int(penalty)
+            return int(penalty), updated_first_objective, original_first_objective
+        return penalty, candidate_route_plan.objective[0], original_first_objective

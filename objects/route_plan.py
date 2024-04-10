@@ -129,18 +129,43 @@ class RoutePlan:
 
     def addActivityOnDay(self, activity, day):
      
-     
+        if activity.id == 3: 
+            print("denne iterasjonen")
         for route in self.getSortedRoutes(activity, day):
-        
+            if activity.id == 3: 
+                print("prøver legge til 3 på dag", day, "ansatt", route.employee.id)
             #TODO: Update funskjonene burde sjekkes med de andre   
             #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
             #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
             #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
             
             #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
-            
+            '''
+            if activity.id == 3:
+                print("BEFORE UPDATEnewEarliest and LatestStartTime")
+                print(activity.newEeariestStartTime)
+                print(activity.newLatestStartTime)
+                act1 = self.getActivity(1, day)
+                print("act1.startTime", act1.startTime)
+            '''
             self.updateActivityBasedOnRoutePlanOnDay(activity, day)
+            '''
+            if activity.id == 3:
+                print("AFTER UPDATEnewEarliest and LatestStartTime")
+                print(activity.newEeariestStartTime)
+                print(activity.newLatestStartTime)
+                act1 = self.getActivity(1, day)
+                print("act1.startTime", act1.startTime)
+            '''
             insertStatus = route.addActivity(activity)
+            '''
+            if activity.id == 3:
+                print("AFTER INSERT newEarliest and LatestStartTime")
+                print(activity.newEeariestStartTime)
+                print(activity.newLatestStartTime)
+                act1 = self.getActivity(1, day)
+                print("act1.startTime", act1.startTime)
+            '''
             #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
             #Må gjøres på alle fordi alle kan ha blitt flyttet
             for possiblyMovedActivity in route.route: 
@@ -212,10 +237,6 @@ class RoutePlan:
             '''
             Printer alle rutene som inngår i routeplan
             '''
-            print("Printer alle rutene")
-            for day in range(1, self.days +1): 
-                for route in self.routes[day].values(): 
-                    route.printSoultion()
             self.updateObjective()
             print("operator brukt:", operator_string)
             print("objective ", self.objective)
@@ -227,6 +248,16 @@ class RoutePlan:
             print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
             print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
             print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
+
+            print('-------------------------------------------------------')
+
+            '''
+            Printer alle rutene som inngår i routeplan
+            '''
+            print("Printer alle rutene")
+            for day in range(1, self.days +1): 
+                for route in self.routes[day].values(): 
+                    route.printSoultion()
 
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
@@ -349,7 +380,6 @@ class RoutePlan:
 
         self.weeklyHeaviness = sum(weekly_diffs)
 
-
     def calculateDailyHeaviness(self):
         daily_diffs = []
         #for day, routes in self.routes.items():    
@@ -365,7 +395,6 @@ class RoutePlan:
             for profession, heaviness in profession_groups.items():
                 daily_diffs.append(max(heaviness) - min(heaviness))
         self.dailyHeaviness = sum(daily_diffs)
-
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
@@ -403,48 +432,48 @@ class RoutePlan:
                 self.routes[day].append(route)
 
     def updateActivityBasedOnRoutePlanOnDay(self, activity,day):
-            '''
-            Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
-            Basert på det som allerede ligger inne i routeplanen 
-            '''    
+        '''
+        Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
+        Basert på det som allerede ligger inne i routeplanen 
+        '''    
 
-            #Her håndteres pick up and delivery
-            if activity.getPickUpActivityID() != 0 : 
-                otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
-                activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
-                
-            #Her håndteres presedens.   
-            #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
-
-            for prevNodeID in activity.PrevNode: 
-                
-                prevNodeAct = self.getActivity(prevNodeID, day)
-                if prevNodeAct != None:
-                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
-  
-            for nextNodeID in activity.NextNode: 
-                nextNodeAct = self.getActivity(nextNodeID, day)
-                if nextNodeAct != None:
-                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
+        #Her håndteres pick up and delivery
+        if activity.getPickUpActivityID() != 0 : 
+            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
+            activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
             
-            #Her håndteres presedens med tidsvindu
-            #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
-            for PrevNodeInTimeID in activity.PrevNodeInTime: 
-                prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
-                if prevNodeAct != None:
-                    activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
-                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
+        #Her håndteres presedens.   
+        #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
+
+        for prevNodeID in activity.PrevNode: 
+            
+            prevNodeAct = self.getActivity(prevNodeID, day)
+            if prevNodeAct != None:
+                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
+
+        for nextNodeID in activity.NextNode: 
+            nextNodeAct = self.getActivity(nextNodeID, day)
+            if nextNodeAct != None:
+                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
+        
+        #Her håndteres presedens med tidsvindu
+        #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
+        for PrevNodeInTimeID in activity.PrevNodeInTime: 
+            prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
+            if prevNodeAct != None:
+                activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
+                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
 
 
-            for NextNodeInTimeID in activity.NextNodeInTime: 
-                nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
-                if nextNodeAct != None:
-                    activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
-                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
+        for NextNodeInTimeID in activity.NextNodeInTime: 
+            nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
+            if nextNodeAct != None:
+                activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
+                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
 
 
 
-                    #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
+                #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
 
         
     def updateDependentActivitiesBasedOnRoutePlanOnDay(self, activity ,day):
@@ -515,8 +544,7 @@ class RoutePlan:
             #Her håndteres presedens.   
             #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
 
-            for prevNodeID in activity.PrevNode: 
-                
+            for prevNodeID in activity.PrevNode:  
                 prevNodeAct = self.getActivity(prevNodeID, day)
                 if prevNodeAct != None:
                     activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)

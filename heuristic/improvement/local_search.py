@@ -22,7 +22,7 @@ class LocalSearch:
     
     def do_local_search(self):
         # TODO: Finne ut om det er noe teori på hva som burd være først 
-        candidate = self.candidate
+        candidate = copy.deepcopy(self.candidate)
 
         
         # CHANGE EMPLOYEE

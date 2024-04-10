@@ -39,27 +39,11 @@ class Insertor:
         old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
-        inAllocation = False 
-        if (self.constructor.patients_df.loc[patient, 'allocation'] == 1): 
-            inAllocation = True 
-     
         for treatment in treamentList: 
             status = self.insert_treatment(treatment)
             if status == False: 
                 self.route_plan = old_route_plan
                 return False
-            
-        #Nå har den kommet hit så da er det 
-        '''
-        Har fjernet de hvis de ligger i listen. Må legge de til hvs
-        '''
-        if patient in self.route_plan.notAllocatedPatients: 
-            self.route_plan.notAllocatedPatients.remove(patient)
-        
-        if patient in self.route_plan.illegalNotAllocatedPatients: 
-            self.route_plan.illegalNotAllocatedPatients.remove(patient)
-        
-        self.route_plan.allocatedPatients[patient] = treamentList
         
         return True 
 
@@ -109,7 +93,7 @@ class Insertor:
         #Iterer over alle patterns som er mulige for denne treatmenten
         patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
         index_random = [i for i in range(len(patterns))]
-        #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+        random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
         for index in index_random:
             self.route_plan = copy.deepcopy(old_route_plan)
@@ -138,7 +122,7 @@ class Insertor:
             #hvis patternet på den gitte dagen er 1, så forsøker vi å inserte visittet på den gitte dagen
             #Dersom insert ikke er mulig returerer funkjsonen False
             if pattern[day_index] == 1: 
-                insertStatus = self.best_insert_visit_on_day(visits[visit_index], day_index+1)
+                insertStatus = self.insert_visit_on_day(visits[visit_index], day_index+1)
                 #insertStatus = self.insert_visit_on_day(visits[visit_index], day_index+1) 
                 if insertStatus == False: 
                     return False
@@ -146,6 +130,16 @@ class Insertor:
                 visit_index += 1 
         return True   
                 
+    '''
+    Den klarer ikke få riktig at de skal gjøres innen et gitt 
+    Feilene er opp mot aktiviteter som ligger i andre ruter 
+
+    Vi vet at den er er feil allerede når den legger seg inn. 
+
+    Før den prøver å legge til i den riktige ruten så ser den på ruten med 1 i og dytter den? 
+    
+    Aktivitet 1 har dette starttidspunktet uansett
+    '''
 
     def insert_visit_on_day(self, visit, day):  
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
@@ -281,18 +275,16 @@ class Insertor:
 
         insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
 
-        print("prøver legge til aktivitet", activity.id, "day", day, "empl", employeeID, "index", index_place, "status", insertStatus)
-  
+      
         if insertStatus == False: 
             return 
         
         if len(rest_acitivites) == 0: 
             route_plan.updateObjective()
-            print("self.route_plan.objective", self.route_plan.objective)
-            print("route_plan.objective", route_plan.objective)
+         
             if checkCandidateBetterThanBest(route_plan.objective, self.route_plan.objective): 
                 self.route_plan = copy.deepcopy(route_plan)
-            print("finner innsetting", activity.id)
+        
             self.InsertionFound_BestInsertVisit = True 
             return 
             

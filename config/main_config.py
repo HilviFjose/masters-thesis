@@ -3,28 +3,36 @@ from datetime import datetime, timedelta
 #TODO: Endre til verdier som er riktige for oss. Hentet fra Anna
 #Denne fila inneholder variabler som brukes i ALNSen
 
-#Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
-reaction_factor = 0.2
+# Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
+reaction_factor = 0.7
 
-#Antall iterasjoner i ALNSen
-iterations = 100
+# Iterations in ALNS
+iterations = 1
 
-#Krav til hvor bra løsning er før vi kjører lokalsøk. Må tunes
+# Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
 
-#Sendes inn i ALNS og handler om hvor mye du skal destroye med operatorer altså hvor mange aktiviteter som skal ryke?
-#Maxen du kan fjerne er halve løsningen
-destruction_degree = 0.5
+#The amount of activities to remove in destroy operators
+destruction_degree = 0.4
 
 # Simulated annealing temperatures -- TODO: these must be tuned
-start_temperature = 50 
+start_temperature = 60
 end_temperature = 10
-cooling_rate = 0.95
+cooling_rate = 0.96
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
 speed = 40
 rush_factor = 2
 
-# Weight score for Acceptance Criterion and giving weights [sigma1, sigma2, sigma3, 0]. Må se på hva disse tallene skal være
-weight_scores = [1, 2, 3, 0]
+# Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
+weight_scores = [10, 5, 0, 15]
+
+# Iterations between each weight update in ALNS
+iterations_update = 5
+
+# Penalty in first objective for infeasible solution
+# TODO: these must be tuned
+penalty_treat = 10          # Penalty per illegal treatment
+penalty_visit = 5           # Penalty per illegal visit  
+penalty_act = 3             # Penalty per illegal activity 
