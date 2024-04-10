@@ -14,10 +14,12 @@ Skal man ved hjelp av disse operatorene kunne komme til optimal løsning?
 #TODO: Se på om vi skal gjøre de samme operatorene på visit nivå.  Hensyntar ikke at vi har dependensies mellom ruter.
 
 class LocalSearch:
-    def __init__(self, candidate): 
+    def __init__(self, candidate, current_iteration, total_iterations): 
         #Får inn en kandidatløsning som er et route_plan objekt 
         self.candidate = candidate
-        self.candidate.updateObjective()
+        self.current_iteration = current_iteration
+        self.total_iterations = total_iterations
+        self.candidate.updateObjective(current_iteration, total_iterations)
      
     
     def do_local_search(self):
@@ -226,7 +228,7 @@ class LocalSearch:
         return best_found_route
 
     def swap_employee(self, route_plan, day):
-        route_plan.updateObjective()
+        route_plan.updateObjective(self.current_iteration, self.total_iterations)
         best_objective = route_plan.getObjective()
         best_found_candidate = route_plan
 
@@ -264,7 +266,7 @@ class LocalSearch:
                         new_candidate = copy.deepcopy(route_plan) 
                         new_candidate.switchRoute(new_route1, day)
                         new_candidate.switchRoute(new_route2, day)
-                        new_candidate.updateObjective()
+                        new_candidate.updateObjective(self.current_iteration, self.total_iterations)
                        
                             
                         
@@ -308,7 +310,7 @@ class LocalSearch:
                         if status == False: 
                             break
                   
-                    new_candidate.updateObjective()
+                    new_candidate.updateObjective(self.current_iteration, self.total_iterations)
                     
                     if checkCandidateBetterThanBest(new_candidate.objective, best_found_candidate.objective ):
                         best_found_candidate = new_candidate 

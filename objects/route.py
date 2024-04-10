@@ -139,21 +139,6 @@ class Route:
         for a in self.route: 
             print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
         print("---------------------")
-
-    #Dette er alternativ måte å regne ut objektivet. Slik at ikke alt ligger i routeplan 
-    def updateObjective(self): 
-        i = 0 
-        travel_time = 0 
-        aggregated_skilldiff = 0
-        for act in self.route: 
-            j = act.getID()
-            travel_time += math.ceil(T_ij[i][j])
-            i = j 
-            aggregated_skilldiff += self.employee.getSkillLevel() - act.getSkillreq()
-        travel_time += math.ceil(T_ij[i][0])
-        self.aggSkillDiff= aggregated_skilldiff
-        self.travel_time = travel_time
-
         
     def calculateTotalHeaviness(self):
         self.totalHeaviness = sum([act.getHeaviness() for act in self.route])
