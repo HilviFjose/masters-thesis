@@ -93,9 +93,6 @@ class ALNS:
                 # Update scores
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
-           
-            print(d_count)
-            print(r_count)
 
             # After a certain number of iterations, update weight
             if (i+1) % iterations_update == 0:
