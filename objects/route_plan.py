@@ -178,7 +178,7 @@ class RoutePlan:
 
     def remove_activityIDs_from_route_plan(self, activityIDs):
         for day in range(1, self.days +1): 
-            for route in self.routes[day]: 
+            for route in self.routes[day].values(): 
                 for act in route.route: 
                     if act.id in activityIDs:
                         route.removeActivityID(act.id)
@@ -186,7 +186,7 @@ class RoutePlan:
     def remove_activityIDs_return_day(self, removed_activityIDs):
         original_day = None
         for day in range(1, self.days +1): 
-            for route in self.routes[day]: 
+            for route in self.routes[day].values(): 
                 for act in route.route: 
                     if act.id in removed_activityIDs:
                         route.removeActivityID(act.id)
@@ -267,7 +267,7 @@ class RoutePlan:
             Printer alle rutene som inngår i routeplan
             '''
             print("Printer alle rutene")
-            for route in self.routes[day]: 
+            for route in self.routes[day].values(): 
                 route.printSoultion()
             self.updateObjective()
             
@@ -283,7 +283,7 @@ class RoutePlan:
         Int employeeID til den ansatte som er allokert til aktiviteten 
         
         '''
-        for route in self.routes[day]: 
+        for route in self.routes[day].values(): 
             for act in route.route: 
                 if act.id== activity.id: 
                     return route.employee.id
@@ -424,12 +424,7 @@ class RoutePlan:
     def getObjective(self): 
         return self.objective
     
-    def swithRoute(self, route, day): 
-        #Det er viktig at route objektet ikke er det samme som org_route
-        for org_route in self.routes[day]: 
-            if org_route.employee.id == route.employee.id: 
-                self.routes[day].remove(org_route)
-                self.routes[day].append(route)
+  
 
     def updateActivityBasedOnRoutePlanOnDay(self, activity,day):
         '''
@@ -483,14 +478,22 @@ class RoutePlan:
                 self.updateActivityBasedOnRoutePlanOnDay(depActivity, day)
 
     def switchRoute(self, new_route,  day):
-            for org_route in self.routes[day]: 
-                if org_route.employee.id == new_route.employee.id: 
-                    self.routes[day].remove(org_route)
-                    self.routes[day].append(new_route) 
+        employeeOnDayList = [route.employee.id for route in self.routes[day].values()]
+        for emplID in employeeOnDayList: 
+            if emplID == new_route.employee.id: 
+                del self.routes[day][emplID]
+                self.routes[day][emplID] = new_route
+                #self.routes[day].remove(org_route)
+                #self.routes[day].append(new_route) 
+    
+    #TODO: Når kalles switch route? kan vi kopiere 
+    '''
+    Hva er konseptet her? Vi ønsker å finne den den ansatte hvor den nye ruten skal settes inn
+    '''
             
     def getRouteSkillLevForActivityID(self, activityID): 
         for day in range(1, self.days +1): 
-            for route in self.routes[day]: 
+            for route in self.routes[day].values(): 
                 for act in route.route: 
                     if act.id == activityID: 
                         return route.skillLev
@@ -499,7 +502,7 @@ class RoutePlan:
         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
         #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
         for day in range(1, self.days +1): 
-            for route in self.routes[day]: 
+            for route in self.routes[day].values(): 
                 for act in route.route:
                     if act.id == activityID: 
                         route.removeActivityID(activityID)
