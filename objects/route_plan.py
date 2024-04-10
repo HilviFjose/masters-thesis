@@ -8,6 +8,7 @@ from objects.route import Route
 import copy
 import random 
 import datetime
+from config.construction_config import depot
 
 
 class RoutePlan:
@@ -36,68 +37,31 @@ class RoutePlan:
         self.visits = {}
         self.allocatedPatients = {}
         self.notAllocatedPatients = []
+        self.illegalNotAllocatedPatients = []
         self.illegalNotAllocatedTreatments = []
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
+    def sortRoutesByAcitivyLocation(self, routes, activity):
+        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
+      
+        
+
+            # Convert to float and create a tuple
+        
+        if activity.location == depot: 
+            random.shuffle(routes)
+            return routes
+  
+   
+        return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity.location[0]) + abs(route.averageLocation[1]- activity.location[1]))
+
+
+            
 
     def addActivityOnDay(self, activity, day):
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
         # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
-        ''' FORKLARING
-        Funksjonen legger til aktiviteten på den gitte dagen ved å iterere over alle rutene som finnes på dagen 
-
-        Arg: 
-        activity (Activity): Activity objekt som vil legges til i en rute 
-        day (int): Dagen aktiviten skal legges til på 
-
-        Return: 
-        True/False på om innsettingen av aktiviteten var velykket 
-        '''
-
-        ''' #GAMMEL METODE - Reverserer rekkefølgen på routes for å ikke alltid begynne med samme ansatt på den gitte dagen
-        if self.rev == True:
-            routes =  reversed(self.routes[day])
-            self.rev = False
-        else: 
-            routes = self.routes[day]
-            self.rev = True
-        '''
-        '''
-         #GAMMEL METODE - Itererer helt tilfeldig
-        routes = self.routes[day]
-        index_random = [i for i in range(len(routes))]
-        random.shuffle(index_random)
-
-        for index in index_random: #Disse to linjene erstattes med første linje i for-løkken nedenfor
-            route = routes[index]
-            old_skillDiffObj = route.aggSkillDiff
-            old_travel_time = route.travel_time
-
-            #TODO: Update funskjonene burde sjekkes med de andre   
-            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
-            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
-            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
-            
-            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
-            
-            self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-         
-            insertStatus = route.addActivity(activity)
-            
-            if insertStatus == True: 
-                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
-                #Må gjøres på alle fordi alle kan ha blitt flyttet
-                for possiblyMovedActivity in route.route: 
-                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
-            
-                self.objective[3] -= old_skillDiffObj
-                self.objective[3] += route.aggSkillDiff
-                self.objective[4] -= old_travel_time
-                self.objective[4] += route.travel_time
-                return True
-        return False
-        '''
         # Grupperer ruter basert på profesjonen til den ansatte
         routes_grouped_by_skill = {}
         for route in self.routes[day]:
@@ -112,12 +76,20 @@ class RoutePlan:
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
+            #TODO: Sortere hvor mange som er 
+     
+            routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
             #random.shuffle(routes_for_skill)
+            
             routes += routes_for_skill
+          
+            #For å omrokkere på de som er fra før 
             #if act_skill_level == 2: 
-            #    random.shuffle(routes)
+            #   random.shuffle(routes)
   
-
+        '''
+        Har hatt det random for hver som settes inn tidligere. Usikkert hva som er mest effektivit av det og å 
+        '''
     
      
         #Prøver iterativt å legge til aktiviteten i hver rute på den gitte dagen 
@@ -141,42 +113,29 @@ class RoutePlan:
             if insertStatus:
                 return True
         return False
-        '''
-        #GAMMEL METODE - Itererer etter sortert skill
-        # Iterer gjennom routes i den sorterte rekkefølgen basert på skill
-        for route in self.routes[day]:
-            old_skillDiffObj = route.aggSkillDiff
-            old_travel_time = route.travel_time
 
-            #TODO: Update funskjonene burde sjekkes med de andre   
-            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
-            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
-            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
-            
-            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
-            
-            self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-         
-            insertStatus = route.addActivity(activity)
-            
-            if insertStatus == True: 
-                #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
-                #Må gjøres på alle fordi alle kan ha blitt flyttet
-                for possiblyMovedActivity in route.route: 
-                    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
-            
-                self.objective[3] -= old_skillDiffObj
-                self.objective[3] += route.aggSkillDiff
-                self.objective[4] -= old_travel_time
-                self.objective[4] += route.travel_time
-                return True
-        return False
-        '''
+
+    def remove_activityIDs_from_route_plan(self, activityIDs):
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route: 
+                    if act.id in activityIDs:
+                        route.removeActivityID(act.id)
+
+    def remove_activityIDs_return_day(self, removed_activityIDs):
+        original_day = None
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route: 
+                    if act.id in removed_activityIDs:
+                        route.removeActivityID(act.id)
+                        original_day = day
+        return original_day
 
     def getRoutePlan(self): 
         return self.routes
- 
-    def printSolution(self, txtName):
+    
+    def printDictionaryTest(self, txtName):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
         # Åpne filen for å skrive
         with open(r"results\\" + txtName + ".txt", "w") as log_file:
@@ -189,6 +148,42 @@ class RoutePlan:
             now = datetime.datetime.now() 
             log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
             print('-------------------------------------------------------')
+            print("visits", self.visits)
+            print("treatments", self.treatments)
+            print("allocated patients ", self.allocatedPatients)
+            print("not allocated ", self.notAllocatedPatients)
+            print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
+            print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
+            print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
+
+             # Tilbakestill sys.stdout til original
+            sys.stdout = original_stdout
+ 
+    def printSolution(self, txtName, operator_string):
+        #SKRIV TIL FIL I STEDET FOR TERMINAL
+        # Åpne filen for å skrive
+        with open(r"results\\" + txtName + ".txt", "w") as log_file:
+            # Omdiriger sys.stdout til filen
+            original_stdout = sys.stdout
+            sys.stdout = log_file
+            constructor = None 
+
+            # Skriver klokkeslettet til når filen ble opprettet
+            now = datetime.datetime.now() 
+            log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
+            self.updateObjective()
+            print("operator brukt:", operator_string)
+            print("objective ", self.objective)
+            print("visits", self.visits)
+            print("treatments", self.treatments)
+            print("allocated patients ", self.allocatedPatients)
+            print("not allocated ", self.notAllocatedPatients)
+            print("illegalNotAllocatedPatients", self.illegalNotAllocatedPatients)
+            print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
+            print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
+            print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
+
+            print('-------------------------------------------------------')
 
             '''
             Printer alle rutene som inngår i routeplan
@@ -197,19 +192,19 @@ class RoutePlan:
             for day in range(1, self.days +1): 
                 for route in self.routes[day]: 
                     route.printSoultion()
-            self.updateObjective()
-            print("objective ", self.objective)
-            print("allocated patients ", list(self.allocatedPatients.keys()))
-            print("not allocated ", self.notAllocatedPatients)
-            print("illegalNotAllocatedTreatments", self.illegalNotAllocatedTreatments)
-            print("illegalNotAllocatedVisits", list(self.illegalNotAllocatedVisitsWithPossibleDays.keys()))
-            print("illegalNotAllocatedActivities", list(self.illegalNotAllocatedActivitiesWithPossibleDays.keys()))
 
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
-
     
-
+    def printSolution1(self, day):
+            '''
+            Printer alle rutene som inngår i routeplan
+            '''
+            print("Printer alle rutene")
+            for route in self.routes[day]: 
+                route.printSoultion()
+            self.updateObjective()
+            
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
         returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
@@ -276,6 +271,25 @@ class RoutePlan:
             for act in route.route: 
                 if act.id == actID: 
                     return act 
+        return None       
+
+
+    def getActivityFromEntireRoutePlan(self, actID): 
+        '''
+        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
+        
+        Arg: 
+        actID (int): ID til en aktivitet som gjøres en gitt dag
+        day (int): dagen aktiviten finnes i en rute  
+
+        Return: 
+        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
+        '''
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route: 
+                    if act.id == actID: 
+                        return act 
         return None       
 
 
@@ -430,4 +444,33 @@ class RoutePlan:
                         route.removeActivityID(activityID)
                         #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
                         self.updateDependentActivitiesBasedOnRoutePlanOnDay(act, day)
+                        return day
+                    
+    def updateAllocationAfterPatientInsertor(self, patient, constructor): 
+        #Oppdaterer allokerings dictionariene 
+        '''
+        if patient == 49:
+            print("visit mellom status REPAIRED", self.visits[70])
+            print("visit mellom status INSERTORPLAN", self.visits[70])
+        
+        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in [item for sublist in self.allocatedPatients.values() for item in sublist]: 
+            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
+        for visit in [item for sublist in self.treatments.values() for item in sublist]: 
+            self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
+        '''
+        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in self.allocatedPatients[patient]:
+            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
+            for visit in self.treatments[treatment]: 
+                self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
+
+   
+            
+              
+    def getDayForActivityID(self, activityID):
+        for day in range(1, self.days +1): 
+            for route in self.routes[day]: 
+                for act in route.route:
+                    if act.id == activityID: 
                         return day

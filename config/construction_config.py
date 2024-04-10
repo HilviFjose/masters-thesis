@@ -28,7 +28,7 @@ patterns_1day = [15,16,17,18,19]                                    # Patterntyp
 continuityDistribution = [0.35, 0.15, 0.5] #Top 1 employee, top 3 employees, all employees
 
 # Patient allocation
-allocation = 0.3 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
+allocation = 0.15 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
 
 # Heaviness
 heavinessDistribution = [1, 0, 0, 0, 0] 
@@ -50,7 +50,7 @@ maxDurationEquip = 30
 
 # EMPLOYEES
 # Number of employees
-E_num = 10
+E_num = 5
 # Distributions of employees
 E_num_night = 0.1
 E_num_day = 0.7
@@ -83,6 +83,9 @@ StHanshaugen = (59.9329, 10.7506)
 Majorstuen = (59.9282, 10.7126)
 refLoc = [depot, Ullern, Ris, Holmenkollen, Sogn, Bjerke, Haugerud, Boler, Lambergseter, Grunerlokka, StHanshaugen, Majorstuen]
 
+# DAY
+startday = 480
+endday = 960
 
 
 

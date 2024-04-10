@@ -3,30 +3,33 @@ from datetime import datetime, timedelta
 #TODO: Endre til verdier som er riktige for oss. Hentet fra Anna
 #Denne fila inneholder variabler som brukes i ALNSen
 
-#Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
-reaction_factor = 0.2
+# Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
+reaction_factor = 0.7
 
-#Adaptive Weights: Gitte vektmuligheter, brukes til å velge operator
-#Har en liste med alle operatorer hvor de innehar en av disse verdiene
-weights = [3, 2, 1, 0.5]
-#TODO: sigma_scores
-
-#Antall iterasjoner i ALNSen
+# Iterations in ALNS
 iterations = 10
 
-#Sendes inn i ALNS og handler om hvor mye du skal destroye med operatorer altså hvor mange aktiviteter som skal ryke?
-#Maxen du kan fjerne er halve løsningen
-destruction_degree = 0.5
+# Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
+local_search_req = 0.02
+
+#The amount of activities to remove in destroy operators
+destruction_degree = 0.4
 
 # Simulated annealing temperatures -- TODO: these must be tuned
-start_temperature = 50 
+start_temperature = 60
 end_temperature = 10
-cooling_rate = 0.999
+cooling_rate = 0.96
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
 speed = 40
 rush_factor = 2
+
+# Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
+weight_scores = [10, 5, 0, 15]
+
+# Iterations between each weight update in ALNS
+iterations_update = 5
 
 # Penalty in first objective for infeasible solution
 # TODO: these must be tuned

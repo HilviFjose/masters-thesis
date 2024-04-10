@@ -10,24 +10,28 @@ class SimulatedAnnealing:
 
     # Simulated annealing acceptance criterion
     def accept_criterion(self, random_state, current_objective, candidate_objective):
+        accept = False
         # Always accept better solution
-        if checkCandidateBetterThanBest(candidateObj= candidate_objective, currObj= current_objective):
+        if checkCandidateBetterThanBest(candidate_objective, current_objective):
             accept = True
+            print("Candidate is better than current and accepted")
         
         # Sometimes accept worse
         else:
-            print("Did not find better solution")
-            accept = False
-            """
-            # TODO: Legge inn en ny objektivvurdering
-            diff = (candidate_objective.total_seconds() -
-                    current_objective.total_seconds())/60
-            probability = np.exp(-diff / self.temperature)
-            #print("Probability ", probability)
-            accept = (probability >= random_state.random())
-            #print("Did we still go with worse solution: ", accept)
-
+            if candidate_objective[0] < current_objective[0]:
+                diff = current_objective[0] - candidate_objective[0] 
+                probability = np.exp(-diff / self.temperature)
+                accept = (probability >= random_state.random())
+                print("Candidate not better. Accepted det solution?", accept)
+            else:
+                for i in range(1, len(candidate_objective)): 
+                    if candidate_objective[i] > current_objective[i]: 
+                        diff = candidate_objective[i] - current_objective[i]
+                        probability = np.exp(-diff / self.temperature)
+                        accept = (probability >= random_state.random())
+                        print("Candidate not better. Accepted det solution?", accept)
+                        break
+        
         # Should not set a temperature that is lower than the end temperature.
-        self.temperature = self.temperature*self.cooling_rate
-        """
+        self.temperature = self.temperature * self.cooling_rate
         return accept

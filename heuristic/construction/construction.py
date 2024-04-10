@@ -25,9 +25,13 @@ class ConstructionHeuristic:
         self.days = days
 
         self.route_plan = RoutePlan(days, employees_df) 
-        self.listOfPatients = []
-        self.unAssignedPatients = []
         
+        
+    '''
+    Oppdatering av matrisene. I dette statidiet vil vi bare godekjenne inserting av pasienter som fullstendig legges inn på hjemmesykehuset 
+
+    Dersom pasientne allokeres legges nå alle de tilhørende treatments, visits og aktiviteter til 
+    '''
  
     def construct_initial(self): 
         '''
@@ -36,48 +40,52 @@ class ConstructionHeuristic:
         '''
 
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by="aggUtility", ascending=False)
+        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
+
         
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
+            allocation = unassigned_patients.loc[patient, 'allocation']
             
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
 
-            '''
-            #Oppretter et PatientInsertor objekt, hvor pasient_df og kopien av dagens ruteplan sendes inn
-            patientInsertor = PatientInsertor( route_plan_with_patient, patient_request, self)
-            #patientInsertor forsøker å legge til pasienten, og returnerer True hvis velykket
-            state = patientInsertor.insert_patients()
-            '''
-            '''
-            Kommentar: Forsøker å ta bort patient insertor og bytte den ut med Insertor, slik at vi bare har en fil i bruk 
-            '''
             patientInsertor = Insertor(self, route_plan_with_patient)
             state = patientInsertor.insert_patient(patient)
            
             if state == True: 
                 #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                 self.route_plan = patientInsertor.route_plan
-                #Pasienten legges til i hjemmsykehusets liste med pasienter
-                self.listOfPatients.append(patient)
                 
+                #Pasienten legges til i hjemmsykehusets liste med pasienter
+                self.updateConstructionAllocationInformation(patient)
                 #Oppdaterer ruteplanen 
                 
-
-                
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
+            #TODO: Hva trenger egentlig å konstrueres i dette
             if state == False: 
-                self.unAssignedPatients.append(patient)
-                self.route_plan.notAllocatedPatients.append(patient)
+                
+            
+                if allocation == 0: 
+                    self.route_plan.notAllocatedPatients.append(patient)
+                else: 
+                    self.route_plan.illegalNotAllocatedPatients.append(patient)
         
         #TODO: Oppdatere alle dependencies når vi har konstruert løsning 
         for day in range(1, 1+ self.days): 
             for route in self.route_plan.routes[day]: 
                 for activity in route.route: 
                     self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
+
+    
+    def updateConstructionAllocationInformation(self, patient): 
+        self.route_plan.allocatedPatients[patient] = self.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in [item for sublist in self.route_plan.allocatedPatients.values() for item in sublist]: 
+            self.route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']
+        for visit in [item for sublist in self.route_plan.treatments.values() for item in sublist]: 
+            self.route_plan.visits[visit] = self.visit_df.loc[visit, 'activitiesIds']
         
 #TODO: Endre slik at dataen ikke må hentes på denne måten
 

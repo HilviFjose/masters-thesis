@@ -19,12 +19,18 @@ class Activity:
         self.skillReq = df.loc[id]["skillRequirement"]
         self.heaviness = df.loc[id]["heaviness"]
         self.pickUpActivityID = df.loc[id]["sameEmployeeActivityId"]
-        self.location = df.loc[id]["location"]
+        self.location = self.makeLocationTuple(df.loc[id]["location"])   #Endret på denne for å få til lokasjon 
         self.employeeRestricions = df.loc[id]["employeeRestriction"]
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevPrece"])
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
         self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextPrece"])
         self.patient = df.loc[id]["patientId"]
+        self.treatmentId = df.loc[id]["treatmentId"]
+
+        self.nActInPatient = df.loc[id]["nActInPatient"]
+        self.nActInTreat = df.loc[id]["nActInTreat"]
+        self.nActInVisit = df.loc[id]["numActivitiesInVisit"]
+
         self.suitability = df.loc[id]["utility"]
         
         self.startTime = None
@@ -45,6 +51,17 @@ class Activity:
         self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
     #make funskjonene setter parameterne til Acitivy objektet 
     
+    def makeLocationTuple(self, coordinate_string): 
+        coordinate_string = "(59.8703, 10.8382)"
+
+        # Strip the parentheses
+        stripped_string = coordinate_string.strip("()")
+
+        # Split the string by comma
+        split_strings = stripped_string.split(", ")
+
+        # Convert the split strings into floats and create a tuple
+        return tuple(float(num) for num in split_strings)
     '''
     def makeEmployeeRestriction(self, string): #Tror denne nå kan slettes - Guro
         if "," in string: 
