@@ -342,6 +342,7 @@ def activitiesGenerator(df_visits):
 
     # Overwrite heaviness for Equipment activities
     df_activities.loc[df_activities['activityType'] == 'E', 'heaviness'] = 1
+    df_activities.loc[df_activities['activityType'] == 'E', 'utility'] = 0
 
     # Generate duration of activities
     for activityType, group in df_activities.groupby('activityType'):

@@ -198,10 +198,31 @@ def check_consistency(file):
                     if (activityID not in [item for sublist in visit_dict.values() for item in sublist]) and activityID not in illegal_activity_list: 
                         print("ERROR: activity ", activityID, "in visit ", visitID, "in treatment ", treatmentID, "for patient ", patientID, "er borte!!!!")
 
-def check_objective(file):
-    status = False
-    activities_in_candidate, duplicates = extract_activities(file)
+def check_objective(file_path):
+    status = True
+    aggregated_utility = 0
+    activities_in_candidate, duplicates = extract_activities(file_path)
+    utility = list(df_activities['utility'])
+
+    # Find current first objective
+    with open(file_path, 'r') as file:
+        text = file.read()
+        match = re.search(r"objective\s+\[([^\]]+)\]", text)
+        if match:
+            objective_values = match.group(1).split(',')
+            first_objective_value = objective_values[0].strip()
+
+    # Calculate aggregated utility in route plan
+    for act in activities_in_candidate:
+        index = act - 1
+        aggregated_utility += utility[index]
+
+    # Check if objective is similar
+    if not int(first_objective_value) == int(aggregated_utility):
+        print("ERROR - Aggregated calculated objective ", aggregated_utility, " is not same as objective in candidate", first_objective_value)
+        status = False
     return status
+
 
 
 def check_precedence_within_file(file):
@@ -289,9 +310,16 @@ for cand in range(1, iterations+1):
         if status2 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
-       
+        """
         status3, status4, status5 = check_precedence_within_file(file_path_candidate)
         if status3 == False or status4 == False or status5 == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------") 
+        """
+
+        status6 = check_objective(file_path_candidate)
+        if status6 == False: 
+            print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+            print("---------------------------")
+        # Sjekke om objektivet i nåværende stemmer med aktiviteter i kandidaten 
 

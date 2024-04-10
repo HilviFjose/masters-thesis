@@ -76,7 +76,7 @@ class ALNS:
                 localsearch = LocalSearch(candidate_route_plan)
                 candidate_route_plan = localsearch.do_local_search()
                 
-            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
+            
         
             # Konverterer til hexa-string for å sjekke om vi har samme løsning. Evaluerer og scores oppdateres kun hvis vi har en løsning som ikke er funnet før
             if hash(str(candidate_route_plan)) == hash(str(self.current_route_plan)) and hash(str(candidate_route_plan)) in found_solutions.keys():
@@ -96,7 +96,8 @@ class ALNS:
                 # Update scores
                 d_scores[destroy] += weight_score
                 r_scores[repair] += weight_score
-
+            
+            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             # After a certain number of iterations, update weight
             if (i+1) % iterations_update == 0:
                 # Update weights with scores

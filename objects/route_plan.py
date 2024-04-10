@@ -171,7 +171,7 @@ class RoutePlan:
             # Skriver klokkeslettet til når filen ble opprettet
             now = datetime.datetime.now() 
             log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
-            self.updateObjective()
+            #self.updateObjective()
             print("operator brukt:", operator_string)
             print("objective ", self.objective)
             print("visits", self.visits)
