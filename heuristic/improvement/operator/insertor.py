@@ -32,27 +32,11 @@ class Insertor:
         old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
-        inAllocation = False 
-        if (self.constructor.patients_df.loc[patient, 'allocation'] == 1): 
-            inAllocation = True 
-     
         for treatment in treamentList: 
             status = self.insert_treatment(treatment)
             if status == False: 
                 self.route_plan = old_route_plan
                 return False
-            
-        #Nå har den kommet hit så da er det 
-        '''
-        Har fjernet de hvis de ligger i listen. Må legge de til hvs
-        '''
-        if patient in self.route_plan.notAllocatedPatients: 
-            self.route_plan.notAllocatedPatients.remove(patient)
-        
-        if patient in self.route_plan.illegalNotAllocatedPatients: 
-            self.route_plan.illegalNotAllocatedPatients.remove(patient)
-        
-        self.route_plan.allocatedPatients[patient] = treamentList
         
         return True 
 

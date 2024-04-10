@@ -47,7 +47,7 @@ def main():
     initial_route_plan = localsearch.do_local_search()
     initial_route_plan.printSolution("initialLS","ingen operator")
    
-    alns = ALNS(reaction_factor, initial_route_plan, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState())
+    alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState())
 
     destroy_operators = DestroyOperators(alns)
     repair_operators = RepairOperators(alns)
