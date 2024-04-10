@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 100
+iterations = 1000
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -29,4 +29,4 @@ rush_factor = 2
 weight_scores = [10, 5, 0, 15]
 
 # Iterations between each weight update in ALNS
-iterations_update = 10
+iterations_update = 100
