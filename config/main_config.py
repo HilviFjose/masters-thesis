@@ -30,3 +30,9 @@ weight_scores = [10, 5, 0, 15]
 
 # Iterations between each weight update in ALNS
 iterations_update = 5
+
+# Penalty in first objective for infeasible solution
+# TODO: these must be tuned
+penalty_treat = 10          # Penalty per illegal treatment
+penalty_visit = 5           # Penalty per illegal visit  
+penalty_act = 3             # Penalty per illegal activity 
