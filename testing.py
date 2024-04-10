@@ -200,11 +200,11 @@ def check_consistency(file):
 
 def check_objective(file):
     status = False
-    activities_in_candidate, duplicates = extract_activities
+    activities_in_candidate, duplicates = extract_activities(file)
     return status
 
 
-def check_precedence(file):
+def check_precedence_within_file(file):
     status1 = True
     status2 = True
     status3 = True
@@ -290,7 +290,7 @@ for cand in range(1, iterations+1):
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
        
-        status3, status4, status5 = check_precedence(file_path_candidate)
+        status3, status4, status5 = check_precedence_within_file(file_path_candidate)
         if status3 == False or status4 == False or status5 == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------") 
