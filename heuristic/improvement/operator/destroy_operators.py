@@ -653,7 +653,7 @@ class DestroyOperators:
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         # Removing primary visit
-        self.visit_removal(primary_visitId, destroyed_route_plan) 
+        self.visit_removal(primary_visitId, destroyed_route_plan)[0]
         activities_count = len(current_route_plan.visits[primary_visitId])
         # Removing visits with the highest relatedness score
         removed_visits = [primary_visitId]
@@ -662,7 +662,7 @@ class DestroyOperators:
                 break
             # Visits are only removed if the relatedness score is higher than 0
             if sorted_related_visit_dict[visitId] > 0:
-                self.visit_removal(visitId, destroyed_route_plan)
+                self.visit_removal(visitId, destroyed_route_plan)[0]
                 activities_count += len(current_route_plan.visits[visitId])
                 removed_visits.append(visitId)
         #print(f'Removed visits: ', removed_visits)
@@ -686,11 +686,16 @@ class DestroyOperators:
         firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
         firstDay = current_route_plan.getDayForActivityID(firstActId)  #First day of a treatment and the patterntype decide which pattern is choosen for the treatment
         related_treatment_list = [primary_treatmentId]
-        #activities_count = self.constructor.treatment_df.loc[primary_treatmentId]['nActivities']
         firstAct = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
         activities_count = firstAct.nActInTreat
+        print('Valgt treatment', primary_treatmentId)
+        print('Aktivitetsids', filtered_row['activitiesIds'])
+
 
         # Fjerner treatments som har samme pattern
+        firstActInTreatment = [ids[0] if ids else None for ids in self.constructor.treatment_df['activitiesIds']]
+
+        print('firstActInTreatment',firstActInTreatment)
         actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
         for actId in actSamePatternType:
             if activities_count >= total_num_activities_to_remove:
@@ -702,26 +707,29 @@ class DestroyOperators:
                 if act.treatmentId not in related_treatment_list:
                     related_treatment_list.append(act.treatmentId)
                     #print(f'Removed patterntype {patternType} on day {firstDay}. Removed treatment {act.treatmentId}')
-                    #activities_count += self.constructor.treatment_df.loc[act.treatmentId]['nActivities']
                     activities_count += act.nActInTreat
+                    #nextActId = actId+1
+                    #nextAct = current_route_plan.getActivityFromEntireRoutePlan(nextActId)
+                    #while act.treatmentId == nextAct.treatmentId:
+
         
         # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
         for actId in actSamePatternType:
             if activities_count >= total_num_activities_to_remove:
                 break
-
+            print('actId', actId)
             act = current_route_plan.getActivityFromEntireRoutePlan(actId)
-            if act.treatmentId not in related_treatment_list:
+            if current_route_plan.getDayForActivityID(actId) != firstDay:
                 actSamePatternType.remove(actId)
-                related_treatment_list.append(act.treatmentId)
-                #print(f'Removed treatment from patterntype {patternType}. Removed treatment {act.treatmentId}')
-                #activities_count += self.constructor.treatment_df.loc[act.treatmentId]['nActivities']
-                activities_count += act.nActInTreat
+                if act.treatmentId not in related_treatment_list:
+                    related_treatment_list.append(act.treatmentId)
+                    #print(f'Removed treatment from patterntype {patternType}. Removed treatment {act.treatmentId}')
+                    activities_count += act.nActInTreat
 
         # Removing related treatments
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for treatId in related_treatment_list:
-            destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan) 
+            destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan)[0] 
 
         #print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
         
