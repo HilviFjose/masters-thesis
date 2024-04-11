@@ -47,7 +47,7 @@ class RepairOperators:
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
         for patient in descendingUtilityNotAllocatedPatients: 
-            patientInsertor = Insertor(self.constructor, repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, repaired_route_plan, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
             
@@ -82,7 +82,7 @@ class RepairOperators:
         random.shuffle(randomNotAllocatedPatients)
 
         for patient in randomNotAllocatedPatients: 
-            patientInsertor = Insertor(self.constructor, repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, repaired_route_plan, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
 
@@ -118,7 +118,7 @@ class RepairOperators:
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get)
 
         for patient in descendingComplexityNotAllocatedPatients: 
-            patientInsertor = Insertor(self.constructor, repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, repaired_route_plan, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
             
@@ -172,9 +172,9 @@ class RepairOperators:
     def illegal_visit_repair(self, repaired_route_plan): 
         illegal_visit_iteration_list = list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
         for visit in illegal_visit_iteration_list:  
-            visitInsertor = Insertor(self.constructor, repaired_route_plan)
+            visitInsertor = Insertor(self.constructor, repaired_route_plan, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
-            status = visitInsertor.insert_visit_on_day(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
+            status = visitInsertor.insertVisitOnDay(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
             
             #Alternativ 1 
             if status == True: 
@@ -201,7 +201,7 @@ class RepairOperators:
     
     def illegal_treatment_repair(self, repaired_route_plan): 
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
-            treatmentInsertor = Insertor(self.constructor, repaired_route_plan)
+            treatmentInsertor = Insertor(self.constructor, repaired_route_plan, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = treatmentInsertor.insert_treatment(treatment)
             
@@ -233,7 +233,7 @@ class RepairOperators:
     def illegal_patient_repair(self, repaired_route_plan): 
          
         for patient in repaired_route_plan.illegalNotAllocatedPatients:  
-            patientInsertor = Insertor(self.constructor, repaired_route_plan)
+            patientInsertor = Insertor(self.constructor, repaired_route_plan, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
             

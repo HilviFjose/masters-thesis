@@ -25,7 +25,6 @@ from helpfunctions import checkCandidateBetterThanBest
 from objects.activity import Activity
 from config.construction_config import *
 from datageneration.distance_matrix import *
-from heuristic.improvement.operator.insertor import Insertor
 from parameters import T_ij
 
 #TODO: Finne ut hva operator funksjonene skal returnere 
@@ -212,9 +211,12 @@ class DestroyOperators:
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
         
         # Sorter rutene basert på kjøretid, lengst først
-        sorted_routes = sorted(
-            (route for day, routes in current_route_plan.routes.items() for route in routes),
-            key=lambda x: x.travel_time, reverse=True)
+        #sorted_routes = sorted(
+        #    (route for day, routes in current_route_plan.routes.items() for route in routes),
+        #    key=lambda x: x.travel_time, reverse=True)
+        
+        sorted_routes =  sorted((route for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values()), key=lambda x: x.travel_time, reverse=True)
+
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         removed_activities_count = 0
@@ -303,9 +305,12 @@ class DestroyOperators:
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
         
         # Sorter rutene basert på kjøretid, lengst først
-        sorted_routes = sorted(
-            (route for day, routes in current_route_plan.routes.items() for route in routes),
-            key=lambda x: x.travel_time, reverse=True)
+        #sorted_routes = sorted(
+        #    (route for day, routes in current_route_plan.routes.items() for route in routes),
+        #    key=lambda x: x.travel_time, reverse=True)
+        
+        sorted_routes =  sorted((route for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values()), key=lambda x: x.travel_time, reverse=True)
+
         
         activities_to_remove = []
         while total_num_activities_to_remove > 0 and sorted_routes:

@@ -6,7 +6,7 @@ from helpfunctions import *
 
 
 class Insertor:
-    def __init__(self, constructor, route_plan):
+    def __init__(self, constructor, route_plan, insertion_efficiency_level):
         self.constructor = constructor
         #self.route_plan = copy.deepcopy(route_plan)
         self.route_plan = route_plan
@@ -15,24 +15,15 @@ class Insertor:
         self.InsertionFound_BetterInsertVisit = False
         self.InsertionFound_BestInsertVisit = False
 
-        self.list_test_route_plans = []
-        
 
-     
-    '''
-    Insertor skal ikke gjøre noen oppdatering av matrisene. Det skal kunn skje i constructor og operators
+        self.visitOnDayInsertorList = [self.simple_insert_visit_on_day, self.better_insert_visit_on_day, self.best_insert_visit_on_day]   
+        if insertion_efficiency_level >= len(self.visitOnDayInsertorList): 
+            print("IKKE GYLDIG insertion_efficiency_level")
+        self.insertVisitOnDay = self.visitOnDayInsertorList[insertion_efficiency_level] #Dette er en funskjon 
 
-    Her må altså alle oppdateringer flyttes ut til operators. Denne inserter bare, så vil aldri fjerne elemener 
-
-    Mulig insertPatients må fjernes. Fordi den vil bare legge inn, også oppdateres det ikke basert på hva som skjer 
-    '''
 
     '''
-#Konseptet her er at vi skal kunne sende inn all atributter vi vil legge til.
-    def insertPatients(self, patientList): 
-        for patient in patientList: 
-            self.insert_patient(patient)
-        return self.route_plan
+    Hvordan skal det velges her
     '''
 
     def insert_patient(self, patient):
@@ -122,7 +113,7 @@ class Insertor:
             #hvis patternet på den gitte dagen er 1, så forsøker vi å inserte visittet på den gitte dagen
             #Dersom insert ikke er mulig returerer funkjsonen False
             if pattern[day_index] == 1: 
-                insertStatus = self.insert_visit_on_day(visits[visit_index], day_index+1)
+                insertStatus = self.insertVisitOnDay(visits[visit_index], day_index+1)
                 #insertStatus = self.insert_visit_on_day(visits[visit_index], day_index+1) 
                 if insertStatus == False: 
                     return False
@@ -141,7 +132,7 @@ class Insertor:
     Aktivitet 1 har dette starttidspunktet uansett
     '''
 
-    def insert_visit_on_day(self, visit, day):  
+    def simple_insert_visit_on_day(self, visit, day):  
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
         old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 

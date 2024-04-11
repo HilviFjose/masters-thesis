@@ -248,7 +248,7 @@ def check_precedence_within_file(file):
             continue
         for following_act_id in following_activities:
             following_start_time = cand_dict.get(following_act_id)
-            if following_start_time is None or following_start_time <= current_start_time:
+            if following_start_time != None and following_start_time <= current_start_time:
                 print(f"ERROR - FOLLOWING ACTIVITY STARTING EARLIER THAN CURRENT: Activity {following_act_id} starting at {following_start_time}, starts before activity {activity_id} starting at {current_start_time}.")
                 status2 = False
 

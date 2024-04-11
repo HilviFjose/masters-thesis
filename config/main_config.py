@@ -36,3 +36,5 @@ iterations_update = 5
 penalty_treat = 10          # Penalty per illegal treatment
 penalty_visit = 5           # Penalty per illegal visit  
 penalty_act = 3             # Penalty per illegal activity 
+
+
