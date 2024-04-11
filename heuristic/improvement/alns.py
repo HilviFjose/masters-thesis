@@ -185,7 +185,8 @@ class ALNS:
             weight_score = weight_scores[3]
 
         return best_route_plan, current_route_plan, weight_score    
-        
+
+    #GAMMEL    
     def calculatePenaltyIllegalSolution(self, candidate_route_plan, current_iteration, total_iterations):
         # Penalty in first objective per illegal treatment, visit or activity 
         original_first_objective = candidate_route_plan.objective[0]

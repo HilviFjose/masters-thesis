@@ -160,7 +160,7 @@ class RoutePlan:
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
  
-    def printSolution(self, txtName, operator_string):
+    def printSolution(self, txtName, operator_string, current_iteration = None):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
         # Åpne filen for å skrive
         with open(r"results\\" + txtName + ".txt", "w") as log_file:
