@@ -39,9 +39,6 @@ class Activity:
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
 
-        
-
-
         #Lager dependent activities. Som er aktiviteter som denne noden påvirkes av 
         self.dependentActivities = self.PrevNode + self.NextNode 
         for elem in (self.PrevNodeInTime + self.NextNodeInTime): 
@@ -49,6 +46,9 @@ class Activity:
 
         self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
         self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
+
+        self.sameEmployeeAcitivtyID = df.loc[id]["sameEmployeeActivityId"]
+        
     #make funskjonene setter parameterne til Acitivy objektet 
     
     def makeLocationTuple(self, coordinate_string): 
