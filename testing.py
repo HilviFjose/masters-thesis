@@ -254,6 +254,8 @@ def check_precedence_within_file(file):
     for (activity_id, start_time) in activities_in_candidate:
         index = activity_id - 1  
         if not (earliestStart[index] <= start_time <= latestStart[index]):
+            #print("activity_id", activity_id, "earliestStart", earliestStart[index] )
+            #print("latestStart[index]", latestStart[index])
             print("ERROR - START TIME NOT IN TIME WINDOW: activity", activity_id, "with start time", start_time)
             status1 = False
 
@@ -298,9 +300,31 @@ def check_precedence_within_file(file):
 # Example usage
 username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
+file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
+file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\0before_iteration.txt'  # Replace with the actual path to your first file
+file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
+file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"]
 
-file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
-file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_final"]
+
+status = compare_dictionary_with_candidate(file_path_1)
+if status == False:
+    print("Something wrong in INITIAL")
+    print("---------------------------")
+
+status = compare_dictionary_with_candidate(file_path_2)
+if status == False:
+    print("Something wrong in INITIAL after LS")
+    print("---------------------------")
+
+status = compare_dictionary_with_candidate(file_path_3)
+if status == False:
+    print("Something wrong before iteartion")
+    print("---------------------------")
+  
+status = compare_dictionary_with_candidate(file_path_4)
+if status == False:
+    print("Something wrong in FINAL")
+    print("---------------------------")
 
 for cand in range(1, iterations+1): 
     for file_name in file_name_list: 
@@ -310,6 +334,7 @@ for cand in range(1, iterations+1):
         if status1 == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
+
         status2 = compare_allocated_dictionaries(file_path_candidate)
         if status2 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)

@@ -37,11 +37,10 @@ class ALNS:
         # Kan ikke count bare være at vi hver 10 iterasjon eller noe oppdaterer?
         d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
-        
 
         for i in tqdm(range(num_iterations), colour='#39ff14'):
-            candidate_route_plan = copy.deepcopy(self.current_route_plan)
             self.iterationNum += 1
+            candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
 
             #Select destroy method 
@@ -52,6 +51,7 @@ class ALNS:
             
             #Destroy solution 
             d_operator = self.destroy_operators[destroy]
+
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
             #print("destroy operator", d_operator.__name__)
             candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan)   
@@ -76,7 +76,8 @@ class ALNS:
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
                 
-            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
+            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
+            #TODO: Skal final candiate printes lenger nede? 
             if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():
                 print(f" ALNS: Penalty in first objective: {candidate_route_plan.getOriginalObjective() - candidate_route_plan.objective[0]}. Original Objective: {candidate_route_plan.getOriginalObjective()}, Updated Objective: {candidate_route_plan.objective[0]} ")
         

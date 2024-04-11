@@ -27,10 +27,6 @@ class RoutePlan:
             employee_skills[key] = value['professionalLevel'] 
             self.employees.append(emp)
 
-        print("self.employees", self.employees)
-        print("employeesid", [emp.id for emp in self.employees])
-
-
         self.routes = {day: {employee.id: None for employee in self.employees} for day in range(1, days+1)}
         self.days = days 
         for day in range (1, self.days +1):
@@ -130,43 +126,26 @@ class RoutePlan:
 
     def addActivityOnDay(self, activity, day):
      
-        if activity.id == 3: 
-            print("denne iterasjonen")
+        
         for route in self.getSortedRoutes(activity, day):
-            if activity.id == 3: 
-                print("prøver legge til 3 på dag", day, "ansatt", route.employee.id)
+  
             #TODO: Update funskjonene burde sjekkes med de andre   
             #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
             #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
             #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
             
             #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
-            '''
-            if activity.id == 3:
-                print("BEFORE UPDATEnewEarliest and LatestStartTime")
-                print(activity.newEeariestStartTime)
-                print(activity.newLatestStartTime)
-                act1 = self.getActivity(1, day)
-                print("act1.startTime", act1.startTime)
-            '''
+   
             self.updateActivityBasedOnRoutePlanOnDay(activity, day)
-            '''
-            if activity.id == 3:
-                print("AFTER UPDATEnewEarliest and LatestStartTime")
-                print(activity.newEeariestStartTime)
-                print(activity.newLatestStartTime)
-                act1 = self.getActivity(1, day)
-                print("act1.startTime", act1.startTime)
-            '''
+
+            #Beg: Disse aktivitetene flyttes muligens når vi skvinser inn aktivitet i ruta
+            for willPossiblyMoveActivity in route.route: 
+                self.updateActivityBasedOnRoutePlanOnDay(willPossiblyMoveActivity, day)
+        
+            
             insertStatus = route.addActivity(activity)
-            '''
-            if activity.id == 3:
-                print("AFTER INSERT newEarliest and LatestStartTime")
-                print(activity.newEeariestStartTime)
-                print(activity.newLatestStartTime)
-                act1 = self.getActivity(1, day)
-                print("act1.startTime", act1.startTime)
-            '''
+      
+            #TODO: Er det unødvendig å gjøre oppdatering både før og etter 
             #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
             #Må gjøres på alle fordi alle kan ha blitt flyttet
             for possiblyMovedActivity in route.route: 
@@ -339,7 +318,7 @@ class RoutePlan:
         activity (Activity) Activity objektet som finnes i en rute på en gitt dag
         '''
         for day in range(1, self.days +1): 
-            for route in self.routes[day]: 
+            for route in self.routes[day].values(): 
                 for act in route.route: 
                     if act.id == actID: 
                         return act 
@@ -454,9 +433,8 @@ class RoutePlan:
                 self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
              
                 status = route.addActivity(insert_activity)
-                if status == True: 
-                    for routeActivity in route.route: 
-                        self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
+                for routeActivity in route.route: 
+                    self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
         
     def getObjective(self): 
@@ -515,7 +493,7 @@ class RoutePlan:
             if depActivity != None: 
                 self.updateActivityBasedOnRoutePlanOnDay(depActivity, day)
 
-    def switchRoute(self, new_route,  day):
+    def insertNewRouteOnDay(self, new_route,  day):
         employeeOnDayList = [route.employee.id for route in self.routes[day].values()]
         for emplID in employeeOnDayList: 
             if emplID == new_route.employee.id: 
@@ -551,10 +529,6 @@ class RoutePlan:
     def updateAllocationAfterPatientInsertor(self, patient, constructor): 
         #Oppdaterer allokerings dictionariene 
         '''
-        if patient == 49:
-            print("visit mellom status REPAIRED", self.visits[70])
-            print("visit mellom status INSERTORPLAN", self.visits[70])
-        
         self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
         for treatment in [item for sublist in self.allocatedPatients.values() for item in sublist]: 
             self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']

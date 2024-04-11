@@ -23,11 +23,7 @@ class ConstructionHeuristic:
         self.patients_df = patients_df
         self.employees_df = employees_df
         self.days = days
-
         self.route_plan = RoutePlan(days, employees_df) 
-
-        self.test_count = 0 
-        
         
     '''
     Oppdatering av matrisene. I dette statidiet vil vi bare godekjenne inserting av pasienter som fullstendig legges inn på hjemmesykehuset 
@@ -36,20 +32,11 @@ class ConstructionHeuristic:
     '''
  
     def construct_initial(self): 
-        '''
-        Funksjonen iterer over alle paienter som kan allokeres til hjemmesykehuset. 
-        Rekkefølgen bestemmes av hvor mye aggregert suitability pasienten vil tilføre ojektivet
-        '''
-
         #Lager en liste med pasienter i prioritert rekkefølge. 
         unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
 
-    
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
-            self.test_count += 1
-            #if self.test_count > 5: 
-            #    break
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
             allocation = unassigned_patients.loc[patient, 'allocation']

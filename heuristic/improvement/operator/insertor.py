@@ -40,31 +40,6 @@ class Insertor:
 
     #TODO: Sjekke denne funksjonen. Finne ut hvor denne funksjonaliteten skal ligge, for i de andre illegal funksjonene så er det 
     
-    '''
-    def updateAllocation(self, allocated, patient, treatment): 
-        if allocated: 
-            if patient in self.route_plan.allocatedPatients.keys():
-                self.route_plan.allocatedPatients[patient].append(treatment)
-            else:
-                self.route_plan.allocatedPatients[patient] = [treatment]
-            
-        if not allocated and patient in self.route_plan.allocatedPatients.keys(): 
-            self.route_plan.illegalNotAllocatedTreatments.append(treatment)
-
-        
-        Hva vil vi sjekke. Vi forsøker å legge til en pasient. Den er altså helt utenfor allokeringen. 
-        
-        Jeg forstår ikke hvorfor allokeringen gjøres gradvis her. det er vel feil? 
-
-
-
-        Hva vil vi sjekke. 
-        Når vi legger til en treatment, 
-
-        Regelen skal vel være at pasienten er allokert allokert eller ikke allokert. 
-        Dersom den er allokert, men ikke alt ligger inne, så de treatmentsene, eller andre, lagres i illegal
-        Men det ligger en liste over treatments som ikke er 
-        '''
 
     def insert_treatment(self, treatment): 
     
@@ -121,16 +96,7 @@ class Insertor:
                 visit_index += 1 
         return True   
                 
-    '''
-    Den klarer ikke få riktig at de skal gjøres innen et gitt 
-    Feilene er opp mot aktiviteter som ligger i andre ruter 
-
-    Vi vet at den er er feil allerede når den legger seg inn. 
-
-    Før den prøver å legge til i den riktige ruten så ser den på ruten med 1 i og dytter den? 
-    
-    Aktivitet 1 har dette starttidspunktet uansett
-    '''
+   
 
     def simple_insert_visit_on_day(self, visit, day):  
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
