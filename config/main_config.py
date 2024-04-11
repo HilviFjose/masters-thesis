@@ -37,3 +37,5 @@ penalty_patient = 20        # Penalty per illegal patient (Not allocated patient
 penalty_treat = 10          # Penalty per illegal treatment
 penalty_visit = 5           # Penalty per illegal visit  
 penalty_act = 3             # Penalty per illegal activity 
+
+

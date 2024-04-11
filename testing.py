@@ -215,6 +215,7 @@ def check_precedence_within_file(file):
     earliestStart = list(df_activities['earliestStartTime'])
     latestStart = list(df_activities['latestStartTime'])
     nextPrece = list(df_activities['nextPrece'])
+    duration = list(df_activities['duration'])
     prec_act_list = [None] * len(nextPrece)
     prec_times_list = [None] * len(nextPrece)
     pattern = re.compile(r'(\d+): (\d+)')
@@ -247,7 +248,7 @@ def check_precedence_within_file(file):
             continue
         for following_act_id in following_activities:
             following_start_time = cand_dict.get(following_act_id)
-            if following_start_time is None or following_start_time <= current_start_time:
+            if following_start_time != None and following_start_time <= current_start_time:
                 print(f"ERROR - FOLLOWING ACTIVITY STARTING EARLIER THAN CURRENT: Activity {following_act_id} starting at {following_start_time}, starts before activity {activity_id} starting at {current_start_time}.")
                 status2 = False
 
@@ -260,20 +261,22 @@ def check_precedence_within_file(file):
         current_start_time = cand_dict.get(activity_id)
         if current_start_time is None:
             continue 
+        current_end_time = current_start_time + int(duration[activity_id-1])
         for i, following_act_id in enumerate(following_activities):
             following_start_time = cand_dict.get(following_act_id)
             if following_start_time is None:
                 continue 
             max_allowed_start_time_after = timing_constraints[i] if isinstance(timing_constraints, tuple) else timing_constraints
-            start_time_difference = following_start_time - current_start_time
+            start_time_difference = following_start_time - current_end_time 
             if start_time_difference > max_allowed_start_time_after:
                 print(f"ERROR - FOLLOWING ACTIVITY DOES NOT START WITHIN THE PRECEDENCE REQUIREMENT: Activity {following_act_id} starting at {following_start_time} starts more than {max_allowed_start_time_after} time units after activity {activity_id} starting at {current_start_time}.")
                 status3 = False
     return status1, status2, status3
 
 # Example usage
-username = 'gurl'
+username = 'agnesost'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
+
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_final"]
 
@@ -294,4 +297,5 @@ for cand in range(1, iterations+1):
         if status3 == False or status4 == False or status5 == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------") 
+
 

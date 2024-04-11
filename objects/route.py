@@ -37,6 +37,15 @@ class Route:
     Dersom den får noen andre aktiviter enn depoet, så settes den 
     '''
 
+    def checkTrueFalse(self, activity): 
+        if  self.employee.getID() == activity.getEmployeeRestriction() or (
+            self.employee.getID() in activity.employeeNotAllowedDueToPickUpDelivery) or (
+                activity.getSkillreq() > self.skillLev) or (activity.possibleToInsert == False): 
+            return False
+        
+        return True 
+
+
 #TODO: Denne klassen kan omstrukturers slik at addActivity bruker add activity on index. Slik at det blir færre funskjoner
     def addActivity(self, activity_in):
         activity = copy.deepcopy(activity_in)
@@ -135,7 +144,7 @@ class Route:
 
     #Printer ruten 
     def printSoultion(self): 
-        print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.getID()))
+        print("DAG "+str(self.day)+ " ANSATT "+str(self.employee.id))
         for a in self.route: 
             print("activity "+str(a.getID())+ " start "+ str(a.getStartTime()))    
         print("---------------------")
@@ -172,6 +181,9 @@ class Route:
 
     
     def insertActivityOnIndex(self, activity, index):
+
+        if self.checkTrueFalse(activity) == False: 
+            return False
    
         
         self.makeSpaceForIndex(index)
@@ -207,7 +219,8 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-    
+            if activity.id == 84: 
+                print("legger til her 0")
             return True
         
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia and (
@@ -218,7 +231,8 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-      
+            if activity.id == 84: 
+                print("legger til her 1")
             return True
         return False 
     
@@ -231,7 +245,7 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-    
+           
             return True
    
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= self.start_time + T_ij[0][activity.id] and (
@@ -242,7 +256,8 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-      
+            if activity.id == 84: 
+                print("legger til her 3")
             return True
         return False 
     
@@ -371,9 +386,12 @@ class Route:
             prevNodeAct = self.getActivity(PrevNodeInTimeID[0])
             if prevNodeAct != None:
                 activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
-
+                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
+                   
 
         for NextNodeInTimeID in activity.NextNodeInTime: 
             nextNodeAct = self.getActivity(NextNodeInTimeID[0])
             if nextNodeAct != None:
                 activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
+                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
+            
