@@ -148,6 +148,8 @@ class RepairOperators:
         
         for activityID, day in activityIterationDict.items():
             activity = Activity(self.constructor.activities_df, activityID)
+
+            #BEG: Jeg tror egentlig ikke vi trenger den som er under her 
             repaired_route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
             status = repaired_route_plan.addActivityOnDay(activity,day)
             
