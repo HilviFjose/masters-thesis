@@ -31,20 +31,24 @@ def main():
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
+    constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")
-
+    
     initial_route_plan = constructor.route_plan 
-
     print('Allocated patients in initial solution',len(constructor.route_plan.allocatedPatients.keys()))
     print('First objective in initial solution',constructor.route_plan.objective)
+    if constructor.route_plan.objective[0] != constructor.route_plan.getOriginalObjective():
+        print(f" Construction: Penalty in first objective: {constructor.route_plan.getOriginalObjective() - constructor.route_plan.objective[0]}. Original Objective: {constructor.route_plan.getOriginalObjective()}, Updated Objective: {constructor.route_plan.objective[0]} ")
+        
 
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
     #Gjør et lokalsøk før ALNS. TODO: Har lite hensikt (?), så det kan fjernes slik at det bare gjøres lokalsøk inne i ALNS-en
-    localsearch = LocalSearch(initial_route_plan)
+    localsearch = LocalSearch(initial_route_plan, 1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan = localsearch.do_local_search()
+    initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("initialLS","ingen operator")
    
     alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState())
@@ -55,9 +59,9 @@ def main():
     alns.set_operators(destroy_operators, repair_operators)
 
     #RUN ALNS 
-    best_route_plan = alns.iterate(
-            iterations)
+    best_route_plan = alns.iterate(iterations)
     
+    best_route_plan.updateObjective(iterations, iterations)
     best_route_plan.printSolution("final", "no operator")
          
 

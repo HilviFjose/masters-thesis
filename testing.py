@@ -272,7 +272,7 @@ def check_precedence_within_file(file):
     return status1, status2, status3
 
 # Example usage
-username = 'hilvif'
+username = 'gurl'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_final"]

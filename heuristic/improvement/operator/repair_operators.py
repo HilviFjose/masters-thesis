@@ -32,7 +32,7 @@ class RepairOperators:
 
 
     #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
-    def greedy_repair(self, destroyed_route_plan):
+    def greedy_repair(self, destroyed_route_plan, current_iteration, total_iterations):
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
@@ -63,11 +63,11 @@ class RepairOperators:
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)
     
-        repaired_route_plan.updateObjective()
+        repaired_route_plan.updateObjective(current_iteration, total_iterations)
       
         return repaired_route_plan
     
-    def random_repair(self, destroyed_route_plan):
+    def random_repair(self, destroyed_route_plan, current_iteration, total_iterations):
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
         
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
@@ -98,12 +98,12 @@ class RepairOperators:
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)
 
-        repaired_route_plan.updateObjective()
+        repaired_route_plan.updateObjective(current_iteration, total_iterations)
 
         return repaired_route_plan
 
 
-    def complexity_repair(self, destroyed_route_plan):
+    def complexity_repair(self, destroyed_route_plan, current_iteration, total_iterations):
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
 
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
@@ -134,7 +134,7 @@ class RepairOperators:
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)
                 
-        repaired_route_plan.updateObjective()
+        repaired_route_plan.updateObjective(current_iteration, total_iterations)
       
         return repaired_route_plan
     

@@ -9,6 +9,7 @@ import copy
 import random 
 import datetime
 from config.construction_config import depot
+from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
 
 
 class RoutePlan:
@@ -159,7 +160,7 @@ class RoutePlan:
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
  
-    def printSolution(self, txtName, operator_string):
+    def printSolution(self, txtName, operator_string, current_iteration = None):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
         # Åpne filen for å skrive
         with open(r"results\\" + txtName + ".txt", "w") as log_file:
@@ -171,9 +172,10 @@ class RoutePlan:
             # Skriver klokkeslettet til når filen ble opprettet
             now = datetime.datetime.now() 
             log_file.write('Solution generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
-            self.updateObjective()
+            #self.updateObjective()
             print("operator brukt:", operator_string)
-            print("objective ", self.objective)
+            print("updated objective ", self.objective)
+            print("primary objective without penalty ", self.getOriginalObjective())
             print("visits", self.visits)
             print("treatments", self.treatments)
             print("allocated patients ", self.allocatedPatients)
@@ -195,15 +197,6 @@ class RoutePlan:
 
              # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
-    
-    def printSolution1(self, day):
-            '''
-            Printer alle rutene som inngår i routeplan
-            '''
-            print("Printer alle rutene")
-            for route in self.routes[day]: 
-                route.printSoultion()
-            self.updateObjective()
             
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
         '''
@@ -292,8 +285,15 @@ class RoutePlan:
                         return act 
         return None       
 
+    def getOriginalObjective(self):
+        first_objective = 0
+        for day in range(1, 1+self.days): 
+            for route in self.routes[day]: 
+                route.updateObjective()
+                first_objective += route.suitability
+        return first_objective
 
-    def updateObjective(self): 
+    def updateObjective(self, current_iteration, total_iterations): 
         self.objective = [0, 0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()
@@ -304,9 +304,32 @@ class RoutePlan:
                 route.updateObjective()
                 self.objective[0] += route.suitability
                 self.objective[3] += route.aggSkillDiff 
-                self.objective[4] += route.travel_time
-   
-        
+                self.objective[4] += route.travel_time   
+        #Oppdaterer første-objektivet med straff for illegal      
+        self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
+
+    def calculatePenaltyIllegalSolution(self, current_iteration, total_iterations):
+        # Penalty in first objective per illegal treatment, visit or activity 
+        updated_first_objective = self.objective[0]
+        penalty = 0
+        if (len(self.illegalNotAllocatedPatients)
+            + len(self.illegalNotAllocatedTreatments)
+            + len(self.illegalNotAllocatedVisitsWithPossibleDays) 
+            + len(self.illegalNotAllocatedActivitiesWithPossibleDays)) > 0:
+
+            iteration_factor = 1
+            if current_iteration != None and total_iterations != None:
+                iteration_factor = 1 - ((total_iterations - current_iteration) / total_iterations)
+
+            penalty = iteration_factor * (len(self.illegalNotAllocatedPatients) * penalty_patient
+                    + len(self.illegalNotAllocatedTreatments) * penalty_treat 
+                    + len(self.illegalNotAllocatedVisitsWithPossibleDays) * penalty_visit
+                    + len(self.illegalNotAllocatedActivitiesWithPossibleDays) * penalty_act)
+            
+            updated_first_objective = self.objective[0] - penalty
+            #print(f'PENALTY IN FIRST OBJECTIVE: {penalty}. Original objective: {self.objective[0]}, Updated objective: {updated_first_objective}')
+        return updated_first_objective
+     
     def calculateWeeklyHeaviness(self):
         employee_weekly_heaviness = {}
 
