@@ -86,7 +86,7 @@ class DestroyOperators:
                 selected_treatment = treatment
         return self.treatment_removal(selected_treatment, current_route_plan)
     '''
-
+    '''
     def worst_deviation_visit_removal(self, current_route_plan):
         
         visits_to_remove = {}
@@ -309,7 +309,7 @@ class DestroyOperators:
                         selected_activity = activity.id
         return self.activity_removal(selected_activity, route_plan)
 
-        '''
+        
 #---------- CLUSTER DISTANCE REMOVAL ----------
     
  # TAR HENSYN TIL DESTRUCTION DEGREE
