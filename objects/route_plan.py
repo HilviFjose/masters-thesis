@@ -319,7 +319,7 @@ class RoutePlan:
 
             iteration_factor = 1
             if current_iteration != None and total_iterations != None:
-                iteration_factor = 1 - ((total_iterations - current_iteration) / total_iterations)
+                iteration_factor = max(1 - ((total_iterations - current_iteration) / total_iterations), 0.1) #Tvinger iterasjonsfaktoren til å være mellom 0.1 og 1
 
             penalty = iteration_factor * (len(self.illegalNotAllocatedPatients) * penalty_patient
                     + len(self.illegalNotAllocatedTreatments) * penalty_treat 

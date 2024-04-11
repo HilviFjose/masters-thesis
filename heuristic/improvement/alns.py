@@ -87,11 +87,6 @@ class ALNS:
                 found_solutions[hash(str(self.current_route_plan))] = 1
 
             if not already_found:
-                # Add penalty to first objective if the solution is illegal
-                #penalty, updated_first_objective, original_first_objective = self.calculatePenaltyIllegalSolution(candidate_route_plan, self.iterationNum, num_iterations)
-                #candidate_route_plan.objective[0] = updated_first_objective #TODO: Undersøke om vi må ta vare på det opprinnelige objektivet eller ikke
-                #if penalty != 0:
-                #    print(f'PENALTY IN FIRST OBJECTIVE: {penalty}. Original objective: {original_first_objective}, Updated objective: {updated_first_objective}')
                 # Compare solutions
                 self.best_route_plan, self.current_route_plan, weight_score = self.evaluate_candidate(
                     self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
@@ -186,20 +181,4 @@ class ALNS:
 
         return best_route_plan, current_route_plan, weight_score    
 
-    #GAMMEL    
-    def calculatePenaltyIllegalSolution(self, candidate_route_plan, current_iteration, total_iterations):
-        # Penalty in first objective per illegal treatment, visit or activity 
-        original_first_objective = candidate_route_plan.objective[0]
-        penalty = 0
-        if (len(candidate_route_plan.illegalNotAllocatedTreatments)
-            + len(candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays) 
-            + len(candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)) > 0:
-
-            iteration_factor = (total_iterations - current_iteration) / total_iterations
-            penalty = iteration_factor * (len(candidate_route_plan.illegalNotAllocatedTreatments) * penalty_treat 
-                    + len(candidate_route_plan.illegalNotAllocatedVisitsWithPossibleDays) * penalty_visit
-                    + len(candidate_route_plan.illegalNotAllocatedActivitiesWithPossibleDays) * penalty_act)
-            
-            updated_first_objective = candidate_route_plan.objective[0] - int(penalty)
-            return int(penalty), updated_first_objective, original_first_objective
-        return penalty, candidate_route_plan.objective[0], original_first_objective
+    
