@@ -150,13 +150,14 @@ class DestroyOperators:
                 destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
             
         return destroyed_route_plan, None, True
-    
+    '''
 
     def worst_deviation_activity_removal(self, current_route_plan): 
         #TODO: Virker som denne operatoren ble veldig treg ved å legge in destruction degree på denne måten
 
+        # Tar bort utility constribute fra bergeningen av hvor mye aktivitetn bidrar med 
         # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
-        num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
+        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
 
         activities_to_remove = {}
@@ -166,7 +167,7 @@ class DestroyOperators:
      
          
         for day in range(1, destroyed_route_plan.days +1): 
-            for route in destroyed_route_plan.routes[day]: 
+            for route in destroyed_route_plan.routes[day].values(): 
                 for activity_index in range(len(route.route)):
                     activity = route.route[activity_index] 
                     
@@ -177,18 +178,18 @@ class DestroyOperators:
                     if activity_index != len(route.route)-1: 
                         after_actitivy_id = route.route[activity_index+1].id
 
-                    activity_utility_contribute = self.constructor.activities_df.loc[activity.id, 'utility']
+                    
                     activity_skilldiff_contribute = destroyed_route_plan.getRouteSkillLevForActivityID(activity.id) - self.constructor.activities_df.loc[activity.id, 'skillRequirement']
                     activity_travel_time = T_ij[before_activity_id][activity.id] + T_ij[activity.id][after_actitivy_id] - T_ij[before_activity_id][after_actitivy_id]
                     
-                    activities_to_remove[activity.id] = [activity_utility_contribute, -activity_skilldiff_contribute, -activity_travel_time]
+                    activities_to_remove[activity.id] = [-activity_skilldiff_contribute, -activity_travel_time]
 
                 
             
         sorted_activities_to_remove = {k: v for k, v in sorted(activities_to_remove.items(), key=lambda item: item[1])}
 
         #TODO: Sjekke at denn funker på samme måte som andre 
-        for selected_activity in list(sorted_activities_to_remove.keys()[:total_num_activities_to_remove]): 
+        for selected_activity in list(sorted_activities_to_remove.keys())[:total_num_activities_to_remove]: 
             destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
             
         return destroyed_route_plan, None, True
@@ -223,7 +224,7 @@ class DestroyOperators:
                         selected_activity = activity.id
         return self.activity_removal(selected_activity, route_plan)
 
- 
+        '''
 #---------- CLUSTER DISTANCE REMOVAL ----------
     
  # TAR HENSYN TIL DESTRUCTION DEGREE
