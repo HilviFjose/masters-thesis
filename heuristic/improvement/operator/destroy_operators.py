@@ -689,13 +689,12 @@ class DestroyOperators:
         firstAct = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
         activities_count = firstAct.nActInTreat
         print('Valgt treatment', primary_treatmentId)
-        print('Aktivitetsids', filtered_row['activitiesIds'])
 
         # Fjerner treatments som har samme pattern
         filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
         firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
         firstActInTreatSamePatternType.remove(firstActId) 
-        print('Utgangspunkt: ', actId)
+        print('Utgangspunkt: ', firstActId)
 
         print('firstActInTreatment',firstActInTreatSamePatternType)
         #actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
