@@ -64,8 +64,6 @@ def main():
     best_route_plan.updateObjective(iterations, iterations)
     best_route_plan.printSolution("final", "no operator")
          
-
-
 if __name__ == "__main__":
     main()
     """

@@ -198,10 +198,30 @@ def check_consistency(file):
                     if (activityID not in [item for sublist in visit_dict.values() for item in sublist]) and activityID not in illegal_activity_list: 
                         print("ERROR: activity ", activityID, "in visit ", visitID, "in treatment ", treatmentID, "for patient ", patientID, "er borte!!!!")
 
-def check_objective(file):
-    status = False
-    activities_in_candidate, duplicates = extract_activities(file)
+def check_objective(file_path):
+    status = True
+    aggregated_utility = 0
+    activities_in_candidate, duplicates = extract_activities(file_path)
+    utility = list(df_activities['utility'])
+
+    # Find current first objective
+    with open(file_path, 'r') as file:
+        for line in file:
+            match = re.search(r'primary objective without penalty  (\d+)', line)
+            if match:
+                objective_value = int(match.group(1))
+        
+    # Calculate aggregated utility in route plan
+    for act in activities_in_candidate:
+        index = act - 1
+        aggregated_utility += utility[index]
+
+    # Check if objective is similar
+    if not objective_value == int(float(aggregated_utility)):
+        print("ERROR - Aggregated calculated objective ", aggregated_utility, " is not same as objective in candidate", first_objective_value)
+        status = False
     return status
+
 
 
 def check_precedence_within_file(file):
@@ -248,7 +268,9 @@ def check_precedence_within_file(file):
             continue
         for following_act_id in following_activities:
             following_start_time = cand_dict.get(following_act_id)
-            if following_start_time != None and following_start_time <= current_start_time:
+            if following_start_time is None: 
+                continue
+            if following_start_time <= current_start_time:
                 print(f"ERROR - FOLLOWING ACTIVITY STARTING EARLIER THAN CURRENT: Activity {following_act_id} starting at {following_start_time}, starts before activity {activity_id} starting at {current_start_time}.")
                 status2 = False
 
@@ -274,7 +296,7 @@ def check_precedence_within_file(file):
     return status1, status2, status3
 
 # Example usage
-username = 'agnesost'
+username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
@@ -292,10 +314,16 @@ for cand in range(1, iterations+1):
         if status2 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
-       
+        
         status3, status4, status5 = check_precedence_within_file(file_path_candidate)
         if status3 == False or status4 == False or status5 == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------") 
+        
+        status6 = check_objective(file_path_candidate)
+        if status6 == False: 
+            print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+            print("---------------------------")
+
 
 
