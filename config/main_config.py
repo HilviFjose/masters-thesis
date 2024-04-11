@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 20
+iterations = 10
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -33,6 +33,9 @@ iterations_update = 5
 
 # Penalty in first objective for infeasible solution
 # TODO: these must be tuned
+penalty_patient = 20        # Penalty per illegal patient (Not allocated patient from the pre-allocated patient list)
 penalty_treat = 10          # Penalty per illegal treatment
 penalty_visit = 5           # Penalty per illegal visit  
 penalty_act = 3             # Penalty per illegal activity 
+
+
