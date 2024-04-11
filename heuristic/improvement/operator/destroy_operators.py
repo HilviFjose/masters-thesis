@@ -691,36 +691,35 @@ class DestroyOperators:
         print('Valgt treatment', primary_treatmentId)
         print('Aktivitetsids', filtered_row['activitiesIds'])
 
-
         # Fjerner treatments som har samme pattern
-        firstActInTreatment = [ids[0] if ids else None for ids in self.constructor.treatment_df['activitiesIds']]
+        filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
+        firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
+        firstActInTreatSamePatternType.remove(firstActId) 
+        print('Utgangspunkt: ', actId)
 
-        print('firstActInTreatment',firstActInTreatment)
-        actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
-        for actId in actSamePatternType:
+        print('firstActInTreatment',firstActInTreatSamePatternType)
+        #actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
+        for actId in firstActInTreatSamePatternType:
             if activities_count >= total_num_activities_to_remove:
                 break
 
             act = current_route_plan.getActivityFromEntireRoutePlan(actId)
             if current_route_plan.getDayForActivityID(actId) == firstDay:
-                actSamePatternType.remove(actId)
+                firstActInTreatSamePatternType.remove(actId)
+                print('Samme dag: ', actId)
                 if act.treatmentId not in related_treatment_list:
                     related_treatment_list.append(act.treatmentId)
                     #print(f'Removed patterntype {patternType} on day {firstDay}. Removed treatment {act.treatmentId}')
                     activities_count += act.nActInTreat
-                    #nextActId = actId+1
-                    #nextAct = current_route_plan.getActivityFromEntireRoutePlan(nextActId)
-                    #while act.treatmentId == nextAct.treatmentId:
 
-        
         # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
-        for actId in actSamePatternType:
+        for actId in firstActInTreatSamePatternType:
             if activities_count >= total_num_activities_to_remove:
                 break
-            print('actId', actId)
+            print('Ikke samme dag: ', actId)
             act = current_route_plan.getActivityFromEntireRoutePlan(actId)
             if current_route_plan.getDayForActivityID(actId) != firstDay:
-                actSamePatternType.remove(actId)
+                #firstActInTreatSamePatternType.remove(actId)
                 if act.treatmentId not in related_treatment_list:
                     related_treatment_list.append(act.treatmentId)
                     #print(f'Removed treatment from patterntype {patternType}. Removed treatment {act.treatmentId}')
