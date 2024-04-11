@@ -223,10 +223,60 @@ class DestroyOperators:
     '''
 
     def worst_deviation_visit_removal(self, current_route_plan):
+        
+        visits_to_remove = {}
+        
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+     
+        
+        '''
+        Henter ut alle visitene som er allokert 
+        '''
+                    
+        for visitID, activitieIDList in destroyed_route_plan.visits.items():
+            visit_utility_contribute = 0
+            visit_skilldiff_contribute = 0
+            visit_travel_time = 0
+            for acitivityID in activitieIDList: 
+                activity, activity_index, activity_route = destroyed_route_plan.getActivityAndActivityIndexAndRoute(acitivityID)
+                before_activity_id = 0 
+                after_actitivy_id = 0 
+                if activity_index != 0: 
+                    before_activity_id = activity_route.route[activity_index-1].id
+                if activity_index != len(activity_route.route)-1: 
+                    after_actitivy_id = activity_route.route[activity_index+1].id
+
+                visit_utility_contribute += self.constructor.activities_df.loc[activity.id, 'utility']
+                visit_skilldiff_contribute += destroyed_route_plan.getRouteSkillLevForActivityID(activity.id) - self.constructor.activities_df.loc[activity.id, 'skillRequirement']
+                visit_travel_time += T_ij[before_activity_id][activity.id] + T_ij[activity.id][after_actitivy_id] - T_ij[before_activity_id][after_actitivy_id]
+                    
+            
+            visits_to_remove[visitID] = [visit_utility_contribute, -visit_skilldiff_contribute, -visit_travel_time]
+
+                
+            
+        sorted_visits_to_remove = {k: v for k, v in sorted(visits_to_remove.items(), key=lambda item: item[1])}
+
+        total_num_visits_to_remove = round(len(sorted_visits_to_remove) * main_config.destruction_degree)
+
+        #TODO: Sjekke at denn funker på samme måte som andre 
+        for selected_visit in list(sorted_visits_to_remove.keys())[:total_num_visits_to_remove]: 
+            for selected_activity in destroyed_route_plan.visits[selected_visit]:
+                destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
+        
+        return destroyed_route_plan, None, True
+
+
+    def worst_deviation_visit_removalG(self, current_route_plan):
         # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
+        #TODO: Har laget slik at den regner destruction degree utfre antall aktiviteter eller visits? Jeg har gjort det basert på visits nå. Så kommenteres ut de under
+
         num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
 
+        '''
+        Kan bare bruke destruction degreen til å slette deler av listen 
+        '''
         lowest_visit_utility_contribute = 1000 
         highest_visit_skilldiff_contribute = 0
         activity_count = 0
@@ -272,6 +322,7 @@ class DestroyOperators:
         return self.visit_removal(selected_visit, current_route_plan)
     '''
     
+    #TODO: Slette den gamle 
     def worst_deviation_activity_removalG(self, current_route_plan): 
         #TODO: Virker som denne operatoren ble veldig treg ved å legge in destruction degree på denne måten
 
@@ -355,7 +406,7 @@ class DestroyOperators:
         sorted_activities_to_remove = {k: v for k, v in sorted(activities_to_remove.items(), key=lambda item: item[1])}
 
         #TODO: Sjekke at denn funker på samme måte som andre 
-        for selected_activity in list(sorted_activities_to_remove.keys()[:total_num_activities_to_remove]): 
+        for selected_activity in list(sorted_activities_to_remove.keys())[:total_num_activities_to_remove]: 
             destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
             
         return destroyed_route_plan, None, True
