@@ -150,7 +150,7 @@ class Route:
         print("---------------------")
         
     def calculateTotalHeaviness(self):
-        self.totalHeaviness = sum([act.getHeaviness() for act in self.route])
+        self.totalHeaviness = sum(act.getHeaviness() for act in self.route)
         return self.totalHeaviness
 
     def updateObjective(self): 

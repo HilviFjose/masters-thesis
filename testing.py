@@ -302,7 +302,7 @@ username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
 #file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\0before_iteration.txt'  # Replace with the actual path to your first file
-file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
+#file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"]
 
 
@@ -311,11 +311,12 @@ if status == False:
     print("Something wrong in INITIAL")
     print("---------------------------")
 
-  
+"""
 status = compare_dictionary_with_candidate(file_path_4)
 if status == False:
     print("Something wrong in FINAL")
     print("---------------------------")
+"""
 
 for cand in range(1, iterations+1): 
     for file_name in file_name_list: 
