@@ -557,12 +557,16 @@ class DestroyOperators:
         p_firstActId = current_route_plan.visits[primary_visitId][0] #Henter ut første aktivitet for gitt visit
         p_lastActId = current_route_plan.visits[primary_visitId][-1] #Henter ut siste aktivitet for gitt visit
         p_day = current_route_plan.getDayForActivityID(p_firstActId)
+        print("Valgt visit", primary_visitId)
+        print("Første aktivitet", p_firstActId)
+        print("p_day", p_day)
 
         # Get the highest professional reequirement for the primary visit
         p_maxSkillReq = 0
         for p_actId in current_route_plan.visits[primary_visitId]: 
             p_act = current_route_plan.getActivity(p_actId, p_day)
             p_skillReq = p_act.skillReq
+            print("Skill req", p_act.skillReq, " activity id ", p_actId)
             if p_skillReq > p_maxSkillReq:
                 p_maxSkillReq = p_skillReq
 
@@ -582,11 +586,11 @@ class DestroyOperators:
         '''
         - DONE - liste med visits same day
         - DONE - liste med visits med same max skill req
-        - liste med visits med overlappende total timewindow -- Hvordan skal vi vurdere her??
-        - liste med visits med relaterte starttidspunkter
+        - DONE - liste med visits med overlappende total timewindow -- Hvordan skal vi vurdere her??
+        - FORSLAG DONE - liste med visits med relaterte starttidspunkter
         - liste med visits med lignende employee history (kun aktuelt for de med høy continuity?)
         - DONE - liste med visits med likt antall aktiviteter
-        - liste med visits med samme mengde presedens
+        - OVERFLØDIG MED DEN OVER? - liste med visits med samme mengde presedens
         '''
 
         visitsSameDay = []
@@ -688,15 +692,15 @@ class DestroyOperators:
         related_treatment_list = [primary_treatmentId]
         firstAct = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
         activities_count = firstAct.nActInTreat
-        print('Valgt treatment', primary_treatmentId)
+        #print('Valgt treatment', primary_treatmentId)
 
         # Fjerner treatments som har samme pattern
         filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
         firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
         firstActInTreatSamePatternType.remove(firstActId) 
-        print('Utgangspunkt: ', firstActId)
+        #print('Utgangspunkt: ', firstActId)
 
-        print('firstActInTreatment',firstActInTreatSamePatternType)
+        #print('firstActInTreatment',firstActInTreatSamePatternType)
         #actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
         for actId in firstActInTreatSamePatternType:
             if activities_count >= total_num_activities_to_remove:
@@ -705,23 +709,20 @@ class DestroyOperators:
             act = current_route_plan.getActivityFromEntireRoutePlan(actId)
             if current_route_plan.getDayForActivityID(actId) == firstDay:
                 firstActInTreatSamePatternType.remove(actId)
-                print('Samme dag: ', actId)
+                #print('Samme dag: ', actId)
                 if act.treatmentId not in related_treatment_list:
                     related_treatment_list.append(act.treatmentId)
-                    #print(f'Removed patterntype {patternType} on day {firstDay}. Removed treatment {act.treatmentId}')
                     activities_count += act.nActInTreat
 
         # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
         for actId in firstActInTreatSamePatternType:
             if activities_count >= total_num_activities_to_remove:
                 break
-            print('Ikke samme dag: ', actId)
+            #print('Ikke samme dag: ', actId)
             act = current_route_plan.getActivityFromEntireRoutePlan(actId)
             if current_route_plan.getDayForActivityID(actId) != firstDay:
-                #firstActInTreatSamePatternType.remove(actId)
                 if act.treatmentId not in related_treatment_list:
                     related_treatment_list.append(act.treatmentId)
-                    #print(f'Removed treatment from patterntype {patternType}. Removed treatment {act.treatmentId}')
                     activities_count += act.nActInTreat
 
         # Removing related treatments

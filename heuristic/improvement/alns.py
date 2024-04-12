@@ -137,8 +137,8 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
         self.add_destroy_operator(destroy_operators.random_pattern_type_removal)
-        self.add_destroy_operator(destroy_operators.related_treatments_removal)
-        self.add_destroy_operator(destroy_operators.related_visits_removal)
+        #self.add_destroy_operator(destroy_operators.related_treatments_removal)
+        #self.add_destroy_operator(destroy_operators.related_visits_removal)
         
         # Add repair operators
         self.add_repair_operator(repair_operators.greedy_repair)
