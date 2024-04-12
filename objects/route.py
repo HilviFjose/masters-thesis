@@ -219,8 +219,6 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-            if activity.id == 84: 
-                print("legger til her 0")
             return True
         
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia and (
@@ -231,8 +229,6 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-            if activity.id == 84: 
-                print("legger til her 1")
             return True
         return False 
     
@@ -256,8 +252,6 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-            if activity.id == 84: 
-                print("legger til her 3")
             return True
         return False 
     

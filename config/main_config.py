@@ -12,6 +12,9 @@ iterations = 100
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
 
+# k-repair value
+k = 3
+
 #The amount of activities to remove in destroy operators
 destruction_degree = 0.4
 

@@ -138,6 +138,53 @@ class RepairOperators:
       
         return repaired_route_plan
     
+    def regret_k_repair(self, destroyed_route_plan, current_iteration, total_iterations):
+        repaired_route_plan = copy.deepcopy(destroyed_route_plan)
+
+        repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
+
+        repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
+
+        repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)  
+
+        repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
+
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
+        descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
+        
+
+        '''
+        Ønsker å hente ut den beste repair løsningen, så vil
+        '''
+        best_repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
+        best_repaired_route_plan_with_k_regret.updateObjective(current_iteration, total_iterations)
+        for k in range(1, main_config.k): 
+            repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
+
+            for patient in descendingUtilityNotAllocatedPatients[k:]: 
+                patientInsertor = Insertor(self.constructor, repaired_route_plan_with_k_regret, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
+                old_route_plan = copy.deepcopy(repaired_route_plan_with_k_regret)
+                status = patientInsertor.insert_patient(patient)
+                
+                if status == True: 
+                    repaired_route_plan_with_k_regret = patientInsertor.route_plan
+
+                    #Steg 1 - Slette i allokert listene
+                    repaired_route_plan_with_k_regret.notAllocatedPatients.remove(patient)
+
+                    #Steg 2 - Oppdater allokert dictionariene 
+                    repaired_route_plan_with_k_regret.updateAllocationAfterPatientInsertor(patient, self.constructor)
+
+                else:
+                    repaired_route_plan_with_k_regret = copy.deepcopy(old_route_plan)
+        
+            repaired_route_plan_with_k_regret.updateObjective(current_iteration, total_iterations)
+
+            if checkCandidateBetterThanBest(repaired_route_plan_with_k_regret.objective, best_repaired_route_plan_with_k_regret.objective): 
+                best_repaired_route_plan_with_k_regret = repaired_route_plan_with_k_regret
+      
+        return best_repaired_route_plan_with_k_regret
+    
 
     #TODO: Burde se på en operator som bytter å mye som mulig mellom to ansatte. Hvorfor det? 
 
