@@ -657,7 +657,7 @@ class DestroyOperators:
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         # Removing primary visit
-        self.visit_removal(primary_visitId, destroyed_route_plan)[0]
+        destroyed_route_plan = self.visit_removal(primary_visitId, destroyed_route_plan)[0]
         activities_count = len(current_route_plan.visits[primary_visitId])
         # Removing visits with the highest relatedness score
         removed_visits = [primary_visitId]
@@ -666,7 +666,7 @@ class DestroyOperators:
                 break
             # Visits are only removed if the relatedness score is higher than 0
             if sorted_related_visit_dict[visitId] > 0:
-                self.visit_removal(visitId, destroyed_route_plan)[0]
+                destroyed_route_plan = self.visit_removal(visitId, destroyed_route_plan)[0]
                 activities_count += len(current_route_plan.visits[visitId])
                 removed_visits.append(visitId)
         #print(f'Removed visits: ', removed_visits)
@@ -675,6 +675,8 @@ class DestroyOperators:
         return destroyed_route_plan, None, True
 
     def related_treatments_removal(self, current_route_plan):
+        #TODO: Forbedre ytelse, den har veldig dårlig ytelse nå. 
+
         # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
         num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
@@ -700,27 +702,58 @@ class DestroyOperators:
         firstActInTreatSamePatternType.remove(firstActId) 
         #print('Utgangspunkt: ', firstActId)
 
+
+        '''
+        Treatmentet skal bort uansett hva som ligger i illegalListene 
+        '''
         #print('firstActInTreatment',firstActInTreatSamePatternType)
         #actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
         for actId in firstActInTreatSamePatternType:
             if activities_count >= total_num_activities_to_remove:
                 break
 
-            act = current_route_plan.getActivityFromEntireRoutePlan(actId)
-            if current_route_plan.getDayForActivityID(actId) == firstDay:
+            '''
+            Hente ut samme visitet for aktiviteten. Iterer over for å finne dagen. Dersom ikke så henter vi den i illegalVisit, for da må den ligge der
+            '''
+            visitID = self.constructor.activities_df.loc[actId, 'visitId']
+            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+                act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                if act != None: 
+                    break 
+            
+            #Sjekker her om det 
+            if act == None: 
+                day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
+            else: 
+                day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(actId)
+
+            if day_for_first_activity_in_treatment == firstDay:
                 firstActInTreatSamePatternType.remove(actId)
                 #print('Samme dag: ', actId)
                 if act.treatmentId not in related_treatment_list:
                     related_treatment_list.append(act.treatmentId)
                     activities_count += act.nActInTreat
 
+
         # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
         for actId in firstActInTreatSamePatternType:
             if activities_count >= total_num_activities_to_remove:
                 break
             #print('Ikke samme dag: ', actId)
-            act = current_route_plan.getActivityFromEntireRoutePlan(actId)
-            if current_route_plan.getDayForActivityID(actId) != firstDay:
+            visitID = self.constructor.activities_df.loc[actId, 'visitId']
+            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+                act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                if act != None: 
+                    break 
+            
+            #Sjekker her om det 
+            if act == None: 
+                day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
+            else: 
+                day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(actId)
+            
+            
+            if day_for_first_activity_in_treatment != firstDay:
                 if act.treatmentId not in related_treatment_list:
                     related_treatment_list.append(act.treatmentId)
                     activities_count += act.nActInTreat
