@@ -237,7 +237,7 @@ def activitiesGenerator(df_visits):
     for visitId, group in df_activities.groupby('visitId'):
         if group['numActivitiesInVisit'].iloc[0] < 3:
             # For 1 to 2 activities: 60 % for Healthcare and 40 % for Equipment
-            df_activities.loc[group.index, 'activityType'] = np.random.choice(['H', 'E'], size=len(group), p=[0.6, 0.4])
+            df_activities.loc[group.index, 'activityType'] = np.random.choice(['H', 'E'], size=len(group), p=[1, 0]) #Midlertidig: Tillater ikke at et visit ikke kan inneholde en helseaktivitet
         elif group['numActivitiesInVisit'].iloc[0] >= 3 and group['numActivitiesInVisit'].iloc[0] <= 4:
             # For 3 to 4 activities
             if np.random.rand() < 0.5:

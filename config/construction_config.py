@@ -5,7 +5,7 @@ P_num = 50                                          # Number of patients
 
 # Distributions of treatments, visits and acitivities for each patient
 T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
-A_numProb = [0.6, 0, 0.2, 0, 0.2, 0]                  # Probability of the number of activities from 1 to 6 in a visit
+A_numProb = [0.8, 0, 0.2, 0, 0, 0]                  # Probability of the number of activities from 1 to 6 in a visit
 
 # Pattern Type Distribution (5days) - Decides visits per treatment
 frequency1 = 0.5                # Five days a week
