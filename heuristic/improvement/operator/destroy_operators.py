@@ -94,8 +94,6 @@ class DestroyOperators:
         
         destroyed_route_plan = copy.deepcopy(current_route_plan)
      
-    
-                    
         for visitID, activitieIDList in destroyed_route_plan.visits.items():
             visit_utility_contribute = 0
             visit_skilldiff_contribute = 0
@@ -129,55 +127,6 @@ class DestroyOperators:
         
         return destroyed_route_plan, None, True
 
-
-    '''
-    
-    def worst_deviation_activity_removalG(self, current_route_plan): 
-        #TODO: Virker som denne operatoren ble veldig treg ved å legge in destruction degree på denne måten
-
-        # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
-        num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
-        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
-
-        lowest_activity_utility_contribute = 1000 
-        highest_activity_skilldiff_contribute = 0
-        highest_activity_travel_time = 0
-        activity_count = 0
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        print('total_num_activities_to_remove',total_num_activities_to_remove)
-        while activity_count < total_num_activities_to_remove: 
-            selected_activity = None 
-            #TODO: Denne funker ikke enda
-            for day in range(1, destroyed_route_plan.days +1): 
-                for route in destroyed_route_plan.routes[day]: 
-                    for activity_index in range(len(route.route)):
-                        activity = route.route[activity_index] 
-                        before_activity_id = 0 
-                        after_actitivy_id = 0 
-                        if activity_index != 0: 
-                            before_activity_id = route.route[activity_index-1].id
-                        if activity_index != len(route.route)-1: 
-                            after_actitivy_id = route.route[activity_index+1].id
-                        activity_utility_contribute = self.constructor.activities_df.loc[activity.id, 'utility']
-                        activity_skilldiff_contribute = destroyed_route_plan.getRouteSkillLevForActivityID(activity.id) - self.constructor.activities_df.loc[activity.id, 'skillRequirement']
-                        activity_travel_time = T_ij[before_activity_id][activity.id] + T_ij[activity.id][after_actitivy_id] - T_ij[before_activity_id][after_actitivy_id]
-                        if activity_utility_contribute < lowest_activity_utility_contribute or (
-                            activity_utility_contribute == lowest_activity_utility_contribute and activity_skilldiff_contribute > highest_activity_skilldiff_contribute) or (
-                                activity_utility_contribute == lowest_activity_utility_contribute and activity_skilldiff_contribute ==  highest_activity_skilldiff_contribute and activity_travel_time > highest_activity_travel_time):
-                            lowest_activity_utility_contribute = activity_utility_contribute
-                            highest_activity_skilldiff_contribute = activity_skilldiff_contribute
-                            highest_activity_travel_time = activity_travel_time
-                            selected_activity = activity.id
-            
-            if selected_activity != None: 
-
-                print('selected_activity',selected_activity)
-                activity_count += 1
-                print('activ count', activity_count)
-                destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
-            
-        return destroyed_route_plan, None, True
-    '''
 
     def worst_deviation_activity_removal(self, current_route_plan): 
         #TODO: Virker som denne operatoren ble veldig treg ved å legge in destruction degree på denne måten
@@ -220,37 +169,6 @@ class DestroyOperators:
             
         return destroyed_route_plan, None, True
     
-    '''
-    # WORST ACTIVITY - WITHOUT DESTRUCTION DEGREE
-    def worst_deviation_activity_removal(self, route_plan): 
-        lowest_activity_utility_contribute = 1000 
-        highest_activity_skilldiff_contribute = 0
-        highest_activity_travel_time = 0
-        selected_activity = None 
-        #Her er det kanskje letter å gå gjennom aktivitene i rutene? 
-        for day in range(1, route_plan.days +1): 
-            for route in route_plan.routes[day]: 
-                for activity_index in range(len(route.route)):
-                    activity = route.route[activity_index] 
-                    before_activity_id = 0 
-                    after_actitivy_id = 0 
-                    if activity_index != 0: 
-                        before_activity_id = route.route[activity_index-1].id
-                    if activity_index != len(route.route)-1: 
-                        after_actitivy_id = route.route[activity_index+1].id
-                    activity_utility_contribute = self.constructor.activities_df.loc[activity.id, 'utility']
-                    activity_skilldiff_contribute = route_plan.getRouteSkillLevForActivityID(activity.id) - self.constructor.activities_df.loc[activity.id, 'skillRequirement']
-                    activity_travel_time = T_ij[before_activity_id][activity.id] + T_ij[activity.id][after_actitivy_id] - T_ij[before_activity_id][after_actitivy_id]
-                    if activity_utility_contribute < lowest_activity_utility_contribute or (
-                        activity_utility_contribute == lowest_activity_utility_contribute and activity_skilldiff_contribute > highest_activity_skilldiff_contribute) or (
-                            activity_utility_contribute == lowest_activity_utility_contribute and activity_skilldiff_contribute ==  highest_activity_skilldiff_contribute and activity_travel_time > highest_activity_travel_time):
-                        lowest_activity_utility_contribute = activity_utility_contribute
-                        highest_activity_skilldiff_contribute = activity_skilldiff_contribute
-                        highest_activity_travel_time = activity_travel_time
-                        selected_activity = activity.id
-        return self.activity_removal(selected_activity, route_plan)
-
-        '''
 #---------- CLUSTER DISTANCE REMOVAL ----------
     
  # TAR HENSYN TIL DESTRUCTION DEGREE
