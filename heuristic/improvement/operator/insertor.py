@@ -189,7 +189,7 @@ class Insertor:
         
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
         test_route_plan = copy.deepcopy(self.route_plan)
-        #test_route_plan.updateObjective()
+        test_route_plan.updateObjective()
         
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         activity = activities[0]
@@ -220,7 +220,7 @@ class Insertor:
 
 
     def insertNextActiviy_forBestInsertion(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
-        #route_plan.updateObjective()
+        route_plan.updateObjective()
         #TODO: Sammkjøre denne med andre aktiviteter som fungere 
         #BEG: Må ha med denne også for å sjekke om det er 
         route_plan.updateActivityBasedOnRoutePlanOnDay0904(activity, day)
@@ -237,7 +237,7 @@ class Insertor:
             return 
         
         if len(rest_acitivites) == 0: 
-            #route_plan.updateObjective()
+            route_plan.updateObjective()
          
             if checkCandidateBetterThanBest(route_plan.objective, self.route_plan.objective): 
                 self.route_plan = copy.deepcopy(route_plan)
