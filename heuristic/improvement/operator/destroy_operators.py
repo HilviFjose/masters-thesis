@@ -86,23 +86,50 @@ class DestroyOperators:
                 selected_treatment = treatment
         return self.treatment_removal(selected_treatment, current_route_plan)
     
+   
+
     def worst_deviation_visit_removal(self, current_route_plan):
-        lowest_visit_utility_contribute = 1000 
-        highest_visit_skilldiff_contribute = 0
-        selected_visit = None 
-        for visit in list(current_route_plan.visits.keys()): 
-            visit_utility_contribute = 0 
+        
+        visits_to_remove = {}
+        
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+     
+    
+                    
+        for visitID, activitieIDList in destroyed_route_plan.visits.items():
+            visit_utility_contribute = 0
             visit_skilldiff_contribute = 0
-            for activity in current_route_plan.visits[visit]:
-                    visit_utility_contribute += self.constructor.activities_df.loc[activity, 'utility']
-                    visit_skilldiff_contribute += current_route_plan.getRouteSkillLevForActivityID(activity) - self.constructor.activities_df.loc[activity, 'skillRequirement']
-                    #print("Funker ikke!")
-                    #print("Route plan", current_route_plan)
-                    #print("activity", activity)
-            if visit_utility_contribute < lowest_visit_utility_contribute or (
-                visit_utility_contribute == lowest_visit_utility_contribute and visit_skilldiff_contribute > highest_visit_skilldiff_contribute): 
-                selected_visit = visit
-        return self.visit_removal(selected_visit, current_route_plan)
+            visit_travel_time = 0
+            for acitivityID in activitieIDList: 
+                activity, activity_index, activity_route = destroyed_route_plan.getActivityAndActivityIndexAndRoute(acitivityID)
+                before_activity_id = 0 
+                after_actitivy_id = 0 
+                if activity_index != 0: 
+                    before_activity_id = activity_route.route[activity_index-1].id
+                if activity_index != len(activity_route.route)-1: 
+                    after_actitivy_id = activity_route.route[activity_index+1].id
+
+                visit_utility_contribute += self.constructor.activities_df.loc[activity.id, 'utility']
+                visit_skilldiff_contribute += destroyed_route_plan.getRouteSkillLevForActivityID(activity.id) - self.constructor.activities_df.loc[activity.id, 'skillRequirement']
+                visit_travel_time += T_ij[before_activity_id][activity.id] + T_ij[activity.id][after_actitivy_id] - T_ij[before_activity_id][after_actitivy_id]
+                    
+            
+            visits_to_remove[visitID] = [visit_utility_contribute, -visit_skilldiff_contribute, -visit_travel_time]
+
+                
+            
+        sorted_visits_to_remove = {k: v for k, v in sorted(visits_to_remove.items(), key=lambda item: item[1])}
+
+        total_num_visits_to_remove = round(len(sorted_visits_to_remove) * main_config.destruction_degree)
+
+        #TODO: Sjekke at denn funker på samme måte som andre 
+        for selected_visit in list(sorted_visits_to_remove.keys())[:total_num_visits_to_remove]: 
+            for selected_activity in destroyed_route_plan.visits[selected_visit]:
+                destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
+        
+        return destroyed_route_plan, None, True
+
+
     '''
     
     def worst_deviation_activity_removalG(self, current_route_plan): 
