@@ -185,7 +185,6 @@ class Route:
         if self.checkTrueFalse(activity) == False: 
             return False
    
-        
         self.makeSpaceForIndex(index)
         #Beg: Må oppdatere verdiene innad basert på det som er flyttet 
         self.updateActivityBasedOnDependenciesInRoute(activity)
@@ -219,8 +218,6 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-            if activity.id == 84: 
-                print("legger til her 0")
             return True
         
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia and (
@@ -231,8 +228,6 @@ class Route:
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
-            if activity.id == 84: 
-                print("legger til her 1")
             return True
         return False 
     
@@ -275,18 +270,16 @@ class Route:
         for j in range(stopIndex): 
             act = self.route[j]
 
-
-
             new_startTime =  max(act.earliestStartTime, act.getNewEarliestStartTime(), S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
             if new_startTime < act.startTime: 
                 act.startTime = new_startTime
                 
-            
                 self.updateActivityDependenciesInRoute(act)
                 
             i_id = act.id 
             S_i = act.startTime 
             D_i = act.duration
+
 
     def moveActivitiesLater(self, stopIndex): 
         j_id = 0
@@ -294,7 +287,6 @@ class Route:
        
         for i in range(len(self.route)-1, stopIndex-1, -1): 
             act = self.route[i]
-           
             
             new_startTime = min(act.latestStartTime, act.getNewLatestStartTime(), S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
             if new_startTime > act.startTime: 
@@ -303,10 +295,10 @@ class Route:
                 #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
                 self.updateActivityDependenciesInRoute(act)
            
-
             j_id = act.id 
             S_j = act.startTime 
          
+    
     def makeSpaceForIndex(self, index): 
         #Det er noe med oppdateringen tilbake til route_plan 
         #Når vi prøver å sette inn 63 så 

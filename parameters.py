@@ -45,6 +45,7 @@ df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
 
+
 '''
 #TEST DATA - not randomly generated
 df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 

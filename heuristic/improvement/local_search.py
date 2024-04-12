@@ -107,6 +107,10 @@ class LocalSearch:
                 activity1_new = copy.deepcopy(activity1)
                 activity2_new = copy.deepcopy(activity2)
 
+                #TESTLEGGER TIL 
+                for testAct in new_route.route: 
+                    new_route.updateActivityBasedOnDependenciesInRoute(testAct)
+
                 if index_act1 < index_act2:
                     
                     information_candidate.updateActivityBasedOnRoutePlanOnDay(activity2_new, route.day)
@@ -187,7 +191,11 @@ class LocalSearch:
                 if index == index_act:
                     continue
 
-                newer_route.updateActivityBasedOnDependenciesInRoute(activity_new)
+                #TESTLEGGER TIL 
+                for testAct in newer_route.route: 
+                    newer_route.updateActivityBasedOnDependenciesInRoute(testAct)
+
+                #newer_route.updateActivityBasedOnDependenciesInRoute(activity_new)
                 status = newer_route.insertActivityOnIndex(activity_new, index)
                 if status == False:
                     continue
@@ -224,9 +232,18 @@ class LocalSearch:
                         new_route1.removeActivityID(activity1.id)
                         new_route2.removeActivityID(activity2.id)
                         
+                        #TESTLEGGER TIL 
+                        for testAct in new_route1.route: 
+                            new_route1.updateActivityBasedOnDependenciesInRoute(testAct)
+
+                        #TESTLEGGER TIL 
+                        for testAct in new_route2.route: 
+                            new_route2.updateActivityBasedOnDependenciesInRoute(testAct)
                         #TODO: Nå sendes routeplan inn her. har ikke sjekket premissene. Var ikke med før
                         for routeActivity in new_route1.route: 
                             route_plan.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
+
+
                         route_plan.updateActivityBasedOnRoutePlanOnDay(activity2, day)
                         status = new_route1.addActivity(activity2)
                         if status == False: 
@@ -269,6 +286,11 @@ class LocalSearch:
                     if sameEmployeeActivity != None: 
                         new_candidate.removeActivityFromEmployeeOnDay(employee, sameEmployeeActivity, day)
 
+                     #TESTLEGGER TIL 
+                    for testAct in new_candidate.routes[day][othEmpl].route: 
+                        new_candidate.routes[day][othEmpl].updateActivityBasedOnDependenciesInRoute(testAct)
+                      
+                    
                     status = new_candidate.insertActivityInEmployeesRoute(othEmpl, activity, day)
                     if status == False: 
                         continue
@@ -285,6 +307,14 @@ class LocalSearch:
         
         return best_found_candidate
         
+    '''
+    Informasjonsflyt mellom aktivitetene innad i rute, skal håndteres av insettingsfunksjonene
+    Informasjonsflyt mellom aktiviteter med dependencies i ulike ruter, skal håndteres på forhånd
+
+    Det vi har gjort 12.04:
+    Lagt til oppdatering av aktivitene som kan bli flyttet når du lager plass med MakeSpace
+    Tror dette løste problemet man får med presedens etter lokalsøk
+    '''
     
 
 
