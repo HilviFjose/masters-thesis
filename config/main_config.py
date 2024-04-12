@@ -7,7 +7,11 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
+<<<<<<< HEAD
 iterations = 50
+=======
+iterations = 100
+>>>>>>> main
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02

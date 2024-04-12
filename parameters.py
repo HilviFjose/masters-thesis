@@ -33,7 +33,6 @@ df_treatments.to_pickle(os.path.join(os.getcwd(), 'data', 'treatments.pkl'))
 df_visits.to_pickle(os.path.join(os.getcwd(), 'data', 'visits.pkl'))
 df_activities.to_pickle(os.path.join(os.getcwd(), 'data', 'activities.pkl'))
 """
-
 #RE-USE GENERATED DATA
 file_path_employees = os.path.join(os.getcwd(), 'data', 'employees.pkl')
 df_employees = pd.read_pickle(file_path_employees)
@@ -54,7 +53,6 @@ df_patients = pd.read_csv("data/test/PatientsNY.csv").set_index(["patientId"])
 df_treatments = pd.read_csv("data/test/TreatmentsNY.csv").set_index(["treatmentId"])
 df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
 '''
-
 #GENERATING DISTANCE MATRIX
 depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config.depot]})
 depot_row = depot_row.set_index(['activityId'])
