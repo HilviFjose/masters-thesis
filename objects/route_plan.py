@@ -610,3 +610,22 @@ class RoutePlan:
                         return act, index, route 
                     index += 1
         return None, None, None
+
+
+    def getDayForActivityID(self, actID): 
+        '''
+        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
+        
+        Arg: 
+        actID (int): ID til en aktivitet som gjøres en gitt dag
+        day (int): dagen aktiviten finnes i en rute  
+
+        Return: 
+        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
+        '''
+        for day in range(1, self.days+1):
+            for route in self.routes[day].values(): 
+                for act in route.route: 
+                    if act.id == actID: 
+                        return day
+        return None
