@@ -85,7 +85,7 @@ class RoutePlan:
     def sortRoutesByAcitivyLocation(self, routes, activity):
         #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
         if activity.location == depot: 
-            random.shuffle(routes)
+            #random.shuffle(routes)
             return routes
   
    

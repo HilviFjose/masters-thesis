@@ -22,10 +22,6 @@ class Insertor:
         self.insertVisitOnDay = self.visitOnDayInsertorList[insertion_efficiency_level] #Dette er en funskjon 
 
 
-    '''
-    Hvordan skal det velges her
-    '''
-
     def insert_patient(self, patient):
         old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
@@ -59,7 +55,7 @@ class Insertor:
         #Iterer over alle patterns som er mulige for denne treatmenten
         patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
         index_random = [i for i in range(len(patterns))]
-        random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+        #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
         for index in index_random:
             self.route_plan = copy.deepcopy(old_route_plan)
