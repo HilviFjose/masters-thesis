@@ -21,6 +21,8 @@ class Activity:
         self.pickUpActivityID = df.loc[id]["sameEmployeeActivityId"]
         self.location = self.makeLocationTuple(df.loc[id]["location"])   #Endret på denne for å få til lokasjon 
         self.employeeRestricions = df.loc[id]["employeeRestriction"]
+        self.continuityGroup = df.loc[id]["continuityGroup"]
+        self.employeeHistory = df.loc[id]["employeeHistory"]
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevPrece"])
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
         self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextPrece"])
@@ -196,6 +198,11 @@ class Activity:
         self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
+
+    def updateEmployeeHistory(self, employeeId):
+        continuity_score, employeeIds = next(iter(self.employeeHistory.items()))
+        employeeIds.append(employeeId)  
+        self.employeeHistory[continuity_score] = employeeIds
 
 
 #act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 64)

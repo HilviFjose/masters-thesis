@@ -44,7 +44,7 @@ class ConstructionHeuristic:
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
 
-            patientInsertor = Insertor(self, route_plan_with_patient, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
+            patientInsertor = Insertor(self, route_plan_with_patient, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
             state = patientInsertor.insert_patient(patient)
            
             if state == True: 
