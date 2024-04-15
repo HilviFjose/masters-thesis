@@ -29,6 +29,7 @@ class Route:
         self.averageLocation = depot
 
 
+
     '''
     Ønsker å sortere rutene etter den som har best lokasjon i forhold til aktiviteten som skal legges inn.
     Hvordan skal det sees i sammenheng med hvordan det velges nå. Må vel fortsatt kunn være på skill? 
@@ -278,6 +279,27 @@ class Route:
             S_i = act.startTime 
             D_i = act.duration
 
+    '''
+    Må greie ut noen alternativer her. 
+
+    syv aktiviter i listen. Siste index det ble forsøkt å sette inn er fire. 
+
+    Nå skal vi sette inn på index 2
+
+    Alt 1) Kom ikke inn på index 4 -> Trenger ikke pushe før 2. Så kan pushe oppover [2, 3]
+    Alt 2) Kom inn på index 4 -> Trenger ikke pushe før 2. Så kan pushe oppover [2, 4]
+
+
+    Nå skal vi sette inn på index 6
+    Alt 1) Kom ikke inn på index 4 -> Pushe nedover [4, 6]
+    Alt 2) Kom inn på index 4 -> Pushe neover []
+        
+    Hvordan har det noe å si hvor man kom inn. Fordi aktiviteten som kom inn den har ikke blitt pushet enda. 
+
+    Hvis den har blitt satt inn under det som er indertpuntket nå så har
+
+    Det er fortsatt en feil etter repair, men jeg trenger ikke tenke så mye mer på det. Handler om kjøretid nå  
+    '''
 
     def moveActivitiesLater(self, stopIndex): 
         j_id = 0

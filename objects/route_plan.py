@@ -40,7 +40,7 @@ class RoutePlan:
         #OBS: Jeg forstår ikke hvorfor denne er slik: 
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
         
-        
+        self.objectiveWithoutPenelty = [0,0,0,0,0]
         self.objective = [0,0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
@@ -333,6 +333,21 @@ class RoutePlan:
                 route.updateObjective()
                 first_objective += route.suitability
         return first_objective
+
+    def updateObjectiveWithoutPenelty(self): 
+        self.objectiveWithoutPenelty = [0, 0, 0, 0, 0]
+        self.calculateWeeklyHeaviness()
+        self.calculateDailyHeaviness()
+        self.objectiveWithoutPenelty[1] = self.weeklyHeaviness
+        self.objectiveWithoutPenelty[2] = self.dailyHeaviness
+        for day in range(1, 1+self.days): 
+            for route in self.routes[day].values(): 
+                route.updateObjective()
+                self.objectiveWithoutPenelty[0] += route.suitability
+                self.objectiveWithoutPenelty[3] += route.aggSkillDiff 
+                self.objectiveWithoutPenelty[4] += route.travel_time   
+        #Oppdaterer første-objektivet med straff for illegal      
+
 
     def updateObjective(self, current_iteration, total_iterations): 
         self.objective = [0, 0, 0, 0, 0]
