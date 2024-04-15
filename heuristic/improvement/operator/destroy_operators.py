@@ -139,7 +139,6 @@ class DestroyOperators:
         activities_to_remove = {}
         
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        print('total_num_activities_to_remove',total_num_activities_to_remove)
      
         for day in range(1, destroyed_route_plan.days +1): 
             for route in destroyed_route_plan.routes[day].values(): 
@@ -418,16 +417,13 @@ class DestroyOperators:
         p_firstActId = current_route_plan.visits[primary_visitId][0] #Henter ut første aktivitet for gitt visit
         p_lastActId = current_route_plan.visits[primary_visitId][-1] #Henter ut siste aktivitet for gitt visit
         p_day = current_route_plan.getDayForActivityID(p_firstActId)
-        print("Valgt visit", primary_visitId)
-        print("Første aktivitet", p_firstActId)
-        print("p_day", p_day)
+    
 
         # Get the highest professional reequirement for the primary visit
         p_maxSkillReq = 0
         for p_actId in current_route_plan.visits[primary_visitId]: 
             p_act = current_route_plan.getActivity(p_actId, p_day)
             p_skillReq = p_act.skillReq
-            print("Skill req", p_act.skillReq, " activity id ", p_actId)
             if p_skillReq > p_maxSkillReq:
                 p_maxSkillReq = p_skillReq
 
@@ -896,7 +892,6 @@ class DestroyOperators:
                     longest_travel_time = route.travel_time
                     activities_in_longest_route = [activity.id for activity in route.route]
 
-        print('num_act_allocated',num_act_allocated)
 
         total_num_activities_to_remove = round(num_act_allocated*main_config.destruction_degree)
         
@@ -910,7 +905,6 @@ class DestroyOperators:
         num_activities_to_remove = int(len(nearest_neighbor_distances) * 0.3)
         activities_to_remove_indices = np.argsort(-nearest_neighbor_distances)[:num_activities_to_remove]
         activities_to_remove = df_selected_activities.iloc[activities_to_remove_indices].index.tolist()
-        print('activities_to_remove',activities_to_remove)
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         self.remove_activites_from_route_plan(activities_to_remove, destroyed_route_plan)
@@ -954,7 +948,6 @@ class DestroyOperators:
 
         # Convert indices to patient IDs to remove
         patients_to_remove = df_selected_patients.iloc[patients_to_remove_indices].index.tolist()
-        print("patients_to_remove", patients_to_remove)
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for patientID in patients_to_remove:
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
@@ -1098,8 +1091,6 @@ class DestroyOperators:
 
         #Alt 2) Selected activity er siste som ligger inne på visit, men visit er ikke det siste som ligger inne på treatment. -> Legger til i illegalVisits 
         if last_visit_in_treatment == False: 
-            if selected_activity == 80: 
-                print("kommer hit og slår ut på alternativ 2 for 80")
             #Sjer ingenting på pasient nivå
             destroyed_route_plan.treatments[treatment_for_visit].remove(visit_for_activity) # Visit fjernes fra treatment dict 
             destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_for_activity] = original_day #Legges til i illegalVisit with possible day 
@@ -1128,8 +1119,6 @@ class DestroyOperators:
         #TODO: Denn må fjerne flere så blir ikke riktig å ha her 
         #ALTERNATIV 3 
         if last_treatment_for_patient == False:    
-            if selected_activity == 80: 
-                print("kommer hit og slår ut på alternativ 3 for 80")
             destroyed_route_plan.allocatedPatients[patient_for_treatment].remove(treatment_for_visit) #Treatment fjernes fra pasient 
             destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit) #Treatment legges til 
             del destroyed_route_plan.treatments[treatment_for_visit] #treatment fjernes fra treatment list med tilhørende visits
