@@ -82,7 +82,7 @@ class RepairOperators:
         random.shuffle(randomNotAllocatedPatients)
 
         for patient in randomNotAllocatedPatients: 
-            patientInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
+            patientInsertor = Insertor(self.constructor, repaired_route_plan,1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
 
@@ -162,7 +162,7 @@ class RepairOperators:
             repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
 
             for patient in descendingUtilityNotAllocatedPatients[k:]: 
-                patientInsertor = Insertor(self.constructor, repaired_route_plan_with_k_regret, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
+                patientInsertor = Insertor(self.constructor, repaired_route_plan_with_k_regret, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
                 old_route_plan = copy.deepcopy(repaired_route_plan_with_k_regret)
                 status = patientInsertor.insert_patient(patient)
                 

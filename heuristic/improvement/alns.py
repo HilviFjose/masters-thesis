@@ -70,13 +70,17 @@ class ALNS:
             candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
             r_count[repair] += 1
-        
+
+            
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
+                print("Solution promising. Doing local search.")
+                """
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+                """
                 
-            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
+            #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             #TODO: Skal final candiate printes lenger nede? 
             if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():
                 print(f" ALNS: Penalty in first objective: {candidate_route_plan.getOriginalObjective() - candidate_route_plan.objective[0]}. Original Objective: {candidate_route_plan.getOriginalObjective()}, Updated Objective: {candidate_route_plan.objective[0]} ")
@@ -116,7 +120,7 @@ class ALNS:
     
     def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
-        
+        """
         self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
@@ -125,16 +129,16 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
+        """
         self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
 
-        
-        self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
-        self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
+        #self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
+        #self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
 
-        self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
+        #self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
-        self.add_destroy_operator(destroy_operators.random_pattern_type_removal)
+        #self.add_destroy_operator(destroy_operators.random_pattern_type_removal)
     
         #self.add_destroy_operator(destroy_operators.related_treatments_removal)
         #self.add_destroy_operator(destroy_operators.related_visits_removal)
