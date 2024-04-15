@@ -124,10 +124,9 @@ class ALNS:
         
         self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
-        self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
+        #self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
+        #self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
 
-        
         self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
 
@@ -135,7 +134,6 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
         self.add_destroy_operator(destroy_operators.random_pattern_type_removal)
-    
         #self.add_destroy_operator(destroy_operators.related_treatments_removal)
         #self.add_destroy_operator(destroy_operators.related_visits_removal)
         

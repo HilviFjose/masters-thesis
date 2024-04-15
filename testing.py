@@ -299,6 +299,7 @@ def check_precedence_within_file(file):
 
 # Example usage
 username = 'agnesost'
+username = 'agnesost'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
 #file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\0before_iteration.txt'  # Replace with the actual path to your first file
