@@ -445,42 +445,47 @@ class RoutePlan:
                 continuity_route = 0
                 for act in route.route:
                     continuity_score, employeeIds = next(iter(act.employeeHistory.items()))
-                    if act.continuityGroup == 1: 
-                        if route.employee in employeeIds:
-                            continuity_route += continuity_score
-                        #TODO: Må finne ut hva vi ønsker å gjøre dersom ansatthistorien er kortere enn antall ansatte kontinuitetsgruppen tilsier at det kan være i historien
-                        elif len(act.employeeHistory) < preferredEmployees[0]:
-                            continuity_route += continuity_score
-                            employeeId = route.employee
-                            act.updateEmployeeHistory(employeeId)
-                        else:
-                            continuity_route -= 1
-                            employeeId = route.employee
-                            act.updateEmployeeHistory(employeeId)
-                        
-                    elif act.continuityGroup == 2: 
-                        if route.employee in employeeIds:
-                            continuity_route += continuity_score
-                        elif len(act.employeeHistory) < preferredEmployees[1]:
-                            continuity_route += continuity_score
-                            employeeId = route.employee
-                            act.updateEmployeeHistory(employeeId)
-                        else:
-                            continuity_route -= 1
-                            employeeId = route.employee
-                            act.updateEmployeeHistory(employeeId)
-                    else: 
-                        if route.employee in employeeIds:
-                            continuity_route += continuity_score
-                        elif len(act.employeeHistory) < preferredEmployees[2]:
-                            continuity_route += continuity_score
-                            employeeId = route.employee
-                            act.updateEmployeeHistory(employeeId)
-                        else:
-                            continuity_route -= 1
-                            employeeId = route.employee
-                            act.updateEmployeeHistory(employeeId)
-
+                    if act.skillReq > 1: #Forsikre om at det kun er health care tasks som får en score
+                        if act.continuityGroup == 1: 
+                            if route.employee in employeeIds:
+                                continuity_route += continuity_score
+                            #TODO: Må finne ut hva vi ønsker å gjøre dersom ansatthistorien er kortere enn antall ansatte kontinuitetsgruppen tilsier at det kan være i historien
+                            elif len(act.employeeHistory) < preferredEmployees[0]:
+                                continuity_route += continuity_score
+                                employeeId = route.employee
+                                act.updateEmployeeHistory(employeeId)
+                            '''
+                            else:
+                                continuity_route -= 1
+                                employeeId = route.employee
+                                act.updateEmployeeHistory(employeeId)
+                            '''
+                        elif act.continuityGroup == 2: 
+                            if route.employee in employeeIds:
+                                continuity_route += continuity_score
+                            elif len(act.employeeHistory) < preferredEmployees[1]:
+                                continuity_route += continuity_score
+                                employeeId = route.employee
+                                act.updateEmployeeHistory(employeeId)
+                            '''
+                            else:
+                                continuity_route -= 1
+                                employeeId = route.employee
+                                act.updateEmployeeHistory(employeeId)
+                            '''
+                        else: 
+                            if route.employee in employeeIds:
+                                continuity_route += continuity_score
+                            elif len(act.employeeHistory) < preferredEmployees[2]:
+                                continuity_route += continuity_score
+                                employeeId = route.employee
+                                act.updateEmployeeHistory(employeeId)
+                            '''
+                            else:
+                                continuity_route -= 1
+                                employeeId = route.employee
+                                act.updateEmployeeHistory(employeeId)
+                            '''
                 continuity_routes.append(continuity_route)
 
         self.totalContinuity = - sum(continuity_routes)
