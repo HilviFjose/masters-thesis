@@ -460,7 +460,7 @@ class RoutePlan:
                             act.updateEmployeeHistory(employeeId)
                         '''
                     elif act.continuityGroup == 2: 
-                        if route.employee in employeeIds:
+                        if route.employee.id in employeeIds:
                             continuity_route += continuity_score
                         '''
                         elif len(act.employeeHistory) < preferredEmployees[1]:
@@ -473,7 +473,7 @@ class RoutePlan:
                             act.updateEmployeeHistory(employeeId)
                         '''
                     else: 
-                        if route.employee in employeeIds:
+                        if route.employee.id in employeeIds:
                             continuity_route += continuity_score
                         '''
                         elif len(act.employeeHistory) < preferredEmployees[2]:
