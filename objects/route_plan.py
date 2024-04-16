@@ -12,6 +12,7 @@ import datetime
 from config.construction_config import depot
 from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
 from config.construction_config import preferredEmployees
+from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
 
 
 class RoutePlan:
@@ -42,7 +43,7 @@ class RoutePlan:
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
         
         
-        self.objective = [0,0,0,0,0,0]
+        self.objective = [0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
         self.totalContinuity = 0
@@ -335,7 +336,27 @@ class RoutePlan:
                 route.updateObjective()
                 first_objective += route.suitability
         return first_objective
+    
+    def updateObjective(self, current_iteration, total_iterations): 
+        weight_C, weight_DW, weight_WW, weight_SG, weight_S
+        self.objective = [0, 0, 0, 0]
+        self.calculateWeeklyHeaviness()
+        self.calculateDailyHeaviness()
+        self.calculateTotalContinuity()
+        aggSkillDiff = 0
+        for day in range(1, 1+self.days): 
+            for route in self.routes[day].values(): 
+                route.updateObjective()
+                self.objective[0] += route.suitability
+                aggSkillDiff += route.aggSkillDiff 
+                self.objective[3] += route.travel_time   
+        self.objective[1] = self.totalContinuity 
+        self.objective[2] = weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff
+        #Oppdaterer første-objektivet med straff for illegal      
+        self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
+    '''
+    HER ER OBJEKTIVENE IKKE SLÅTT SAMMEN.
     def updateObjective(self, current_iteration, total_iterations): 
         self.objective = [0, 0, 0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
@@ -352,6 +373,7 @@ class RoutePlan:
                 self.objective[5] += route.travel_time   
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
+    '''
 
     def calculatePenaltyIllegalSolution(self, current_iteration, total_iterations):
         # Penalty in first objective per illegal treatment, visit or activity 
