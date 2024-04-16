@@ -199,7 +199,11 @@ class Activity:
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
 
-
+    def updateEmployeeHistory(self, employeeId):
+        continuity_score, employeeIds = next(iter(self.employeeHistory.items()))
+        employeeIds.append(employeeId)  
+        self.employeeHistory[continuity_score] = employeeIds
+        
 #act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 64)
 #print("earliestStartTime", act70.newEeariestStartTime)
 #print("newLatestStartTime", act70.newLatestStartTime)
