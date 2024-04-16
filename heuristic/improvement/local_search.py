@@ -109,6 +109,7 @@ class LocalSearch:
 
                 #TESTLEGGER TIL 
                 for testAct in new_route.route: 
+                    information_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, new_route.day)
                     new_route.updateActivityBasedOnDependenciesInRoute(testAct)
 
                 if index_act1 < index_act2:
@@ -193,6 +194,7 @@ class LocalSearch:
 
                 #TESTLEGGER TIL 
                 for testAct in newer_route.route: 
+                    information_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, newer_route.day)
                     newer_route.updateActivityBasedOnDependenciesInRoute(testAct)
 
                 #newer_route.updateActivityBasedOnDependenciesInRoute(activity_new)
@@ -234,10 +236,12 @@ class LocalSearch:
                         
                         #TESTLEGGER TIL 
                         for testAct in new_route1.route: 
+                            route_plan.updateActivityBasedOnRoutePlanOnDay(testAct, new_route1.day)
                             new_route1.updateActivityBasedOnDependenciesInRoute(testAct)
 
                         #TESTLEGGER TIL 
                         for testAct in new_route2.route: 
+                            route_plan.updateActivityBasedOnRoutePlanOnDay(testAct, new_route2.day)
                             new_route2.updateActivityBasedOnDependenciesInRoute(testAct)
                         #TODO: Nå sendes routeplan inn her. har ikke sjekket premissene. Var ikke med før
                         for routeActivity in new_route1.route: 
@@ -288,6 +292,7 @@ class LocalSearch:
 
                      #TESTLEGGER TIL 
                     for testAct in new_candidate.routes[day][othEmpl].route: 
+                        new_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, new_candidate.routes[day][othEmpl].day)
                         new_candidate.routes[day][othEmpl].updateActivityBasedOnDependenciesInRoute(testAct)
                       
                     

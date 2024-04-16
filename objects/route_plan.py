@@ -115,13 +115,10 @@ class RoutePlan:
             #TODO: Sortere hvor mange som er 
      
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
-            #random.shuffle(routes_for_skill)
+            random.shuffle(routes_for_skill)
             
             routes += routes_for_skill
-          
-            #For å omrokkere på de som er fra før 
-            #if act_skill_level == 2: 
-            #   random.shuffle(routes)
+
         return routes
 
     def addActivityOnDay(self, activity, day):
@@ -483,9 +480,6 @@ class RoutePlan:
                 activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
 
 
-
-                #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
-
         
     def updateDependentActivitiesBasedOnRoutePlanOnDay(self, activity ,day):
         for depActID in activity.dependentActivities: 
@@ -544,51 +538,6 @@ class RoutePlan:
         #Fjerner pasienten fra ikkeAllokert listen 
         if patient in self.notAllocatedPatients: 
             self.notAllocatedPatients.remove(patient)
-
-
-    def updateActivityBasedOnRoutePlanOnDay0904(self, activity,day):
-            '''
-            Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
-            Basert på det som allerede ligger inne i routeplanen 
-            '''    
-            #Her håndteres pick up and delivery
-            if activity.getPickUpActivityID() != 0 : 
-                otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
-                activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
-                
-            #Her håndteres presedens.   
-            #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
-
-            for prevNodeID in activity.PrevNode:  
-                prevNodeAct = self.getActivity(prevNodeID, day)
-                if prevNodeAct != None:
-                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
-  
-            for nextNodeID in activity.NextNode: 
-                nextNodeAct = self.getActivity(nextNodeID, day)
-                if nextNodeAct != None:
-                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
-            
-            #Her håndteres presedens med tidsvindu
-            #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
-            for PrevNodeInTimeID in activity.PrevNodeInTime: 
-                prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
-                if prevNodeAct != None:
-                    
-                    #print("FØR newEeariestStartTime", activity.newEeariestStartTime)
-
-                    activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
-                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
-                    #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
-
-
-            for NextNodeInTimeID in activity.NextNodeInTime: 
-                nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
-                if nextNodeAct != None:
-                    activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
-                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
-            
-            #Du har en aktivitet som må gjøres innen et 
 
 
     def getActivityAndActivityIndexAndRoute(self, actID): 

@@ -184,10 +184,13 @@ class Route:
 
         if self.checkTrueFalse(activity) == False: 
             return False
-   
+
         self.makeSpaceForIndex(index)
         #Beg: Må oppdatere verdiene innad basert på det som er flyttet 
+
         self.updateActivityBasedOnDependenciesInRoute(activity)
+        for possiblyMovedActivity in self.route: 
+            self.updateActivityBasedOnDependenciesInRoute(possiblyMovedActivity)
 
         if len(self.route) == 0: 
             return self.insertToEmptyList(activity)
