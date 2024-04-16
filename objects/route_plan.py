@@ -348,7 +348,7 @@ class RoutePlan:
                 aggSkillDiff += route.aggSkillDiff 
                 self.objective[3] += route.travel_time   
         self.objective[1] = self.totalContinuity 
-        self.objective[2] = weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff
+        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
@@ -454,13 +454,13 @@ class RoutePlan:
                     continuity_score, employeeIds = next(iter(act.employeeHistory.items()))
                     if act.skillReq > 1: #Forsikre om at det kun er health care tasks som får en score
                         if act.continuityGroup == 1: 
-                            if route.employee in employeeIds:
+                            if route.employee.id in employeeIds:
                                 continuity_route += continuity_score
                         elif act.continuityGroup == 2: 
-                            if route.employee in employeeIds:
+                            if route.employee.id in employeeIds:
                                 continuity_route += continuity_score
                         else: 
-                            if route.employee in employeeIds:
+                            if route.employee.id in employeeIds:
                                 continuity_route += continuity_score
                            
                 continuity_routes.append(continuity_route)

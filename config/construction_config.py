@@ -1,7 +1,7 @@
 # ANTIBIOTICS INFUSION CASE
 # -------------------------
 # PATIENTS
-P_num = 15                                          # Number of patients
+P_num = 12                                          # Number of patients
 
 # Distributions of treatments, visits and acitivities for each patient
 T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
