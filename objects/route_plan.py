@@ -454,13 +454,13 @@ class RoutePlan:
                     continuity_score, employeeIds = next(iter(act.employeeHistory.items()))
                     if act.skillReq > 1: #Forsikre om at det kun er health care tasks som får en score
                         if act.continuityGroup == 1: 
-                            if route.employee in employeeIds:
+                            if route.employee.id in employeeIds:
                                 continuity_route += continuity_score
                         elif act.continuityGroup == 2: 
-                            if route.employee in employeeIds:
+                            if route.employee.id in employeeIds:
                                 continuity_route += continuity_score
                         else: 
-                            if route.employee in employeeIds:
+                            if route.employee.id in employeeIds:
                                 continuity_route += continuity_score
                            
                 continuity_routes.append(continuity_route)
