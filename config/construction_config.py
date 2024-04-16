@@ -1,7 +1,7 @@
 # ANTIBIOTICS INFUSION CASE
 # -------------------------
 # PATIENTS
-P_num = 50                                          # Number of patients
+P_num = 15                                          # Number of patients
 
 # Distributions of treatments, visits and acitivities for each patient
 T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
@@ -33,7 +33,7 @@ preferredEmployees = [1, 3, 5]
 allocation = 0.15 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
 
 # Heaviness
-heavinessDistribution = [1, 0, 0, 0, 0] 
+heavinessDistribution = [0.3, 0.3, 0.2, 0.2, 0] 
 
 # ACTIVITIES
 pd_min = 60                     #Min pickup and delivery time limit

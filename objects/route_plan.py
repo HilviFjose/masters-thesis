@@ -395,29 +395,31 @@ class RoutePlan:
         return updated_first_objective
      
     def calculateWeeklyHeaviness(self):
-        employee_weekly_heaviness = {}
+        daily_heaviness_within_group = {}
 
-        #for day, routes in self.routes.items():
-        #    for route in routes:
-        
-        for day in range (1, self.days +1): 
+        for day in range(1, self.days +1):
             for route in self.routes[day].values():
-                employee_id = route.employee.id
-                profession = route.skillLev  
-                if profession not in employee_weekly_heaviness:
-                    employee_weekly_heaviness[profession] = {}
-                if employee_id not in employee_weekly_heaviness[profession]:
-                    employee_weekly_heaviness[profession][employee_id] = []
-                # Legger til route's "heaviness" for den ansatte
-                employee_weekly_heaviness[profession][employee_id].append(route.calculateTotalHeaviness())
+                profession = route.skillLev
+                if profession not in daily_heaviness_within_group:
+                    daily_heaviness_within_group[profession] = {}
+                
+                if day not in daily_heaviness_within_group[profession]:
+                    daily_heaviness_within_group[profession][day] = route.calculateTotalHeaviness()
 
-        # Gjennomsnittlig "heaviness" for hver ansatt og finner deretter max-min innen hver yrkesgruppe
+                # Summerer opp heaviness for hver dag innen hver profession level
+                else:
+                    daily_heaviness_within_group[profession][day] += route.calculateTotalHeaviness()
+                #print(f'Profession {profession} day {day}: {daily_heaviness_within_group[profession][day]}')
+       
+        # Kalkulerer differansen mellom maks og min 'heaviness' for hver profession level
         weekly_diffs = []
-        for profession, employees in employee_weekly_heaviness.items():
-            avg_heaviness_per_employee = [np.mean(heaviness) for heaviness in employees.values()]
-            if avg_heaviness_per_employee: 
-                weekly_diffs.append(max(avg_heaviness_per_employee) - min(avg_heaviness_per_employee))
-
+        for profession, days in daily_heaviness_within_group.items():
+            if days:
+                profession_heaviness_values = list(days.values())
+                #print(f"profession {profession} with tot heaviness days {profession_heaviness_values}")
+                weekly_diffs.append(max(profession_heaviness_values)-min(profession_heaviness_values))
+                #print(f"profession {profession} weekly diff {weekly_diffs}")
+        
         self.weeklyHeaviness = sum(weekly_diffs)
 
     def calculateDailyHeaviness(self):
