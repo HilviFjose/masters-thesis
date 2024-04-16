@@ -11,6 +11,8 @@ import random
 import datetime
 from config.construction_config import depot
 from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
+from config.construction_config import preferredEmployees
+from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
 
 
 class RoutePlan:
@@ -41,9 +43,10 @@ class RoutePlan:
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
         
         
-        self.objective = [0,0,0,0,0]
+        self.objective = [0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
+        self.totalContinuity = 0
 
         self.treatments = {}
         self.visits = {}
@@ -330,21 +333,44 @@ class RoutePlan:
                 route.updateObjective()
                 first_objective += route.suitability
         return first_objective
-
+    
     def updateObjective(self, current_iteration, total_iterations): 
-        self.objective = [0, 0, 0, 0, 0]
+        weight_C, weight_DW, weight_WW, weight_SG, weight_S
+        self.objective = [0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()
-        self.objective[1] = self.weeklyHeaviness
-        self.objective[2] = self.dailyHeaviness
+        self.calculateTotalContinuity()
+        aggSkillDiff = 0
         for day in range(1, 1+self.days): 
             for route in self.routes[day].values(): 
                 route.updateObjective()
                 self.objective[0] += route.suitability
-                self.objective[3] += route.aggSkillDiff 
-                self.objective[4] += route.travel_time   
+                aggSkillDiff += route.aggSkillDiff 
+                self.objective[3] += route.travel_time   
+        self.objective[1] = self.totalContinuity 
+        self.objective[2] = weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
+
+    '''
+    HER ER OBJEKTIVENE IKKE SLÅTT SAMMEN.
+    def updateObjective(self, current_iteration, total_iterations): 
+        self.objective = [0, 0, 0, 0, 0, 0]
+        self.calculateWeeklyHeaviness()
+        self.calculateDailyHeaviness()
+        self.calculateTotalContinuity()
+        self.objective[1] = self.totalContinuity
+        self.objective[2] = self.weeklyHeaviness
+        self.objective[3] = self.dailyHeaviness
+        for day in range(1, 1+self.days): 
+            for route in self.routes[day].values(): 
+                route.updateObjective()
+                self.objective[0] += route.suitability
+                self.objective[4] += route.aggSkillDiff 
+                self.objective[5] += route.travel_time   
+        #Oppdaterer første-objektivet med straff for illegal      
+        self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
+    '''
 
     def calculatePenaltyIllegalSolution(self, current_iteration, total_iterations):
         # Penalty in first objective per illegal treatment, visit or activity 
@@ -409,6 +435,54 @@ class RoutePlan:
             for profession, heaviness in profession_groups.items():
                 daily_diffs.append(max(heaviness) - min(heaviness))
         self.dailyHeaviness = sum(daily_diffs)
+
+    def calculateTotalContinuity(self):
+        continuity_routes = []
+        for day in range(1, self.days+1):
+            for route in self.routes[day].values():
+                continuity_route = 0
+                for act in route.route:
+                    continuity_score, employeeIds = next(iter(act.employeeHistory.items()))
+                    if act.continuityGroup == 1: 
+                        if route.employee in employeeIds:
+                            continuity_route += continuity_score
+                        #TODO: Må finne ut hva vi ønsker å gjøre dersom ansatthistorien er kortere enn antall ansatte kontinuitetsgruppen tilsier at det kan være i historien
+                        elif len(act.employeeHistory) < preferredEmployees[0]:
+                            continuity_route += continuity_score
+                            employeeId = route.employee
+                            act.updateEmployeeHistory(employeeId)
+                        else:
+                            continuity_route -= 1
+                            employeeId = route.employee
+                            act.updateEmployeeHistory(employeeId)
+                        
+                    elif act.continuityGroup == 2: 
+                        if route.employee in employeeIds:
+                            continuity_route += continuity_score
+                        elif len(act.employeeHistory) < preferredEmployees[1]:
+                            continuity_route += continuity_score
+                            employeeId = route.employee
+                            act.updateEmployeeHistory(employeeId)
+                        else:
+                            continuity_route -= 1
+                            employeeId = route.employee
+                            act.updateEmployeeHistory(employeeId)
+                    else: 
+                        if route.employee in employeeIds:
+                            continuity_route += continuity_score
+                        elif len(act.employeeHistory) < preferredEmployees[2]:
+                            continuity_route += continuity_score
+                            employeeId = route.employee
+                            act.updateEmployeeHistory(employeeId)
+                        else:
+                            continuity_route -= 1
+                            employeeId = route.employee
+                            act.updateEmployeeHistory(employeeId)
+
+                continuity_routes.append(continuity_route)
+
+        self.totalContinuity = - sum(continuity_routes)
+
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 

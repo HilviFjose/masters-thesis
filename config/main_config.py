@@ -41,4 +41,10 @@ penalty_treat = 10          # Penalty per illegal treatment
 penalty_visit = 5           # Penalty per illegal visit  
 penalty_act = 3             # Penalty per illegal activity 
 
+# Weights for objectives
+weight_C = 0.0              # Max continuity of care
+weight_DW = 0.3             # Balance daily workload
+weight_WW = 0.3             # Balance weekly workload
+weight_S = 0.4              # Min skill difference
+weight_SG = 0.0             # Balance specialist/generalist
 
