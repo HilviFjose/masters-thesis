@@ -348,7 +348,7 @@ class RoutePlan:
                 aggSkillDiff += route.aggSkillDiff 
                 self.objective[3] += route.travel_time   
         self.objective[1] = self.totalContinuity 
-        self.objective[2] = weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff
+        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
