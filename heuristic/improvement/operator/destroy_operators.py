@@ -571,6 +571,8 @@ class DestroyOperators:
 
             '''
             Hente ut samme visitet for aktiviteten. Iterer over for å finne dagen. Dersom ikke så henter vi den i illegalVisit, for da må den ligge der
+            
+            Kan hende vi har kommet helt ned, men at ingen av aktivitenene har ligget nede 
             '''
             visitID = self.constructor.activities_df.loc[actId, 'visitId']
             for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
@@ -587,9 +589,11 @@ class DestroyOperators:
             if day_for_first_activity_in_treatment == firstDay:
                 firstActInTreatSamePatternType.remove(actId)
                 #print('Samme dag: ', actId)
-                if act.treatmentId not in related_treatment_list:
-                    related_treatment_list.append(act.treatmentId)
-                    activities_count += act.nActInTreat
+                treatment_for_activity = self.constructor.activities_df.loc[actId, 'treatmentId']
+
+                if treatment_for_activity not in related_treatment_list:
+                    related_treatment_list.append(treatment_for_activity)
+                    activities_count += self.constructor.treatment_df.loc[treatment_for_activity, 'nActivities']
 
 
         # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
@@ -611,10 +615,10 @@ class DestroyOperators:
             
             
             if day_for_first_activity_in_treatment != firstDay:
-                if act.treatmentId not in related_treatment_list:
-                    related_treatment_list.append(act.treatmentId)
-                    activities_count += act.nActInTreat
-
+                treatment_for_activity = self.constructor.activities_df.loc[actId, 'treatmentId']
+                if treatment_for_activity not in related_treatment_list:
+                    related_treatment_list.append(treatment_for_activity)
+                    activities_count += self.constructor.treatment_df.loc[treatment_for_activity, 'nActivities']
         # Removing related treatments
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for treatId in related_treatment_list:
