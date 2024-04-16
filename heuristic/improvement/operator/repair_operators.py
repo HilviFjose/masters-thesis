@@ -106,47 +106,13 @@ class RepairOperators:
     def complexity_repair(self, destroyed_route_plan, current_iteration, total_iterations):
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
 
-        act179 = repaired_route_plan.getActivityFromEntireRoutePlan(179)
-        act177 = repaired_route_plan.getActivityFromEntireRoutePlan(177)
-        if  act177 != None and act179 != None:
-            if act179.startTime - act177.startTime + act177.duration > 116: 
-                print("0 - feil her")
-
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
-
-        
-        act179 = repaired_route_plan.getActivityFromEntireRoutePlan(179)
-        act177 = repaired_route_plan.getActivityFromEntireRoutePlan(177)
-        if  act177 != None and act179 != None:
-            if act179.startTime - act177.startTime + act177.duration > 116: 
-                print("1 - feil her")
 
         repaired_route_plan = self.illegal_visit_repair(repaired_route_plan)
 
-        
-        act179 = repaired_route_plan.getActivityFromEntireRoutePlan(179)
-        act177 = repaired_route_plan.getActivityFromEntireRoutePlan(177)
-        if  act177 != None and act179 != None:
-            if act179.startTime - act177.startTime + act177.duration > 116: 
-                print("2 - feil her")
-
         repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)  
 
-        
-        act179 = repaired_route_plan.getActivityFromEntireRoutePlan(179)
-        act177 = repaired_route_plan.getActivityFromEntireRoutePlan(177)
-        if  act177 != None and act179 != None:
-            if act179.startTime - act177.startTime + act177.duration > 116: 
-                print("3 - feil her")
-
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
-
-        
-        act179 = repaired_route_plan.getActivityFromEntireRoutePlan(179)
-        act177 = repaired_route_plan.getActivityFromEntireRoutePlan(177)
-        if  act177 != None and act179 != None:
-            if act179.startTime - act177.startTime + act177.duration > 116: 
-                print("4 - feil her")
 
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get)
@@ -155,10 +121,11 @@ class RepairOperators:
             patientInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
-            
+
             if status == True: 
+
                 repaired_route_plan = patientInsertor.route_plan
-                
+
                 #Steg 1 - Slette i allokert listene
                 repaired_route_plan.notAllocatedPatients.remove(patient)
 
@@ -167,22 +134,13 @@ class RepairOperators:
             
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)
-        
-            
-            act179 = repaired_route_plan.getActivityFromEntireRoutePlan(179)
-            act177 = repaired_route_plan.getActivityFromEntireRoutePlan(177)
-            if  act177 != None and act179 != None:
-                if act179.startTime - act177.startTime + act177.duration > 116: 
-                    print(patient, "pasient - feil her i iterasjon")
-                    print("aktivitet 177 starter ", act177.startTime)
-                    print("aktivitet 177 varer ", act177.duration)
-                    print("aktivitet 179 starter ", act179.startTime)
-                else: 
-                    print(patient, "pasient nå er det riktig ")
-                
+   
         repaired_route_plan.updateObjective(current_iteration, total_iterations)
       
         return repaired_route_plan
+    
+
+
     
     def regret_k_repair(self, destroyed_route_plan, current_iteration, total_iterations):
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)

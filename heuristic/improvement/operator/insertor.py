@@ -142,12 +142,13 @@ class Insertor:
     def insertNextActiviy_forBetterInsertion(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
         #TODO: Sammkjøre denne med andre aktiviteter som fungere 
         #BEG: Må ha med denne også for å sjekke om det er 
-        route_plan.updateActivityBasedOnRoutePlanOnDay0904(activity, day)
-       
- 
+        route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
 
+       
+
+       
         for activitiesWithPossibleNewUpdated in route_plan.routes[day][employeeID].route: 
-            route_plan.updateDependentActivitiesBasedOnRoutePlanOnDay(activitiesWithPossibleNewUpdated, day)
+            route_plan.updateActivityBasedOnRoutePlanOnDay(activitiesWithPossibleNewUpdated, day)
 
         insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
   

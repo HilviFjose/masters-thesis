@@ -118,7 +118,6 @@ class ALNS:
     
     def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
-        """
         self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
@@ -131,9 +130,9 @@ class ALNS:
 
         self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
-        """
+
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
-        #self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
+        self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
         #self.add_destroy_operator(destroy_operators.random_pattern_type_removal)
     
@@ -141,10 +140,10 @@ class ALNS:
         #self.add_destroy_operator(destroy_operators.related_visits_removal)
         
         # Add repair operators
-        #self.add_repair_operator(repair_operators.greedy_repair)
-        #self.add_repair_operator(repair_operators.random_repair)
+        self.add_repair_operator(repair_operators.greedy_repair)
+        self.add_repair_operator(repair_operators.random_repair)
         self.add_repair_operator(repair_operators.complexity_repair)
-        #self.add_repair_operator(repair_operators.regret_k_repair)
+        self.add_repair_operator(repair_operators.regret_k_repair)
 
 
     # Add operator to the heuristic instance
