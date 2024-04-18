@@ -629,6 +629,82 @@ class DestroyOperators:
         return destroyed_route_plan, None, True
 
 
+    def patients_removal(self, current_route_plan, patient_list): 
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        for patientID in patient_list: 
+            destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
+        return destroyed_route_plan, None, True
+
+    def related_patients_removal(self, current_route_plan):
+        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
+        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
+        
+        activities_to_remove = []
+        patientsIDs_to_removed = []
+        
+        for illegalActivityID in current_route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys(): 
+            allocated_patientID_for_illegalActivityID = self.constructor.activities_df.loc[illegalActivityID, 'patientId']
+            if allocated_patientID_for_illegalActivityID in patientsIDs_to_removed: 
+                continue
+            
+            for allocated_treatment in current_route_plan.allocatedPatients[allocated_patientID_for_illegalActivityID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(allocated_patientID_for_illegalActivityID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+       
+        #Vet at vi ikke har nådd tilstrekkelig antall aktiviteter ved å bare fjerne aktivitene som er i illegalActiviy 
+        for illegalVisitID in current_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys(): 
+            allocated_patientID_for_illegalVisitID = self.constructor.visit_df.loc[illegalVisitID, 'patientId']
+            if allocated_patientID_for_illegalVisitID in patientsIDs_to_removed: 
+                continue
+
+            for allocated_treatment in current_route_plan.allocatedPatients[allocated_patientID_for_illegalVisitID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(allocated_patientID_for_illegalVisitID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+        
+        #Går illegal Treatments og legger til relaterte pasienter i pasienter som skal fjernes 
+        for illegalTreatmentID in current_route_plan.illegalNotAllocatedTreatments: 
+            allocated_patientID_for_illegalTreatmentID = self.constructor.treatment_df.loc[illegalTreatmentID, 'patientId']
+            if allocated_patientID_for_illegalTreatmentID in patientsIDs_to_removed: 
+                continue
+
+            for allocated_treatment in current_route_plan.allocatedPatients[allocated_patientID_for_illegalTreatmentID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(allocated_patientID_for_illegalTreatmentID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+        
+        #Nå er alle som kan tatt bort, så kanskje sortere de andre på. Har ikke tatt bort noen enda
+        #Vet bare at vi er 
+        #TODO: Gjøre ferdig her 
+
+        #Todo, usikker på om det blir riktig med .keys for liste 
+        ascendingUtilityAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in current_route_plan.allocatedPatients.keys()}
+        ascendingUtilityNotAllocatedPatients = sorted(ascendingUtilityAllocatedPatientsDict, key=ascendingUtilityAllocatedPatientsDict.get)
+
+        for patientID in ascendingUtilityNotAllocatedPatients: 
+            if patientID in patientsIDs_to_removed: 
+                continue
+            for allocated_treatment in current_route_plan.allocatedPatients[patientID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(patientID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+
+
+
+ 
 #---------- HELP FUNCTIONS ----------
         
     #TODO: Må se på destruction degree for max removal
