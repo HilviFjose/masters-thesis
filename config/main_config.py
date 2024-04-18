@@ -7,13 +7,17 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 10
+iterations = 100
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
 
 # k-repair value
 k = 3
+
+# Insertor types [standard = 0, better = 1, best = 2]
+insertor_repair = 0
+insertor_construction = 1
 
 #The amount of activities to remove in destroy operators
 destruction_degree = 0.4

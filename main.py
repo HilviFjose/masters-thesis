@@ -66,14 +66,13 @@ def main():
     best_route_plan.printSolution("final", "no operator")
          
 if __name__ == "__main__":
-    main()
-    """
+    #main()
+
     # Profiler hele programmet ditt
     cProfile.run('main()', 'program_profile')
 
     # Last inn og analyser profildata, fokusert på dine funksjoner
     p = pstats.Stats('program_profile')
     p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
+    p.strip_dirs().sort_stats(SortKey.TIME).print_stats('addActivity()')
     
-
-    """

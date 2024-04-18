@@ -8,8 +8,8 @@ from config import construction_config
 
 
 # DATA GENERATION
-
 """
+
 #df_employees = employeeGeneration.employeeGenerator()          # For Night, Day and Evening shifts
 df_employees = employeeGeneration.employeeGeneratorOnlyDay()    # For day shifts
 df_patients_not_complete = patientGeneration.patientGenerator(df_employees)

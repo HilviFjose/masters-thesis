@@ -6,6 +6,7 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.route_plan import RoutePlan
 from heuristic.improvement.operator.insertor import Insertor
+from config.main_config import insertor_construction
 
 '''
 Info: ConstructionHeurstic klassen er selve konstruskjonsheurstikken. 
@@ -44,7 +45,7 @@ class ConstructionHeuristic:
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(self.route_plan)
 
-            patientInsertor = Insertor(self, route_plan_with_patient, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
+            patientInsertor = Insertor(self, route_plan_with_patient, insertor_construction) #Må bestemmes hvor god visitInsertor vi skal bruke
             state = patientInsertor.insert_patient(patient)
            
             if state == True: 

@@ -356,12 +356,12 @@ def check_precedence_within_file(file):
     return status1, status2a, status2b, status3a, status3b
 
 # Example usage
-username = 'agnesost'
+username = 'hilvif'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
 #file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\0before_iteration.txt'  # Replace with the actual path to your first file
-file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
+#file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
 file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"] 
 
 status1 = compare_dictionary_with_candidate(file_path_1)
