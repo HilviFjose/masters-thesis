@@ -9,7 +9,6 @@ from config import construction_config
 
 # DATA GENERATION
 
-"""
 #df_employees = employeeGeneration.employeeGenerator()          # For Night, Day and Evening shifts
 df_employees = employeeGeneration.employeeGeneratorOnlyDay()    # For day shifts
 df_patients_not_complete = patientGeneration.patientGenerator(df_employees)
@@ -33,7 +32,6 @@ df_patients.to_pickle(os.path.join(os.getcwd(), 'data', 'patients.pkl'))
 df_treatments.to_pickle(os.path.join(os.getcwd(), 'data', 'treatments.pkl'))
 df_visits.to_pickle(os.path.join(os.getcwd(), 'data', 'visits.pkl'))
 df_activities.to_pickle(os.path.join(os.getcwd(), 'data', 'activities.pkl'))
-
 """
 #RE-USE GENERATED DATA
 file_path_employees = os.path.join(os.getcwd(), 'data', 'employees.pkl')
@@ -46,7 +44,7 @@ file_path_visits = os.path.join(os.getcwd(), 'data', 'visits.pkl')
 df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
-
+"""
 '''
 #TEST DATA - not randomly generated
 df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
