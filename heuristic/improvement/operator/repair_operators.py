@@ -196,8 +196,24 @@ class RepairOperators:
 
     def illegal_activity_repair(self, repaired_route_plan): 
         activityIterationDict = copy.copy(repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
-        
-        for activityID, day in activityIterationDict.items():
+
+        #TODO: Avgjøre om vi skal ha med sorteringen. Kan gjøre det vanskeligere 
+        activities_df = pd.DataFrame(list(activityIterationDict.items()), columns=['activity', 'days'])
+
+        # Assuming self.constructor.activities_df is your DataFrame with complexities
+        # Ensure 'activity' is the index for vectorized access
+        complexities_df = self.constructor.activities_df[['a_complexity']]
+
+        # Join the two DataFrames on activity
+        joined_df = activities_df.join(complexities_df, on='activity')
+
+        # Sort the DataFrame by complexity
+        sorted_df = joined_df.sort_values(by='a_complexity', ascending=False )
+
+        # Convert back to a dictionary if needed
+        sorted_activities_dict = pd.Series(sorted_df.days.values,index=sorted_df.activity).to_dict()
+
+        for activityID, day in sorted_activities_dict.items():
             activity = Activity(self.constructor.activities_df, activityID)
 
             #BEG: Jeg tror egentlig ikke vi trenger den som er under her 
@@ -224,7 +240,25 @@ class RepairOperators:
   
     def illegal_visit_repair(self, repaired_route_plan): 
         illegal_visit_iteration_list = list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
-        for visit in illegal_visit_iteration_list:  
+
+        #TODO: Avgjøre om vi skal ha med sorteringen. Kan gjøre det vanskeligere 
+        visits_df = pd.DataFrame(list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.items()), columns=['visit', 'days'])
+
+        # Assuming self.constructor.activities_df is your DataFrame with complexities
+        # Ensure 'activity' is the index for vectorized access
+        complexities_df = self.constructor.visit_df[['v_complexity']]
+
+        # Join the two DataFrames on activity
+        joined_df = visits_df.join(complexities_df, on='visit')
+
+        # Sort the DataFrame by complexity
+        sorted_df = joined_df.sort_values(by='v_complexity', ascending=False )
+
+        # Convert back to a dictionary if needed
+        sorted_visit_dict = pd.Series(sorted_df.days.values,index=sorted_df.visit).to_dict()
+
+        for visit in sorted_visit_dict.keys():  
+        #for visit in illegal_visit_iteration_list:  
             visitInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = visitInsertor.insertVisitOnDay(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
@@ -253,7 +287,29 @@ class RepairOperators:
         return repaired_route_plan
     
     def illegal_treatment_repair(self, repaired_route_plan): 
-        for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
+
+        #TODO: Avgjøre om vi skal ha med sorteringen. Kan gjøre det vanskeligere 
+        # Convert your list to a DataFrame
+        treatments_df = pd.DataFrame(repaired_route_plan.illegalNotAllocatedTreatments, columns=['treatment'])
+
+        # Assuming self.constructor.activities_df is your DataFrame with complexities
+        # Ensure 'activity' is the index for vectorized access
+        complexities_df = self.constructor.treatment_df[['t_complexity']]
+
+        # Join the two DataFrames on activity
+        joined_df = treatments_df.join(complexities_df, on='treatment')
+
+        # Sort the DataFrame by complexity, highest complexity first
+        sorted_df = joined_df.sort_values(by='t_complexity', ascending=False)
+
+        # Extract the sorted list of activity IDs
+        sorted_treatment_list = sorted_df['treatment'].tolist()   
+
+        print("tester illegal_treatment_repair")
+        print("sorted_treatment_list", sorted_treatment_list)
+        print("repaired_route_plan.illegalNotAllocatedTreatments", repaired_route_plan.illegalNotAllocatedTreatments)
+        for treatment in sorted_treatment_list:
+        #for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
             treatmentInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = treatmentInsertor.insert_treatment(treatment)
@@ -284,8 +340,24 @@ class RepairOperators:
         return repaired_route_plan
 
     def illegal_patient_repair(self, repaired_route_plan): 
+
+        patients_df = pd.DataFrame(repaired_route_plan.illegalNotAllocatedPatients, columns=['patient'])
+
+        # Assuming self.constructor.activities_df is your DataFrame with complexities
+        # Ensure 'activity' is the index for vectorized access
+        complexities_df = self.constructor.patient_df[['p_complexity']]
+
+        # Join the two DataFrames on activity
+        joined_df = patients_df.join(complexities_df, on='patient')
+
+        # Sort the DataFrame by complexity, highest complexity first
+        sorted_df = joined_df.sort_values(by='p_complexity', ascending=False)
+
+        # Extract the sorted list of activity IDs
+        sorted_patient_list = sorted_df['patient'].tolist() 
          
-        for patient in repaired_route_plan.illegalNotAllocatedPatients:  
+        for patient in sorted_patient_list: 
+        #for patient in repaired_route_plan.illegalNotAllocatedPatients:  
             patientInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)

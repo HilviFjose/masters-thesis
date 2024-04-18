@@ -22,7 +22,9 @@ patterns_4days = [2,3,4,5,6]                                        # Patterntyp
 patterns_3days = [7]                                                # Patterntype 3
 pattern_2daysspread = [8,9,10]                                      # Patterntype 4
 patterns_2daysfollowing = [11,12,13,14]                             # Patterntype 5
-patterns_1day = [15,16,17,18,19]                                    # Patterntype 6
+patterns_1day = [15,16,17,18,19]           
+                         # Patterntype 6
+
 
 # Continuity distribution
 continuityDistribution = [0.35, 0.15, 0.5]  #Top 1 employee, top 3 employees, all employees
@@ -89,8 +91,13 @@ refLoc = [depot, Ullern, Ris, Holmenkollen, Sogn, Bjerke, Haugerud, Boler, Lambe
 startday = 480
 endday = 960
 
+#Weights for activity complexity 
+a_w_oportunity_space = 0.5
+a_w_precedens_act = 0.5 
 
+#Weights for visit complexity 
+v_w_oportunity_space = 0.5
+v_w_num_act = 0.5 
 
-
-
+#TODO: Skrive inn hvordan treatment og pasient er vektet i complexity
 
