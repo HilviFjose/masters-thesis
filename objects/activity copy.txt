@@ -9,72 +9,7 @@ from datageneration.patientGeneration import *
 Info:
 For å opprette en aktivitet må dataframene som inneholder aktivitetne til ID-en sendes inn og selve ID-en
 '''
-class Activity:
-    def __init__(self, df, id):
-        # Fetch the row once and reuse it to access all required fields
-        row = df.loc[id]
-        self.id = id 
-        self.latestStartTime = row["latestStartTime"]
-        self.earliestStartTime = row["earliestStartTime"]
-        self.duration = row["duration"]
-        self.skillReq = row["skillRequirement"]
-        self.heaviness = row["heaviness"]
-        self.pickUpActivityID = row["sameEmployeeActivityId"]
-        self.location = self.makeLocationTuple(row["location"])  # Assume input is correct, no need for hardcoded string
-        self.employeeRestricions = row["employeeRestriction"]
-        self.continuityGroup = row["continuityGroup"]
-        self.employeeHistory = row["employeeHistory"]
 
-        # Using the refactored method to avoid redundancy
-        self.PrevNode, self.PrevNodeInTime = self.makePresNodes(row["prevPrece"])
-        self.NextNode, self.NextNodeInTime = self.makePresNodes(row["nextPrece"])
-        
-        self.patient = row["patientId"]
-        self.treatmentId = row["treatmentId"]
-        self.nActInPatient = row["nActInPatient"]
-        self.nActInTreat = row["nActInTreat"]
-        self.nActInVisit = row["numActivitiesInVisit"]
-        self.suitability = row["utility"]
-        self.startTime = None  # Initial start time is None
-
-        # Initializing dependent activities list based on precedence nodes
-        self.dependentActivities = self.PrevNode + self.NextNode + [elem[0] for elem in (self.PrevNodeInTime + self.NextNodeInTime)]
-        self.newEarliestStartTime = dict.fromkeys(self.dependentActivities, 0)
-        self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
-        
-        self.sameEmployeeActivityID = row["sameEmployeeActivityId"]
-        self.employeeNotAllowedDueToPickUpDelivery = []
-        self.possibleToInsert = True
-
-    def makeLocationTuple(self, coordinate_input):
-        print(coordinate_input)
-        # Check if the input is already a tuple of two floats
-        if isinstance(coordinate_input, tuple) and len(coordinate_input) == 2 and all(isinstance(num, float) for num in coordinate_input):
-            return coordinate_input  # Return the tuple directly if it's correctly formatted
-        else:
-            # Log an error, raise an exception, or handle the unexpected format as needed
-            print(f"Unexpected format for coordinate_input: {coordinate_input}")
-            return (0.0, 0.0)  # Returning a default value or handling as appropriate for your use case
-        
-    def makePresNodes(self, input_data): 
-        '''
-        Receives data from the dataframe and returns two lists with the precedence information.
-        This version can handle both strings and individual numbers.
-        '''
-        PrevNode = []
-        PrevNodeInTime = []
-        # If input_data is directly an integer, process it accordingly
-        if isinstance(input_data, int):
-            PrevNode.append(input_data)
-        elif isinstance(input_data, str) and input_data:  # If input_data is a non-empty string
-            strList = input_data.split(",")
-            for elem in strList:
-                if ":" in elem:
-                    PrevNodeInTime.append(tuple(int(part.strip()) for part in elem.split(":")))
-                else:
-                    PrevNode.append(int(elem))
-        return PrevNode, PrevNodeInTime
-    '''
 class Activity:
     def __init__(self, df, id):
         self.id = id 
@@ -129,8 +64,7 @@ class Activity:
 
         # Convert the split strings into floats and create a tuple
         return tuple(float(num) for num in split_strings)
-   
-        
+    '''
     def makeEmployeeRestriction(self, string): #Tror denne nå kan slettes - Guro
         if "," in string: 
             return string.split(",")
@@ -138,7 +72,6 @@ class Activity:
             return [int(string)]
         except: 
             return [] 
-    
     '''
     
     def makeEmployeeRestriction(self, input_data): 
@@ -205,9 +138,9 @@ class Activity:
         return self.employeeRestricions
 
     def getNewEarliestStartTime(self): 
-        if len(self.newEarliestStartTime) == 0: 
+        if len(self.newEeariestStartTime) == 0: 
             return 0
-        return max(list(self.newEarliestStartTime.values()))
+        return max(list(self.newEeariestStartTime.values()))
  
     
     def getNewLatestStartTime(self): 
@@ -236,7 +169,7 @@ class Activity:
 
     def setNewEarliestStartTime(self, newEarliestStartTimeFromDepAct, depAct): 
         #earliest starttime endres dersom den er høyere enn nåværende latest startime
-        self.newEarliestStartTime[depAct] = newEarliestStartTimeFromDepAct
+        self.newEeariestStartTime[depAct] = newEarliestStartTimeFromDepAct
         #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
         if max(self.getNewEarliestStartTime(), self.earliestStartTime) > min(self.latestStartTime, self.getNewLatestStartTime()): 
             self.possibleToInsert = False
@@ -261,7 +194,7 @@ class Activity:
 
     def restartActivity(self): 
         self.startTime = None
-        self.newEarliestStartTime = dict.fromkeys(self.dependentActivities, 0)
+        self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
         self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
