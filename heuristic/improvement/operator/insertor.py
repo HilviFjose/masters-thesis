@@ -4,6 +4,7 @@ from objects.activity import Activity
 import random 
 from helpfunctions import * 
 
+#TODO:Mulig visits burde sorteres på complexity også, men forstår ikke helt hvor det skal gjøres 
 
 class Insertor:
     def __init__(self, constructor, route_plan, insertion_efficiency_level):
@@ -24,8 +25,18 @@ class Insertor:
 
     def insert_patient(self, patient):
         old_route_plan = copy.deepcopy(self.route_plan)
-        #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
         treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+
+        #TODO: Finne ut om vi skal ha 
+        filtered_df = self.constructor.treatment_df[self.constructor.treatment_df.index.isin(treamentList)]
+
+        # Sorter etter 't_complexity'
+        sorted_df = filtered_df.sort_values(by='t_complexity', ascending=False)
+
+        # Ekstraher sortert liste av behandlings-IDer
+        treamentList = sorted_df.index.tolist()
+        #Her burde vi sortere treatments basert på 
+
         for treatment in treamentList: 
             status = self.insert_treatment(treatment)
             if status == False: 
@@ -40,6 +51,7 @@ class Insertor:
     def insert_treatment(self, treatment): 
     
         visitList = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+        #TODO:Mulig visits burde sorteres på complexity også, men forstår ikke helt hvor det skal gjøres slik koden er skrevet nå  
 
         old_route_plan = copy.deepcopy(self.route_plan)
 
@@ -55,7 +67,7 @@ class Insertor:
         #Iterer over alle patterns som er mulige for denne treatmenten
         patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
         index_random = [i for i in range(len(patterns))]
-        #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+        random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
         for index in index_random:
             self.route_plan = copy.deepcopy(old_route_plan)
@@ -93,13 +105,27 @@ class Insertor:
         return True   
                 
    
+    def getActivityListSortedByComplexity(self, activitiesList): 
+        filtered_df = self.constructor.activities_df[self.constructor.activities_df.index.isin(activitiesList)]
+
+        # Sorter etter 't_complexity'
+        sorted_df = filtered_df.sort_values(by='a_complexity', ascending=False)
+
+        # Ekstraher sortert liste av behandlings-IDer
+        return  sorted_df.index.tolist()
 
     def simple_insert_visit_on_day(self, visit, day):  
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.getActivityListSortedByComplexity(activitiesList)
+
+
         old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         # Create a list of activity objects
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+
+        #Her kan vi også sortere basert på hva som er best. 
+
         for activity in activities: 
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
@@ -113,6 +139,8 @@ class Insertor:
         self.InsertionFound_BetterInsertVisit = False 
 
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.getActivityListSortedByComplexity(activitiesList)
+
         test_route_plan = copy.deepcopy(self.route_plan)
 
         
@@ -185,6 +213,8 @@ class Insertor:
         
         
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.getActivityListSortedByComplexity(activitiesList)
+
         test_route_plan = copy.deepcopy(self.route_plan)
         test_route_plan.updateObjective()
         

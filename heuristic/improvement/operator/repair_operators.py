@@ -305,9 +305,6 @@ class RepairOperators:
         # Extract the sorted list of activity IDs
         sorted_treatment_list = sorted_df['treatment'].tolist()   
 
-        print("tester illegal_treatment_repair")
-        print("sorted_treatment_list", sorted_treatment_list)
-        print("repaired_route_plan.illegalNotAllocatedTreatments", repaired_route_plan.illegalNotAllocatedTreatments)
         for treatment in sorted_treatment_list:
         #for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
             treatmentInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
@@ -345,7 +342,7 @@ class RepairOperators:
 
         # Assuming self.constructor.activities_df is your DataFrame with complexities
         # Ensure 'activity' is the index for vectorized access
-        complexities_df = self.constructor.patient_df[['p_complexity']]
+        complexities_df = self.constructor.patients_df[['p_complexity']]
 
         # Join the two DataFrames on activity
         joined_df = patients_df.join(complexities_df, on='patient')
