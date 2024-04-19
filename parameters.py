@@ -8,6 +8,7 @@ from config import construction_config
 
 
 # DATA GENERATION
+
 """
 #df_employees = employeeGeneration.employeeGenerator()          # For Night, Day and Evening shifts
 df_employees = employeeGeneration.employeeGeneratorOnlyDay()    # For day shifts
@@ -45,7 +46,6 @@ file_path_visits = os.path.join(os.getcwd(), 'data', 'visits.pkl')
 df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
-
 
 '''
 #TEST DATA - not randomly generated

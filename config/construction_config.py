@@ -25,13 +25,15 @@ patterns_2daysfollowing = [11,12,13,14]                             # Patterntyp
 patterns_1day = [15,16,17,18,19]                                    # Patterntype 6
 
 # Continuity distribution
-continuityDistribution = [0.35, 0.15, 0.5] #Top 1 employee, top 3 employees, all employees
+continuityDistribution = [0.35, 0.15, 0.5]  #Top 1 employee, top 3 employees, all employees
+continuityScore = [3, 2, 1]                 #TODO: Sjekk om verdiene på disse på endres
+preferredEmployees = [1, 3, 5]
 
 # Patient allocation
 allocation = 0.15 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
 
 # Heaviness
-heavinessDistribution = [1, 0, 0, 0, 0] 
+heavinessDistribution = [0.3, 0.3, 0.2, 0.2, 0] 
 
 # ACTIVITIES
 pd_min = 60                     #Min pickup and delivery time limit

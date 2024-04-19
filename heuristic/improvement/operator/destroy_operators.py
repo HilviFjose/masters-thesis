@@ -139,7 +139,6 @@ class DestroyOperators:
         activities_to_remove = {}
         
         destroyed_route_plan = copy.deepcopy(current_route_plan)
-        print('total_num_activities_to_remove',total_num_activities_to_remove)
      
         for day in range(1, destroyed_route_plan.days +1): 
             for route in destroyed_route_plan.routes[day].values(): 
@@ -406,9 +405,306 @@ class DestroyOperators:
         
         return destroyed_route_plan, None, True
 
+    def related_visits_removal(self, current_route_plan):
+        # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
+        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
+        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
+
+        # Forberede liste med visits
+        allocatedVisitsIds = list(current_route_plan.visits.keys())
+
+        primary_visitId = random.choice(allocatedVisitsIds)
+        p_firstActId = current_route_plan.visits[primary_visitId][0] #Henter ut første aktivitet for gitt visit
+        p_lastActId = current_route_plan.visits[primary_visitId][-1] #Henter ut siste aktivitet for gitt visit
+        p_day = current_route_plan.getDayForActivityID(p_firstActId)
+    
+
+        # Get the highest professional reequirement for the primary visit
+        p_maxSkillReq = 0
+        for p_actId in current_route_plan.visits[primary_visitId]: 
+            p_act = current_route_plan.getActivity(p_actId, p_day)
+            p_skillReq = p_act.skillReq
+            if p_skillReq > p_maxSkillReq:
+                p_maxSkillReq = p_skillReq
+
+        # Time windows and duration for the primary visit
+        p_firstAct = current_route_plan.getActivityFromEntireRoutePlan(p_firstActId)
+        p_lastAct = current_route_plan.getActivityFromEntireRoutePlan(p_lastActId)
+        p_visitStarted = p_firstAct.getStartTime()
+        p_visitFinished = p_lastAct.getStartTime() + p_lastAct.getDuration()
+        p_visitDuration = 0
+        for p_actId in current_route_plan.visits[primary_visitId]:
+            p_act = current_route_plan.getActivityFromEntireRoutePlan(p_actId)
+            p_visitDuration += p_act.getDuration()
+        p_visitEarliestStart = p_firstAct.earliestStartTime
+        p_visitLatestStart = p_firstAct.latestStartTime        
         
 
+        '''
+        - DONE - liste med visits same day
+        - DONE - liste med visits med same max skill req
+        - DONE - liste med visits med overlappende total timewindow -- Hvordan skal vi vurdere her??
+        - FORSLAG DONE - liste med visits med relaterte starttidspunkter
+        - liste med visits med lignende employee history (kun aktuelt for de med høy continuity?)
+        - DONE - liste med visits med likt antall aktiviteter
+        - OVERFLØDIG MED DEN OVER? - liste med visits med samme mengde presedens
+        '''
 
+        visitsSameDay = []
+        visitsSameSkillReq = []
+        visitsSameNumAct = []
+        visitsOverlapTW = []
+        visitsRelatedStartTimes = []
+        related_visit_dict = {}
+        for visitId, activitiesIds in current_route_plan.visits.items(): 
+            if visitId != primary_visitId:
+                related_score = 0
+                # Visits on the same day as the primary visit
+                #NOTE: SKAL ALLE DE UNDER EGENTLIG KUN SKJE OM DET ER SAMME DAG?? DVS AT ALLE IF UNDER DENNE SKAL INN ET HAKK
+                if ((current_route_plan.getDayForActivityID(activitiesIds[0]) == p_day) and (visitId not in visitsSameDay)):
+                    visitsSameDay.append(visitId)
+                    related_score += 1
+
+                # Visits with the same max professional requirement as the primary visit
+                maxSkillReq = 0
+                for actId in activitiesIds:
+                    act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                    skillReq = act.skillReq
+                    if skillReq > maxSkillReq:
+                        maxSkillReq = skillReq
+                if (maxSkillReq == p_maxSkillReq and visitId not in visitsSameSkillReq):
+                    visitsSameSkillReq.append(visitId)
+                    related_score += 1
+
+                # Visits with the same amount of activities as the primary visit
+                if (len(activitiesIds) == len(current_route_plan.visits[primary_visitId]) and (visitId not in visitsSameNumAct)):
+                    visitsSameNumAct.append(visitId)
+                    related_score += 1
+
+                # Data for checks regarding time windows, start times and durations
+                firstAct = current_route_plan.getActivityFromEntireRoutePlan(activitiesIds[0])
+                lastAct = current_route_plan.getActivityFromEntireRoutePlan(activitiesIds[-1])
+                visitStarted = firstAct.getStartTime()
+                visitFinished = lastAct.getStartTime() + lastAct.getDuration()
+                visitDuration = 0
+                for actId in activitiesIds:
+                    act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                    visitDuration += act.getDuration()
+                visitEarliestStart = firstAct.earliestStartTime
+                visitLatestStart = firstAct.latestStartTime
+
+                # Visits where the time windows overlap with the primary visit's time window
+                if ((visitEarliestStart < p_visitLatestStart) and (visitLatestStart > p_visitEarliestStart)     #legge inn duration her?
+                    and (p_visitEarliestStart < visitLatestStart) and (p_visitLatestStart > visitEarliestStart) #legge inn duration her?
+                    and (visitId not in visitsOverlapTW)):
+                    visitsOverlapTW.append(visitId)
+                    related_score += 1
+
+                    # Visits with start times related with the primary visit
+                    if ((visitStarted + visitDuration < p_visitLatestStart) and (visitStarted > p_visitEarliestStart)     
+                        and (p_visitStarted + visitDuration < visitLatestStart) and (p_visitStarted > visitEarliestStart) 
+                        and (visitId not in visitsRelatedStartTimes)):                     
+                        visitsRelatedStartTimes.append(visitId)
+                        related_score += 1
+
+                # Add visit and score to related visit dictionary
+                related_visit_dict[visitId] = related_score
+                
+        sorted_related_visit_dict = dict(sorted(related_visit_dict.items(), key=lambda item: item[1], reverse=True))
+
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        # Removing primary visit
+        destroyed_route_plan = self.visit_removal(primary_visitId, destroyed_route_plan)[0]
+        activities_count = len(current_route_plan.visits[primary_visitId])
+        # Removing visits with the highest relatedness score
+        removed_visits = [primary_visitId]
+        for visitId in list(sorted_related_visit_dict.keys()): 
+            if activities_count >= total_num_activities_to_remove:
+                break
+            # Visits are only removed if the relatedness score is higher than 0
+            if sorted_related_visit_dict[visitId] > 0:
+                destroyed_route_plan = self.visit_removal(visitId, destroyed_route_plan)[0]
+                activities_count += len(current_route_plan.visits[visitId])
+                removed_visits.append(visitId)
+        #print(f'Removed visits: ', removed_visits)
+        #print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
+
+        return destroyed_route_plan, None, True
+
+    def related_treatments_removal(self, current_route_plan):
+        #TODO: Forbedre ytelse, den har veldig dårlig ytelse nå. 
+
+        # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
+        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
+        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
+
+        # Forberede liste med treatments og deres aktiviteter
+        allocatedTreatmentsIds = list(current_route_plan.treatments.keys())
+
+        # Velger en random treatment og finner hvilket pattern og patterntype det har i ruteplanen.
+        primary_treatmentId = random.choice(allocatedTreatmentsIds)
+        filtered_row = self.constructor.treatment_df.loc[[primary_treatmentId]]
+        patternType = self.constructor.treatment_df.loc[primary_treatmentId, 'patternType']
+        TreatSamePatternType = self.constructor.treatment_df[self.constructor.treatment_df['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
+        firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
+        firstDay = current_route_plan.getDayForActivityID(firstActId)  #First day of a treatment and the patterntype decide which pattern is choosen for the treatment
+        related_treatment_list = [primary_treatmentId]
+        firstAct = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
+        activities_count = firstAct.nActInTreat
+        #print('Valgt treatment', primary_treatmentId)
+
+        # Fjerner treatments som har samme pattern
+        filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
+        firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
+        firstActInTreatSamePatternType.remove(firstActId) 
+        #print('Utgangspunkt: ', firstActId)
+
+
+        '''
+        Treatmentet skal bort uansett hva som ligger i illegalListene 
+        '''
+        #print('firstActInTreatment',firstActInTreatSamePatternType)
+        #actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
+        for actId in firstActInTreatSamePatternType:
+            if activities_count >= total_num_activities_to_remove:
+                break
+
+            '''
+            Hente ut samme visitet for aktiviteten. Iterer over for å finne dagen. Dersom ikke så henter vi den i illegalVisit, for da må den ligge der
+            
+            Kan hende vi har kommet helt ned, men at ingen av aktivitenene har ligget nede 
+            '''
+            visitID = self.constructor.activities_df.loc[actId, 'visitId']
+            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+                act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                if act != None: 
+                    break 
+            
+            #Sjekker her om det 
+            if act == None: 
+                day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
+            else: 
+                day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(actId)
+
+            if day_for_first_activity_in_treatment == firstDay:
+                firstActInTreatSamePatternType.remove(actId)
+                #print('Samme dag: ', actId)
+                treatment_for_activity = self.constructor.activities_df.loc[actId, 'treatmentId']
+
+                if treatment_for_activity not in related_treatment_list:
+                    related_treatment_list.append(treatment_for_activity)
+                    activities_count += self.constructor.treatment_df.loc[treatment_for_activity, 'nActivities']
+
+
+        # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
+        for actId in firstActInTreatSamePatternType:
+            if activities_count >= total_num_activities_to_remove:
+                break
+            #print('Ikke samme dag: ', actId)
+            visitID = self.constructor.activities_df.loc[actId, 'visitId']
+            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+                act = current_route_plan.getActivityFromEntireRoutePlan(actId)
+                if act != None: 
+                    break 
+            
+            #Sjekker her om det 
+            if act == None: 
+                day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
+            else: 
+                day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(actId)
+            
+            
+            if day_for_first_activity_in_treatment != firstDay:
+                treatment_for_activity = self.constructor.activities_df.loc[actId, 'treatmentId']
+                if treatment_for_activity not in related_treatment_list:
+                    related_treatment_list.append(treatment_for_activity)
+                    activities_count += self.constructor.treatment_df.loc[treatment_for_activity, 'nActivities']
+        # Removing related treatments
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        for treatId in related_treatment_list:
+            destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan)[0] 
+
+        #print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
+        
+        return destroyed_route_plan, None, True
+
+
+    def patients_removal(self, current_route_plan, patient_list): 
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
+        for patientID in patient_list: 
+            destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
+        return destroyed_route_plan, None, True
+
+    def related_patients_removal(self, current_route_plan):
+        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
+        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
+        
+        activities_to_remove = []
+        patientsIDs_to_removed = []
+        
+        for illegalActivityID in current_route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys(): 
+            allocated_patientID_for_illegalActivityID = self.constructor.activities_df.loc[illegalActivityID, 'patientId']
+            if allocated_patientID_for_illegalActivityID in patientsIDs_to_removed: 
+                continue
+            
+            for allocated_treatment in current_route_plan.allocatedPatients[allocated_patientID_for_illegalActivityID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(allocated_patientID_for_illegalActivityID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+       
+        #Vet at vi ikke har nådd tilstrekkelig antall aktiviteter ved å bare fjerne aktivitene som er i illegalActiviy 
+        for illegalVisitID in current_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys(): 
+            allocated_patientID_for_illegalVisitID = self.constructor.visit_df.loc[illegalVisitID, 'patientId']
+            if allocated_patientID_for_illegalVisitID in patientsIDs_to_removed: 
+                continue
+
+            for allocated_treatment in current_route_plan.allocatedPatients[allocated_patientID_for_illegalVisitID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(allocated_patientID_for_illegalVisitID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+        
+        #Går illegal Treatments og legger til relaterte pasienter i pasienter som skal fjernes 
+        for illegalTreatmentID in current_route_plan.illegalNotAllocatedTreatments: 
+            allocated_patientID_for_illegalTreatmentID = self.constructor.treatment_df.loc[illegalTreatmentID, 'patientId']
+            if allocated_patientID_for_illegalTreatmentID in patientsIDs_to_removed: 
+                continue
+
+            for allocated_treatment in current_route_plan.allocatedPatients[allocated_patientID_for_illegalTreatmentID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(allocated_patientID_for_illegalTreatmentID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+        
+        #Nå er alle som kan tatt bort, så kanskje sortere de andre på. Har ikke tatt bort noen enda
+        #Vet bare at vi er 
+        #TODO: Gjøre ferdig her 
+
+        #Todo, usikker på om det blir riktig med .keys for liste 
+        ascendingUtilityAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in current_route_plan.allocatedPatients.keys()}
+        ascendingUtilityNotAllocatedPatients = sorted(ascendingUtilityAllocatedPatientsDict, key=ascendingUtilityAllocatedPatientsDict.get)
+
+        for patientID in ascendingUtilityNotAllocatedPatients: 
+            if patientID in patientsIDs_to_removed: 
+                continue
+            for allocated_treatment in current_route_plan.allocatedPatients[patientID]: 
+                for allocated_visit in current_route_plan.treatments[allocated_treatment]: 
+                    for allocated_activity in current_route_plan.visits[allocated_visit]: 
+                        activities_to_remove.append(allocated_activity)
+            patientsIDs_to_removed.append(patientID)
+            if len(activities_to_remove) >= total_num_activities_to_remove: 
+                return self.patients_removal(current_route_plan, patientsIDs_to_removed)
+
+
+
+ 
 #---------- HELP FUNCTIONS ----------
         
     #TODO: Må se på destruction degree for max removal
@@ -676,7 +972,6 @@ class DestroyOperators:
                     longest_travel_time = route.travel_time
                     activities_in_longest_route = [activity.id for activity in route.route]
 
-        print('num_act_allocated',num_act_allocated)
 
         total_num_activities_to_remove = round(num_act_allocated*main_config.destruction_degree)
         
@@ -690,7 +985,6 @@ class DestroyOperators:
         num_activities_to_remove = int(len(nearest_neighbor_distances) * 0.3)
         activities_to_remove_indices = np.argsort(-nearest_neighbor_distances)[:num_activities_to_remove]
         activities_to_remove = df_selected_activities.iloc[activities_to_remove_indices].index.tolist()
-        print('activities_to_remove',activities_to_remove)
 
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         self.remove_activites_from_route_plan(activities_to_remove, destroyed_route_plan)
@@ -734,7 +1028,6 @@ class DestroyOperators:
 
         # Convert indices to patient IDs to remove
         patients_to_remove = df_selected_patients.iloc[patients_to_remove_indices].index.tolist()
-        print("patients_to_remove", patients_to_remove)
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for patientID in patients_to_remove:
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
@@ -878,8 +1171,6 @@ class DestroyOperators:
 
         #Alt 2) Selected activity er siste som ligger inne på visit, men visit er ikke det siste som ligger inne på treatment. -> Legger til i illegalVisits 
         if last_visit_in_treatment == False: 
-            if selected_activity == 80: 
-                print("kommer hit og slår ut på alternativ 2 for 80")
             #Sjer ingenting på pasient nivå
             destroyed_route_plan.treatments[treatment_for_visit].remove(visit_for_activity) # Visit fjernes fra treatment dict 
             destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_for_activity] = original_day #Legges til i illegalVisit with possible day 
@@ -908,8 +1199,6 @@ class DestroyOperators:
         #TODO: Denn må fjerne flere så blir ikke riktig å ha her 
         #ALTERNATIV 3 
         if last_treatment_for_patient == False:    
-            if selected_activity == 80: 
-                print("kommer hit og slår ut på alternativ 3 for 80")
             destroyed_route_plan.allocatedPatients[patient_for_treatment].remove(treatment_for_visit) #Treatment fjernes fra pasient 
             destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit) #Treatment legges til 
             del destroyed_route_plan.treatments[treatment_for_visit] #treatment fjernes fra treatment list med tilhørende visits

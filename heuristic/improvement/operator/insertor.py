@@ -22,10 +22,6 @@ class Insertor:
         self.insertVisitOnDay = self.visitOnDayInsertorList[insertion_efficiency_level] #Dette er en funskjon 
 
 
-    '''
-    Hvordan skal det velges her
-    '''
-
     def insert_patient(self, patient):
         old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
@@ -59,7 +55,7 @@ class Insertor:
         #Iterer over alle patterns som er mulige for denne treatmenten
         patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
         index_random = [i for i in range(len(patterns))]
-        random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+        #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
         for index in index_random:
             self.route_plan = copy.deepcopy(old_route_plan)
@@ -146,12 +142,13 @@ class Insertor:
     def insertNextActiviy_forBetterInsertion(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
         #TODO: Sammkjøre denne med andre aktiviteter som fungere 
         #BEG: Må ha med denne også for å sjekke om det er 
-        route_plan.updateActivityBasedOnRoutePlanOnDay0904(activity, day)
-       
- 
+        route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
 
+       
+
+       
         for activitiesWithPossibleNewUpdated in route_plan.routes[day][employeeID].route: 
-            route_plan.updateDependentActivitiesBasedOnRoutePlanOnDay(activitiesWithPossibleNewUpdated, day)
+            route_plan.updateActivityBasedOnRoutePlanOnDay(activitiesWithPossibleNewUpdated, day)
 
         insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
   

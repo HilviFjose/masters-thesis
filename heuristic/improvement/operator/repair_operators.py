@@ -44,8 +44,8 @@ class RepairOperators:
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)   
   
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
-        descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
-        
+        descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
+
         for patient in descendingUtilityNotAllocatedPatients: 
             patientInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
@@ -115,16 +115,17 @@ class RepairOperators:
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
 
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
-        descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get)
-
+        descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get, reverse=True)
+        
         for patient in descendingComplexityNotAllocatedPatients: 
             patientInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
-            
+
             if status == True: 
+
                 repaired_route_plan = patientInsertor.route_plan
-                
+
                 #Steg 1 - Slette i allokert listene
                 repaired_route_plan.notAllocatedPatients.remove(patient)
 
@@ -133,10 +134,13 @@ class RepairOperators:
             
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)
-                
+   
         repaired_route_plan.updateObjective(current_iteration, total_iterations)
       
         return repaired_route_plan
+    
+
+
     
     def regret_k_repair(self, destroyed_route_plan, current_iteration, total_iterations):
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
@@ -162,7 +166,7 @@ class RepairOperators:
             repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
 
             for patient in descendingUtilityNotAllocatedPatients[k:]: 
-                patientInsertor = Insertor(self.constructor, repaired_route_plan_with_k_regret, 0) #Må bestemmes hvor god visitInsertor vi skal bruke
+                patientInsertor = Insertor(self.constructor, repaired_route_plan_with_k_regret, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
                 old_route_plan = copy.deepcopy(repaired_route_plan_with_k_regret)
                 status = patientInsertor.insert_patient(patient)
                 

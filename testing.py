@@ -226,8 +226,10 @@ def check_objective(file_path):
 
 def check_precedence_within_file(file):
     status1 = True
-    status2 = True
-    status3 = True
+    status2a = True
+    status2b = True
+    status3a = True
+    status3b = True
 
     # Create the lists needed
     activities_in_candidate = extract_activities_with_start_time(file)
@@ -235,20 +237,31 @@ def check_precedence_within_file(file):
     earliestStart = list(df_activities['earliestStartTime'])
     latestStart = list(df_activities['latestStartTime'])
     nextPrece = list(df_activities['nextPrece'])
+    prevPrece = list(df_activities['prevPrece'])
     duration = list(df_activities['duration'])
-    prec_act_list = [None] * len(nextPrece)
-    prec_times_list = [None] * len(nextPrece)
+    fol_act_list = [None] * len(nextPrece)
+    fol_times_list = [None] * len(nextPrece)
+    prev_act_list = [None] * len(nextPrece)
+    prev_times_list = [None] * len(nextPrece)
     pattern = re.compile(r'(\d+): (\d+)')
     for idx, item in enumerate(nextPrece):
         if pd.notna(item) and isinstance(item, str):  
             matches = pattern.findall(item)
             if matches:
                 keys, values = zip(*[(int(k), int(v)) for k, v in matches])
-                prec_act_list[idx] = keys
-                prec_times_list[idx] = values
+                fol_act_list[idx] = keys
+                fol_times_list[idx] = values
         if isinstance(item, int):
-            prec_act_list[idx] = item
-
+            fol_act_list[idx] = item
+    for idx, item in enumerate(prevPrece):
+        if pd.notna(item) and isinstance(item, str):  
+            matches = pattern.findall(item)
+            if matches:
+                keys, values = zip(*[(int(k), int(v)) for k, v in matches])
+                prev_act_list[idx] = keys
+                prev_times_list[idx] = values
+        if isinstance(item, int):
+            prev_act_list[idx] = item
 
     # 1 - Checking if start times are within time windows
     for (activity_id, start_time) in activities_in_candidate:
@@ -260,28 +273,53 @@ def check_precedence_within_file(file):
             status1 = False
 
 
-    # 2 - Checking if start times are correct in terms of which order they have to happen in
-    for activity_id, following in enumerate(prec_act_list, start=1):
+    # 2A - General precedence for following test
+    for activity_id, following in enumerate(fol_act_list, start=1):
         if following is None:
             continue
         following_activities = (following,) if isinstance(following, int) else following
         current_start_time = cand_dict.get(activity_id)
         if current_start_time is None:
             continue
+        current_end_time = current_start_time + int(duration[activity_id-1])
         for following_act_id in following_activities:
             following_start_time = cand_dict.get(following_act_id)
             if following_start_time is None: 
                 continue
-            if following_start_time <= current_start_time:
-                print(f"ERROR - FOLLOWING ACTIVITY STARTING EARLIER THAN CURRENT: Activity {following_act_id} starting at {following_start_time}, starts before activity {activity_id} starting at {current_start_time}.")
-                status2 = False
+            if following_start_time < current_start_time:
+                print(f"ERROR 2A - FOLLOWING ACTIVITY STARTING EARLIER THAN CURRENT: Activity {following_act_id} starting at {following_start_time}, starts before activity {activity_id} starting at {current_start_time}.")
+                status2a = False
+            if following_start_time < current_end_time:
+                print(f"ERROR 2A - FOLLOWING ACTIVITY STARTING BEFORE CURRENT IS FINISHED: Activity {following_act_id} starting at {following_start_time}, starts before activity {activity_id} ends at {current_end_time}.")
+                status2a = False
 
-    # 3 - Check if the start times that do not have an error over here are withing the time frames in nexttimes
-    for activity_id, following in enumerate(prec_act_list, start=1):
-        if following is None or prec_times_list[activity_id - 1] is None:
+    # 2B - General precedence for following test
+    for activity_id, previous in enumerate(prev_act_list, start=1):
+        if previous is None:
+            continue
+        previous_activities = (previous,) if isinstance(previous, int) else previous
+        current_start_time = cand_dict.get(activity_id)
+        if current_start_time is None:
+            continue
+        for previous_act_id in previous_activities:
+            previous_start_time = cand_dict.get(previous_act_id)
+            if previous_start_time is None: 
+                continue
+            previous_end_time = previous_start_time + int(duration[previous_act_id-1])
+            if previous_start_time > current_start_time:
+                print(f"ERROR 2B - PREVIOUS ACTIVITY STARTING LATER THAN CURRENT: Activity {previous_act_id} starting at {previous_start_time}, starts after activity {activity_id} starting at {current_start_time}.")
+                status2a = False
+            if previous_end_time > current_start_time:
+                print(f"ERROR 2B - CURRENT ACTIVITY STARTING BEFORE PREVIOUS IS FINISHED: Activity {previous_act_id} ending at {previous_end_time}, is not finished before {activity_id} starts {current_start_time}.")
+                status2a = False
+
+
+    # 3A - In time for following test
+    for activity_id, following in enumerate(fol_act_list, start=1):
+        if following is None or fol_times_list[activity_id - 1] is None:
             continue
         following_activities = (following,) if isinstance(following, int) else following
-        timing_constraints = prec_times_list[activity_id - 1]
+        timing_constraints = fol_times_list[activity_id - 1]
         current_start_time = cand_dict.get(activity_id)
         if current_start_time is None:
             continue 
@@ -293,30 +331,83 @@ def check_precedence_within_file(file):
             max_allowed_start_time_after = timing_constraints[i] if isinstance(timing_constraints, tuple) else timing_constraints
             start_time_difference = following_start_time - current_end_time 
             if start_time_difference > max_allowed_start_time_after:
-                print(f"ERROR - FOLLOWING ACTIVITY DOES NOT START WITHIN THE PRECEDENCE REQUIREMENT: Activity {following_act_id} starting at {following_start_time} starts more than {max_allowed_start_time_after} time units after activity {activity_id} starting at {current_start_time}.")
-                status3 = False
-    return status1, status2, status3
+                print(f"ERROR 3A - FOLLOWING ACTIVITY DOES NOT START WITHIN THE PRECEDENCE REQUIREMENT: Activity {following_act_id} starting at {following_start_time} starts more than {max_allowed_start_time_after} time units after activity {activity_id} ending at {current_end_time}.")
+                status3a = False
+
+    # 3B - In time for previous test
+    for activity_id, previous in enumerate(prev_act_list, start=1):
+        if previous is None or prev_times_list[activity_id - 1] is None:
+            continue
+        previous_activities = (previous,) if isinstance(previous, int) else previous
+        timing_constraints = prev_times_list[activity_id - 1]
+        current_start_time = cand_dict.get(activity_id)
+        if current_start_time is None:
+            continue 
+        for i, previous_act_id in enumerate(previous_activities):
+            previous_start_time = cand_dict.get(previous_act_id)
+            if previous_start_time is None:
+                continue 
+            previous_end_time = previous_start_time + int(duration[previous_act_id-1])
+            max_allowed_start_time_after = timing_constraints[i] if isinstance(timing_constraints, tuple) else timing_constraints
+            start_time_difference = current_start_time - previous_end_time 
+            if start_time_difference > max_allowed_start_time_after:
+                print(f"ERROR 3B - CURRENT ACTIVITY DOES NOT START WITHIN THE PRECEDENCE REQUIREMENT FOR PREVIOUS ACTIVITY: Current {activity_id} starting at {current_start_time} starts more than {max_allowed_start_time_after} time units after activity {previous_act_id} ending at {previous_end_time}.")
+                status3a = False
+    return status1, status2a, status2b, status3a, status3b
 
 # Example usage
 username = 'agnesost'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
+file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
 #file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\0before_iteration.txt'  # Replace with the actual path to your first file
-#file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
-file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"]
+file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
+file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"] 
 
-
-status = compare_dictionary_with_candidate(file_path_1)
-if status == False:
-    print("Something wrong in INITIAL")
+status1 = compare_dictionary_with_candidate(file_path_1)
+if status1 == False:
+    print("SOmething wrong in", file_path_1)
     print("---------------------------")
 
-"""
-status = compare_dictionary_with_candidate(file_path_4)
-if status == False:
-    print("Something wrong in FINAL")
+status2 = compare_allocated_dictionaries(file_path_1)
+if status2 == False: 
+    print("SOmething wrong in", file_path_1)
     print("---------------------------")
-"""
+
+status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_1)
+if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
+    print("SOmething wrong in", file_path_1)
+    print("---------------------------") 
+
+status6 = check_objective(file_path_1)
+if status6 == False: 
+    print("SOmething wrong in", file_path_1)
+    print("---------------------------")
+
+
+
+
+status1 = compare_dictionary_with_candidate(file_path_2)
+if status1 == False:
+    print("SOmething wrong in", file_path_2)
+    print("---------------------------")
+
+status2 = compare_allocated_dictionaries(file_path_2)
+if status2 == False: 
+    print("SOmething wrong in", file_path_2)
+    print("---------------------------")
+
+status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_2)
+if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
+    print("SOmething wrong in", file_path_2)
+    print("---------------------------") 
+
+status6 = check_objective(file_path_2)
+if status6 == False: 
+    print("SOmething wrong in", file_path_2)
+    print("---------------------------")
+
+
 
 for cand in range(1, iterations+1): 
     for file_name in file_name_list: 
@@ -332,8 +423,8 @@ for cand in range(1, iterations+1):
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
         
-        status3, status4, status5 = check_precedence_within_file(file_path_candidate)
-        if status3 == False or status4 == False or status5 == False:
+        status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_candidate)
+        if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------") 
         
@@ -341,6 +432,5 @@ for cand in range(1, iterations+1):
         if status6 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
-
 
 

@@ -94,29 +94,67 @@ def patientGenerator(df_employees):
         list_employees.append(random_employee_id)
         df_patients.at[index, 'employeeRestriction'] = list_employees
 
-    # Employee history  TODO: Må potensielt oppdatere format på dette
-    num_history_patients = int(len(df_patients) * construction_config.employeeHistory)          # 90 % of the patients have a treatment history with some employees
-    history_patient_indices = np.random.choice(df_patients.index, size=num_history_patients, replace=False) # Random patients get employee history
+    # Employee history  
+    # Forhåndsinitialiserer employeeHistory for hver pasient basert på deres continuity_group
+    for index, row in df_patients.iterrows():
+        continuity_group = row['continuityGroup']
+        if continuity_group == 1:
+            continuity_score = construction_config.continuityScore[0]
+        elif continuity_group == 2:
+            continuity_score = construction_config.continuityScore[1]
+        else:  # continuity_group == 3
+            continuity_score = construction_config.continuityScore[2]
+        
+        df_patients.at[index, 'employeeHistory'] = {continuity_score: []}
 
-    '''
+    # Tilfeldig utvalg av pasienter får ansatthistorikk med faktiske ansatte
+    num_history_patients = int(len(df_patients) * construction_config.employeeHistory)
+    history_patient_indices = np.random.choice(df_patients.index, size=num_history_patients, replace=False)
+
     for index in history_patient_indices:
-        num_employees = np.random.randint(1, 6)             # Allowing for between 1 and 6 employees in the employee history
-        random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()      # Random employees
-        df_patients.at[index, 'employeeHistory'] = random_employee_ids
-    '''
-    for index in history_patient_indices:
+        max_employees = 0
         continuity_group = df_patients.at[index, 'continuityGroup']
-        # max number of employees based on continuity group
         if continuity_group == 1:
             max_employees = 1
         elif continuity_group == 2:
             max_employees = 3
         else:  # continuity_group == 3
             max_employees = 5
+        continuity_score, employeeIds = next(iter(df_patients.at[index, 'employeeHistory'].items()))
+
+        num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
+        random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()
+        
+        # Siden employeeHistory allerede er initialisert, legger vi bare til de tilfeldige ansattes ID-er
+        df_patients.at[index, 'employeeHistory'][continuity_score].extend(random_employee_ids)
+
+    """
+    num_history_patients = int(len(df_patients) * construction_config.employeeHistory)          # 90 % of the patients have a treatment history with some employees
+    history_patient_indices = np.random.choice(df_patients.index, size=num_history_patients, replace=False) # Random patients get employee history
+
+    for index in history_patient_indices:
+        employee_history = {}
+        continuity_group = df_patients.at[index, 'continuityGroup']
+        continuity_score = 0
+        preferred_employees = 0
+        # max number of employees based on continuity group
+        if continuity_group == 1:
+            max_employees = 1
+            continuity_score = construction_config.continuityScore[0]
+        elif continuity_group == 2:
+            max_employees = 3
+            continuity_score = construction_config.continuityScore[1]
+        else:  # continuity_group == 3
+            max_employees = 5
+            continuity_score = construction_config.continuityScore[2]
 
         num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
         random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()  # Tilfeldige ansatte
-        df_patients.at[index, 'employeeHistory'] = random_employee_ids
+        
+        employee_history[continuity_score] = random_employee_ids
+
+        df_patients.at[index, 'employeeHistory'] = employee_history
+    """
 
     file_path = os.path.join(os.getcwd(), 'data', 'patients.csv')
     df_patients.to_csv(file_path, index=False)

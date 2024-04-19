@@ -11,6 +11,8 @@ import random
 import datetime
 from config.construction_config import depot
 from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
+from config.construction_config import preferredEmployees
+from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
 
 
 class RoutePlan:
@@ -40,10 +42,11 @@ class RoutePlan:
         #OBS: Jeg forstår ikke hvorfor denne er slik: 
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
         
-        self.objectiveWithoutPenelty = [0,0,0,0,0]
-        self.objective = [0,0,0,0,0]
+        
+        self.objective = [0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
+        self.totalContinuity = 0
 
         self.treatments = {}
         self.visits = {}
@@ -115,13 +118,10 @@ class RoutePlan:
             #TODO: Sortere hvor mange som er 
      
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
-            #random.shuffle(routes_for_skill)
+            random.shuffle(routes_for_skill)
             
             routes += routes_for_skill
-          
-            #For å omrokkere på de som er fra før 
-            #if act_skill_level == 2: 
-            #   random.shuffle(routes)
+
         return routes
 
     def addActivityOnDay(self, activity, day):
@@ -334,35 +334,43 @@ class RoutePlan:
                 first_objective += route.suitability
         return first_objective
 
-    def updateObjectiveWithoutPenelty(self): 
-        self.objectiveWithoutPenelty = [0, 0, 0, 0, 0]
-        self.calculateWeeklyHeaviness()
-        self.calculateDailyHeaviness()
-        self.objectiveWithoutPenelty[1] = self.weeklyHeaviness
-        self.objectiveWithoutPenelty[2] = self.dailyHeaviness
-        for day in range(1, 1+self.days): 
-            for route in self.routes[day].values(): 
-                route.updateObjective()
-                self.objectiveWithoutPenelty[0] += route.suitability
-                self.objectiveWithoutPenelty[3] += route.aggSkillDiff 
-                self.objectiveWithoutPenelty[4] += route.travel_time   
-        #Oppdaterer første-objektivet med straff for illegal      
-
-
     def updateObjective(self, current_iteration, total_iterations): 
-        self.objective = [0, 0, 0, 0, 0]
+        weight_C, weight_DW, weight_WW, weight_SG, weight_S
+        self.objective = [0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()
-        self.objective[1] = self.weeklyHeaviness
-        self.objective[2] = self.dailyHeaviness
+        self.calculateTotalContinuity()
+        aggSkillDiff = 0
         for day in range(1, 1+self.days): 
             for route in self.routes[day].values(): 
                 route.updateObjective()
                 self.objective[0] += route.suitability
-                self.objective[3] += route.aggSkillDiff 
-                self.objective[4] += route.travel_time   
+                aggSkillDiff += route.aggSkillDiff 
+                self.objective[3] += route.travel_time   
+        self.objective[1] = self.totalContinuity 
+        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
+
+    '''
+    HER ER OBJEKTIVENE IKKE SLÅTT SAMMEN.
+    def updateObjective(self, current_iteration, total_iterations): 
+        self.objective = [0, 0, 0, 0, 0, 0]
+        self.calculateWeeklyHeaviness()
+        self.calculateDailyHeaviness()
+        self.calculateTotalContinuity()
+        self.objective[1] = self.totalContinuity
+        self.objective[2] = self.weeklyHeaviness
+        self.objective[3] = self.dailyHeaviness
+        for day in range(1, 1+self.days): 
+            for route in self.routes[day].values(): 
+                route.updateObjective()
+                self.objective[0] += route.suitability
+                self.objective[4] += route.aggSkillDiff 
+                self.objective[5] += route.travel_time   
+        #Oppdaterer første-objektivet med straff for illegal      
+        self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
+    '''
 
     def calculatePenaltyIllegalSolution(self, current_iteration, total_iterations):
         # Penalty in first objective per illegal treatment, visit or activity 
@@ -387,29 +395,38 @@ class RoutePlan:
         return updated_first_objective
      
     def calculateWeeklyHeaviness(self):
-        employee_weekly_heaviness = {}
+        daily_heaviness_within_group = {}
 
-        #for day, routes in self.routes.items():
-        #    for route in routes:
-        
-        for day in range (1, self.days +1): 
+        for day in range(1, self.days +1):
             for route in self.routes[day].values():
-                employee_id = route.employee.id
-                profession = route.skillLev  
-                if profession not in employee_weekly_heaviness:
-                    employee_weekly_heaviness[profession] = {}
-                if employee_id not in employee_weekly_heaviness[profession]:
-                    employee_weekly_heaviness[profession][employee_id] = []
-                # Legger til route's "heaviness" for den ansatte
-                employee_weekly_heaviness[profession][employee_id].append(route.calculateTotalHeaviness())
+                profession = route.skillLev
+                if profession not in daily_heaviness_within_group:
+                    daily_heaviness_within_group[profession] = {}
+                
+                if day not in daily_heaviness_within_group[profession]:
+                    daily_heaviness_within_group[profession][day] = route.calculateTotalHeaviness()
 
-        # Gjennomsnittlig "heaviness" for hver ansatt og finner deretter max-min innen hver yrkesgruppe
+                # Summerer opp heaviness for hver dag innen hver profession level
+                else:
+                    daily_heaviness_within_group[profession][day] += route.calculateTotalHeaviness()
+                
+                #print(f'Profession {profession} day {day}: {daily_heaviness_within_group[profession][day]}')
+            
+            # Finnes gjennomsnittlig 'heaviness' for hver profesjon basert på antall ansatte som jobber de ulike dagene.
+            num_employees_day = len(self.routes[day].values()) 
+            for profession in daily_heaviness_within_group.keys():
+                if day in daily_heaviness_within_group[profession]:
+                    daily_heaviness_within_group[profession][day] /= num_employees_day
+
+        # Kalkulerer differansen mellom maks og min 'heaviness' for hver profession level
         weekly_diffs = []
-        for profession, employees in employee_weekly_heaviness.items():
-            avg_heaviness_per_employee = [np.mean(heaviness) for heaviness in employees.values()]
-            if avg_heaviness_per_employee: 
-                weekly_diffs.append(max(avg_heaviness_per_employee) - min(avg_heaviness_per_employee))
-
+        for profession, days in daily_heaviness_within_group.items():
+            if days:
+                profession_heaviness_values = list(days.values())
+                #print(f"profession {profession} with tot heaviness days {profession_heaviness_values}")
+                weekly_diffs.append(max(profession_heaviness_values)-min(profession_heaviness_values))
+                #print(f"profession {profession} weekly diff {weekly_diffs}")
+        
         self.weeklyHeaviness = sum(weekly_diffs)
 
     def calculateDailyHeaviness(self):
@@ -427,6 +444,29 @@ class RoutePlan:
             for profession, heaviness in profession_groups.items():
                 daily_diffs.append(max(heaviness) - min(heaviness))
         self.dailyHeaviness = sum(daily_diffs)
+
+    def calculateTotalContinuity(self):
+        continuity_routes = []
+        for day in range(1, self.days+1):
+            for route in self.routes[day].values():
+                continuity_route = 0
+                for act in route.route:
+                    continuity_score, employeeIds = next(iter(act.employeeHistory.items()))
+                    if act.skillReq > 1: #Forsikre om at det kun er health care tasks som får en score
+                        if act.continuityGroup == 1: 
+                            if route.employee.id in employeeIds:
+                                continuity_route += continuity_score
+                        elif act.continuityGroup == 2: 
+                            if route.employee.id in employeeIds:
+                                continuity_route += continuity_score
+                        else: 
+                            if route.employee.id in employeeIds:
+                                continuity_route += continuity_score
+                           
+                continuity_routes.append(continuity_route)
+
+        self.totalContinuity = - sum(continuity_routes)
+
 
     def removeActivityFromEmployeeOnDay(self, employee, activity, day):
         #TODO: Finne ut når attributter skal restartes. Det fungerer ikke slik det er nå. 
@@ -498,9 +538,6 @@ class RoutePlan:
                 activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
 
 
-
-                #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
-
         
     def updateDependentActivitiesBasedOnRoutePlanOnDay(self, activity ,day):
         for depActID in activity.dependentActivities: 
@@ -561,51 +598,6 @@ class RoutePlan:
             self.notAllocatedPatients.remove(patient)
 
 
-    def updateActivityBasedOnRoutePlanOnDay0904(self, activity,day):
-            '''
-            Denne funksjonen skal håndtere oppdatering av de variable attributttene til activity
-            Basert på det som allerede ligger inne i routeplanen 
-            '''    
-            #Her håndteres pick up and delivery
-            if activity.getPickUpActivityID() != 0 : 
-                otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
-                activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
-                
-            #Her håndteres presedens.   
-            #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
-
-            for prevNodeID in activity.PrevNode:  
-                prevNodeAct = self.getActivity(prevNodeID, day)
-                if prevNodeAct != None:
-                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
-  
-            for nextNodeID in activity.NextNode: 
-                nextNodeAct = self.getActivity(nextNodeID, day)
-                if nextNodeAct != None:
-                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
-            
-            #Her håndteres presedens med tidsvindu
-            #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
-            for PrevNodeInTimeID in activity.PrevNodeInTime: 
-                prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
-                if prevNodeAct != None:
-                    
-                    #print("FØR newEeariestStartTime", activity.newEeariestStartTime)
-
-                    activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
-                    activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
-                    #print("ETTER newEeariestStartTime", activity.newEeariestStartTime)
-
-
-            for NextNodeInTimeID in activity.NextNodeInTime: 
-                nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
-                if nextNodeAct != None:
-                    activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
-                    activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
-            
-            #Du har en aktivitet som må gjøres innen et 
-
-
     def getActivityAndActivityIndexAndRoute(self, actID): 
         '''
         returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
@@ -625,3 +617,22 @@ class RoutePlan:
                         return act, index, route 
                     index += 1
         return None, None, None
+
+
+    def getDayForActivityID(self, actID): 
+        '''
+        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
+        
+        Arg: 
+        actID (int): ID til en aktivitet som gjøres en gitt dag
+        day (int): dagen aktiviten finnes i en rute  
+
+        Return: 
+        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
+        '''
+        for day in range(1, self.days+1):
+            for route in self.routes[day].values(): 
+                for act in route.route: 
+                    if act.id == actID: 
+                        return day
+        return None
