@@ -9,7 +9,7 @@ from objects.activity import Activity
 from parameters import T_ij
 import math
 import copy 
-from config.construction_config import depot
+from config.main_config import depot
 
 class Route:
     def __init__(self, day, employee):

@@ -1,4 +1,4 @@
-# ANTIBIOTICS INFUSION CASE
+# INFUSION CASE
 # -------------------------
 # PATIENTS
 P_num = 12                                          # Number of patients
@@ -6,6 +6,7 @@ P_num = 12                                          # Number of patients
 # Patient demographics
 clinicDistribution = [0.3, 0.2, 0.2, 0.3]
 specialisationDistribution = [0.7, 0.7, 0.7, 0.7]
+patientExtraSupport = [0.8, 0.7, 0.5, 0.4] #Percentage from each clinic that needs extra support 
 
 # Distributions of treatments, visits and acitivities for each patient
 T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
@@ -30,7 +31,7 @@ patterns_1day = [15,16,17,18,19]                                    # Patterntyp
 
 # Continuity distribution
 continuityDistribution = [0, 0.5, 0.5]      #Top 1 employee, top 3 employees, all employees
-continuityScore = [3, 2, 1]                 #TODO: Sjekk om verdiene på disse på endres
+continuityScore = [2, 1, 0]                 #TODO: Sjekk om verdiene på disse på endres
 preferredEmployees = [1, 3, 5]
 
 # Patient allocation

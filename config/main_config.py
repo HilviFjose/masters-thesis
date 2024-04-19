@@ -48,3 +48,8 @@ weight_WW = 0.3             # Balance weekly workload
 weight_S = 0.4              # Min skill difference
 weight_SG = 0.0             # Balance specialist/generalist
 
+#Planning period
+days = 5
+
+#Depot
+depot = (59.9365, 10.7396)

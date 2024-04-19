@@ -5,7 +5,7 @@ import numpy as np
 import random 
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from config import construction_config
+from config import construction_config_infusion
 
 def assign_shifts(employees):
     #get index lists for each skill
@@ -49,7 +49,7 @@ def assign_shifts(employees):
 
     #add same shift for remaining week for each employee
     for e in employees:
-        shifts=[e[2][0]+i*3 for i in range(1,construction_config.days)]    #same shift each working day
+        shifts=[e[2][0]+i*3 for i in range(1,construction_config_infusion.days)]    #same shift each working day
         e[2].extend(shifts)
 
     #verify results, set to "if False:"" to disable
@@ -71,9 +71,9 @@ def assign_shifts(employees):
 def employeeGenerator():
     df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'schedule'])
 
-    profession_levels = np.random.choice(construction_config.professionLevels, 
-                                         construction_config.E_num, 
-                                         p=construction_config.professionLevelsProb)
+    profession_levels = np.random.choice(construction_config_infusion.professionLevels, 
+                                         construction_config_infusion.E_num, 
+                                         p=construction_config_infusion.professionLevelsProb)
 
     employees = []
     for index, level in enumerate(profession_levels): 
@@ -98,19 +98,19 @@ def employeeGenerator():
 def employeeGeneratorOnlyDay():
     df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'schedule'])
 
-    if construction_config.E_num > 5:
+    if construction_config_infusion.E_num > 5:
         first_levels = np.array([1, 2, 2, 3, 3])
-        remaining_levels = np.random.choice(construction_config.professionLevels, 
-                                         construction_config.E_num-5, 
-                                         p=construction_config.professionLevelsProb)
+        remaining_levels = np.random.choice(construction_config_infusion.professionLevels, 
+                                         construction_config_infusion.E_num-5, 
+                                         p=construction_config_infusion.professionLevelsProb)
         profession_levels = np.concatenate([first_levels, remaining_levels])
-    elif construction_config.E_num == 5:
+    elif construction_config_infusion.E_num == 5:
         profession_levels = np.array([1, 2, 2, 3, 3])
-    elif construction_config.E_num == 4:
+    elif construction_config_infusion.E_num == 4:
         profession_levels = np.array([1, 2, 3, 3])
-    elif construction_config.E_num == 3:
+    elif construction_config_infusion.E_num == 3:
         profession_levels = np.array([2, 3, 3])
-    elif construction_config.E_num == 2:
+    elif construction_config_infusion.E_num == 2:
         profession_levels = np.array([2, 3])
     else:
         profession_levels = np.array([3])

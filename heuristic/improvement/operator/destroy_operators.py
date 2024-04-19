@@ -23,7 +23,7 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..','..','..'))  # Inc
 from helpfunctions import checkCandidateBetterThanBest
 
 from objects.activity import Activity
-from config.construction_config import *
+from config.construction_config_infusion import *
 from datageneration.distance_matrix import *
 from parameters import T_ij
 

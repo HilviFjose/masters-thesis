@@ -3,8 +3,8 @@ import pandas as pd
 import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from datageneration.employeeGeneration import *
-from datageneration.patientGeneration import *
+#from datageneration import employeeGenerationAntibiotics
+#from datageneration import patientGenerationAntibiotics
 '''
 Info:
 For å opprette en aktivitet må dataframene som inneholder aktivitetne til ID-en sendes inn og selve ID-en

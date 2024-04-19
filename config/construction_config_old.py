@@ -1,5 +1,4 @@
-# ANTIBIOTICS INFUSION CASE
-# -------------------------
+
 # PATIENTS
 P_num = 12                                          # Number of patients
 
