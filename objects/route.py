@@ -469,8 +469,8 @@ class Route:
         if len(self.route) == 0:
             return 
 
-        self.moveActivitiesEarlier(index)
-        self.moveActivitiesLater(index)
+        self.moveAllActivitiesEarlier(index)
+        self.moveAllActivitiesLater(index)
 
 
     def moveAllActivitiesEarlier(self, stopIndex): 
