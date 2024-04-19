@@ -15,6 +15,10 @@ from heuristic.improvement.local_search import LocalSearch
 import cProfile
 import pstats
 from pstats import SortKey
+from datetime import datetime
+import contextlib
+import io
+
 
 def main():
     #TODO: Burde legge til sånn try og accept kriterier her når vi er ferdig. Men Bruker ikke det enda fordi letter å jobbe uten
@@ -66,13 +70,30 @@ def main():
     best_route_plan.printSolution("final", "no operator")
          
 if __name__ == "__main__":
-    #main()
+    main()
+    """
+    # Kjøre main og printe til profiler
+    directory = "profilerResults"s
+    os.makedirs(directory, exist_ok=True)
+    filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".txt"
+    filepath = os.path.join(directory, filename)
 
-    # Profiler hele programmet ditt
+    # Profile your entire program and save the data to 'program_profile'
     cProfile.run('main()', 'program_profile')
 
-    # Last inn og analyser profildata, fokusert på dine funksjoner
+    # Load and analyze profile data, focusing on cumulative time spent
     p = pstats.Stats('program_profile')
-    p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
-    p.strip_dirs().sort_stats(SortKey.TIME).print_stats('addActivity()')
-    
+    p.strip_dirs().sort_stats(SortKey.CUMULATIVE)
+
+    # Manually capture the output of print_stats()
+    output = io.StringIO()
+    p.print_stats(output)
+    stats = output.getvalue()
+    output.close()
+
+    # Write the captured stats to the file
+    with open(filepath, 'w') as f:
+        f.write(stats)
+
+    print(f"Profiler results have been written to {filepath}")
+    """
