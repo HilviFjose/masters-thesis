@@ -430,12 +430,12 @@ class DestroyOperators:
         # Time windows and duration for the primary visit
         p_firstAct = current_route_plan.getActivityFromEntireRoutePlan(p_firstActId)
         p_lastAct = current_route_plan.getActivityFromEntireRoutePlan(p_lastActId)
-        p_visitStarted = p_firstAct.getStartTime()
-        p_visitFinished = p_lastAct.getStartTime() + p_lastAct.getDuration()
+        p_visitStarted = p_firstAct.startTime
+        p_visitFinished = p_lastAct.startTime + p_lastAct.duration
         p_visitDuration = 0
         for p_actId in current_route_plan.visits[primary_visitId]:
             p_act = current_route_plan.getActivityFromEntireRoutePlan(p_actId)
-            p_visitDuration += p_act.getDuration()
+            p_visitDuration += p_act.duration
         p_visitEarliestStart = p_firstAct.earliestStartTime
         p_visitLatestStart = p_firstAct.latestStartTime        
         
@@ -484,12 +484,12 @@ class DestroyOperators:
                 # Data for checks regarding time windows, start times and durations
                 firstAct = current_route_plan.getActivityFromEntireRoutePlan(activitiesIds[0])
                 lastAct = current_route_plan.getActivityFromEntireRoutePlan(activitiesIds[-1])
-                visitStarted = firstAct.getStartTime()
-                visitFinished = lastAct.getStartTime() + lastAct.getDuration()
+                visitStarted = firstAct.startTime
+                visitFinished = lastAct.startTime + lastAct.duration
                 visitDuration = 0
                 for actId in activitiesIds:
                     act = current_route_plan.getActivityFromEntireRoutePlan(actId)
-                    visitDuration += act.getDuration()
+                    visitDuration += act.duration
                 visitEarliestStart = firstAct.earliestStartTime
                 visitLatestStart = firstAct.latestStartTime
 

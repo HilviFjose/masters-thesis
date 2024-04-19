@@ -51,22 +51,13 @@ class Activity:
         if isinstance(coordinate_input, tuple) and len(coordinate_input) == 2 and all(isinstance(num, float) for num in coordinate_input):
             return coordinate_input  # Return the tuple directly if it's correctly formatted
         
-        elif isinstance(coordinate_input, str):
-            try:
-                # Remove parentheses and split by comma
-                stripped_string = coordinate_input.strip("()")
-                split_strings = stripped_string.split(", ")
-                # Convert each part to float and form a tuple
-                return tuple(float(num) for num in split_strings)
-            except ValueError:
-                # Handle the case where conversion to float fails
-                print(f"Could not convert string to tuple of floats: {coordinate_input}")
-                return (0.0, 0.0)
-
-        else:
-            # Handle unexpected format
-            print(f"Unexpected format for coordinate_input: {type(coordinate_input)}")
-            return (0.0, 0.0)
+       
+        # Remove parentheses and split by comma
+        stripped_string = coordinate_input.strip("()")
+        split_strings = stripped_string.split(", ")
+        # Convert each part to float and form a tuple
+        return tuple(float(num) for num in split_strings)
+          
         
     def makePresNodes(self, input_data): 
         '''
@@ -93,22 +84,6 @@ class Activity:
             return list.append(input_data)
         return input_data
 
-        
-    '''
-    def makePresNodes(self, string): 
-        #Får inn dataen fra dataframen og returnerer to lister med presedens informasjonen 
-        PrevNode = []
-        PrevNodeInTime = []
-        if not string: 
-            return PrevNode, PrevNodeInTime
-        strList = string.split(",")
-        for elem in strList: 
-            if ":" in elem: 
-                PrevNodeInTime.append(tuple(int(part.strip()) for part in elem.split(":")))
-            else: 
-                PrevNode.append(int(elem))
-        return PrevNode, PrevNodeInTime
-    '''
     
     def makePresNodes(self, input_data): #TODO: AGNES: Ny funksjon her til fordel for den over. Stemmer det at det er dette det den skal gjøre, Agnes?
         '''
@@ -140,49 +115,34 @@ class Activity:
     #get funksjonene henter ut Acitivy variablene og parameterne 
 
     def getNewEarliestStartTime(self): 
-        if len(self.newEarliestStartTime) == 0: 
-            return 0
-        return max(list(self.newEarliestStartTime.values()))
- 
+    # Directly use max on dictionary values, with a default return value of 0 if dictionary is empty
+        return max(self.newEarliestStartTime.values(), default=0)
     
     def getNewLatestStartTime(self): 
-        if len(self.newLatestStartTime) == 0: 
-            return 1440
-        return min(list(self.newLatestStartTime.values()))
-    
+    # Directly use min on dictionary values, with a default return value of 1440 if dictionary is empty
+        return min(self.newLatestStartTime.values(), default=1440)
 
     def setNewEarliestStartTime(self, newEarliestStartTimeFromDepAct, depAct): 
-        #earliest starttime endres dersom den er høyere enn nåværende latest startime
         self.newEarliestStartTime[depAct] = newEarliestStartTimeFromDepAct
-        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if max(self.getNewEarliestStartTime(), self.earliestStartTime) > min(self.latestStartTime, self.getNewLatestStartTime()): 
-            self.possibleToInsert = False
-        else: 
-            self.possibleToInsert = True
+        # Calculate once and reuse
+        newEarliest = self.getNewEarliestStartTime()
+        newLatest = self.getNewLatestStartTime()
+        # Simplified conditional logic
+        self.possibleToInsert = not (max(newEarliest, self.earliestStartTime) > min(self.latestStartTime, newLatest))
 
     def setNewLatestStartTime(self, newLatestStartTimeFromDepAct, depAct): 
-        #latest starttime endres dersom den er lavere enn nåværende latest startime
         self.newLatestStartTime[depAct] = newLatestStartTimeFromDepAct
-        #Dersom eraliest startime er høyre enn lateststartime, settes begge til null fordi aktiviten er blitt umulig å gjennomføre
-        if max(self.getNewEarliestStartTime(), self.earliestStartTime) > min(self.latestStartTime, self.getNewLatestStartTime()): 
-            self.possibleToInsert = False
-        else: 
-            self.possibleToInsert = True
-            
+        # Calculate once and reuse
+        newEarliest = self.getNewEarliestStartTime()
+        newLatest = self.getNewLatestStartTime()
+        # Simplified conditional logic
+        self.possibleToInsert = not (max(newEarliest, self.earliestStartTime) > min(self.latestStartTime, newLatest))
     
-    def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
-        self.employeeNotAllowedDueToPickUpDelivery = list 
 
-
-    def restartActivity(self): 
-        self.startTime = None
-        self.newEarliestStartTime = dict.fromkeys(self.dependentActivities, 0)
-        self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
-        self.employeeNotAllowedDueToPickUpDelivery = []
-        self.possibleToInsert = True
-
+    #TODO: Slette denne? 
+    '''
     def updateEmployeeHistory(self, employeeId):
         continuity_score, employeeIds = next(iter(self.employeeHistory.items()))
         employeeIds.append(employeeId)  
         self.employeeHistory[continuity_score] = employeeIds
-        
+    '''   
