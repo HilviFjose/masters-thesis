@@ -504,8 +504,8 @@ class RoutePlan:
         '''    
 
         #Her håndteres pick up and delivery
-        if activity.getPickUpActivityID() != 0 : 
-            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
+        if activity.pickUpActivityID != 0 : 
+            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.pickUpActivityID, day)
             activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
             
         #Her håndteres presedens.   

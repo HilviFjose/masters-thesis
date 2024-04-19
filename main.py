@@ -35,7 +35,7 @@ def main():
     constructor.route_plan.printSolution("initial", "ingen operator")
     
     initial_route_plan = constructor.route_plan 
-    print('Allocated patients in initial solution',len(constructor.route_plan.allocatedcoordinate_inputPatients.keys()))
+    #print('Allocated patients in initial solution',len(constructor.route_plan.allocatedcoordinate_inputPatients.keys()))
     print('First objective in initial solution',constructor.route_plan.objective)
     if constructor.route_plan.objective[0] != constructor.route_plan.getOriginalObjective():
         print(f" Construction: Penalty in first objective: {constructor.route_plan.getOriginalObjective() - constructor.route_plan.objective[0]}. Original Objective: {constructor.route_plan.getOriginalObjective()}, Updated Objective: {constructor.route_plan.objective[0]} ")

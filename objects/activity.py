@@ -47,14 +47,26 @@ class Activity:
         self.possibleToInsert = True
 
     def makeLocationTuple(self, coordinate_input):
-        print(coordinate_input)
         # Check if the input is already a tuple of two floats
         if isinstance(coordinate_input, tuple) and len(coordinate_input) == 2 and all(isinstance(num, float) for num in coordinate_input):
             return coordinate_input  # Return the tuple directly if it's correctly formatted
+        
+        elif isinstance(coordinate_input, str):
+            try:
+                # Remove parentheses and split by comma
+                stripped_string = coordinate_input.strip("()")
+                split_strings = stripped_string.split(", ")
+                # Convert each part to float and form a tuple
+                return tuple(float(num) for num in split_strings)
+            except ValueError:
+                # Handle the case where conversion to float fails
+                print(f"Could not convert string to tuple of floats: {coordinate_input}")
+                return (0.0, 0.0)
+
         else:
-            # Log an error, raise an exception, or handle the unexpected format as needed
-            print(f"Unexpected format for coordinate_input: {coordinate_input}")
-            return (0.0, 0.0)  # Returning a default value or handling as appropriate for your use case
+            # Handle unexpected format
+            print(f"Unexpected format for coordinate_input: {type(coordinate_input)}")
+            return (0.0, 0.0)
         
     def makePresNodes(self, input_data): 
         '''
@@ -74,73 +86,7 @@ class Activity:
                 else:
                     PrevNode.append(int(elem))
         return PrevNode, PrevNodeInTime
-    '''
-class Activity:
-    def __init__(self, df, id):
-        self.id = id 
-        self.latestStartTime = df.loc[id]["latestStartTime"]
-        self.earliestStartTime = df.loc[id]["earliestStartTime"]
-        self.duration = df.loc[id]["duration"]
-        self.skillReq = df.loc[id]["skillRequirement"]
-        self.heaviness = df.loc[id]["heaviness"]
-        self.pickUpActivityID = df.loc[id]["sameEmployeeActivityId"]
-        self.location = self.makeLocationTuple(df.loc[id]["location"])   #Endret på denne for å få til lokasjon 
-        self.employeeRestricions = df.loc[id]["employeeRestriction"]
-        self.continuityGroup = df.loc[id]["continuityGroup"]
-        self.employeeHistory = df.loc[id]["employeeHistory"]
-        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevPrece"])
-        #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
-        self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextPrece"])
-        self.patient = df.loc[id]["patientId"]
-        self.treatmentId = df.loc[id]["treatmentId"]
-
-        self.nActInPatient = df.loc[id]["nActInPatient"]
-        self.nActInTreat = df.loc[id]["nActInTreat"]
-        self.nActInVisit = df.loc[id]["numActivitiesInVisit"]
-
-        self.suitability = df.loc[id]["utility"]
-        
-        self.startTime = None
-        #self.newLatestStartTime = 1440
-        #self.newEeariestStartTime = 0
-        self.employeeNotAllowedDueToPickUpDelivery = []
-        self.possibleToInsert = True
-
-        #Lager dependent activities. Som er aktiviteter som denne noden påvirkes av 
-        self.dependentActivities = self.PrevNode + self.NextNode 
-        for elem in (self.PrevNodeInTime + self.NextNodeInTime): 
-            self.dependentActivities.append(elem[0])
-
-        self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
-        self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
-
-        self.sameEmployeeAcitivtyID = df.loc[id]["sameEmployeeActivityId"]
-        
-    #make funskjonene setter parameterne til Acitivy objektet 
-    
-    def makeLocationTuple(self, coordinate_string): 
-        coordinate_string = "(59.8703, 10.8382)"
-
-        # Strip the parentheses
-        stripped_string = coordinate_string.strip("()")
-
-        # Split the string by comma
-        split_strings = stripped_string.split(", ")
-
-        # Convert the split strings into floats and create a tuple
-        return tuple(float(num) for num in split_strings)
-   
-        
-    def makeEmployeeRestriction(self, string): #Tror denne nå kan slettes - Guro
-        if "," in string: 
-            return string.split(",")
-        try:
-            return [int(string)]
-        except: 
-            return [] 
-    
-    '''
-    
+ 
     def makeEmployeeRestriction(self, input_data): 
         list = []
         if isinstance(input_data, int):
@@ -192,17 +138,6 @@ class Activity:
             return PrevNode, PrevNodeInTime
 
     #get funksjonene henter ut Acitivy variablene og parameterne 
-    def getSkillreq(self): 
-        return self.skillReq
-    
-    def setStartTime(self, startTime): 
-        self.startTime = startTime
-
-    def getStartTime(self):
-        return self.startTime
-        
-    def getEmployeeRestriction(self): 
-        return self.employeeRestricions
 
     def getNewEarliestStartTime(self): 
         if len(self.newEarliestStartTime) == 0: 
@@ -215,24 +150,6 @@ class Activity:
             return 1440
         return min(list(self.newLatestStartTime.values()))
     
-    def getDuration(self): 
-        return self.duration
-    
-    def getID(self): 
-        return self.id
-    
-    def getPickUpActivityID(self): 
-        return self.pickUpActivityID
-    
-    def getPrevNode(self):
-        return self.PrevNode 
-    
-    def getPrevNodeInTime(self): 
-        return self.PrevNodeInTime
-    
-    def getHeaviness(self):
-        return self.heaviness
-    #set og add funsksjonene oppdatere aktivtetens parametere
 
     def setNewEarliestStartTime(self, newEarliestStartTimeFromDepAct, depAct): 
         #earliest starttime endres dersom den er høyere enn nåværende latest startime
@@ -253,8 +170,6 @@ class Activity:
             self.possibleToInsert = True
             
     
-
-
     def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
         self.employeeNotAllowedDueToPickUpDelivery = list 
 
@@ -271,6 +186,3 @@ class Activity:
         employeeIds.append(employeeId)  
         self.employeeHistory[continuity_score] = employeeIds
         
-#act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 64)
-#print("earliestStartTime", act70.newEeariestStartTime)
-#print("newLatestStartTime", act70.newLatestStartTime)
