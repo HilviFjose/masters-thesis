@@ -73,10 +73,7 @@ class Route:
                 S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
                 max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + math.ceil(T_ij[activity.id][j.id]) <= j.startTime):  
                 activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
-                try: 
-                    self.route.insert(index_count, activity) 
-                except: 
-                    print("datatype", type(self.route))
+                self.route.insert(index_count, activity) 
                 if activity.location != depot: 
                     self.locations.append(activity.location)
                     self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
@@ -160,16 +157,15 @@ class Route:
     #TODO: Oppdates ikke oppover igjen i hierarkiet
 
     def removeActivityID(self, activityID):
-        # Find the index of the activity with the given ID using a more efficient search
         indexes = [i for i, act in enumerate(self.route) if act.id == activityID]
-        
+    
         # Check if the activity was found; since activity IDs should be unique, we only need to deal with the first match
         if indexes:
             index = indexes[0]
+
             activity_to_remove = self.route[index]
             
-            # Directly remove the activity using numpy's efficient deletion
-            self.route = np.delete(self.route, index)
+            activity_to_remove = self.route.pop(index)  # Use pop to directly remove by index
             
             # Reset the removed activity's properties
             activity_to_remove.employeeNotAllowedDueToPickUpDelivery = []
@@ -177,7 +173,6 @@ class Route:
             
             # Update dependencies for the removed activity
             self.updateActivityDependenciesInRoute(activity_to_remove)
-    
 
     
     def insertActivityOnIndex(self, activity, index):

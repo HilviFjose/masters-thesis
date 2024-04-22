@@ -29,6 +29,7 @@ class LocalSearch:
         # CHANGE EMPLOYEE
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
+
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
         
@@ -271,39 +272,60 @@ class LocalSearch:
         return best_found_candidate
 
     
+    '''
+    Her holder vi ikke påmed selve rute
+    Det er ruten hvor det ligger aktiviteter i fra før som får feilmelding. 
+    '''
+    
 
     def change_employee(self, route_plan, day):
         #TODO: Legge inn comdition som i swap_activity. Dersom del av pickup&delivery par, tas andre halvdel ut og plasseres inn igjen.
         best_found_candidate = copy.deepcopy(route_plan)
+
+        before_list_status = False
+        after_list_status = False 
         
-        for route in route_plan.routes[day].values(): 
-            
+        for route in route_plan.routes[day].values():             
             for activity in route.route:
 
                 employee = route_plan.getEmployeeIDAllocatedForActivity(activity, day)
+          
+
                 otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.id, day)
                 sameEmployeeActivity = route_plan.getActivity(activity.pickUpActivityID, day)
 
                 for othEmpl in otherEmployees: 
+                    
+                    
                     new_candidate = copy.deepcopy(route_plan)
                     new_candidate.removeActivityFromEmployeeOnDay(employee, activity, day)
                     if sameEmployeeActivity != None: 
                         new_candidate.removeActivityFromEmployeeOnDay(employee, sameEmployeeActivity, day)
+                    
+                   
 
                      #TESTLEGGER TIL 
+
                     for testAct in new_candidate.routes[day][othEmpl].route: 
                         new_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, new_candidate.routes[day][othEmpl].day)
                         new_candidate.routes[day][othEmpl].updateActivityBasedOnDependenciesInRoute(testAct)
-                      
                     
+                  
+                   
+
+                    #Virker som at det her inne er liste 
                     status = new_candidate.insertActivityInEmployeesRoute(othEmpl, activity, day)
+
+
                     if status == False: 
                         continue
+                  
                   
                     if sameEmployeeActivity != None: 
                         status = new_candidate.insertActivityInEmployeesRoute(othEmpl, sameEmployeeActivity, day)
                         if status == False: 
                             continue
+                 
                   
                     new_candidate.updateObjective(self.current_iteration, self.total_iterations)
                     

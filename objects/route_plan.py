@@ -1,6 +1,6 @@
 
 import pandas as pd
-import numpy as np
+#import numpy as np
 import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
@@ -162,6 +162,7 @@ class RoutePlan:
                 for act in route.route: 
                     if act.id in activityIDs:
                         route.removeActivityID(act.id)
+        
 
     def remove_activityIDs_return_day(self, removed_activityIDs):
         original_day = None
@@ -482,12 +483,21 @@ class RoutePlan:
         insert_activity = copy.deepcopy(activity)
          
         for route in self.routes[day].values(): 
+
+            
+            
             if route.employee.id == employeeID:
+                if type(route.route) != list: 
+                    print("inne i insertActivityInEmployeesRoute", activity.id)
+                    route.printSoultion() 
                 #Beg: Må oppdatere grensene til alle i ruten som muligens kan flytte seg når vi prøver å legge til aktivtete
+
+                #Det er noen som er lister og noen som er arrays, det er 
               
                 self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
              
                 status = route.addActivity(insert_activity)
+
                 for routeActivity in route.route: 
                     self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
