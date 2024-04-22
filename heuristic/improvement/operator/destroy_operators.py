@@ -796,7 +796,9 @@ class DestroyOperators:
 
  
 #---------- HELP FUNCTIONS ----------
- 
+    '''
+    pasient removal gjøres for hver og hver pasient 
+    '''
     
 
     def patient_removal(self, selected_patient, route_plan): 

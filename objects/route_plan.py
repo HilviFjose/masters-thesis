@@ -57,50 +57,20 @@ class RoutePlan:
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
 
-    '''
-    Hvordan vil vi endre klassen med nye route_plan -> Vil ikke ha noen endringer i funksjonalitet, så fikser på oppsettet, men ingen 
-   
 
-    Notater Agnes: 
-    Gå gjennom hver 
-
-    Første aktivitet, finne den som den har same employee aktivitet med, og sjekke at det er plass til den. Det må ikke være i samme tids
-
-    Spørsmål/Problemer: 
-    * Den må jo iterere seg både gjennom tidspunkter og plasser i ruten. Det er altså tre ting å velge: rute, plass i rekkefølgen og starttidspunkt. 
-
-    Kan sjekke rutene og holde styr på hvordan viduene for innsetting ser ut, basert på det som ligger der.
-    Eller bare kjøre deepcopy av ruteplanen og sjekke om de neste innsettingen vil gå gjennom 
-    Da må vi også dypkopiere aktiviteten for, dette er ikke de ekte aktiviteen 
-
-    Dette kan nok kjøres rekursivt på noen måte.
-
-    Poenget er velge plass, 
-        Neste må velge plass,
-            Neste velge plass, 
-
-    for hver rute og hver indeks så: 
-        
-
-    '''
-        
-
+#TODO: Burde evaluere når disse sorteringsfunksjonene skal benyttes. Må ha en eller annen form for random innimellom hvertflal 
+#Nå brukes den alltid
     def sortRoutesByAcitivyLocation(self, routes, activity):
-        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
+       
         if activity.location == depot: 
             random.shuffle(routes)
             return routes
   
-   
         return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity.location[0]) + abs(route.averageLocation[1]- activity.location[1]))
 
-
+  
                 
     def getSortedRoutes(self, activity, day): 
-        
-        #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
-        # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
-        # Grupperer ruter basert på profesjonen til den ansatte
         
         routes_grouped_by_skill = {}
         for route in self.routes[day].values():
@@ -115,67 +85,71 @@ class RoutePlan:
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
-            #TODO: Sortere hvor mange som er 
-     
+             
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
-            random.shuffle(routes_for_skill)
+            random.shuffle(routes_for_skill) #Denne sto her før, vanskelig å forstår hvorfor, er muligens et annet alternativ til sortRoutesByActivityLocation
+
             
             routes += routes_for_skill
 
         return routes
 
+    '''
+    Oppdateringsinfo: 
+    I utganspunktet så skal man før hver flytting eller innsetting gjøre de hensynen man trenger, 
+    det er altså aldri nødvendig å rydde opp etter seg ford man i de neste 
+    '''
     def addActivityOnDay(self, activity, day):
-     
         
-        for route in self.getSortedRoutes(activity, day):
-  
-            #TODO: Update funskjonene burde sjekkes med de andre   
-            #TODO: Hvorfor er det bare denne ene som skal oppdateres i forhold til de andre? Er det fordi de  i ruten allerede er oppdatert
-            #Ettersom vi ikke kjører på de andre, så antar vi at de resterende aktivitetene har riktig oppdaterte grenserf fra andre ruter       
-            #Beg: Ettersom aktivteten ikke finnes i ruten, har den ikke oppdatert grensene mot andr aktiviteter  
-            
-            #Denne trenger vi nok ikke. Ford disse blir nok oppdatert av funksjonen under.
+        sorted_routes = self.getSortedRoutes(activity, day)
+
+        for route in sorted_routes:
    
             self.updateActivityBasedOnRoutePlanOnDay(activity, day)
 
-            #Beg: Disse aktivitetene flyttes muligens når vi skvinser inn aktivitet i ruta
+            #Beg: Disse aktivitetene flyttes muligens når vi skvinser inn aktivitet i rute
             for willPossiblyMoveActivity in route.route: 
                 self.updateActivityBasedOnRoutePlanOnDay(willPossiblyMoveActivity, day)
         
-            
-            insertStatus = route.addActivity(activity)
       
-            #TODO: Er det unødvendig å gjøre oppdatering både før og etter 
-            #Beg: Alle aktivteter kan ha blitt flyttet på i ruten og må derfor oppdatere grensene på tvers 
-            #Må gjøres på alle fordi alle kan ha blitt flyttet
-            for possiblyMovedActivity in route.route: 
-                self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
+            #OBS: Denne er fjernet nå grunnet at oppdateringen skal gjøres på forhånd, og ikke i ettertid
+            #for possiblyMovedActivity in route.route: 
+            #    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
         
-            if insertStatus:
+            
+            if route.addActivity(activity):
                 return True
+            
         return False
 
 
+    '''
+    Feil funnet: Det gjøres en fjerning først, som gjør at vi aldri vil sjekke den første 
+    '''
+
     def remove_activityIDs_from_route_plan(self, activityIDs):
+        activityIDs_set = set(activityIDs)
         for day in range(1, self.days +1): 
             for route in self.routes[day].values(): 
-                for act in route.route: 
-                    if act.id in activityIDs:
-                        route.removeActivityID(act.id)
+                inforoute = [act.id for act in route.route]
+                for actID in inforoute: 
+                    if actID in activityIDs_set:
+                        route.removeActivityID(actID)
         
 
-    def remove_activityIDs_return_day(self, removed_activityIDs):
+    def remove_activityIDs_return_day(self, activityIDs):
+        activityIDs_set = set(activityIDs)
         original_day = None
         for day in range(1, self.days +1): 
             for route in self.routes[day].values(): 
-                for act in route.route: 
-                    if act.id in removed_activityIDs:
-                        route.removeActivityID(act.id)
+                inforoute = [act.id for act in route.route]
+                for actID in inforoute: 
+                    if actID in activityIDs_set:
+                        route.removeActivityID(actID)
                         original_day = day
         return original_day
 
-    def getRoutePlan(self): 
-        return self.routes
+
     
     def printDictionaryTest(self, txtName):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
@@ -272,7 +246,7 @@ class RoutePlan:
         Return: 
         List (Int) employeeID til de ansatte som ikke er empl 
         
-        '''
+        
         empForAct = None
         activityIDinRoute = False
         otherEmpl = []
@@ -287,8 +261,31 @@ class RoutePlan:
             if route.employee.id != empForAct: 
                 otherEmpl.append(route.employee.id)
         return otherEmpl
-        
-        
+        '''
+
+        empForAct = None
+        allEmplIDs = set()
+
+        for route in self.routes[day].values():
+            for act in route.route:
+                # Add every employee ID encountered to the set.
+                allEmplIDs.add(route.employee.id)
+                
+                # If the current activity is the one we're interested in,
+                # record the employee ID and continue collecting others.
+                if act.id == activityID:
+                    empForAct = route.employee.id
+
+        # If the activityID was found and associated with an employee,
+        # remove that employee's ID from the set of all employee IDs.
+        if empForAct is not None:
+            allEmplIDs.discard(empForAct)
+            return list(allEmplIDs)
+        else:
+            # If the activity wasn't found, return an empty list.
+            return []
+            
+            
 
     def getActivity(self, actID, day): 
         '''
@@ -353,25 +350,6 @@ class RoutePlan:
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
-    '''
-    HER ER OBJEKTIVENE IKKE SLÅTT SAMMEN.
-    def updateObjective(self, current_iteration, total_iterations): 
-        self.objective = [0, 0, 0, 0, 0, 0]
-        self.calculateWeeklyHeaviness()
-        self.calculateDailyHeaviness()
-        self.calculateTotalContinuity()
-        self.objective[1] = self.totalContinuity
-        self.objective[2] = self.weeklyHeaviness
-        self.objective[3] = self.dailyHeaviness
-        for day in range(1, 1+self.days): 
-            for route in self.routes[day].values(): 
-                route.updateObjective()
-                self.objective[0] += route.suitability
-                self.objective[4] += route.aggSkillDiff 
-                self.objective[5] += route.travel_time   
-        #Oppdaterer første-objektivet med straff for illegal      
-        self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
-    '''
 
     def calculatePenaltyIllegalSolution(self, current_iteration, total_iterations):
         # Penalty in first objective per illegal treatment, visit or activity 
@@ -475,8 +453,10 @@ class RoutePlan:
         for route in self.routes[day].values(): 
             if route.employee.id == employee:
                 route.removeActivityID(activity.id)
+
+
                 #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
-                self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day)
+                #self.updateDependentActivitiesBasedOnRoutePlanOnDay(activity, day)
               
     def insertActivityInEmployeesRoute(self, employeeID, activity, day): 
         #Må dyp kopiere aktiviten slik at ikke aktiviteten i den orginale rotueplanen restartes
@@ -487,23 +467,24 @@ class RoutePlan:
             
             
             if route.employee.id == employeeID:
-                if type(route.route) != list: 
-                    print("inne i insertActivityInEmployeesRoute", activity.id)
-                    route.printSoultion() 
+                #TODO: Her må muligens de aktivitene som kan flyttes seg ved innsettingen av en annen aktivitet oppdateres på forhånd? 
                 #Beg: Må oppdatere grensene til alle i ruten som muligens kan flytte seg når vi prøver å legge til aktivtete
 
                 #Det er noen som er lister og noen som er arrays, det er 
+                for willPossiblyMoveActivity in route.route: 
+                    self.updateActivityBasedOnRoutePlanOnDay(willPossiblyMoveActivity, day)
               
                 self.updateActivityBasedOnRoutePlanOnDay(insert_activity, day)
              
+                return route.addActivity(insert_activity)
+                '''
                 status = route.addActivity(insert_activity)
 
                 for routeActivity in route.route: 
                     self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
-        
-    def getObjective(self): 
-        return self.objective
+                '''
+
     
   
 
@@ -585,7 +566,7 @@ class RoutePlan:
                     if act.id == activityID: 
                         route.removeActivityID(activityID)
                         #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer
-                        self.updateDependentActivitiesBasedOnRoutePlanOnDay(act, day)
+                        #self.updateDependentActivitiesBasedOnRoutePlanOnDay(act, day)
                         return day
                     
     def updateAllocationAfterPatientInsertor(self, patient, constructor): 
@@ -603,16 +584,6 @@ class RoutePlan:
 
 
     def getActivityAndActivityIndexAndRoute(self, actID): 
-        '''
-        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
-        
-        Arg: 
-        actID (int): ID til en aktivitet som gjøres en gitt dag
-        day (int): dagen aktiviten finnes i en rute  
-
-        Return: 
-        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
-        '''
         for day in range(1, self.days+1):
             for route in self.routes[day].values(): 
                 index = 0 
@@ -624,16 +595,6 @@ class RoutePlan:
 
 
     def getDayForActivityID(self, actID): 
-        '''
-        returnerer employee ID-en til den ansatte som er allokert til en aktivitet 
-        
-        Arg: 
-        actID (int): ID til en aktivitet som gjøres en gitt dag
-        day (int): dagen aktiviten finnes i en rute  
-
-        Return: 
-        activity (Activity) Activity objektet som finnes i en rute på en gitt dag
-        '''
         for day in range(1, self.days+1):
             for route in self.routes[day].values(): 
                 for act in route.route: 
