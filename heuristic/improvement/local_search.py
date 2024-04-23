@@ -1,7 +1,7 @@
 from objects.route_plan import RoutePlan
 from helpfunctions import *
 import copy
-import numpy as np 
+#import numpy as np 
 
 #TODO: Tenke mer over hvike operatorer vi har innad på en dag i vår struktur. 
 #Det må være noen operatorer for alle typer aktiviteter.
@@ -31,12 +31,16 @@ class LocalSearch:
            candidate = self.change_employee(candidate, day)
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
+
+        candidate.printSolution("Etter_change_employee", " ")
         
         # SWAP EMPLOYEE
         for day in range(1, self.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.days + 1):
             candidate = self.swap_employee(candidate, day)
+
+        candidate.printSolution("Etter_swap_employee", " ")
 
         # MOVE ACTIVITY
         for day in range(1, self.days + 1):
@@ -50,6 +54,8 @@ class LocalSearch:
                 new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
 
+        candidate.printSolution("Etter_move_activity", " ")
+
         # SWAP ACTIVITY 
         for day in range(1, self.days + 1):
             employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
@@ -61,7 +67,9 @@ class LocalSearch:
             for emplID in employeeOnDayList: 
                 new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
-
+        
+        candidate.printSolution("Etter_swap_activity", " ")
+       
         return candidate
     
    
@@ -218,7 +226,7 @@ class LocalSearch:
 
     def swap_employee(self, route_plan, day):
         route_plan.updateObjective(self.current_iteration, self.total_iterations)
-        best_objective = route_plan.getObjective()
+        best_objective = route_plan.objective
         best_found_candidate = route_plan
 
         for route1 in route_plan.routes[day].values(): 
@@ -271,39 +279,55 @@ class LocalSearch:
         return best_found_candidate
 
     
+    '''
+    Her holder vi ikke påmed selve rute
+    Det er ruten hvor det ligger aktiviteter i fra før som får feilmelding. 
+    '''
+    
 
     def change_employee(self, route_plan, day):
         #TODO: Legge inn comdition som i swap_activity. Dersom del av pickup&delivery par, tas andre halvdel ut og plasseres inn igjen.
         best_found_candidate = copy.deepcopy(route_plan)
         
-        for route in route_plan.routes[day].values(): 
-            
+        for route in route_plan.routes[day].values():             
             for activity in route.route:
 
                 employee = route_plan.getEmployeeIDAllocatedForActivity(activity, day)
+          
+
                 otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.id, day)
                 sameEmployeeActivity = route_plan.getActivity(activity.pickUpActivityID, day)
 
                 for othEmpl in otherEmployees: 
+                    
+                    
                     new_candidate = copy.deepcopy(route_plan)
                     new_candidate.removeActivityFromEmployeeOnDay(employee, activity, day)
                     if sameEmployeeActivity != None: 
                         new_candidate.removeActivityFromEmployeeOnDay(employee, sameEmployeeActivity, day)
+                    
+                   
 
                      #TESTLEGGER TIL 
+
                     for testAct in new_candidate.routes[day][othEmpl].route: 
                         new_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, new_candidate.routes[day][othEmpl].day)
                         new_candidate.routes[day][othEmpl].updateActivityBasedOnDependenciesInRoute(testAct)
-                      
                     
+                  
+                   
+
+                    #Virker som at det her inne er liste 
                     status = new_candidate.insertActivityInEmployeesRoute(othEmpl, activity, day)
                     if status == False: 
                         continue
+                  
                   
                     if sameEmployeeActivity != None: 
                         status = new_candidate.insertActivityInEmployeesRoute(othEmpl, sameEmployeeActivity, day)
                         if status == False: 
                             continue
+                 
                   
                     new_candidate.updateObjective(self.current_iteration, self.total_iterations)
                     

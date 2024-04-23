@@ -13,49 +13,27 @@ class Employee:
         self.skillLevel = df.loc[id]["professionalLevel"]
         self.shifts = self.getShifts(df.loc[id]["schedule"])
         self.id = id
-    
-    #TODO: Denne er veldig midlertidig håndtert. Må endres slik at den tar inn de faktiske skiftene.
-    #Den henter ut skiftene nå også sette rtidspunktene basert pådet. Men burde endres på kanskje 
-    def getShifts(self, schedule): 
-        employeeShift = {day: {"startShift": 0, "endShift" : 0 } for day in range(1,days+1)} 
-        #listOfShifts = shiftString.replace("(", "").replace(")", "").split(", ")
-        for shift in schedule: 
-            d = (int(shift) - 1) // 3 + 1 
-            time = (int(shift) -1) % 3
-            if d > days:  # Skip shifts that map to a day outside the valid range
-                continue
-            if time == 0: 
-                employeeShift[d]["startShift"] =  0 
-                employeeShift[d]["endShift"] = 480  
-            if time == 1: 
-                employeeShift[d]["startShift"] =  480
-                employeeShift[d]["endShift"] =  960
-            if time == 2: 
-                employeeShift[d]["startShift"] =  960 
-                employeeShift[d]["endShift"] =  1440
 
-        #print(employeeShift) #TODO: Her skjer det noe rart. Alle ansatte med kveldsskift: de ansatte får ikke jobb tildelt mandag 
+    def getShifts(self, schedule):
+        # Initialize shifts for each day with default times
+        employeeShift = {day: {"startShift": 0, "endShift": 0} for day in range(1, days + 1)}
+
+        # Define shift times based on the 'time' variable
+        shift_times = {
+            0: {"startShift": 0, "endShift": 480},
+            1: {"startShift": 480, "endShift": 960},
+            2: {"startShift": 960, "endShift": 1440}
+        }
+
+        for shift in schedule:
+            day = (int(shift) - 1) // 3 + 1
+            time = (int(shift) - 1) % 3
+            if day > days:  # Ensure the day is within the valid range
+                continue
+            # Assign the shift times directly from the predefined 'shift_times' dictionary
+            employeeShift[day].update(shift_times[time])
+
         return employeeShift
 
-    def getShiftStart(self, day): 
-        return self.shifts[day]["startShift"] 
-    
-    def getShiftEnd(self, day):  
-        return self.shifts[day]["endShift"]
-    
-    def getSkillLevel(self): 
-        return self.skillLevel
-    
-    def getID(self): 
-        return self.id
 
-#TESTING
-'''
-df_employees = (employeeGeneration.employeeGenerator()).set_index(["employeeId"])    
-for i in range(1,15):
-    e = Employee(df_employees, i)
-    print('id', e.id)
-    print('skill', e.skillLevel)
-    print('schedule', e.shifts)
-'''
 
