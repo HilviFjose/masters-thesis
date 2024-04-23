@@ -145,6 +145,9 @@ def compare_dictionary_with_candidate(candidate):
             print("Elements present in dictionary but missing in candidate:", missing_in_act)
         if missing_dict:
             print("Elements present in candidate but missing in dictionary:", missing_in_dict)
+    if duplicates: 
+        status = False
+        print("ERROR: Duplicated in candidate ", duplicates)
     return status
 
 def compare_allocated_dictionaries(file):
@@ -170,7 +173,9 @@ def compare_allocated_dictionaries(file):
             print("Elements present in treatment dictionary but missing in patient dictionary:", missing_in_patientval)
     return status
 
+#TODO: Hvorfor kjøres ikke denne noe sted??? 
 def check_consistency(file):
+    status = True  
     for i in range(df_patients.shape[0]):
         patientID = df_patients.index[i]
         allocated_patient_dict = get_dictionary(file, 'allocated patients')
@@ -179,6 +184,7 @@ def check_consistency(file):
             break 
         if patientID not in allocated_patient_dict.keys(): 
             print("ERROR: patient ", patientID, "er hverken i not allocated eller i allocated dict")
+            status = False
         for treatmentID in df_patients.loc[patientID, "treatmentsIds"]:
             treatment_dict = get_dictionary(file, 'treatments')
             illegal_treatments = extract_list(file, 'illegalNotAllocatedTreatments')
@@ -186,6 +192,7 @@ def check_consistency(file):
                 break
             if treatmentID not in treatment_dict.keys():
                 print("ERROR: treatment ", treatmentID, "for pasient", patientID, "er hverken i not allocated eller i allocatd dict")
+                status = False
             for visitID in df_treatments.loc[treatmentID, "visitsIds"]:
                 visit_dict = get_dictionary(file, 'visits')
                 illegal_visitlist = list(get_dictionary(file, "illegalNotAllocatedVisits").keys())
@@ -193,10 +200,14 @@ def check_consistency(file):
                     break
                 if visitID not in visit_dict.keys():
                     print("ERROR: visit ", visitID, "in treatment ", treatmentID, "for patient ", patientID, "er hverken i allocated eller not allocated dict")
+                    status = False
+
                 for activityID in df_visits.loc[visitID, "activitiesIds"]:
                     illegal_activity_list = list(get_dictionary(file, "illegalNotAllocatedActivities").keys())
                     if (activityID not in [item for sublist in visit_dict.values() for item in sublist]) and activityID not in illegal_activity_list: 
                         print("ERROR: activity ", activityID, "in visit ", visitID, "in treatment ", treatmentID, "for patient ", patientID, "er borte!!!!")
+                        status = False
+        return status
 
 def check_objective(file_path):
     status = True
@@ -218,7 +229,7 @@ def check_objective(file_path):
 
     # Check if objective is similar
     if not objective_value == int(float(aggregated_utility)):
-        print("ERROR - Aggregated calculated objective ", aggregated_utility, " is not same as objective in candidate", first_objective_value)
+        print("ERROR - Aggregated calculated objective ", aggregated_utility, " is not same as objective in candidate") #, first_objective_value)
         status = False
     return status
 
@@ -355,6 +366,50 @@ def check_precedence_within_file(file):
                 status3a = False
     return status1, status2a, status2b, status3a, status3b
 
+
+# ------------------- TEST FOR SAMEEMPLOYEE ---------------------
+
+def parse_employee_assignments(file_path):
+    """Parse the provided text file to extract employee assignments for activities."""
+    activities_to_employee = {}
+    current_employee = None
+    with open(file_path, 'r') as file:
+        for line in file:
+            line = line.strip()
+            if 'ANSATT' in line:
+                # Assumes format "DAG X ANSATT Y"
+                parts = line.split()
+                current_employee = parts[-1]  # Assuming the employee ID is at the end
+            elif 'activity' in line:
+                match = re.search(r'activity (\d+)', line)
+                if match:
+                    activity_id = int(match.group(1))
+                    activities_to_employee[activity_id] = current_employee
+    return activities_to_employee
+
+def check_employee_consistency(file_path):
+    activities_to_employee = parse_employee_assignments(file_path)
+    """Check that activities with a defined 'sameEmployeeActivityId' are assigned to the same employee."""
+    inconsistencies = {}
+    for index, row in df_activities.iterrows():
+        activity_id = index
+        same_activity_id = row['sameEmployeeActivityId']
+        if pd.notna(same_activity_id):  # Check if there is a linked activity
+            employee1 = activities_to_employee.get(activity_id)
+            employee2 = activities_to_employee.get(same_activity_id)
+            if employee1 != employee2 and employee1 != None and employee2 != None:
+                inconsistencies[activity_id] = (employee1, employee2)
+    if inconsistencies:
+        print("Inconsistencies found in employee assignments for activities:")
+    for activity_id, (emp1, emp2) in inconsistencies.items():
+        print(f"Activity {activity_id} is assigned to employee {emp1}, but its linked activity is assigned to employee {emp2}")
+
+    if inconsistencies: 
+        return False 
+    return True 
+
+#------------ TEST FOR SAMEEMPLOYEE -----------------
+
 # Example usage
 username = 'agnesost'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
@@ -384,7 +439,15 @@ if status6 == False:
     print("SOmething wrong in", file_path_1)
     print("---------------------------")
 
+status7 = check_employee_consistency(file_path_1)
+if status7 == False: 
+    print("SOmething wrong in", file_path_1)
+    print("---------------------------")
 
+status8 = check_consistency(file_path_1)
+if status8 == False: 
+    print("SOmething wrong in", file_path_1)
+    print("---------------------------")
 
 
 status1 = compare_dictionary_with_candidate(file_path_2)
@@ -407,6 +470,15 @@ if status6 == False:
     print("SOmething wrong in", file_path_2)
     print("---------------------------")
 
+status7 = check_employee_consistency(file_path_2)
+if status7 == False: 
+    print("SOmething wrong in", file_path_2)
+    print("---------------------------")
+
+status8 = check_consistency(file_path_2)
+if status8 == False: 
+    print("SOmething wrong in", file_path_2)
+    print("---------------------------")
 
 
 for cand in range(1, iterations+1): 
@@ -432,5 +504,17 @@ for cand in range(1, iterations+1):
         if status6 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
+
+        status7 = check_employee_consistency(file_path_candidate)
+        if status7 == False: 
+            print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+            print("---------------------------")
+        
+        
+        status8 = check_consistency(file_path_candidate)
+        if status8 == False: 
+            print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+            print("---------------------------")
+
 
 
