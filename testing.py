@@ -148,6 +148,9 @@ def compare_dictionary_with_candidate(candidate):
     if duplicates: 
         status = False
         print("ERROR: Duplicated in candidate ", duplicates)
+    if duplicates: 
+        status = False
+        print("ERROR: Duplicated in candidate ", duplicates)
     return status
 
 def compare_allocated_dictionaries(file):
@@ -175,6 +178,7 @@ def compare_allocated_dictionaries(file):
 
 #TODO: Hvorfor kjøres ikke denne noe sted??? 
 def check_consistency(file):
+    status = True  
     for i in range(df_patients.shape[0]):
         patientID = df_patients.index[i]
         allocated_patient_dict = get_dictionary(file, 'allocated patients')
@@ -183,6 +187,7 @@ def check_consistency(file):
             break 
         if patientID not in allocated_patient_dict.keys(): 
             print("ERROR: patient ", patientID, "er hverken i not allocated eller i allocated dict")
+            status = False
         for treatmentID in df_patients.loc[patientID, "treatmentsIds"]:
             treatment_dict = get_dictionary(file, 'treatments')
             illegal_treatments = extract_list(file, 'illegalNotAllocatedTreatments')
@@ -190,6 +195,7 @@ def check_consistency(file):
                 break
             if treatmentID not in treatment_dict.keys():
                 print("ERROR: treatment ", treatmentID, "for pasient", patientID, "er hverken i not allocated eller i allocatd dict")
+                status = False
             for visitID in df_treatments.loc[treatmentID, "visitsIds"]:
                 visit_dict = get_dictionary(file, 'visits')
                 illegal_visitlist = list(get_dictionary(file, "illegalNotAllocatedVisits").keys())
@@ -197,10 +203,14 @@ def check_consistency(file):
                     break
                 if visitID not in visit_dict.keys():
                     print("ERROR: visit ", visitID, "in treatment ", treatmentID, "for patient ", patientID, "er hverken i allocated eller not allocated dict")
+                    status = False
+
                 for activityID in df_visits.loc[visitID, "activitiesIds"]:
                     illegal_activity_list = list(get_dictionary(file, "illegalNotAllocatedActivities").keys())
                     if (activityID not in [item for sublist in visit_dict.values() for item in sublist]) and activityID not in illegal_activity_list: 
                         print("ERROR: activity ", activityID, "in visit ", visitID, "in treatment ", treatmentID, "for patient ", patientID, "er borte!!!!")
+                        status = False
+        return status
 
 def check_objective(file_path):
     status = True
@@ -390,7 +400,7 @@ def check_employee_consistency(file_path):
         if pd.notna(same_activity_id):  # Check if there is a linked activity
             employee1 = activities_to_employee.get(activity_id)
             employee2 = activities_to_employee.get(same_activity_id)
-            if employee1 != employee2:
+            if employee1 != employee2 and employee1 != None and employee2 != None:
                 inconsistencies[activity_id] = (employee1, employee2)
     if inconsistencies:
         print("Inconsistencies found in employee assignments for activities:")
@@ -437,7 +447,10 @@ if status7 == False:
     print("SOmething wrong in", file_path_1)
     print("---------------------------")
 
-
+status8 = check_consistency(file_path_1)
+if status8 == False: 
+    print("SOmething wrong in", file_path_1)
+    print("---------------------------")
 
 
 status1 = compare_dictionary_with_candidate(file_path_2)
@@ -465,42 +478,12 @@ if status7 == False:
     print("SOmething wrong in", file_path_2)
     print("---------------------------")
 
+status8 = check_consistency(file_path_2)
+if status8 == False: 
+    print("SOmething wrong in", file_path_2)
+    print("---------------------------")
 
-#------------MIDLERTIDIG TEST START---------------
 
-file_name_list_mid = ["Etter_change_employee", "Etter_swap_employee", "Etter_move_activity", "Etter_swap_activity"]
-
-for file_name in file_name_list_mid: 
-        file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+file_name+'.txt'  
-        
-        status1 = compare_dictionary_with_candidate(file_path_candidate)
-        if status1 == False:
-            print("HAPPENED IN", file_name)
-            print("---------------------------")
-
-        status2 = compare_allocated_dictionaries(file_path_candidate)
-        if status2 == False: 
-            print("HAPPENED IN",  file_name)
-            print("---------------------------")
-        
-        status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_candidate)
-        if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
-            print("HAPPENED IN",  file_name)
-            print("---------------------------") 
-        
-        status6 = check_objective(file_path_candidate)
-        if status6 == False: 
-            print("HAPPENED IN",  file_name)
-            print("---------------------------")
-
-        status7 = check_employee_consistency(file_path_candidate)
-        if status7 == False: 
-            print("SOmething wrong in", file_name)
-            print("---------------------------")
-
-#------------MIDLERTIDIG TEST SLUTT---------------
-
-'''
 for cand in range(1, iterations+1): 
     for file_name in file_name_list: 
         file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+str(cand)+'candidate'+file_name+'.txt'  
@@ -529,5 +512,12 @@ for cand in range(1, iterations+1):
         if status7 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
-'''
+        
+        
+        status8 = check_consistency(file_path_candidate)
+        if status8 == False: 
+            print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+            print("---------------------------")
+
+
 
