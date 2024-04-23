@@ -158,7 +158,8 @@ class Route:
 
     def removeActivityID(self, activityID):
         indexes = [i for i, act in enumerate(self.route) if act.id == activityID]
-    
+        if activityID == 88: 
+            print("kommer hit - 3")
         # Check if the activity was found; since activity IDs should be unique, we only need to deal with the first match
         if indexes:
             index = indexes[0]

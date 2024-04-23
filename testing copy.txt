@@ -173,7 +173,6 @@ def compare_allocated_dictionaries(file):
             print("Elements present in treatment dictionary but missing in patient dictionary:", missing_in_patientval)
     return status
 
-#TODO: Hvorfor kjøres ikke denne noe sted??? 
 def check_consistency(file):
     for i in range(df_patients.shape[0]):
         patientID = df_patients.index[i]
@@ -359,50 +358,6 @@ def check_precedence_within_file(file):
                 status3a = False
     return status1, status2a, status2b, status3a, status3b
 
-
-# ------------------- TEST FOR SAMEEMPLOYEE ---------------------
-
-def parse_employee_assignments(file_path):
-    """Parse the provided text file to extract employee assignments for activities."""
-    activities_to_employee = {}
-    current_employee = None
-    with open(file_path, 'r') as file:
-        for line in file:
-            line = line.strip()
-            if 'ANSATT' in line:
-                # Assumes format "DAG X ANSATT Y"
-                parts = line.split()
-                current_employee = parts[-1]  # Assuming the employee ID is at the end
-            elif 'activity' in line:
-                match = re.search(r'activity (\d+)', line)
-                if match:
-                    activity_id = int(match.group(1))
-                    activities_to_employee[activity_id] = current_employee
-    return activities_to_employee
-
-def check_employee_consistency(file_path):
-    activities_to_employee = parse_employee_assignments(file_path)
-    """Check that activities with a defined 'sameEmployeeActivityId' are assigned to the same employee."""
-    inconsistencies = {}
-    for index, row in df_activities.iterrows():
-        activity_id = index
-        same_activity_id = row['sameEmployeeActivityId']
-        if pd.notna(same_activity_id):  # Check if there is a linked activity
-            employee1 = activities_to_employee.get(activity_id)
-            employee2 = activities_to_employee.get(same_activity_id)
-            if employee1 != employee2:
-                inconsistencies[activity_id] = (employee1, employee2)
-    if inconsistencies:
-        print("Inconsistencies found in employee assignments for activities:")
-    for activity_id, (emp1, emp2) in inconsistencies.items():
-        print(f"Activity {activity_id} is assigned to employee {emp1}, but its linked activity is assigned to employee {emp2}")
-
-    if inconsistencies: 
-        return False 
-    return True 
-
-#------------ TEST FOR SAMEEMPLOYEE -----------------
-
 # Example usage
 username = 'agnesost'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
@@ -432,11 +387,6 @@ if status6 == False:
     print("SOmething wrong in", file_path_1)
     print("---------------------------")
 
-status7 = check_employee_consistency(file_path_1)
-if status7 == False: 
-    print("SOmething wrong in", file_path_1)
-    print("---------------------------")
-
 
 
 
@@ -460,13 +410,7 @@ if status6 == False:
     print("SOmething wrong in", file_path_2)
     print("---------------------------")
 
-status7 = check_employee_consistency(file_path_2)
-if status7 == False: 
-    print("SOmething wrong in", file_path_2)
-    print("---------------------------")
-
-
-#------------MIDLERTIDIG TEST START---------------
+#------------MIDLERTIDIG TEST ---------------
 
 file_name_list_mid = ["Etter_change_employee", "Etter_swap_employee", "Etter_move_activity", "Etter_swap_activity"]
 
@@ -493,14 +437,9 @@ for file_name in file_name_list_mid:
             print("HAPPENED IN",  file_name)
             print("---------------------------")
 
-        status7 = check_employee_consistency(file_path_candidate)
-        if status7 == False: 
-            print("SOmething wrong in", file_name)
-            print("---------------------------")
 
-#------------MIDLERTIDIG TEST SLUTT---------------
 
-'''
+
 for cand in range(1, iterations+1): 
     for file_name in file_name_list: 
         file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+str(cand)+'candidate'+file_name+'.txt'  
@@ -525,9 +464,4 @@ for cand in range(1, iterations+1):
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
 
-        status7 = check_employee_consistency(file_path_candidate)
-        if status7 == False: 
-            print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
-            print("---------------------------")
-'''
 

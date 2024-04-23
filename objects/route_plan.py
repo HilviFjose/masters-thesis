@@ -452,7 +452,10 @@ class RoutePlan:
         #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
         for route in self.routes[day].values(): 
             if route.employee.id == employee:
+                if activity.id == 88: 
+                    print("kommer hit - 2")
                 route.removeActivityID(activity.id)
+        
 
 
                 #Beg: Må oppdater de på andre dager slik at de ikke er like bundet av aktivitetens tidsvinduer

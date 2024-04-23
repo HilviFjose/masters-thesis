@@ -29,15 +29,18 @@ class LocalSearch:
         # CHANGE EMPLOYEE
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
-
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
-        
+
+        candidate.printSolution("Etter_change_employee", " ")
+        '''
         # SWAP EMPLOYEE
         for day in range(1, self.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.days + 1):
             candidate = self.swap_employee(candidate, day)
+
+        candidate.printSolution("Etter_swap_employee", " ")
 
         # MOVE ACTIVITY
         for day in range(1, self.days + 1):
@@ -51,6 +54,8 @@ class LocalSearch:
                 new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
 
+        candidate.printSolution("Etter_move_activity", " ")
+
         # SWAP ACTIVITY 
         for day in range(1, self.days + 1):
             employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
@@ -62,7 +67,9 @@ class LocalSearch:
             for emplID in employeeOnDayList: 
                 new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
-
+        
+        candidate.printSolution("Etter_swap_activity", " ")
+        '''
         return candidate
     
    
@@ -281,9 +288,6 @@ class LocalSearch:
     def change_employee(self, route_plan, day):
         #TODO: Legge inn comdition som i swap_activity. Dersom del av pickup&delivery par, tas andre halvdel ut og plasseres inn igjen.
         best_found_candidate = copy.deepcopy(route_plan)
-
-        before_list_status = False
-        after_list_status = False 
         
         for route in route_plan.routes[day].values():             
             for activity in route.route:
@@ -300,6 +304,9 @@ class LocalSearch:
                     new_candidate = copy.deepcopy(route_plan)
                     new_candidate.removeActivityFromEmployeeOnDay(employee, activity, day)
                     if sameEmployeeActivity != None: 
+                        if activity.id == 87: 
+                            print("kommer hit - 1 ")
+                            print("sameEmployeeActivity.id", sameEmployeeActivity.id)
                         new_candidate.removeActivityFromEmployeeOnDay(employee, sameEmployeeActivity, day)
                     
                    
@@ -315,8 +322,6 @@ class LocalSearch:
 
                     #Virker som at det her inne er liste 
                     status = new_candidate.insertActivityInEmployeesRoute(othEmpl, activity, day)
-
-
                     if status == False: 
                         continue
                   
@@ -330,6 +335,7 @@ class LocalSearch:
                     new_candidate.updateObjective(self.current_iteration, self.total_iterations)
                     
                     if checkCandidateBetterThanBest(new_candidate.objective, best_found_candidate.objective ):
+                        print("Den som flyttes er aktivitet", activity.id)
                         best_found_candidate = new_candidate 
         
         return best_found_candidate
