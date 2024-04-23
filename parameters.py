@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+'''
 #ANTIBIOTICS CASE
 print("ANTIBIOTICS DATA")
 from datageneration.employeeGenerationAntibiotics import *
@@ -12,7 +13,7 @@ print("INFUSION DATA")
 from datageneration.employeeGenerationInfusion import *
 from datageneration.patientGenerationInfusion import *
 from config.construction_config_infusion import *
-'''
+
 from datageneration import distance_matrix
 
 # DATA GENERATION

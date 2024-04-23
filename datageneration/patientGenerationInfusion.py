@@ -51,28 +51,57 @@ def patientGenerator(df_employees):
     locations = locationGenerator(construction_config_infusion.refLoc, construction_config_infusion.area, construction_config_infusion.P_num)
     
     # Distribution of number of treatments per patient
-    nTreatments = 1
+    nTreatments = 1 #TODO må legge inn mulighet for at noen pasienter har flere treatments igjen
+
+    # Distribuiton of therapy types
+    num_antibiotic = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[0])
+    num_nutrition = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[1])
+    num_advanced = construction_config_infusion.P_num - (num_antibiotic + num_nutrition)
+    therapy = (['antibiotics'] * num_antibiotic) + (['nutrition'] * num_nutrition) + (['advanced'] * num_advanced)
+    np.random.shuffle(therapy) 
 
     # Distribution of utility, patient allocation, continuity group and heaviness for patients
     utility = np.random.choice(range(1, 6), size=construction_config_infusion.P_num, p=construction_config_infusion.utilityDistribution)
     continuityGroup = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.continuityDistribution)
     heaviness = np.random.choice(range(1, 6), size=construction_config_infusion.P_num, p=construction_config_infusion.heavinessDistribution)
     
-    #Distribution of patients between clinics
-    clinic = np.random.choice(range(1,len(construction_config_infusion.clinicDistribution)+1), size=construction_config_infusion.P_num, p=construction_config_infusion.clinicDistribution)
+    # Distribution of patients between clinics based on therapy type
+    clinic_counts = {i+1: 0 for i in range(len(construction_config_infusion.clinicDistribution))}     # Initialiser en tellevariabel for antall pasienter tildelt hver klinikk
+    clinics = []
+    for t in therapy:
+        possible_clinics = []
+        if t == 'nutrition':
+            possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithNutrition) if available]
+        elif t == 'advanced':
+            possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithAdvanced) if available]
+        else:
+            possible_clinics = list(range(1, len(construction_config_infusion.clinicDistribution) + 1))
+        
+        # Juster vektingen for mulige klinikker basert på ønsket fordeling og nåværende tildeling
+        weights = [construction_config_infusion.clinicDistribution[i-1] - (clinic_counts[i] / construction_config_infusion.P_num) for i in possible_clinics]
+        weights = [w if w > 0 else 0 for w in weights]  # Sørger for at vekter ikke blir negative
+        if sum(weights) > 0:
+            weights = [w / sum(weights) for w in weights]  # Normaliserer vekter
+            chosen_clinic = np.random.choice(possible_clinics, p=weights)
+        else:
+            chosen_clinic = np.random.choice(possible_clinics)
+        
+        clinics.append(chosen_clinic)
+        clinic_counts[chosen_clinic] += 1
 
     # Prepare DataFrame
     df_patients = pd.DataFrame({
         'patientId': patientIds,
+        'therapy': therapy,
+        'clinic': clinics,
         'nTreatments': nTreatments,
         'utility': utility,
         'allocation': 0,
-        'employeeRestriction': None,  # Assuming no initial restrictions
+        'employeeRestriction': None,  
         'continuityGroup': continuityGroup,
-        'employeeHistory': None,  # Assuming no initial history
+        'employeeHistory': None,  
         'heaviness': heaviness,
         'location': locations,
-        'clinic': clinic,
         'specialisationPreferred': 0,
         'extraSupport': 'no'
     })
@@ -91,7 +120,6 @@ def patientGenerator(df_employees):
             # Oppdater kun de valgte pasientene
             df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 1
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
-
         elif clinic == 2: 
             indexes = group.index
             numSpecialisationPreferred = int(len(indexes) * construction_config_infusion.specialisationDistribution[1]) 
@@ -100,7 +128,6 @@ def patientGenerator(df_employees):
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
             df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 2
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
-
         elif clinic == 3: 
             indexes = group.index
             numSpecialisationPreferred = int(len(indexes) * construction_config_infusion.specialisationDistribution[2]) 
@@ -169,7 +196,7 @@ def patientGenerator(df_employees):
     return df_patients
 
 def treatmentGenerator(df_patients):
-    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat'])
+    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'therapy', 'clinic', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat'])
 
     # Generate rows for each treatment with the patientId
     expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
@@ -177,6 +204,8 @@ def treatmentGenerator(df_patients):
     
     df_treatments['treatmentId'] = expanded_rows['treatmentId']
     df_treatments['patientId'] = expanded_rows['patientId']
+    df_treatments['therapy'] = expanded_rows['therapy']
+    df_treatments['clinic'] = expanded_rows['clinic']
     df_treatments['location'] = expanded_rows['location']
     df_treatments['employeeRestriction'] = expanded_rows['employeeRestriction']
     df_treatments['heaviness'] = expanded_rows['heaviness']
@@ -189,11 +218,24 @@ def treatmentGenerator(df_patients):
     df_treatments['extraSupport'] = expanded_rows['extraSupport']
 
     # Generate pattern type for each treatment. Will decide the number of visits per treatment.
-    for extraSupport, group in df_treatments.groupby('extraSupport'):
-        if extraSupport == 'yes':
-            df_treatments.loc[group.index, 'patternType'] = 1
-        else:
-            df_treatments.loc[group.index, 'patternType'] = 4
+    for therapy, group in df_treatments.groupby('therapy'):
+        if therapy == 'antibiotics':
+            for idx, row in group.iterrows():
+                if row['extraSupport'] == 'yes':
+                    df_treatments.loc[idx, 'patternType'] = 1                       # Five days a week 
+                else:
+                    df_treatments.loc[idx, 'patternType'] = 4                       # Two days spread throughout the week
+                    import numpy as np
+        if therapy == 'nutrition':
+            for idx, row in group.iterrows():
+                if row['extraSupport'] == 'yes':
+                    patternType_choice = np.random.choice([1, 3], p=[0.5, 0.5])     # Five days a week or three days spread throughout the week 
+                    df_treatments.loc[idx, 'patternType'] = patternType_choice
+                else:
+                    df_treatments.loc[idx, 'patternType'] = 6                       # One day a week
+        else: #advanced 
+            patternType_choice = np.random.choice([5, 6], p=[0.5, 0.5])             # Two consecutive days or one day a week
+            df_treatments.loc[idx, 'patterntype'] = patternType_choice
 
     for index, row in df_treatments.iterrows():
         #Fill rows with possible patterns
@@ -201,10 +243,22 @@ def treatmentGenerator(df_patients):
             df_treatments.at[index, 'pattern'] = construction_config_infusion.patterns_5days
             df_treatments.at[index, 'visits'] = 5
             df_treatments.at[index, 'pattern_complexity'] = 1
+        elif row['patternType'] == 3:
+            df_treatments.at[index, 'pattern'] = construction_config_infusion.patterns_3days
+            df_treatments.at[index, 'visits'] = 3
+            df_treatments.at[index, 'pattern_complexity'] = 2
         elif row['patternType'] == 4:
             df_treatments.at[index, 'pattern'] = construction_config_infusion.pattern_2daysspread
             df_treatments.at[index, 'visits'] = 2
             df_treatments.at[index, 'pattern_complexity'] = 4
+        elif row['patternType'] == 5:
+            df_treatments.at[index, 'pattern'] = construction_config_infusion.patterns_2daysfollowing
+            df_treatments.at[index, 'visits'] = 2
+            df_treatments.at[index, 'pattern_complexity'] = 4
+        else:
+            df_treatments.at[index, 'pattern'] = construction_config_infusion.patterns_1day
+            df_treatments.at[index, 'visits'] = 1
+            df_treatments.at[index, 'pattern_complexity'] = 5
 
     file_path = os.path.join(os.getcwd(), 'data', 'treatments.csv')
     df_treatments.to_csv(file_path, index=False)

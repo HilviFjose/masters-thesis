@@ -4,9 +4,12 @@
 P_num = 12                                          # Number of patients
 
 # Patient demographics
-clinicDistribution = [0.3, 0.2, 0.2, 0.3]
-specialisationDistribution = [0.7, 0.7, 0.7, 0.7]
-patientExtraSupport = [0.8, 0.7, 0.5, 0.4] #Percentage from each clinic that needs extra support 
+therapyDistribution = [0.6, 0.2, 0.2]               # Distribution of patients receiving eiter antibiotics, nutrition/fluids or more advanced infusion therapy
+clinicDistribution = [0.3, 0.2, 0.2, 0.3]           # Distribution of patients between different clinics
+specialisationDistribution = [0.7, 0.7, 0.7, 0.7]   # Percentage of patients that prefer a specialist from their clinic
+patientExtraSupport = [0.8, 0.7, 0.5, 0.4]          # Percentage from each clinic that needs extra support 
+clinicsWithNutrition = [1,0,0,0]
+clinicsWithAdvanced = [0,1,1,0]
 
 # Distributions of treatments, visits and acitivities for each patient
 T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
