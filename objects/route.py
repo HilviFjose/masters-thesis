@@ -67,7 +67,7 @@ class Route:
             self.makeSpaceForIndex(index_count)
             #Beg: Activites grenser i ruten må oppdateres etter at Makespace flytter på startTidspunkter
             self.updateActivityBasedOnDependenciesInRoute(activity) 
-
+            
            
             if (activity.possibleToInsert == True) and (
                 S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
@@ -158,8 +158,6 @@ class Route:
 
     def removeActivityID(self, activityID):
         indexes = [i for i, act in enumerate(self.route) if act.id == activityID]
-        if activityID == 88: 
-            print("kommer hit - 3")
         # Check if the activity was found; since activity IDs should be unique, we only need to deal with the first match
         if indexes:
             index = indexes[0]

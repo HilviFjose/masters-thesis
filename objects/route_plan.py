@@ -87,7 +87,7 @@ class RoutePlan:
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
              
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
-            random.shuffle(routes_for_skill) #Denne sto her før, vanskelig å forstår hvorfor, er muligens et annet alternativ til sortRoutesByActivityLocation
+            #random.shuffle(routes_for_skill) #Denne sto her før, vanskelig å forstår hvorfor, er muligens et annet alternativ til sortRoutesByActivityLocation
 
             
             routes += routes_for_skill
@@ -115,9 +115,14 @@ class RoutePlan:
             #OBS: Denne er fjernet nå grunnet at oppdateringen skal gjøres på forhånd, og ikke i ettertid
             #for possiblyMovedActivity in route.route: 
             #    self.updateDependentActivitiesBasedOnRoutePlanOnDay(possiblyMovedActivity, day)
-        
-            
-            if route.addActivity(activity):
+            if activity.id == 84: 
+                print("activity ", activity.id, "prøver å legge til på dag", route.day, "ansattt", route.employee.id)
+                route.printSoultion()
+            status = route.addActivity(activity)
+            if activity.id in [84]: 
+                print( "status på innsetting", status)
+                print("----------------------------")
+            if status == True:
                 return True
             
         return False
@@ -230,7 +235,7 @@ class RoutePlan:
                 if act.id== activity.id: 
                     return route.employee.id
     
-    #TODO: Denne fungerer ikke nå. Må endre på den sånn at den funker!!
+    #OBS: ChatGPT lagde en ny av denne funksjonen som ikke fungerte. så 
     def getListOtherEmplIDsOnDay(self, activityID, day):  
         #TODO: Ggjøre raskere 
         '''
@@ -245,7 +250,7 @@ class RoutePlan:
 
         Return: 
         List (Int) employeeID til de ansatte som ikke er empl 
-        
+        '''
         
         empForAct = None
         activityIDinRoute = False
@@ -284,7 +289,7 @@ class RoutePlan:
         else:
             # If the activity wasn't found, return an empty list.
             return []
-            
+        '''    
             
 
     def getActivity(self, actID, day): 
@@ -452,8 +457,6 @@ class RoutePlan:
         #Oppdateringen må kjøres etter de er restartet, slik at de tilhørende aktivitetne får beskjed
         for route in self.routes[day].values(): 
             if route.employee.id == employee:
-                if activity.id == 88: 
-                    print("kommer hit - 2")
                 route.removeActivityID(activity.id)
         
 
