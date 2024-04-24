@@ -118,6 +118,7 @@ class ALNS:
     
     def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
+        
         self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
@@ -130,7 +131,7 @@ class ALNS:
 
         self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
-
+       
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         

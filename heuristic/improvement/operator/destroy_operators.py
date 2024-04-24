@@ -478,22 +478,6 @@ class DestroyOperators:
 
 #---------- RELATED REMOVAL ----------
 
-    #TODO: Denne må testes opp mot den Guro har laget
-    def random_pattern_type_removal(self, current_route_plan):
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        #Må endres når vi endrer pattern 
-        selected_pattern = random.randint(1, len(patternTypes))
-        selected_treatments = []
-        for treatment in destroyed_route_plan.treatments.keys(): 
-            pattern_for_treatment = self.constructor.treatment_df.loc[treatment,"patternType"]
-            if pattern_for_treatment == selected_pattern: 
-                selected_treatments.append(treatment)
-        
-        for treatment in selected_treatments: 
-            destroyed_route_plan = self.treatment_removal(treatment, destroyed_route_plan)[0]
-        
-        return destroyed_route_plan, None, True
-
     def related_visits_removal(self, current_route_plan):
         # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
         num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
@@ -635,12 +619,33 @@ class DestroyOperators:
         filtered_row = self.constructor.treatment_df.loc[[primary_treatmentId]]
         patternType = self.constructor.treatment_df.loc[primary_treatmentId, 'patternType']
         TreatSamePatternType = self.constructor.treatment_df[self.constructor.treatment_df['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
+
+
+
         firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
-        firstDay = current_route_plan.getDayForActivityID(firstActId)  #First day of a treatment and the patterntype decide which pattern is choosen for the treatment
+        visitID = self.constructor.activities_df.loc[firstActId, 'visitId']
+        for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+            act = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
+            if act != None: 
+                break 
+        
+        #Sjekker her om det 
+        if act == None: 
+            firstDay = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
+        else: 
+            firstDay = current_route_plan.getDayForActivityID(firstActId)
+
+
+
+        #firstDay = current_route_plan.getDayForActivityID(firstActId)  #First day of a treatment and the patterntype decide which pattern is choosen for the treatment
         related_treatment_list = [primary_treatmentId]
-        firstAct = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
-        activities_count = firstAct.nActInTreat
+        #firstAct = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
+        #activities_count = firstAct.nActInTreat
         #print('Valgt treatment', primary_treatmentId)
+
+        activities_count = 0
+        for visitID in current_route_plan.treatments[primary_treatmentId]: 
+            activities_count += len(current_route_plan.visits[visitID])
 
         # Fjerner treatments som har samme pattern
         filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
