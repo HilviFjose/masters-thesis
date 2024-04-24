@@ -32,13 +32,13 @@ patterns_1day = [15,16,17,18,19]                                    # Patterntyp
 # Continuity distribution
 continuityDistribution = [0, 0.5, 0.5]      #Top 1 employee, top 3 employees, all employees
 continuityScore = [2, 1, 0]                 #TODO: Sjekk om verdiene på disse på endres
-preferredEmployees = [1, 3, 5]
+preferredEmployees = [1, 3, 0]
 
 # Patient allocation
 allocation = 0.15 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
 
 # Patient utility
-utilityDistribution = [0.5, 0.5, 0, 0, 0]
+utilityDistribution = [1, 0, 0, 0, 0]
 
 # Heaviness
 heavinessDistribution = [0.5, 0.5, 0, 0, 0] 

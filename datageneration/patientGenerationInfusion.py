@@ -64,7 +64,15 @@ def patientGenerator(df_employees):
     utility = np.random.choice(range(1, 6), size=construction_config_infusion.P_num, p=construction_config_infusion.utilityDistribution)
     continuityGroup = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.continuityDistribution)
     heaviness = np.random.choice(range(1, 6), size=construction_config_infusion.P_num, p=construction_config_infusion.heavinessDistribution)
-    
+    if construction_config_infusion.P_num <= 5* construction_config_infusion.E_num:
+        print('Number of patients <= 5* number of employees')
+        allocation = [1] * round(construction_config_infusion.P_num * construction_config_infusion.allocation)
+    else:
+        print('Number of patients > 5* number of employees')
+        allocation = [1] * round(construction_config_infusion.E_num * 0.75)
+    allocation.extend([0] * (construction_config_infusion.P_num - len(allocation)))
+    random.shuffle(allocation)
+
     # Distribution of patients between clinics based on therapy type
     clinic_counts = {i+1: 0 for i in range(len(construction_config_infusion.clinicDistribution))}     # Initialiser en tellevariabel for antall pasienter tildelt hver klinikk
     clinics = []
@@ -96,7 +104,7 @@ def patientGenerator(df_employees):
         'clinic': clinics,
         'nTreatments': nTreatments,
         'utility': utility,
-        'allocation': 0,
+        'allocation': allocation,
         'employeeRestriction': None,  
         'continuityGroup': continuityGroup,
         'employeeHistory': None,  
@@ -177,15 +185,15 @@ def patientGenerator(df_employees):
         max_employees = 0
         continuity_group = df_patients.at[index, 'continuityGroup']
         if continuity_group == 1:
-            max_employees = 1
+            max_employees = construction_config_infusion.preferredEmployees[0]
         elif continuity_group == 2:
-            max_employees = 3
+            max_employees = construction_config_infusion.preferredEmployees[1]
         else:  # continuity_group == 3
-            max_employees = 5
+            max_employees = construction_config_infusion.preferredEmployees[2]
         continuity_score, employeeIds = next(iter(df_patients.at[index, 'employeeHistory'].items()))
 
-        num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
-        random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()
+        #num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
+        random_employee_ids = np.random.choice(df_employees['employeeId'], size=max_employees, replace=False).tolist()
         
         # Siden employeeHistory allerede er initialisert, legger vi bare til de tilfeldige ansattes ID-er
         df_patients.at[index, 'employeeHistory'][continuity_score].extend(random_employee_ids)
@@ -225,7 +233,6 @@ def treatmentGenerator(df_patients):
                     df_treatments.loc[idx, 'patternType'] = 1                       # Five days a week 
                 else:
                     df_treatments.loc[idx, 'patternType'] = 4                       # Two days spread throughout the week
-                    import numpy as np
         if therapy == 'nutrition':
             for idx, row in group.iterrows():
                 if row['extraSupport'] == 'yes':
@@ -234,8 +241,9 @@ def treatmentGenerator(df_patients):
                 else:
                     df_treatments.loc[idx, 'patternType'] = 6                       # One day a week
         else: #advanced 
-            patternType_choice = np.random.choice([5, 6], p=[0.5, 0.5])             # Two consecutive days or one day a week
-            df_treatments.loc[idx, 'patterntype'] = patternType_choice
+            for idx, row in group.iterrows():
+                patternType_choice = np.random.choice([5, 6], p=[0.5, 0.5])         # Two consecutive days or one day a week
+                df_treatments.loc[idx, 'patternType'] = patternType_choice
 
     for index, row in df_treatments.iterrows():
         #Fill rows with possible patterns
@@ -255,7 +263,7 @@ def treatmentGenerator(df_patients):
             df_treatments.at[index, 'pattern'] = construction_config_infusion.patterns_2daysfollowing
             df_treatments.at[index, 'visits'] = 2
             df_treatments.at[index, 'pattern_complexity'] = 4
-        else:
+        else: #patternType 6
             df_treatments.at[index, 'pattern'] = construction_config_infusion.patterns_1day
             df_treatments.at[index, 'visits'] = 1
             df_treatments.at[index, 'pattern_complexity'] = 5
@@ -409,7 +417,8 @@ def activitiesGenerator(df_visits):
             # Generate duration for the activities #TODO: Tenke hvordan disse skal settes
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 10  # Equip
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10  # Equip
-            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 40  # Health
+            df_activities.loc[(df_activities['patternType'] == 1) & (df_activities['activityId'] == activity_ids[2]), 'duration'] = 60  # Health, for high demand patients
+            df_activities.loc[(df_activities['patternType'] == 4) & (df_activities['activityId'] == activity_ids[2]), 'duration'] = 40  # Health, for low demand patients
             df_activities.loc[df_activities['activityId'] == activity_ids[3], 'duration'] = 10  # Equip
             df_activities.loc[df_activities['activityId'] == activity_ids[4], 'duration'] = 10  # Equip
 
@@ -420,10 +429,12 @@ def activitiesGenerator(df_visits):
                 else:
                     df_activities.loc[group.index, 'skillRequirement'] = 3
 
-    # Overwrite heaviness and utility for Equipment activities
+    # Overwrite heaviness, utility, continuity level and employee history for Equipment activities
     df_activities.loc[df_activities['activityType'] == 'E', 'heaviness'] = 1
     df_activities.loc[df_activities['activityType'] == 'E', 'utility'] = 0
-        
+    df_activities.loc[df_activities['activityType'] == 'E', 'continuityGroup'] = 3
+    df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'] = {0: []}
+
     # Generate earliest and latest start times of activities
     for visitId, group in df_activities.groupby('visitId'):
         patternType = group['patternType'].iloc[0]  

@@ -57,7 +57,15 @@ def patientGenerator(df_employees):
     utility = np.random.choice(range(1, 6), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.utilityDistribution)
     continuityGroup = np.random.choice(range(1, 4), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.continuityDistribution)
     heaviness = np.random.choice(range(1, 6), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.heavinessDistribution)
-    
+    if construction_config_antibiotics.P_num <= 5* construction_config_antibiotics.E_num:
+        print('Number of patients <= 5* number of employees')
+        allocation = [1] * round(construction_config_antibiotics.P_num * construction_config_antibiotics.allocation)
+    else:
+        print('Number of patients > 5* number of employees')
+        allocation = [1] * round(construction_config_antibiotics.E_num * 0.75)
+    allocation.extend([0] * (construction_config_antibiotics.P_num - len(allocation)))
+    random.shuffle(allocation)
+
     #Distribution of patients between clinics
     clinic = np.random.choice(range(1,len(construction_config_antibiotics.clinicDistribution)+1), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.clinicDistribution)
 
@@ -73,7 +81,7 @@ def patientGenerator(df_employees):
         'heaviness': heaviness,
         'location': locations,
         'clinic': clinic,
-        'specialisationPreferred': 0,
+        'specialisationPreferred': allocation,
         'extraSupport': 'no'
     })
 
@@ -150,15 +158,15 @@ def patientGenerator(df_employees):
         max_employees = 0
         continuity_group = df_patients.at[index, 'continuityGroup']
         if continuity_group == 1:
-            max_employees = 1
+            max_employees = construction_config_antibiotics.preferredEmployees[0]
         elif continuity_group == 2:
-            max_employees = 3
+            max_employees = construction_config_antibiotics.preferredEmployees[1]
         else:  # continuity_group == 3
-            max_employees = 5
+            max_employees = construction_config_antibiotics.preferredEmployees[2]
         continuity_score, employeeIds = next(iter(df_patients.at[index, 'employeeHistory'].items()))
 
-        num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
-        random_employee_ids = np.random.choice(df_employees['employeeId'], size=num_employees, replace=False).tolist()
+        #num_employees = np.random.randint(1, max_employees + 1)  # Tillater et antall ansatte i ansatthistorikken basert på continuity group
+        random_employee_ids = np.random.choice(df_employees['employeeId'], size=max_employees, replace=False).tolist()
         
         # Siden employeeHistory allerede er initialisert, legger vi bare til de tilfeldige ansattes ID-er
         df_patients.at[index, 'employeeHistory'][continuity_score].extend(random_employee_ids)
@@ -286,9 +294,6 @@ def activitiesGenerator(df_visits):
 
             # Precedence and time limit for pick-up and delivery at the start of the visit
             activity_ids = group['activityId'].tolist()
-            #mu = (construction_config_antibiotics.pd_min + construction_config_antibiotics.pd_max) / 2
-            #sigma = (construction_config_antibiotics.pd_max - construction_config_antibiotics.pd_min) / 6
-            #pd_time = int(np.random.normal(mu, sigma))
             pd_time = 120
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = f"{activity_ids[0]}: {pd_time}"
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[1]}: {pd_time}, {activity_ids[0]}: {pd_time}"
@@ -326,10 +331,6 @@ def activitiesGenerator(df_visits):
             
             # Precedence and time limits for pick-up and delivery
             activity_ids = group['activityId'].tolist()
-            #mu = (construction_config_antibiotics.pd_min + construction_config_antibiotics.pd_max) / 2
-            #sigma = (construction_config_antibiotics.pd_max - construction_config_antibiotics.pd_min) / 6
-            #pd_time1 = int(np.random.normal(mu, sigma))
-            #pd_time2 = int(np.random.normal(mu, sigma))
             pd_time1 = 120
             pd_time2 = 120
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = f"{activity_ids[0]}: {pd_time1}"                                           # Pick-up and delivery at the start
@@ -353,11 +354,12 @@ def activitiesGenerator(df_visits):
             df_activities.loc[df_activities['activityId'] == activity_ids[-1], 'location'] = f'{construction_config_antibiotics.depot}'    # Delivery
         
             # Generate duration for the activities #TODO: Tenke hvordan disse skal settes
-            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 10  # Equip
-            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10  # Equip
-            df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 40  # Health
-            df_activities.loc[df_activities['activityId'] == activity_ids[3], 'duration'] = 10  # Equip
-            df_activities.loc[df_activities['activityId'] == activity_ids[4], 'duration'] = 10  # Equip
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 10      # Equip
+            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10      # Equip
+            df_activities.loc[(df_activities['patternType'] == 1) & (df_activities['activityId'] == activity_ids[2]), 'duration'] = 60  # Health, for high demand patients
+            df_activities.loc[(df_activities['patternType'] == 4) & (df_activities['activityId'] == activity_ids[2]), 'duration'] = 40  # Health, for low demand patients
+            df_activities.loc[df_activities['activityId'] == activity_ids[3], 'duration'] = 10      # Equip
+            df_activities.loc[df_activities['activityId'] == activity_ids[4], 'duration'] = 10      # Equip
 
             # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
             for activityType, group in df_activities.groupby('activityType'):
@@ -366,9 +368,11 @@ def activitiesGenerator(df_visits):
                 else:
                     df_activities.loc[group.index, 'skillRequirement'] = 3
 
-    # Overwrite heaviness and utility for Equipment activities
+    # Overwrite heaviness, utility, continuity level and employee history for Equipment activities
     df_activities.loc[df_activities['activityType'] == 'E', 'heaviness'] = 1
     df_activities.loc[df_activities['activityType'] == 'E', 'utility'] = 0
+    df_activities.loc[df_activities['activityType'] == 'E', 'continuityGroup'] = 3
+    df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'] = {0: []}
         
     # Generate earliest and latest start times of activities
     for visitId, group in df_activities.groupby('visitId'):

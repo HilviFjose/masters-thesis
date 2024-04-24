@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-'''
+
 #ANTIBIOTICS CASE
 print("ANTIBIOTICS DATA")
 from datageneration.employeeGenerationAntibiotics import *
@@ -13,13 +13,13 @@ print("INFUSION DATA")
 from datageneration.employeeGenerationInfusion import *
 from datageneration.patientGenerationInfusion import *
 from config.construction_config_infusion import *
-
+'''
 from datageneration import distance_matrix
 
 # DATA GENERATION
 
-#df_employees = employeeGeneration.employeeGenerator()          # For Night, Day and Evening shifts
-df_employees = employeeGeneratorOnlyDay()    # For day shifts
+#df_employees = employeeGeneration.employeeGenerator()      # For Night, Day and Evening shifts
+df_employees = employeeGeneratorOnlyDay()                   # For day shifts
 df_patients_not_complete = patientGenerator(df_employees)
 df_treatments_not_complete = treatmentGenerator(df_patients_not_complete)
 df_visits_not_complete = visitsGenerator(df_treatments_not_complete)
