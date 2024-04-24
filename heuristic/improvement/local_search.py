@@ -31,16 +31,12 @@ class LocalSearch:
            candidate = self.change_employee(candidate, day)
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
-
-        candidate.printSolution("Etter_change_employee", " ")
         
         # SWAP EMPLOYEE
         for day in range(1, self.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.days + 1):
             candidate = self.swap_employee(candidate, day)
-
-        candidate.printSolution("Etter_swap_employee", " ")
 
         # MOVE ACTIVITY
         for day in range(1, self.days + 1):
@@ -54,8 +50,6 @@ class LocalSearch:
                 new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
 
-        candidate.printSolution("Etter_move_activity", " ")
-
         # SWAP ACTIVITY 
         for day in range(1, self.days + 1):
             employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
@@ -67,8 +61,7 @@ class LocalSearch:
             for emplID in employeeOnDayList: 
                 new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
-        
-        candidate.printSolution("Etter_swap_activity", " ")
+
        
         return candidate
     

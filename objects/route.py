@@ -210,7 +210,9 @@ class Route:
             activity_to_remove.startTime = None
             
             # Update dependencies for the removed activity
+            #OBS: Denne er jeg ganske sikker på at vi må ha fordi det 
             self.updateActivityDependenciesInRoute(activity_to_remove)
+        self.latestModificationWasRemove = True
 
     
     def insertActivityOnIndex(self, activity, index):
@@ -222,8 +224,8 @@ class Route:
         #Beg: Må oppdatere verdiene innad basert på det som er flyttet 
 
         self.updateActivityBasedOnDependenciesInRoute(activity)
-        for possiblyMovedActivity in self.route: 
-            self.updateActivityBasedOnDependenciesInRoute(possiblyMovedActivity)
+        #for possiblyMovedActivity in self.route: 
+        #    self.updateActivityBasedOnDependenciesInRoute(possiblyMovedActivity)
 
         if len(self.route) == 0: 
             return self.insertToEmptyList(activity)
@@ -327,7 +329,7 @@ class Route:
             if new_startTime < act.startTime: 
                 act.startTime = new_startTime
                 
-                self.updateActivityDependenciesInRoute(act)
+                #self.updateActivityDependenciesInRoute(act)
                 
             i_id = act.id 
             S_i = act.startTime 
@@ -335,6 +337,9 @@ class Route:
 
  
 
+    '''
+    Hva er logikken her? 
+    '''
     def moveActivitiesLater(self, index): 
         j_id = 0
         S_j = self.end_time
@@ -345,13 +350,14 @@ class Route:
             
         for i in range(last_index_to_move, index -1 , -1): 
             act = self.route[i]
+           
             
             new_startTime = min(act.latestStartTime, act.getNewLatestStartTime(), S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
             if new_startTime > act.startTime: 
                 act.startTime = new_startTime
 
                 #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
-                self.updateActivityDependenciesInRoute(act)
+                #self.updateActivityDependenciesInRoute(act)
            
             j_id = act.id 
             S_j = act.startTime 
@@ -363,6 +369,9 @@ class Route:
 
         if len(self.route) == 0:
             return 
+        
+        for possiblyMovedActivity in self.route: 
+            self.updateActivityBasedOnDependenciesInRoute(possiblyMovedActivity)
 
         if self.latestModificationWasRemove: 
             self.makeSpaceForIndexWhenRouteNotCharted(index)
@@ -382,6 +391,7 @@ class Route:
             if activity.id == ActID:
                 return activity
         return None
+    
     
     def updateActivityDependenciesInRoute(self, act): 
         for nextActID in act.NextNode: 
@@ -403,7 +413,8 @@ class Route:
             prevActInTime = self.getActivity(prevActInTimeTupl[0])
             if prevActInTime != None: 
                 self.updatePrevInTimeDependentActivityBasedOnActivityInRoute(prevActInTime, act, prevActInTimeTupl[1])        
-
+    
+    
     
     #TODO: Disse funskjonene kunne kanskje bare vært gjort i funksjonen over
     def updateNextDependentActivityBasedOnActivityInRoute(self, nextAct, act):
@@ -454,8 +465,8 @@ class Route:
         for NextNodeInTimeID in activity.NextNodeInTime: 
             nextNodeAct = self.getActivity(NextNodeInTimeID[0])
             if nextNodeAct != None:
-                activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
-                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
+                activity.setNewEarliestStartTime(nextNodeAct.startTime- NextNodeInTimeID[1], NextNodeInTimeID[0])
+                activity.setNewLatestStartTime(nextNodeAct.startTime - activity.duration, NextNodeInTimeID[0])
             
 
     def makeSpaceForIndexWhenRouteNotCharted(self, index): 
@@ -463,8 +474,7 @@ class Route:
         #Dersom vi legger til noe til høre for siste oppdatering 
 
         #Kan vi anta at dersom det ikke er noen 
-        if len(self.route) == 0:
-            return 
+    
 
         self.moveAllActivitiesEarlier(index)
         self.moveAllActivitiesLater(index)
@@ -481,7 +491,7 @@ class Route:
             if new_startTime < act.startTime: 
                 act.startTime = new_startTime
                 
-                self.updateActivityDependenciesInRoute(act)
+                #self.updateActivityDependenciesInRoute(act)
                 
             i_id = act.id 
             S_i = act.startTime 
@@ -503,7 +513,7 @@ class Route:
                 act.startTime = new_startTime
 
                 #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
-                self.updateActivityDependenciesInRoute(act)
+                #self.updateActivityDependenciesInRoute(act)
            
             j_id = act.id 
             S_j = act.startTime 
