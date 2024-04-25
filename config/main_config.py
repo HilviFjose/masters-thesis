@@ -49,4 +49,4 @@ weight_S = 0.4              # Min skill difference
 weight_SG = 0.0             # Balance specialist/generalist
 
 #Number of constructed solutions 
-num_of_constructions = 5
+num_of_constructions = 1
