@@ -3,6 +3,7 @@ from objects.patterns import pattern
 from objects.activity import Activity
 import random 
 from helpfunctions import * 
+from config.main_config import iterations
 
 
 class Insertor:
@@ -55,7 +56,7 @@ class Insertor:
         #Iterer over alle patterns som er mulige for denne treatmenten
         patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
         index_random = [i for i in range(len(patterns))]
-        #random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
+        random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
         for index in index_random:
             self.route_plan = copy.deepcopy(old_route_plan)
@@ -182,11 +183,11 @@ class Insertor:
           
              
     def best_insert_visit_on_day(self, visit, day):
-        
+        self.InsertionFound_BestInsertVisit = False
         
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
         test_route_plan = copy.deepcopy(self.route_plan)
-        test_route_plan.updateObjective()
+        test_route_plan.updateObjective(0, iterations)
         
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         activity = activities[0]
@@ -217,15 +218,15 @@ class Insertor:
 
 
     def insertNextActiviy_forBestInsertion(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
-        route_plan.updateObjective()
+        route_plan.updateObjective(0, iterations)
         #TODO: Sammkjøre denne med andre aktiviteter som fungere 
         #BEG: Må ha med denne også for å sjekke om det er 
-        route_plan.updateActivityBasedOnRoutePlanOnDay0904(activity, day)
+        route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
        
  
 
         for activitiesWithPossibleNewUpdated in route_plan.routes[day][employeeID].route: 
-            route_plan.updateDependentActivitiesBasedOnRoutePlanOnDay(activitiesWithPossibleNewUpdated, day)
+            route_plan.updateActivityBasedOnRoutePlanOnDay(activitiesWithPossibleNewUpdated, day)
 
         insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
 
@@ -234,7 +235,7 @@ class Insertor:
             return 
         
         if len(rest_acitivites) == 0: 
-            route_plan.updateObjective()
+            route_plan.updateObjective(0, iterations)
          
             if checkCandidateBetterThanBest(route_plan.objective, self.route_plan.objective): 
                 self.route_plan = copy.deepcopy(route_plan)

@@ -87,8 +87,7 @@ class RoutePlan:
             routes_for_skill = routes_grouped_by_skill[act_skill_level]
              
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
-            #random.shuffle(routes_for_skill) #Denne sto her før, vanskelig å forstår hvorfor, er muligens et annet alternativ til sortRoutesByActivityLocation
-
+            #random.shuffle(routes_for_skill)
             
             routes += routes_for_skill
 
@@ -607,3 +606,6 @@ class RoutePlan:
                     if act.id == actID: 
                         return day
         return None
+    
+
+        
