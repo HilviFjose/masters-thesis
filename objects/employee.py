@@ -13,6 +13,7 @@ class Employee:
         self.skillLevel = df.loc[id]["professionalLevel"]
         self.shifts = self.getShifts(df.loc[id]["schedule"])
         self.id = id
+        self.clinic = df.loc[id]["clinic"]
     
     #TODO: Denne er veldig midlertidig håndtert. Må endres slik at den tar inn de faktiske skiftene.
     #Den henter ut skiftene nå også sette rtidspunktene basert pådet. Men burde endres på kanskje 

@@ -340,14 +340,16 @@ class RoutePlan:
         self.calculateDailyHeaviness()
         self.calculateTotalContinuity()
         aggSkillDiff = 0
+        aggDeviationPrefSpes = 0 
         for day in range(1, 1+self.days): 
             for route in self.routes[day].values(): 
                 route.updateObjective()
                 self.objective[0] += route.suitability
                 aggSkillDiff += route.aggSkillDiff 
+                aggDeviationPrefSpes += route.deviationPrefSpes
                 self.objective[3] += route.travel_time   
         self.objective[1] = self.totalContinuity 
-        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff)
+        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff + weight_SG*aggDeviationPrefSpes)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
