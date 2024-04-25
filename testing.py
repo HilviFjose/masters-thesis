@@ -414,7 +414,7 @@ def check_employee_consistency(file_path):
 #------------ TEST FOR SAMEEMPLOYEE -----------------
 
 # Example usage
-username = 'hilvif'
+username = 'agnesost'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file

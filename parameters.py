@@ -28,7 +28,7 @@ df_activities = df_activities.set_index(["activityId"])
 df_employees = df_employees.set_index(["employeeId"])
 
 #SAVE DATA GENERATED
-df_employees.to_pickle(os.path.join(os.getcwd(), 'data', 'employees.pkl'))
+df_employees.to_pickle(os.path.join(os.getcwd(), 'data', 'employees.pkl'))s
 df_patients.to_pickle(os.path.join(os.getcwd(), 'data', 'patients.pkl'))
 df_treatments.to_pickle(os.path.join(os.getcwd(), 'data', 'treatments.pkl'))
 df_visits.to_pickle(os.path.join(os.getcwd(), 'data', 'visits.pkl'))
