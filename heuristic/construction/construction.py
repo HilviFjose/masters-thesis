@@ -40,8 +40,7 @@ class ConstructionHeuristic:
 
     def construct_initial(self): 
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
-
+        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for j in range(len(self.route_plans)): 
             route_plan = self.route_plans[j]
@@ -86,19 +85,15 @@ class ConstructionHeuristic:
 
     def setBestRoutePlan(self): 
         best_route_plan = self.route_plans[0]
-        print("Status første ruteplan er lovlig: ", self.checkIfConstructionIsLegal(best_route_plan))
         for route_plan in self.route_plans[1:]: 
-            print("dette er besteobjektivet så langt", best_route_plan.objective)
-            print("dette er objektivet vi prøver oss med", route_plan.objective)
-
             if checkCandidateBetterThanBest(route_plan.objective, best_route_plan.objective) and self.checkIfConstructionIsLegal(route_plan) or (
                 not self.checkIfConstructionIsLegal(best_route_plan) and self.checkIfConstructionIsLegal(route_plan)) or (
                     checkCandidateBetterThanBest(route_plan.objective, best_route_plan.objective) and not self.checkIfConstructionIsLegal(route_plan) and
                 not self.checkIfConstructionIsLegal(best_route_plan)
             ): 
-                print("bytter til ny ruteplan, for den var bedre")
+             
                 best_route_plan = route_plan
-            print("Status ruteplan er lovlig: ", self.checkIfConstructionIsLegal(route_plan))
+ 
             
 
         self.route_plan = best_route_plan
@@ -108,8 +103,18 @@ class ConstructionHeuristic:
         if len(route_plan.illegalNotAllocatedPatients) > 0: 
             return False 
         return True 
-   
+    
 
+    def updateConstructionAllocationInformation(self, route_plan, patient): 
+        route_plan.allocatedPatients[patient] = self.patients_df.loc[patient, 'treatmentsIds']
+        for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
+            route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']
+        for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 
+            route_plan.visits[visit] = self.visit_df.loc[visit, 'activitiesIds']
+
+    # -------------------- GAMMEL KODE UNDER, FRA NÅR VI BARE KJØRER EN KONSTRUKJSON ---------------
+   
+    '''
     def construct_initialG(self): 
         #Lager en liste med pasienter i prioritert rekkefølge. 
         unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
@@ -159,11 +164,5 @@ class ConstructionHeuristic:
             self.route_plan.visits[visit] = self.visit_df.loc[visit, 'activitiesIds']
         
 #TODO: Endre slik at dataen ikke må hentes på denne måten
-
+    '''
     
-    def updateConstructionAllocationInformation(self, route_plan, patient): 
-        route_plan.allocatedPatients[patient] = self.patients_df.loc[patient, 'treatmentsIds']
-        for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
-            route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']
-        for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 
-            route_plan.visits[visit] = self.visit_df.loc[visit, 'activitiesIds']

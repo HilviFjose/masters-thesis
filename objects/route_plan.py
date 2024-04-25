@@ -118,7 +118,7 @@ class RoutePlan:
             #TODO: Sortere hvor mange som er 
      
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
-            random.shuffle(routes_for_skill)
+            #random.shuffle(routes_for_skill)
             
             routes += routes_for_skill
 
