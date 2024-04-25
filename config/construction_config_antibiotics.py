@@ -1,16 +1,12 @@
 # ANTIBIOTICS INFUSION CASE
 # -------------------------
 # PATIENTS
-P_num = 50                                          # Number of patients
+P_num = 9                                          # Number of patients
 
 # Patient demographics
 clinicDistribution = [0.3, 0.2, 0.2, 0.3]
 specialisationDistribution = [0.7, 0.7, 0.7, 0.7]
-patientExtraSupport = [0.8, 0.7, 0.5, 0.4] #Percentage from each clinic that needs extra support 
-
-# Distributions of treatments, visits and acitivities for each patient
-T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
-A_numProb = [0.8, 0, 0.2, 0, 0, 0]                  # Probability of the number of activities from 1 to 6 in a visit
+patientExtraSupport = [0.8, 0.7, 0.2, 0.4] #Percentage from each clinic that needs extra support 
 
 # Pattern Type Distribution (5days) - Decides visits per treatment
 frequency1 = 0.3                # Five days a week
