@@ -25,7 +25,7 @@ class ALNS:
         self.iterationNum = 0
         self.weight_scores = weights
         
-        
+    @profile
     def iterate(self, num_iterations):
         found_solutions = {}
         
