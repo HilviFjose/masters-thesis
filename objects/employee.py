@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from datageneration import employeeGenerationAntibiotics 
+from datageneration import employeeGenerationInfusion 
 from config import main_config
 
 days = main_config.days

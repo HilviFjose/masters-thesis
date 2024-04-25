@@ -96,7 +96,7 @@ def employeeGenerator():
     return df_employees
 
 def employeeGeneratorOnlyDay():
-    df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'schedule'])
+    df_employees = pd.DataFrame(columns=['employeeId', 'professionalLevel', 'clinic', 'schedule'])
 
     if construction_config_infusion.E_num > 5:
         first_levels = np.array([1, 2, 2, 3, 3])
@@ -119,13 +119,30 @@ def employeeGeneratorOnlyDay():
     for index, level in enumerate(profession_levels): 
         employees.append([index+1, level, [2, 5, 8, 11, 14]])          # EmployeeId, Profession Level, Schedule
 
+    # Forbered klinikker
+    clinic = np.empty(construction_config_infusion.E_num, dtype=int)
 
-    for e in employees: 
+    # Tildele klinikk 0 til de som har profesjon 1, resten får tildelt basert på fordeling
+    for i, level in enumerate(profession_levels):
+        if level == 1:
+            clinic[i] = 0
+        else:
+            # Bestemme om ansatte med profesjon > 1 skal få 0 basert på 30 % sjanse
+            if np.random.rand() <= construction_config_infusion.E_generalists:
+                clinic[i] = 0
+            else:
+                clinic[i] = np.random.choice(range(2, len(construction_config_infusion.clinicDistribution) + 2), p=construction_config_infusion.clinicDistribution)
+
+    # Fyll DataFrame
+    for e, c in zip(employees, clinic):
         df_employees = df_employees._append({
             'employeeId': e[0],
             'professionalLevel': e[1],
+            'clinic': c,
             'schedule': e[2]
-        },ignore_index=True)
+        }, ignore_index=True)
+
+    
     
     file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
     df_employees.to_csv(file_path, index=False)

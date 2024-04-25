@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.split(__file__)[0],'..') )  #include subfolders
 
 from config import construction_config_old
-from datageneration import employeeGenerationOld
+from datageneration import employeeGenerationInfusion
 
 import random
 import numpy as np

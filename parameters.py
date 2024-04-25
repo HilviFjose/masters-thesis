@@ -63,7 +63,7 @@ df_treatments = pd.read_csv("data/test/TreatmentsNY.csv").set_index(["treatmentI
 df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
 '''
 #GENERATING DISTANCE MATRIX
-depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_infusion.depot]})
+depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_antibiotics.depot]})
 depot_row = depot_row.set_index(['activityId'])
 # Legger til depot_row i begynnelsen av df_activities
 df_activities_depot = pd.concat([depot_row, df_activities], axis=0)

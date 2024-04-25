@@ -110,7 +110,7 @@ def patientGenerator(df_employees):
         'employeeHistory': None,  
         'heaviness': heaviness,
         'location': locations,
-        'specialisationPreferred': 0,
+        'specialisationPreferred': None,
         'extraSupport': 'no'
     })
 
@@ -433,7 +433,9 @@ def activitiesGenerator(df_visits):
     df_activities.loc[df_activities['activityType'] == 'E', 'heaviness'] = 1
     df_activities.loc[df_activities['activityType'] == 'E', 'utility'] = 0
     df_activities.loc[df_activities['activityType'] == 'E', 'continuityGroup'] = 3
-    df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'] = {0: []}
+    df_activities.loc[df_activities['activityType'] == 'E', 'specialisationPreferred'] = None
+    df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'] = df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'].apply(lambda x: {0: []})
+
 
     # Generate earliest and latest start times of activities
     for visitId, group in df_activities.groupby('visitId'):
