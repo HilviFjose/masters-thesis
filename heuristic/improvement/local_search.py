@@ -23,7 +23,7 @@ class LocalSearch:
         self.candidate.updateObjective(current_iteration, total_iterations)
      
     
-    def do_local_search(self):
+    def do_local_search_to_local_optimum(self):
         candidate = copy.deepcopy(self.candidate)
         last_objective = copy.copy(candidate.objective)
         iteration = 0 
@@ -34,7 +34,6 @@ class LocalSearch:
             last_objective = copy.copy(candidate.objective)
             for day in range(1, self.days + 1):
                 candidate = self.change_employee(candidate, day)
-        print("ferdig med change employee og har kjørt", iteration, "iterasjoner")
         iteration = 0
         
         # SWAP EMPLOYEE
@@ -43,7 +42,6 @@ class LocalSearch:
             iteration += 1
             for day in range(1, self.days + 1):
                 candidate = self.swap_employee(candidate, day)
-        print("ferdig med swap employee og har kjørt", iteration, "iterasjoner")
         iteration = 0
 
         # MOVE ACTIVITY
@@ -55,7 +53,6 @@ class LocalSearch:
                 for emplID in employeeOnDayList: 
                     new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                     candidate.insertNewRouteOnDay(new_route, day)
-        print("ferdig med move activity og har kjørt", iteration, "iterasjoner")
         iteration = 0
 
         # SWAP ACTIVITY 
@@ -67,9 +64,50 @@ class LocalSearch:
                 for emplID in employeeOnDayList: 
                     new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                     candidate.insertNewRouteOnDay(new_route, day)
-        print("ferdig med swap activity og har kjørt", iteration, "iterasjoner")
 
         return candidate
+    
+    def do_local_search(self):
+        candidate = copy.deepcopy(self.candidate)
+        
+        # CHANGE EMPLOYEE
+        for day in range(1, self.days + 1):
+            candidate = self.change_employee(candidate, day)
+        for day in range(1, self.days + 1):
+           candidate = self.change_employee(candidate, day)
+        
+        # SWAP EMPLOYEE
+        for day in range(1, self.days + 1):
+           candidate = self.swap_employee(candidate, day)
+        for day in range(1, self.days + 1):
+            candidate = self.swap_employee(candidate, day)
+
+        # MOVE ACTIVITY
+        for day in range(1, self.days + 1):
+            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+            for emplID in employeeOnDayList: 
+                new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+                candidate.insertNewRouteOnDay(new_route, day)
+        for day in range(1, self.days + 1):
+            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+            for emplID in employeeOnDayList: 
+                new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+                candidate.insertNewRouteOnDay(new_route, day)
+
+        # SWAP ACTIVITY 
+        for day in range(1, self.days + 1):
+            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+            for emplID in employeeOnDayList: 
+                new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+                candidate.insertNewRouteOnDay(new_route, day)
+        for day in range(1, self.days + 1):
+            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+            for emplID in employeeOnDayList: 
+                new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+                candidate.insertNewRouteOnDay(new_route, day)
+
+        return candidate
+ 
     
    
  
@@ -327,54 +365,8 @@ class LocalSearch:
     Lagt til oppdatering av aktivitene som kan bli flyttet når du lager plass med MakeSpace
     Tror dette løste problemet man får med presedens etter lokalsøk
 
-
-        def do_local_search(self):
-        candidate = copy.deepcopy(self.candidate)
-        last_objective = candidate.objective 
-        iteration = 0 
-        
-        # CHANGE EMPLOYEE
-   
-        for day in range(1, self.days + 1):
-            candidate = self.change_employee(candidate, day)
-            
-        for day in range(1, self.days + 1):
-           candidate = self.change_employee(candidate, day)
-        
-        # SWAP EMPLOYEE
-        for day in range(1, self.days + 1):
-           candidate = self.swap_employee(candidate, day)
-        for day in range(1, self.days + 1):
-            candidate = self.swap_employee(candidate, day)
-
-        # MOVE ACTIVITY
-        for day in range(1, self.days + 1):
-            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
-            for emplID in employeeOnDayList: 
-                new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
-                candidate.insertNewRouteOnDay(new_route, day)
-        for day in range(1, self.days + 1):
-            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
-            for emplID in employeeOnDayList: 
-                new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
-                candidate.insertNewRouteOnDay(new_route, day)
-
-        # SWAP ACTIVITY 
-        for day in range(1, self.days + 1):
-            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
-            for emplID in employeeOnDayList: 
-                new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
-                candidate.insertNewRouteOnDay(new_route, day)
-        for day in range(1, self.days + 1):
-            employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
-            for emplID in employeeOnDayList: 
-                new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
-                candidate.insertNewRouteOnDay(new_route, day)
-
-        return candidate
-    
     '''
-    
+
 
 
                                         
