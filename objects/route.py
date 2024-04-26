@@ -167,7 +167,6 @@ class Route:
             self.aggSkillDiff += self.employee.getSkillLevel() - act.getSkillreq()
             self.suitability += act.suitability
             if act.prefSpes != None and act.prefSpes != self.employee.clinic: 
-                print("Nå legges det til en spesialisation straff fordi aktivitet", act.id, "har prefPres", act.prefSpes, "mens ansatt har self.employee.clinic", self.employee.clinic)
                 self.deviationPrefSpes += 1
         self.travel_time += math.ceil(T_ij[i][0])
    

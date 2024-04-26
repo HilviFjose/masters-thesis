@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 10
+iterations = 1000
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -45,8 +45,8 @@ penalty_act = 3             # Penalty per illegal activity
 weight_C = 0.0              # Max continuity of care
 weight_DW = 0.3             # Balance daily workload
 weight_WW = 0.3             # Balance weekly workload
-weight_S = 0.4              # Min skill difference
-weight_SG = 0.0             # Balance specialist/generalist
+weight_S = 0.2              # Min skill difference
+weight_SG = 0.2             # Balance specialist/generalist
 
 #Planning period
 days = 5

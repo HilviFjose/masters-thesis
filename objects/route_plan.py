@@ -46,6 +46,8 @@ class RoutePlan:
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
         self.totalContinuity = 0
+        self.aggSkillDiff = 0
+        self.aggDeviationPrefSpes = 0 
 
         self.treatments = {}
         self.visits = {}
@@ -113,8 +115,11 @@ class RoutePlan:
         act_skill_level = activity.skillReq
         routes = []
         for act_skill_level in range (act_skill_level, 4): 
-            routes_for_skill = routes_grouped_by_skill[act_skill_level]
+            try:
+                routes_for_skill = routes_grouped_by_skill[act_skill_level]
             #TODO: Sortere hvor mange som er 
+            except: 
+                routes_for_skill = []
      
             routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
             #random.shuffle(routes_for_skill)
@@ -214,6 +219,7 @@ class RoutePlan:
             #self.updateObjective()
             print("operator brukt:", operator_string)
             print("updated objective ", self.objective)
+            print("objective 3 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes]", [self.weeklyHeaviness, self.dailyHeaviness,self.aggSkillDiff , self.aggDeviationPrefSpes])
             print("primary objective without penalty ", self.getOriginalObjective())
             print("visits", self.visits)
             print("treatments", self.treatments)
@@ -339,17 +345,17 @@ class RoutePlan:
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()
         self.calculateTotalContinuity()
-        aggSkillDiff = 0
-        aggDeviationPrefSpes = 0 
+        self.aggSkillDiff = 0
+        self.aggDeviationPrefSpes = 0 
         for day in range(1, 1+self.days): 
             for route in self.routes[day].values(): 
                 route.updateObjective()
                 self.objective[0] += route.suitability
-                aggSkillDiff += route.aggSkillDiff 
-                aggDeviationPrefSpes += route.deviationPrefSpes
+                self.aggSkillDiff += route.aggSkillDiff 
+                self.aggDeviationPrefSpes += route.deviationPrefSpes
                 self.objective[3] += route.travel_time   
         self.objective[1] = self.totalContinuity 
-        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*aggSkillDiff + weight_SG*aggDeviationPrefSpes)
+        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
