@@ -23,12 +23,56 @@ class LocalSearch:
         self.candidate.updateObjective(current_iteration, total_iterations)
      
     
-    def do_local_search(self):
+    def do_local_search_to_local_optimum(self):
         candidate = copy.deepcopy(self.candidate)
+        last_objective = copy.copy(candidate.objective)
+        iteration = 0 
 
         # CHANGE EMPLOYEE
+        while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
+            iteration += 1
+            last_objective = copy.copy(candidate.objective)
+            for day in range(1, self.days + 1):
+                candidate = self.change_employee(candidate, day)
+        iteration = 0
+        
+        # SWAP EMPLOYEE
+        while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
+            last_objective = copy.copy(candidate.objective)
+            iteration += 1
+            for day in range(1, self.days + 1):
+                candidate = self.swap_employee(candidate, day)
+        iteration = 0
+
+        # MOVE ACTIVITY
+        while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
+            last_objective = copy.copy(candidate.objective)
+            iteration += 1
+            for day in range(1, self.days + 1):
+                employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+                for emplID in employeeOnDayList: 
+                    new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+                    candidate.insertNewRouteOnDay(new_route, day)
+        iteration = 0
+
+        # SWAP ACTIVITY 
+        while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
+            last_objective = copy.copy(candidate.objective)
+            iteration += 1
+            for day in range(1, self.days + 1):
+                employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+                for emplID in employeeOnDayList: 
+                    new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+                    candidate.insertNewRouteOnDay(new_route, day)
+
+        return candidate
+    
+    def do_local_search(self):
+        candidate = copy.deepcopy(self.candidate)
+        
+        # CHANGE EMPLOYEE
         for day in range(1, self.days + 1):
-           candidate = self.change_employee(candidate, day)
+            candidate = self.change_employee(candidate, day)
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
         
@@ -63,6 +107,7 @@ class LocalSearch:
                 candidate.insertNewRouteOnDay(new_route, day)
 
         return candidate
+ 
     
    
  
@@ -244,10 +289,9 @@ class LocalSearch:
                             route_plan.updateActivityBasedOnRoutePlanOnDay(testAct, new_route2.day)
                             new_route2.updateActivityBasedOnDependenciesInRoute(testAct)
                         #TODO: Nå sendes routeplan inn her. har ikke sjekket premissene. Var ikke med før
+                        
                         for routeActivity in new_route1.route: 
                             route_plan.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
-
-
                         route_plan.updateActivityBasedOnRoutePlanOnDay(activity2, day)
                         status = new_route1.addActivity(activity2)
                         if status == False: 
@@ -293,6 +337,7 @@ class LocalSearch:
                      #TESTLEGGER TIL 
                     for testAct in new_candidate.routes[day][othEmpl].route: 
                         new_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, new_candidate.routes[day][othEmpl].day)
+                        #TODO: Sjønner ikke hvorfor vi kjører denne? Burde være håndtert i linjen over
                         new_candidate.routes[day][othEmpl].updateActivityBasedOnDependenciesInRoute(testAct)
                       
                     
@@ -319,8 +364,9 @@ class LocalSearch:
     Det vi har gjort 12.04:
     Lagt til oppdatering av aktivitene som kan bli flyttet når du lager plass med MakeSpace
     Tror dette løste problemet man får med presedens etter lokalsøk
+
     '''
-    
+
 
 
                                         
