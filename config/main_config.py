@@ -50,3 +50,8 @@ weight_SG = 0.0             # Balance specialist/generalist
 
 #Number of constructed solutions 
 num_of_constructions = 10
+#Planning period
+days = 5
+
+#Depot
+depot = (59.9365, 10.7396)

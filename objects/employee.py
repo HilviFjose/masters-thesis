@@ -3,10 +3,10 @@ import pandas as pd
 import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from datageneration import employeeGeneration 
-from config import construction_config
+from datageneration import employeeGenerationInfusion 
+from config import main_config
 
-days = construction_config.days
+days = main_config.days
 
 class Employee:
     def __init__(self, df, id):

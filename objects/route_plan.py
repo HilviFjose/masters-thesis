@@ -9,9 +9,8 @@ from objects.route import Route
 import copy
 import random 
 import datetime
-from config.construction_config import depot
+from config.main_config import depot
 from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
-from config.construction_config import preferredEmployees
 from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
 
 
