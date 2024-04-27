@@ -9,7 +9,7 @@ from objects.activity import Activity
 from parameters import T_ij
 import math
 import copy 
-from config.construction_config import depot
+from config.main_config import depot
 
 class Route:
     def __init__(self, day, employee):
@@ -23,6 +23,7 @@ class Route:
         self.aggSkillDiff = 0 
         self.totalHeaviness = 0        
         self.suitability = 0
+        self.deviationPrefSpes = 0 
         #TODO: Må finne ut hvordan man vil ha det med depoet. Nå vil depoet fortrekkes ovenfor en aktivitet som allerde har noen ute. 
         #Men det er vel kanskje fint for å få moblisert de som ikke har fått noen enda 
         self.locations = []
@@ -158,12 +159,15 @@ class Route:
         self.travel_time = 0
         self.aggSkillDiff = 0 
         self.suitability = 0
+        self.deviationPrefSpes = 0
         for act in self.route: 
             j = act.getID()
             self.travel_time += math.ceil(T_ij[i][j])
             i = j 
             self.aggSkillDiff += self.employee.getSkillLevel() - act.getSkillreq()
             self.suitability += act.suitability
+            if act.prefSpes != None and act.prefSpes != self.employee.clinic: 
+                self.deviationPrefSpes += 1
         self.travel_time += math.ceil(T_ij[i][0])
    
     #TODO: Oppdates ikke oppover igjen i hierarkiet
