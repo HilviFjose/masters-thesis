@@ -6,12 +6,13 @@ import numpy as np
 #TODO: Tenke mer over hvike operatorer vi har innad på en dag i vår struktur. 
 #Det må være noen operatorer for alle typer aktiviteter.
 
-#TODO: Skal vi ha 
+
 '''
-Skal man ved hjelp av disse operatorene kunne komme til optimal løsning? 
+Har gjort en test på rekkefølgen på operatorene i lokalsøket til optimum. 
+Fikk ikke så mye indikasjoner på hva som er best rekkefølge, så tenker vi kan argumentere for den som står der nå
 '''
 
-#TODO: Se på om vi skal gjøre de samme operatorene på visit nivå.  Hensyntar ikke at vi har dependensies mellom ruter.
+
 
 class LocalSearch:
     def __init__(self, candidate, current_iteration, total_iterations): 
@@ -27,7 +28,7 @@ class LocalSearch:
         candidate = copy.deepcopy(self.candidate)
         last_objective = copy.copy(candidate.objective)
         iteration = 0 
-
+         
         # CHANGE EMPLOYEE
         while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
             iteration += 1
@@ -35,7 +36,7 @@ class LocalSearch:
             for day in range(1, self.days + 1):
                 candidate = self.change_employee(candidate, day)
         iteration = 0
-        
+
         # SWAP EMPLOYEE
         while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
             last_objective = copy.copy(candidate.objective)
@@ -44,17 +45,7 @@ class LocalSearch:
                 candidate = self.swap_employee(candidate, day)
         iteration = 0
 
-        # MOVE ACTIVITY
-        while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
-            last_objective = copy.copy(candidate.objective)
-            iteration += 1
-            for day in range(1, self.days + 1):
-                employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
-                for emplID in employeeOnDayList: 
-                    new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
-                    candidate.insertNewRouteOnDay(new_route, day)
-        iteration = 0
-
+        
         # SWAP ACTIVITY 
         while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
             last_objective = copy.copy(candidate.objective)
@@ -64,8 +55,24 @@ class LocalSearch:
                 for emplID in employeeOnDayList: 
                     new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                     candidate.insertNewRouteOnDay(new_route, day)
+                    candidate.updateObjective(self.current_iteration, self.total_iterations)
+
+        iteration = 0 
+        
+        # MOVE ACTIVITY
+        while checkCandidateBetterThanBest(candidate.objective, last_objective) or iteration == 0: 
+            last_objective = copy.copy(candidate.objective)
+            iteration += 1
+            for day in range(1, self.days + 1):
+                employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+                for emplID in employeeOnDayList: 
+                    new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+                    candidate.insertNewRouteOnDay(new_route, day)
+                    candidate.updateObjective(self.current_iteration, self.total_iterations)
+        iteration = 0
 
         return candidate
+
     
     def do_local_search(self):
         candidate = copy.deepcopy(self.candidate)
@@ -115,6 +122,7 @@ class LocalSearch:
     def swap_activities_in_route(self, route, candidate):
         #TODO: Sjekke litt mer nøye hvordan det er med dependencies. Kanskje den ikke fungerer for det. Fungerer forenkeltstående
         information_candidate = candidate
+        candidate.updateObjective(self.current_iteration, self.total_iterations)
         route.updateObjective()
         best_travel_time = route.travel_time
         best_found_route = route
@@ -191,6 +199,7 @@ class LocalSearch:
                         break
 
                 new_route.updateObjective()
+                
                 if status == True and new_route.travel_time < best_travel_time:
                     best_travel_time = new_route.travel_time
                     best_found_route = copy.deepcopy(new_route) 
@@ -200,6 +209,7 @@ class LocalSearch:
 
     def move_activity_in_route(self, route, candidate):
         information_candidate = candidate
+        candidate.updateObjective(self.current_iteration, self.total_iterations)
         route.updateObjective()
         best_travel_time = route.travel_time
         best_found_route = route

@@ -45,14 +45,13 @@ penalty_act = 3             # Penalty per illegal activity
 weight_C = 0.0              # Max continuity of care
 weight_DW = 0.3             # Balance daily workload
 weight_WW = 0.3             # Balance weekly workload
-weight_S = 0.4              # Min skill difference
-weight_SG = 0.0             # Balance specialist/generalist
+weight_S = 0.2              # Min skill difference
+weight_SG = 0.2             # Balance specialist/generalist
 
 #Planning period
 days = 5
 
 #Depot
 depot = (59.9365, 10.7396)
-
 #Number of constructed solutions 
-num_of_constructions = 1
+num_of_constructions = 10

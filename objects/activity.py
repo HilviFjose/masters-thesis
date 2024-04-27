@@ -34,6 +34,8 @@ class Activity:
         self.nActInVisit = df.loc[id]["numActivitiesInVisit"]
 
         self.suitability = df.loc[id]["utility"]
+
+        self.prefSpes = df.loc[id]["specialisationPreferred"]
         
         self.startTime = None
         #self.newLatestStartTime = 1440
