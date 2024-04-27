@@ -15,17 +15,18 @@ from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight
 
 
 class RoutePlan:
-    def __init__(self, days, employee_df):
-        self.employee_df = employee_df
+    def __init__(self, days, employees_array):
+        self.employees_array = employees_array
         
         employee_skills = {} # For å holde styr på ansattes ferdigheter
 
         self.employees = [] #Antar at de alle ansatte jobber alle dager
 
         #Lager employees objektene og lagerer de i en liste 
-        for key, value in employee_df.iterrows():
-            emp = Employee(employee_df, key)
-            employee_skills[key] = value['professionalLevel'] 
+        for emp_id in range(1, len(employees_array)):
+            emp = Employee(employees_array[emp_id], emp_id)
+            professional_level = emp.skillLevel
+            employee_skills[emp_id] = professional_level
             self.employees.append(emp)
 
         self.routes = {day: {employee.id: None for employee in self.employees} for day in range(1, days+1)}

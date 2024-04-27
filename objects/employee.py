@@ -5,13 +5,14 @@ import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from datageneration import employeeGenerationInfusion 
 from config import main_config
+# employeeId,professionalLevel,clinic,schedule
 
 days = main_config.days
 
 class Employee:
-    def __init__(self, df, id):
-        self.skillLevel = df.loc[id]["professionalLevel"]
-        self.shifts = self.getShifts(df.loc[id]["schedule"])
+    def __init__(self, employee_array, id):
+        self.skillLevel = employee_array[0] # profession level is first element in two-dimensional information list
+        self.shifts = self.getShifts(employee_array[2])
         self.id = id
     
     #TODO: Denne er veldig midlertidig håndtert. Må endres slik at den tar inn de faktiske skiftene.
@@ -49,13 +50,4 @@ class Employee:
     def getID(self): 
         return self.id
 
-#TESTING
-'''
-df_employees = (employeeGeneration.employeeGenerator()).set_index(["employeeId"])    
-for i in range(1,15):
-    e = Employee(df_employees, i)
-    print('id', e.id)
-    print('skill', e.skillLevel)
-    print('schedule', e.shifts)
-'''
 
