@@ -12,9 +12,10 @@ days = main_config.days
 class Employee:
     def __init__(self, employee_array, id):
         self.skillLevel = employee_array[0] # profession level is first element in two-dimensional information list
+        self.clinic = employee_array[1]
         self.shifts = self.getShifts(employee_array[2])
         self.id = id
-        self.clinic = df.loc[id]["clinic"]
+
     
     #TODO: Denne er veldig midlertidig håndtert. Må endres slik at den tar inn de faktiske skiftene.
     #Den henter ut skiftene nå også sette rtidspunktene basert pådet. Men burde endres på kanskje 

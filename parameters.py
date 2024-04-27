@@ -100,7 +100,7 @@ df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
 
-#2D LISTS FOR MORE EFFICIENT INFORMATION FETCHING
+#ARRAYS FOR MORE EFFICIENT INFORMATION FETCHING
 employees__information_array = load_array_from_pickle(list_paths['employees'])
 patients_information_array = load_array_from_pickle(list_paths['patients'])
 treatments_information_array = load_array_from_pickle(list_paths['treatments'])
