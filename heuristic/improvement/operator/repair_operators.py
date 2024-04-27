@@ -6,6 +6,7 @@ import random
 import networkx as nx
 from sklearn.cluster import KMeans
 from scipy.spatial import cKDTree
+import time
 
 from config import main_config
 
@@ -34,6 +35,7 @@ class RepairOperators:
     #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
     def greedy_repair(self, destroyed_route_plan, current_iteration, total_iterations):
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
+        start_time = time.perf_counter()
         
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
 
@@ -41,12 +43,16 @@ class RepairOperators:
         
         repaired_route_plan = self.illegal_treatment_repair(repaired_route_plan)   
 
-        repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)   
+        repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)  
+
+        end_time = time.perf_counter()
+        print("Ferdig med illegal insetting, sekunder:", str(end_time-start_time)) 
   
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
 
         for patient in descendingUtilityNotAllocatedPatients: 
+            start_time =    time.perf_counter()
             patientInsertor = Insertor(self.constructor, repaired_route_plan, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
@@ -62,6 +68,9 @@ class RepairOperators:
 
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)
+
+            end_time = time.perf_counter()
+            print("Pasient", patient, "forsøkt innsatt med status", status, "brukte tid", str(end_time-start_time)) 
     
         repaired_route_plan.updateObjective(current_iteration, total_iterations)
       

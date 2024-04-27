@@ -125,17 +125,6 @@ class Activity:
             return PrevNode, PrevNodeInTime
 
     #get funksjonene henter ut Acitivy variablene og parameterne 
-    def getSkillreq(self): 
-        return self.skillReq
-    
-    def setStartTime(self, startTime): 
-        self.startTime = startTime
-
-    def getStartTime(self):
-        return self.startTime
-        
-    def getEmployeeRestriction(self): 
-        return self.employeeRestricions
 
     def getNewEarliestStartTime(self): 
         if len(self.newEeariestStartTime) == 0: 
@@ -147,25 +136,7 @@ class Activity:
         if len(self.newLatestStartTime) == 0: 
             return 1440
         return min(list(self.newLatestStartTime.values()))
-    
-    def getDuration(self): 
-        return self.duration
-    
-    def getID(self): 
-        return self.id
-    
-    def getPickUpActivityID(self): 
-        return self.pickUpActivityID
-    
-    def getPrevNode(self):
-        return self.PrevNode 
-    
-    def getPrevNodeInTime(self): 
-        return self.PrevNodeInTime
-    
-    def getHeaviness(self):
-        return self.heaviness
-    #set og add funsksjonene oppdatere aktivtetens parametere
+
 
     def setNewEarliestStartTime(self, newEarliestStartTimeFromDepAct, depAct): 
         #earliest starttime endres dersom den er høyere enn nåværende latest startime
@@ -199,11 +170,4 @@ class Activity:
         self.employeeNotAllowedDueToPickUpDelivery = []
         self.possibleToInsert = True
 
-    def updateEmployeeHistory(self, employeeId):
-        continuity_score, employeeIds = next(iter(self.employeeHistory.items()))
-        employeeIds.append(employeeId)  
-        self.employeeHistory[continuity_score] = employeeIds
-        
-#act70 = Activity( pd.read_csv("data/NodesNY.csv").set_index(["id"]) , 64)
-#print("earliestStartTime", act70.newEeariestStartTime)
-#print("newLatestStartTime", act70.newLatestStartTime)
+ 

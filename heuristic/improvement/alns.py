@@ -3,6 +3,7 @@ import numpy as np
 import copy
 from tqdm import tqdm 
 from helpfunctions import *
+import time 
 
 from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
@@ -53,8 +54,11 @@ class ALNS:
             d_operator = self.destroy_operators[destroy]
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
-            #print("destroy operator", d_operator.__name__)
-            candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan)   
+            print("destroy operator", d_operator.__name__)
+            start_time = time.perf_counter()
+            candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
+            end_time = time.perf_counter()
+            print("destroy used time", str(end_time - start_time))  
             candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
 
@@ -64,9 +68,13 @@ class ALNS:
             d_count[destroy] += 1
 
             # Repair solution
+            
             r_operator = self.repair_operators[repair]
-            #print("repair operator", r_operator.__name__)
+            print("repair operator", r_operator.__name__)
+            start_time = time.perf_counter()
             candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, num_iterations)
+            end_time = time.perf_counter()
+            print("destroy used time", str(end_time - start_time))
             candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
             r_count[repair] += 1
@@ -149,9 +157,9 @@ class ALNS:
         
         # Add repair operators
         self.add_repair_operator(repair_operators.greedy_repair)
-        self.add_repair_operator(repair_operators.random_repair)
-        self.add_repair_operator(repair_operators.complexity_repair)
-        self.add_repair_operator(repair_operators.regret_k_repair)
+        #self.add_repair_operator(repair_operators.random_repair)
+        #self.add_repair_operator(repair_operators.complexity_repair)
+        #self.add_repair_operator(repair_operators.regret_k_repair)
 
 
     # Add operator to the heuristic instance
