@@ -106,6 +106,7 @@ patients_information_array = load_array_from_pickle(list_paths['patients'])
 treatments_information_array = load_array_from_pickle(list_paths['treatments'])
 visits_information_array = load_array_from_pickle(list_paths['visits'])
 activities_information_array = load_array_from_pickle(list_paths['activities'])
+#print(patients_information_array)
 
 #GENERATING DISTANCE MATRIX
 depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_antibiotics.depot]})

@@ -26,7 +26,8 @@ class Insertor:
     def insert_patient(self, patient):
         old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
-        treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+        treatments_index = self.constructor.patients_array[0].tolist().index('treatmentsIds')
+        treamentList = self.constructor.patients_array[patient][treatments_index]
         for treatment in treamentList: 
             status = self.insert_treatment(treatment)
             if status == False: 

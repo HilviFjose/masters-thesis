@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import pandas as pd
+import numpy as np
 import copy
 import os
 import sys
@@ -17,12 +18,12 @@ Gjennom construct_inital funksjonen så oppdateres løsningen, objektivverdien o
 
 
 class ConstructionHeuristic:
-    def __init__(self, activities_df,  employees_array, patients_df, treatment_df, visit_df, days):
+    def __init__(self, activities_df,  employees_array, patients_array, treatment_df, visit_df, days):
         
         self.activities_df = activities_df
         self.visit_df = visit_df
         self.treatment_df = treatment_df
-        self.patients_df = patients_df
+        self.patients_array = patients_array
         self.employees = employees_array
         self.days = days
         #self.route_plan = RoutePlan(days, employees_df) 
@@ -40,27 +41,30 @@ class ConstructionHeuristic:
 
     def construct_initial(self): 
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
+        #unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
+        patient_list = self.patients_array[1:].tolist()
+        allocation_index = self.patients_array[0].tolist().index('allocation')
+        agg_utility_index = self.patients_array[0].tolist().index('aggUtility')
+        sorted_unassigned_patients = sorted(patient_list, key=lambda x: (x[allocation_index], x[agg_utility_index]))
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for j in range(len(self.route_plans)): 
             route_plan = self.route_plans[j]
-            for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
-                #Henter ut raden i pasient dataframes som tilhører pasienten
-                patient = unassigned_patients.index[i] 
-                allocation = unassigned_patients.loc[patient, 'allocation']
+            for i in tqdm(range(len(sorted_unassigned_patients)), colour='#39ff14'):
+                patient_id = i+1
+                allocation = sorted_unassigned_patients[i][allocation_index]
                 
                 #Kopierer nåværende ruteplan for denne pasienten 
                 route_plan_with_patient = copy.deepcopy(route_plan)
 
                 patientInsertor = Insertor(self, route_plan_with_patient, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
-                state = patientInsertor.insert_patient(patient)
+                state = patientInsertor.insert_patient(patient_id)
             
                 if state == True: 
                     #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                     route_plan = patientInsertor.route_plan
                     
                     #Pasienten legges til i hjemmsykehusets liste med pasienter
-                    self.updateConstructionAllocationInformation(route_plan, patient)
+                    self.updateConstructionAllocationInformation(route_plan, patient_id)
                     #Oppdaterer ruteplanen 
                     
                 #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
@@ -69,9 +73,9 @@ class ConstructionHeuristic:
                     
                 
                     if allocation == 0: 
-                        route_plan.notAllocatedPatients.append(patient)
+                        route_plan.notAllocatedPatients.append(patient_id)
                     else: 
-                        route_plan.illegalNotAllocatedPatients.append(patient)
+                        route_plan.illegalNotAllocatedPatients.append(patient_id)
             
             #TODO: Oppdatere alle dependencies når vi har konstruert løsning - Jeg forstår ikke helt denne 
             for day in range(1, 1+ self.days): 
@@ -106,7 +110,8 @@ class ConstructionHeuristic:
     
 
     def updateConstructionAllocationInformation(self, route_plan, patient): 
-        route_plan.allocatedPatients[patient] = self.patients_df.loc[patient, 'treatmentsIds']
+        treatments_index = self.patients_array[0].tolist().index('treatmentsIds')
+        route_plan.allocatedPatients[patient] = self.patients_array[patient, treatments_index]
         for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
             route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']
         for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 

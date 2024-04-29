@@ -55,14 +55,9 @@ class DestroyOperators:
         while activity_count < total_num_activities_to_remove:
             patientID = rnd.choice(list(destroyed_route_plan.allocatedPatients.keys())) 
 
-            #activity_count += self.constructor.patients_df.loc[patientID, 'nActivities']
-            # Finner en aktivitetsid som kan brukes til å finne hvor mange aktiviteter som tilhører den valgte pasienten 
-            #TODO: Usikker på hva som er raskest av dette og aksessere df direkte?
-            treatIdInPatient = destroyed_route_plan.allocatedPatients[patientID][0]
-            visitIdInPatient = destroyed_route_plan.treatments[treatIdInPatient][0]
-            actIdInPatient = destroyed_route_plan.visits[visitIdInPatient][0]
-            act = destroyed_route_plan.getActivityFromEntireRoutePlan(actIdInPatient)
-            activity_count += act.nActInPatient
+            nAct_index = self.constructor.patients_array[0].tolist().index('nActivities')
+            nActInPatient = self.constructor.patients_array[patientID][nAct_index]
+            activity_count += nActInPatient
 
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
             
@@ -130,13 +125,15 @@ class DestroyOperators:
         lowest_patient_contribute = 1000
         activity_count = 0
         destroyed_route_plan = copy.deepcopy(current_route_plan)
+        agg_utility_index = self.constructor.patients_array[0].tolist().index('aggUtility')
         while activity_count < total_num_activities_to_remove: 
             selected_patient = None 
-            for patient in list(destroyed_route_plan.allocatedPatients.keys()): 
-                if self.constructor.patients_df.loc[patient, 'aggUtility'] < lowest_patient_contribute: 
-                    selected_patient = patient
             
-            #activity_count += self.constructor.patients_df.loc[patientID, 'nActivities']
+            for patient_id in list(destroyed_route_plan.allocatedPatients.keys()): 
+                
+                if self.constructor.patients_array[patient_id][agg_utility_index] < lowest_patient_contribute: 
+                    selected_patient = patient_id
+            
             treatIdInPatient = destroyed_route_plan.allocatedPatients[selected_patient][0]
             visitIdInPatient = destroyed_route_plan.treatments[treatIdInPatient][0]
             actIdInPatient = destroyed_route_plan.visits[visitIdInPatient][0]
@@ -281,11 +278,11 @@ class DestroyOperators:
             if not allocatedPatientsIds:  # Avslutt hvis det ikke er flere pasienter å fjerne
                 break
 
-            df_selected_patients = self.constructor.patients_df.loc[allocatedPatientsIds]
-            selected_patients = self.k_means_clustering(df_selected_patients)
+            selected_patients = self.k_means_clustering(allocatedPatientsIds)
 
             # Beregn antallet aktiviteter som vil bli fjernet i denne iterasjonen
-            activities_to_remove_now = df_selected_patients.loc[selected_patients, 'nActivities'].sum()
+            nActivities_index = self.constructor.patients_array[0].tolist().index('nActivities')
+            activities_to_remove_now = sum([self.constructor.patients_array[patient_id][nActivities_index] for patient_id in selected_patients])
             
             for patientID in selected_patients:
                 destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
@@ -300,26 +297,21 @@ class DestroyOperators:
         return destroyed_route_plan, None, True
 
 
-    def find_nearest_neighbors_with_kdtree(self, df, location_col='location'):
-        """
-        Identifies the nearest neighbor for each activity based on their geographical coordinates using a KD-tree.
-
-        Returns:
-            tuple: Two elements, first is the indices of nearest neighbors (ignoring the point itself),
-                second is the corresponding distances to these nearest neighbors.
-        """
+    def find_nearest_neighbors_with_kdtree(self, selected_patients):
+        location_index = self.constructor.patients_array[0].tolist().index('location')
+        patients_and_location = []
+        for i in range(len(self.constructor.patients_array)):
+            for patient in selected_patients:
+                if i == patient: 
+                    patients_and_location.append((patient, self.constructor.patients_array[patient][location_index]))
+ 
         coordinates = []
-        for x in df[location_col]:
-            if isinstance(x, str):
-                lat_str, lon_str = x.strip("()").split(",")
-                lat, lon = float(lat_str), float(lon_str)
-            elif isinstance(x, tuple):
-                lat, lon = x
-            else:
-                raise ValueError("Unknown data type in 'location' column")
+        for _, loc in patients_and_location:
+            # Assuming loc is already a tuple of (latitude, longitude)
+            lat, lon = loc
             coordinates.append((lat, lon))
-    
         coordinates = np.array(coordinates)
+
         tree = cKDTree(coordinates)
         nearest_neighbor_distances = tree.query(coordinates, k=2)[0][:, 1]
         
@@ -384,29 +376,27 @@ class DestroyOperators:
     
     # TAR HENSYN TIL DESTRUCTION DEGREE
     def spread_distance_patients_removal(self, current_route_plan):
-        # Beregne totalt antall aktiviteter tildelt i løsningen
-        #num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
         num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
 
-        # Forberede liste med pasienter og deres aktiviteter
         allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
-        df_selected_patients = self.constructor.patients_df.loc[allocatedPatientsIds]
 
         # Beregne "spread" for hver pasient
-        nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(df_selected_patients)
+        nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(allocatedPatientsIds)
 
         # Sortere pasientene basert på "spread"
-        patients_sorted_by_spread_indices = np.argsort(-nearest_neighbor_distances)
-        patients_sorted_by_spread = df_selected_patients.iloc[patients_sorted_by_spread_indices].index.tolist()
+        patients_with_spread = list(zip(allocatedPatientsIds, nearest_neighbor_distances))
+        patients_sorted_by_spread = sorted(patients_with_spread, key=lambda x: x[1], reverse=True)
+        sorted_patient_ids = [patient[0] for patient in patients_sorted_by_spread]
 
         # Velge pasienter for fjerning basert på "spread" og antall aktiviteter som skal fjernes
+        nActivities_index = self.constructor.patients_array[0].tolist().index('nActivities')
         removed_activities_count = 0
         patients_to_remove = []
-        for patientID in patients_sorted_by_spread:
+        for patientID in sorted_patient_ids:
             if removed_activities_count >= total_num_activities_to_remove:
                 break
-            num_activities_for_patient = df_selected_patients.loc[patientID, 'nActivities']
+            num_activities_for_patient = self.constructor.patients_array[patientID][nActivities_index]  # Assume this dictionary exists or implement accordingly
             removed_activities_count += num_activities_for_patient
             patients_to_remove.append(patientID)
         
@@ -511,17 +501,6 @@ class DestroyOperators:
             p_visitDuration += p_act.getDuration()
         p_visitEarliestStart = p_firstAct.earliestStartTime
         p_visitLatestStart = p_firstAct.latestStartTime        
-        
-
-        '''
-        - DONE - liste med visits same day
-        - DONE - liste med visits med same max skill req
-        - DONE - liste med visits med overlappende total timewindow -- Hvordan skal vi vurdere her??
-        - FORSLAG DONE - liste med visits med relaterte starttidspunkter
-        - liste med visits med lignende employee history (kun aktuelt for de med høy continuity?)
-        - DONE - liste med visits med likt antall aktiviteter
-        - OVERFLØDIG MED DEN OVER? - liste med visits med samme mengde presedens
-        '''
 
         visitsSameDay = []
         visitsSameSkillReq = []
@@ -783,7 +762,8 @@ class DestroyOperators:
         #TODO: Gjøre ferdig her 
 
         #Todo, usikker på om det blir riktig med .keys for liste 
-        ascendingUtilityAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in current_route_plan.allocatedPatients.keys()}
+        utility_index = self.constructor.patients_array[0].tolist().index('utility')
+        ascendingUtilityAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][utility_index] for patient in current_route_plan.allocatedPatients.keys()}
         ascendingUtilityNotAllocatedPatients = sorted(ascendingUtilityAllocatedPatientsDict, key=ascendingUtilityAllocatedPatientsDict.get)
 
         for patientID in ascendingUtilityNotAllocatedPatients: 
@@ -846,16 +826,16 @@ class DestroyOperators:
         return self.updateDictionariesForRoutePlanActivityLevel(selected_activity, destroyed_route_plan, original_day)
 
     def updateDictionariesForRoutePlanPatientLevel(self, patient_removed, route_plan):
-        allocation = self.constructor.patients_df.loc[patient_removed, 'allocation']
+        allocation_index = self.constructor.patients_array[0].tolist().index('allocation')
+        allocation = self.constructor.patients_array[patient_removed][allocation_index]
         if allocation == 0: 
             route_plan.notAllocatedPatients.append(patient_removed)
         else: 
             route_plan.illegalNotAllocatedPatients.append(patient_removed) 
         del route_plan.allocatedPatients[patient_removed] 
            
-
-        #TODO: Fikse her 
-        treatments_for_patient = self.constructor.patients_df.loc[patient_removed, 'treatmentsIds']
+        treatmentsIds_index = self.constructor.patients_array[0].tolist().index('treatmentsIds')
+        treatments_for_patient = self.constructor.patients_array[patient_removed][treatmentsIds_index]
         for possible_illegal_treatment in treatments_for_patient: 
             if possible_illegal_treatment in route_plan.illegalNotAllocatedTreatments: 
                 route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
@@ -900,7 +880,8 @@ class DestroyOperators:
             return route_plan, None, True
         
         # hvis dette var siste treatmentet for denne pasienten 
-        treatments_for_patient = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+        treatmentsIds_index = self.constructor.patients_array[0].tolist().index('treatmentsIds')
+        treatments_for_patient = self.constructor.patients_array[patient][treatmentsIds_index]
         for possible_illegal_treatment in treatments_for_patient: 
             if possible_illegal_treatment in route_plan.illegalNotAllocatedTreatments: 
                 route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
@@ -962,37 +943,40 @@ class DestroyOperators:
 
         return self.updateDictionariesForRoutePlanVisitLevel(visit_for_activity, route_plan, original_day)
 
-# Help funtions for cluster and spread  
-    def k_means_clustering(self, df, location_col='location', n_clusters=2):
 
-        # Preprocess data: location-column both string and tuple as type
+
+    def k_means_clustering(self, allocatedPatientsIds, n_clusters=2):
+        location_index = self.constructor.patients_array[0].tolist().index('location')
+        patients_and_location = []
+        for i in range(len(self.constructor.patients_array)):
+            for patient in allocatedPatientsIds:
+                if i == patient: 
+                    patients_and_location.append((patient, self.constructor.patients_array[patient][location_index]))
+ 
         coordinates = []
-        for x in df[location_col]:
-            if isinstance(x, str):
-                # Hvis x er en streng, fjern parenteser og splitt
-                lat_str, lon_str = x.strip("()").split(",")
-                lat, lon = float(lat_str), float(lon_str)
-            elif isinstance(x, tuple):
-                # Hvis x er en tuple, bruk verdien direkte
-                lat, lon = x
-            else:
-                raise ValueError("Ukjent datatype i 'location'-kolonnen")
+        for _, loc in patients_and_location:
+            # Assuming loc is already a tuple of (latitude, longitude)
+            lat, lon = loc
             coordinates.append((lat, lon))
-        
         coordinates = np.array(coordinates)
         
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(coordinates)
         labels = kmeans.labels_
 
+        # Create a list to combine patient ids with their corresponding cluster label
+        patients_with_labels = [(pat[0], label) for pat, label in zip(patients_and_location, labels)]
+
+        # Calculate the cluster sizes
+        cluster_sizes = {label: 0 for label in range(n_clusters)}
+        for _, label in patients_with_labels:
+            cluster_sizes[label] += 1
+
+        # Find the smallest cluster
+        smallest_cluster_label = min(cluster_sizes, key=cluster_sizes.get)
+
         # Identify and select the indices of the activities in the smallest cluster
-        df['cluster_label'] = labels  # Temporarily add a column for cluster labels
-        cluster_sizes = df['cluster_label'].value_counts()
-        smallest_cluster_label = cluster_sizes.idxmin()
-        selected_indices = df[df['cluster_label'] == smallest_cluster_label].index.tolist()
-        
-        # Remove the temporary column
-        df.drop(columns=['cluster_label'], inplace=True)
+        selected_indices = [pat for pat, label in patients_with_labels if label == smallest_cluster_label]
 
         return selected_indices
     
@@ -1027,297 +1011,9 @@ class DestroyOperators:
 
         return shortest_ids, longest_ids
     
-    '''
-    ----------------------------------------------
-   GAMLE SAKER VI ENN SÅ LENGE TAR VARE PÅ
-   -----------------------------------------------
-    '''
-
-    # CLUSTER OG SPRED UTEN DESTRUCTION DEGREE
-    def cluster_distance_patients_removal_without_destruction(self, current_route_plan):
-        # Beregne totalt antall aktiviteter tildelt i løsningen
-        #num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
-        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
-
-        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
-
-        allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
-        df_selected_patients =  self.constructor.patients_df.loc[allocatedPatientsIds]
-
-        #selected_patients = self.kruskalAlgorithm(df_selected_patients)[0]  #Selecting the shortest part of the mst       
-        selected_patients = self.k_means_clustering(df_selected_patients)
-
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        for patientID in selected_patients: 
-            destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
-
-        return destroyed_route_plan, None, True
-    
-    def spread_distance_activities_removal_without_destruction(self, current_route_plan):
-        longest_travel_time = 0
-        activities_in_longest_route = []
-        num_act_allocated = 0
-        for day, routes in current_route_plan.routes.items():
-            for route in routes:  
-                num_act_allocated += len(route.route)
-                if route.travel_time > longest_travel_time:
-                    longest_travel_time = route.travel_time
-                    activities_in_longest_route = [activity.id for activity in route.route]
 
 
-        total_num_activities_to_remove = round(num_act_allocated*main_config.destruction_degree)
-        
-        df_selected_activities = self.constructor.activities_df.loc[activities_in_longest_route]
 
-        nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(df_selected_activities)
-
-        # Identifiser aktivitetene som skal fjernes basert på deres 'spread'
-        # I dette tilfellet, anta at vi vil fjerne en fast prosentandel av aktivitetene
-        # For eksempel, de 30% mest isolerte aktivitetene
-        num_activities_to_remove = int(len(nearest_neighbor_distances) * 0.3)
-        activities_to_remove_indices = np.argsort(-nearest_neighbor_distances)[:num_activities_to_remove]
-        activities_to_remove = df_selected_activities.iloc[activities_to_remove_indices].index.tolist()
-
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        self.remove_activites_from_route_plan(activities_to_remove, destroyed_route_plan)
-
-        return destroyed_route_plan, activities_to_remove, True 
-        
-    def cluster_distance_activities_removal_without_destruction(self, current_route_plan):
-            longest_travel_time = 0
-            activities_in_longest_route = []
-            for day, routes in current_route_plan.routes.items():
-                for route in routes:  
-                    if route.travel_time > longest_travel_time:
-                        longest_travel_time = route.travel_time
-                        activities_in_longest_route = [activity.id for activity in route.route]
-                
-            df_selected_activities = self.constructor.activities_df.loc[activities_in_longest_route]
-
-            #selected_activities = self.kruskalAlgorithm(df_selected_activities)[1] #Selecting the longest part of the mst
-            selected_activities = self.k_means_clustering(df_selected_activities)
-
-            destroyed_route_plan = copy.deepcopy(current_route_plan)
-            self.remove_activites_from_route_plan(selected_activities, destroyed_route_plan)
-
-            return destroyed_route_plan, selected_activities, True
-    
-    def spread_distance_patients_removal_without_destruction(self, current_route_plan):
-        """
-        Removes a specified number of patients from the current route plan based on their 'spread',
-        determined by their distance to the nearest neighbor.
-        """
-        num_patients_to_remove = 2 #TODO: sette denne dynamisk og som en prosent av antall aktiviteter i løsningen
-
-        
-        allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
-        df_selected_patients = self.constructor.patients_df.loc[allocatedPatientsIds]
-
-        nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(df_selected_patients)
-
-        # Sort patients based on their distance to nearest neighbor (largest distances first)
-        patients_to_remove_indices = np.argsort(-nearest_neighbor_distances)[:num_patients_to_remove]
-
-        # Convert indices to patient IDs to remove
-        patients_to_remove = df_selected_patients.iloc[patients_to_remove_indices].index.tolist()
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        for patientID in patients_to_remove:
-            destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
-
-        return destroyed_route_plan, None, True
     
 
-
-
-
-
-
-    def visit_removalG(self, selected_visit, route_plan):
-        destroyed_route_plan = copy.deepcopy(route_plan)
-        removed_activities = [] 
-
-        #Hente ut aktivitene som skal fjernes 
-        removed_activities += destroyed_route_plan.visits[selected_visit]
-
-        #Vi vet at vi bare har valgt ett visit, så dagen vil være en 
-        original_day = None
-        for day in range(1, destroyed_route_plan.days +1): 
-            for route in destroyed_route_plan.routes[day]: 
-                for act in route.route: 
-                    if act.id in removed_activities:
-                        route.removeActivityID(act.id)
-                        original_day = day
-        
-     
-            #To alternativer
-                    #1) Selected visit er en del av et visit der flere treatmentets visit ligger inne på sykehuset. -> [orgin_day]. Visit skal inn i illegalVisit
-                    #2) Selected visit er det siste visitet i en treatment som er allokert ut. -> Treatmentet skal inn i illegalTreat. 
-                    #3) Select visit er siste som lå på treatment, og siste treatment som lå på pasient -> Pasient ut av illegal og inn i not Allocated
-
-            #TODO: Finne ut om det har noe å si at det er den første aktivtene som blir flyttet ut 
-
-        
-        
-        last_visit_in_treatment = False
-        treatment_for_visit = None 
-        #Ønsker å finne treatmenten 
-        for treatment, visits in list(destroyed_route_plan.treatments.items()):
-            #Finne treatments i illegalNotAllocatedTreatments som også tilhører pasienten 
-            if visits == [selected_visit]: 
-                last_visit_in_treatment = True 
-            if selected_visit in visits: 
-                treatment_for_visit = treatment
-                break
-
-
-        #ALTERNATIV 1 
-        if last_visit_in_treatment == False: 
-            del destroyed_route_plan.visits[selected_visit]
-            destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[selected_visit] = original_day
-            destroyed_route_plan.treatments[treatment_for_visit].remove(selected_visit)
-            
-            return destroyed_route_plan, removed_activities, True
     
-        #ALTERNATIV 2 
-        del destroyed_route_plan.visits[selected_visit]
-        #Ta bort treatmentet
-        del destroyed_route_plan.treatments[treatment_for_visit]
-        #Legger til treatmentet i illegal 
-        last_treatment_for_patient = False
-        patient_for_treatment = None
-        for patient, treatments in list(destroyed_route_plan.allocatedPatients.items()):
-            if treatments == [treatment_for_visit]:
-                last_treatment_for_patient = True 
-            if treatment_for_visit in treatments: 
-                patient_for_treatment = patient
-                break
-        
-        #Dersom pasienten ikke er den samme
-        if last_treatment_for_patient == True: 
-            del destroyed_route_plan.allocatedPatients[patient_for_treatment]
-            allocation = self.constructor.patients_df.loc[patient_for_treatment, 'allocation']
-            if allocation == 0: 
-                destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment)
-            else: 
-                destroyed_route_plan.illegalNotAllocatedPatients.append(patient_for_treatment)
-        
-        if last_treatment_for_patient == False: 
-            destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit)
-
-            
-        return destroyed_route_plan, removed_activities, True
-
-
-
-    def activity_removalG(self, selected_activity, route_plan):
-        destroyed_route_plan = copy.deepcopy(route_plan)
-        #Vi vet at vi bare har valgt ett visit, så dagen vil være en 
-        original_day = destroyed_route_plan.removeActivityIDgetRemoveDay(selected_activity)
-     
-    #To alternativer
-        #1) Selected activity er en del av et visit der flere aktiviteter ligger inne. -> Legger til i illegalActivity
-        #2) Selected activity er siste som ligger inne på visit, men visit er ikke det siste som ligger inne på treatment. -> Legger til i illegalVisits 
-        #3) Visitet er det siste for ligger inne på treatment. -> Legger til i illegalTreatments
-        #4) Treatmentet er det siste som ligger på pasienten. -> Pasienten ut av allokeringen, pasienten inn i notAllocated 
-      
-            #TODO: Finne ut om det har noe å si at det er den første aktivtene som blir flyttet ut 
-        
-        last_activity_in_visit = False 
-        visit_for_activity = None 
-        for visit, activities in list(destroyed_route_plan.visits.items()): 
-            if activities == [selected_activity]: 
-                last_activity_in_visit = True 
-            if selected_activity in activities: 
-                visit_for_activity = visit
-                activities_in_visit = activities
-                break
-
-        #Alt 1, det er ikke den siste aktiviteten innne i for visitetet. -> Trenger ikke rokkere på noen av de andre. Har ingen søsken som ligger igjen 
-        if last_activity_in_visit == False: 
-            #Sjer ingneting på pasientnivå
-            #Sjer ingenting på treatment nivå 
-            destroyed_route_plan.visits[visit_for_activity].remove(selected_activity) #Fjernes fra visit dict 
-            destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[selected_activity] = original_day #Legges til i illegalpå Aktivitet
-            #print("illegalNotAllocatedActivitiesWithPossibleDays", destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
-            return destroyed_route_plan, None, True
-
-        #Har activites in visit, og vi vet at illegal skal ligge på visit nivå eller høyere
-        #Skal derfor fjerne alle activites_in_visit som kan ligge i IllegalListene på aktivtetsniv
-        for possible_illegal_activity in activities_in_visit: 
-            if possible_illegal_activity in list(destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
-                del destroyed_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[possible_illegal_activity]
-
-        last_visit_in_treatment = False
-        treatment_for_visit = None 
-        #Ønsker å finne treatmenten 
-        for treatment, visits in list(destroyed_route_plan.treatments.items()):
-            #Finne treatments i illegalNotAllocatedTreatments som også tilhører pasienten 
-        
-            if visits == [visit_for_activity]: 
-                last_visit_in_treatment = True 
-            if visit_for_activity in visits: 
-                treatment_for_visit = treatment
-                visits_in_treatment = visits
-                break
-
-
-        #Alt 2) Selected activity er siste som ligger inne på visit, men visit er ikke det siste som ligger inne på treatment. -> Legger til i illegalVisits 
-        if last_visit_in_treatment == False: 
-            #Sjer ingenting på pasient nivå
-            destroyed_route_plan.treatments[treatment_for_visit].remove(visit_for_activity) # Visit fjernes fra treatment dict 
-            destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_for_activity] = original_day #Legges til i illegalVisit with possible day 
-            del destroyed_route_plan.visits[visit_for_activity] # Visit fjernes fra visit dict
-            #print("illegalNotAllocatedVisitsWithPossibleDays", destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays)
-           
-            return destroyed_route_plan, None, True
-    
-        #Har visits in treatment, og vi vet at illegal skal ligge på nivå høyere enn treatment 
-        #Skal derfor fjerne alle visits_in_treatmen som kan ligge i IllegalListene på aktivtetsniv
-        for possible_illegal_visit in visits_in_treatment: 
-            if possible_illegal_visit in list(destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()): 
-                del destroyed_route_plan.illegalNotAllocatedVisitsWithPossibleDays[possible_illegal_visit]
-
-        #Legger til treatmentet i illegal 
-        last_treatment_for_patient = False
-        patient_for_treatment = None
-        for patient, treatments in list(destroyed_route_plan.allocatedPatients.items()):
-            if treatments == [treatment_for_visit]:
-                last_treatment_for_patient = True 
-            if treatment_for_visit in treatments: 
-                patient_for_treatment = patient
-                treatments_for_patient = treatments
-                break
-        
-        #TODO: Denn må fjerne flere så blir ikke riktig å ha her 
-        #ALTERNATIV 3 
-        if last_treatment_for_patient == False:    
-            destroyed_route_plan.allocatedPatients[patient_for_treatment].remove(treatment_for_visit) #Treatment fjernes fra pasient 
-            destroyed_route_plan.illegalNotAllocatedTreatments.append(treatment_for_visit) #Treatment legges til 
-            del destroyed_route_plan.treatments[treatment_for_visit] #treatment fjernes fra treatment list med tilhørende visits
-            del destroyed_route_plan.visits[visit_for_activity] #Fjerne vistet som lå under treatments 
-            #print("illegalNotAllocatedTreatments", destroyed_route_plan.illegalNotAllocatedTreatments)
-            return destroyed_route_plan, None, True
-        
-        for possible_illegal_treatment in treatments_for_patient: 
-            if possible_illegal_treatment in destroyed_route_plan.illegalNotAllocatedTreatments: 
-                destroyed_route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
-
-
-     
-        #AlTERNATIV 4 - dette var siste aktivtet for denne pasienten 
-    
-        allocation = self.constructor.patients_df.loc[patient_for_treatment, 'allocation']
-        if allocation == 0: 
-            destroyed_route_plan.notAllocatedPatients.append(patient_for_treatment)
-        else: 
-            destroyed_route_plan.illegalNotAllocatedPatients.append(patient_for_treatment)        
-        del destroyed_route_plan.allocatedPatients[patient_for_treatment] #Fjerner pasent fra allocated Patenst 
-        del destroyed_route_plan.treatments[treatment_for_visit] #Fjerner treatmetnen fr treatmetns 
-        del destroyed_route_plan.visits[visit_for_activity] #Fjerner visitet 
-        #print("notAllocatedPatients", destroyed_route_plan.notAllocatedPatients)
-        #TODO: Det første vi gjør er å fjerne den siste aktiviteten sine søsken
-
-
-        
-
-        return destroyed_route_plan, None, True

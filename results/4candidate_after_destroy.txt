@@ -1,76 +1,84 @@
-Solution generated at time: 2024-04-27 16:45:30
+Solution generated at time: 2024-04-29 13:56:08
 
-operator brukt: spread_distance_patients_removal
-updated objective  [6, 0, 12, 593]
-objective 3 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes] [6.0, 10, 34, 4]
-primary objective without penalty  6
-visits {10: [40, 41, 42, 43, 44], 11: [45, 46, 47, 48, 49], 1: [1, 2, 3, 4, 5], 2: [6, 7, 8, 9, 10], 8: [30, 31, 32, 33, 34], 9: [35, 36, 37, 38, 39]}
-treatments {4: [10, 11], 1: [1, 2], 3: [8, 9]}
-allocated patients  {4: [4], 1: [1], 3: [3]}
-not allocated  [6, 5, 2]
+operator brukt: random_visit_removal
+updated objective  [-6.0, -1, 17, 563]
+objective 3 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes] [6.333333333333333, 16, 46, 5]
+primary objective without penalty  8
+visits {1: [1, 2, 3, 4, 5], 2: [6, 7, 8, 9, 10], 5: [19, 20, 21], 13: [55, 56, 57, 58, 59], 10: [40, 41, 42, 43, 44], 11: [45, 46, 47, 48, 49], 9: [35, 36, 37, 38, 39], 15: [65, 66, 67, 68, 69]}
+treatments {1: [1, 2], 2: [5], 5: [13], 4: [10, 11], 3: [9], 6: [15]}
+allocated patients  {1: [1], 2: [2], 5: [5], 4: [4], 3: [3], 6: [6]}
+not allocated  []
 illegalNotAllocatedPatients []
 illegalNotAllocatedTreatments []
-illegalNotAllocatedVisits {}
+illegalNotAllocatedVisits {7: 5, 6: 4, 12: 1, 14: 1, 3: 1, 4: 2, 8: 1}
 illegalNotAllocatedActivities {}
 -------------------------------------------------------
 Printer alle rutene
 DAG 1 ANSATT 1
-activity 40 start 563.0
-activity 1 start 573.0
-activity 41 start 618.0
-activity 2 start 691.0
-activity 30 start 730.0
-activity 31 start 772.0
-activity 43 start 798.0
-activity 44 start 843.0
 ---------------------
 DAG 1 ANSATT 2
-activity 42 start 693.0
-activity 32 start 822.0
-activity 33 start 862.0
-activity 34 start 904.0
+activity 1 start 480.0
+activity 2 start 519.0
+activity 3 start 529.0
+activity 4 start 569.0
+activity 5 start 608.0
 ---------------------
 DAG 1 ANSATT 3
-activity 3 start 703.0
-activity 4 start 819.0
-activity 5 start 858.0
 ---------------------
 DAG 2 ANSATT 1
 ---------------------
 DAG 2 ANSATT 2
+activity 40 start 480.0
+activity 41 start 525.0
+activity 43 start 650.0
+activity 44 start 695.0
 ---------------------
 DAG 2 ANSATT 3
+activity 42 start 535.0
 ---------------------
 DAG 3 ANSATT 1
+activity 19 start 720.0
+activity 20 start 747.0
 ---------------------
 DAG 3 ANSATT 2
+activity 21 start 757.0
 ---------------------
 DAG 3 ANSATT 3
 ---------------------
 DAG 4 ANSATT 1
-activity 6 start 480.0
-activity 7 start 519.0
-activity 35 start 720.0
-activity 36 start 746.0
+activity 55 start 720.0
+activity 56 start 738.0
+activity 35 start 756.0
+activity 36 start 782.0
+activity 38 start 832.0
+activity 58 start 863.0
+activity 59 start 881.0
+activity 39 start 891.0
 ---------------------
 DAG 4 ANSATT 2
-activity 38 start 880.0
-activity 39 start 916.0
+activity 57 start 823.0
 ---------------------
 DAG 4 ANSATT 3
-activity 8 start 529.0
-activity 9 start 569.0
-activity 10 start 608.0
-activity 37 start 756.0
+activity 37 start 792.0
 ---------------------
 DAG 5 ANSATT 1
-activity 45 start 584.0
-activity 46 start 629.0
+activity 6 start 480.0
+activity 7 start 519.0
+activity 45 start 646.0
+activity 46 start 691.0
 ---------------------
 DAG 5 ANSATT 2
+activity 47 start 736.0
+activity 48 start 851.0
+activity 49 start 896.0
 ---------------------
 DAG 5 ANSATT 3
-activity 47 start 639.0
-activity 48 start 679.0
-activity 49 start 796.0
+activity 65 start 480.0
+activity 66 start 499.0
+activity 67 start 509.0
+activity 68 start 549.0
+activity 69 start 568.0
+activity 8 start 610.0
+activity 9 start 731.0
+activity 10 start 770.0
 ---------------------

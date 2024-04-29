@@ -43,7 +43,8 @@ class RepairOperators:
 
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)   
   
-        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
+        utility_index = self.constructor.patients_array[0].tolist().index('utility')
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][utility_index] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
 
         for patient in descendingUtilityNotAllocatedPatients: 
@@ -114,7 +115,8 @@ class RepairOperators:
 
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
 
-        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
+        pComplexity_index = self.constructor.patients_array[0].tolist().index('p_complexity')
+        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][pComplexity_index] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get, reverse=True)
         
         for patient in descendingComplexityNotAllocatedPatients: 
@@ -153,7 +155,8 @@ class RepairOperators:
 
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
 
-        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
+        utility_index = self.constructor.patients_array[0].tolist().index('utility')
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][utility_index] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
 
@@ -266,9 +269,10 @@ class RepairOperators:
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
                 
                 #Legger til treatmenten på pasienten. Vet at pasienten allerede ligger inne, for hvis ikke ville ikke treatmenten i utgnaspunktet vært illegal 
-                for i in range(self.constructor.patients_df.shape[0]):
-                    patient = self.constructor.patients_df.index[i] 
-                    if treatment in self.constructor.patients_df.loc[patient, 'treatmentsIds']: 
+                for i in range(len(self.constructor.patients_array)):
+                    patient = i
+                    treatmentIds_index = self.constructor.patients_array[0].tolist().index('treatmentsIds')
+                    if treatment in self.constructor.patients_array[patient][treatmentIds_index]: 
                         break
 
                 #Steg 2 - Oppdater allokert dictionariene 

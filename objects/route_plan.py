@@ -587,15 +587,8 @@ class RoutePlan:
                         return day
                     
     def updateAllocationAfterPatientInsertor(self, patient, constructor): 
-        #Oppdaterer allokerings dictionariene 
-        '''
-        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
-        for treatment in [item for sublist in self.allocatedPatients.values() for item in sublist]: 
-            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
-        for visit in [item for sublist in self.treatments.values() for item in sublist]: 
-            self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
-        '''
-        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
+        treatmentIds_index = constructor.patients_array[0].tolist().index('treatmentsIds')
+        self.allocatedPatients[patient] = constructor.patients_array[patient][treatmentIds_index]
         for treatment in self.allocatedPatients[patient]:
             self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
             for visit in self.treatments[treatment]: 
