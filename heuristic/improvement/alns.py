@@ -133,7 +133,7 @@ class ALNS:
     
     def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
-        
+        #TODO: Sjekke worst deviation activity removal, hvis det er det 
         self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
