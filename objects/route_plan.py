@@ -410,7 +410,6 @@ class RoutePlan:
                 profession = route.skillLev
                 if profession not in daily_heaviness_within_group:
                     daily_heaviness_within_group[profession] = {}
-                    num_employee_with_profession_on_day[profession] = 0
                 
                 if day not in daily_heaviness_within_group[profession]:
                     daily_heaviness_within_group[profession][day] = route.calculateTotalHeaviness()
