@@ -94,9 +94,8 @@ Haugerud = (59.9218, 10.8353)
 Boler = (59.8926, 10.8215)
 Lambergseter = (59.8655, 10.8131)
 Grunerlokka = (59.9233, 10.7871)
-StHanshaugen = (59.9329, 10.7506)
 Majorstuen = (59.9282, 10.7126)
-refLoc = [depot, Ullern, Ris, Holmenkollen, Sogn, Bjerke, Haugerud, Boler, Lambergseter, Grunerlokka, StHanshaugen, Majorstuen]
+refLoc = [depot, Ullern, Ris, Holmenkollen, Sogn, Bjerke, Haugerud, Boler, Lambergseter, Grunerlokka, Majorstuen]
 
 # DAY
 startday = 480

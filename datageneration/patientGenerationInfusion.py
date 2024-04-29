@@ -295,15 +295,15 @@ def visitsGenerator(df_treatments):
             if distributionOfActs == 1:
                 # Visit 1 and 4 have 5 activities
                 df_visits.loc[df_visits['visitId'].isin([visit_ids[0], visit_ids[3]]), 'activities'] = 5
-                df_visits.loc[df_visits['visitId'].isin([visit_ids[1], visit_ids[2], visit_ids[4]]), 'activities'] = 3
+                df_visits.loc[df_visits['visitId'].isin([visit_ids[1], visit_ids[2], visit_ids[4]]), 'activities'] = 1
             elif distributionOfActs == 2:
                 # Visit 2 and 5 have 5 activities
                 df_visits.loc[df_visits['visitId'].isin([visit_ids[1], visit_ids[4]]), 'activities'] = 5
-                df_visits.loc[df_visits['visitId'].isin([visit_ids[0], visit_ids[2], visit_ids[3]]), 'activities'] = 3
+                df_visits.loc[df_visits['visitId'].isin([visit_ids[0], visit_ids[2], visit_ids[3]]), 'activities'] = 1
             elif distributionOfActs == 3:
                 # Visit 1 and 5 have 5 activities
                 df_visits.loc[df_visits['visitId'].isin([visit_ids[0], visit_ids[4]]), 'activities'] = 5
-                df_visits.loc[df_visits['visitId'].isin([visit_ids[1], visit_ids[2], visit_ids[3]]), 'activities'] = 3
+                df_visits.loc[df_visits['visitId'].isin([visit_ids[1], visit_ids[2], visit_ids[3]]), 'activities'] = 1
 
     file_path = os.path.join(os.getcwd(), 'data', 'visits.csv')
     df_visits.to_csv(file_path, index=False)
@@ -340,8 +340,13 @@ def activitiesGenerator(df_visits):
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital
     # Generate synchronised activities (for visits with 4 or 6 activities)     
     for visitId, group in df_activities.groupby('visitId'):
-        if group['numActivitiesInVisit'].iloc[0] == 3:
-            # For 3 activities
+        if group['numActivitiesInVisit'].iloc[0] == 1:
+            activity_ids = group['activityId'].tolist()
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'activityType'] = 'H'
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 20         # Health
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'skillRequirement'] = 2  
+        elif group['numActivitiesInVisit'].iloc[0] == 3:
+            # For 3 activities with structure EEH
             sorted_indices = group.sort_values(by='activityId').index[:2]  # The two activities with the lowest id
             df_activities.loc[sorted_indices, 'activityType'] = 'E'
             remaining_indices = group.index.difference(sorted_indices)
