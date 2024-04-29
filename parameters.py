@@ -2,12 +2,15 @@ import pandas as pd
 import os
 
 
+
 #ANTIBIOTICS CASE
 print("ANTIBIOTICS DATA")
 from datageneration.employeeGenerationAntibiotics import *
 from datageneration.patientGenerationAntibiotics import *
 from config.construction_config_antibiotics import *
 '''
+
+#TODO: Complexity er ikke dobbeltsjekket i infusion casen, så dobbelt sjekk at denne gir comlexity verdier som virker troverdige
 #INFUSION THERAPY CASE
 print("INFUSION DATA")
 from datageneration.employeeGenerationInfusion import *

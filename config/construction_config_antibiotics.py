@@ -95,6 +95,16 @@ refLoc = [depot, Ullern, Ris, Holmenkollen, Sogn, Bjerke, Haugerud, Boler, Lambe
 startday = 480
 endday = 960
 
+max_num_of_activities_in_visit = 5
+
+#Weights for complexity for activity
+a_w_oportunity_space = 0.5
+a_w_precedens_act = 0.5
+
+
+#Weights for complexity for visit 
+v_w_oportunity_space = 0.5
+v_w_num_act= 0.5
 
 
 

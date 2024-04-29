@@ -8,6 +8,7 @@ sys.path.append(os.path.join(os.path.split(__file__)[0],'..') )  #include subfol
 
 from config import construction_config_antibiotics
 from datageneration import employeeGenerationAntibiotics
+from objects.patterns import pattern
 
 def locationGenerator(locations, radius_km, num_points):
     """Forklaring fra chatten:
@@ -417,11 +418,31 @@ def activitiesGenerator(df_visits):
     # Activity complexity - only based on duration and time windows
     #df_activities['a_complexity'] = round((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration'])
     #df_activities['a_complexity'] = ((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration']).round()
-    df_activities['a_complexity'] = (df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration']
+    #df_activities['a_complexity'] = (df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration']
     
+    # Calculate the first part of the complexity score for activity based on duration and opportunity space
+    complexity_part1 = construction_config_antibiotics.a_w_oportunity_space * (df_activities['duration'] / (df_activities['latestStartTime'] - df_activities['earliestStartTime']))
+
+      
+    # Calculate the counts of colons in 'nextPrece' and 'prevPrece' columns and sum them for each row
+    # Forutsetter at alle presedens noder besrkives med ":", hvis ikke blir ikke dette riktig 
+    colon_count_nextPrece = df_activities['nextPrece'].apply(lambda x: x.count(":") if isinstance(x, str) else 0)
+    colon_count_prevPrece = df_activities['prevPrece'].apply(lambda x: x.count(":") if isinstance(x, str) else 0)
+    total_colon_count = colon_count_nextPrece + colon_count_prevPrece
+
+    # calculate the second part of the complexity score based on the number of precedens activities based on max number of precedens activities 
+    max_num_of_prec = construction_config_antibiotics.max_num_of_activities_in_visit -1
+    complexity_part2 = construction_config_antibiotics.a_w_precedens_act*total_colon_count/max_num_of_prec
+
+    # Combine the parts to calculate the final complexity score for each activity
+    df_activities['a_complexity'] = complexity_part1 + complexity_part2
+
+
     for treatmentId, treatment_group in df_activities.groupby('treatmentId'):       
         treatmentDuration = 0
         treatmentTimeWindow = 0
+
+        t_complexity = 0 
                
         for visitId, visit_group in treatment_group.groupby('visitId'):
             # Precedence visit
@@ -436,9 +457,15 @@ def activitiesGenerator(df_visits):
             treatmentTimeWindow += visitTimeWindow
             v_timeRatio = round(treatmentTimeWindow / treatmentDuration, 1)
 
+            num_of_act_in_visit = len(visit_group)
             # Visit complexity
-            v_complexity = len(visit_group) + v_timeRatio + v_preceRatio #TODO: Finne en måte å regne ut denne på
+            #v_complexity = len(visit_group) + v_timeRatio + v_preceRatio #TODO: Finne en måte å regne ut denne på
+            #df_activities.loc[df_activities['visitId'] == visitId, 'v_complexity'] = v_complexity
+            v_complexity = construction_config_antibiotics.v_w_oportunity_space* visit_duration/visitTimeWindow + (
+                construction_config_antibiotics.v_w_num_act*num_of_act_in_visit/construction_config_antibiotics.max_num_of_activities_in_visit)
             df_activities.loc[df_activities['visitId'] == visitId, 'v_complexity'] = v_complexity
+            t_complexity += v_complexity
+
 
         # Duration and time windows ratio - Treatment
         t_timeRatio = round(treatmentTimeWindow / treatmentDuration, 1)
@@ -451,7 +478,11 @@ def activitiesGenerator(df_visits):
             t_preceRatio = numActInTreat / numActWithPrece 
 
         # Treatment complexity
-        t_complexity = int(numActInTreat + t_preceRatio + t_timeRatio) #TODO: Finne en måte å regne ut denne på
+        patternTypeForTreatments = df_activities.loc[df_activities['treatmentId'] == treatmentId, 'patternType'].iloc[0]
+        max_num_of_patterns = max(len(patternList) for patternList in pattern.values())
+        num_of_possible_patterns = len(pattern[patternTypeForTreatments])
+        t_complexity = t_complexity*(max_num_of_patterns+1-num_of_possible_patterns)/max_num_of_patterns
+        #t_complexity = int(numActInTreat + t_preceRatio + t_timeRatio) #TODO: Finne en måte å regne ut denne på
         df_activities.loc[df_activities['treatmentId'] == treatmentId, 'nActInTreat'] = numActInTreat
         #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_preceRatio'] = t_preceRatio
         #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_timeRatio'] = t_timeRatio
@@ -519,7 +550,8 @@ def autofillPatient(df_patients, df_treatments, df_activities):
     df_patients_merged['aggUtility'] = df_patients_merged['nVisits'] * df_patients_merged['utility']
 
     # Adding complexity to df_patients as the complexity in sum of the complexity of all treatments per patient
-    p_complexity = df_treatments.groupby('patientId')['complexity'].sum().reset_index(name='p_complexity')
+    p_complexity = df_treatments.groupby('patientId')['t_complexity'].sum().reset_index(name='p_complexity')
+    #p_complexity = df_treatments.groupby('patientId')['complexity'].sum().reset_index(name='p_complexity')
     df_patients_merged = pd.merge(df_patients_merged, p_complexity, on='patientId', how='left')
 
     #Adding number of activities per patient
