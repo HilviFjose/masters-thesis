@@ -44,19 +44,4 @@ class Employee:
     def getShiftEnd(self, day):  
         return self.shifts[day]["endShift"]
     
-    def getSkillLevel(self): 
-        return self.skillLevel
-    
-    def getID(self): 
-        return self.id
-
-#TESTING
-'''
-df_employees = (employeeGeneration.employeeGenerator()).set_index(["employeeId"])    
-for i in range(1,15):
-    e = Employee(df_employees, i)
-    print('id', e.id)
-    print('skill', e.skillLevel)
-    print('schedule', e.shifts)
-'''
-
+   

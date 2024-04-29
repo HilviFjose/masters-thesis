@@ -177,8 +177,6 @@ class RoutePlan:
                         original_day = day
         return original_day
 
-    def getRoutePlan(self): 
-        return self.routes
     
     def printDictionaryTest(self, txtName):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
@@ -505,11 +503,8 @@ class RoutePlan:
                 for routeActivity in route.route: 
                     self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
-        
-    def getObjective(self): 
-        return self.objective
-    
-  
+
+
 
     def updateActivityBasedOnRoutePlanOnDay(self, activity,day):
         '''
@@ -518,8 +513,8 @@ class RoutePlan:
         '''    
 
         #Her håndteres pick up and delivery
-        if activity.getPickUpActivityID() != 0 : 
-            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
+        if activity.pickUpActivityID != 0 : 
+            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.pickUpActivityID, day)
             activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
             
         #Her håndteres presedens.   
@@ -529,27 +524,27 @@ class RoutePlan:
             
             prevNodeAct = self.getActivity(prevNodeID, day)
             if prevNodeAct != None:
-                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
+                activity.setNewEarliestStartTime(prevNodeAct.startTime + prevNodeAct.duration, prevNodeID)
 
         for nextNodeID in activity.NextNode: 
             nextNodeAct = self.getActivity(nextNodeID, day)
             if nextNodeAct != None:
-                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
+                activity.setNewLatestStartTime(nextNodeAct.startTime - activity.duration, nextNodeID)
         
         #Her håndteres presedens med tidsvindu
         #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
         for PrevNodeInTimeID in activity.PrevNodeInTime: 
             prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
             if prevNodeAct != None:
-                activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
-                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
+                activity.setNewLatestStartTime(prevNodeAct.startTime+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
+                activity.setNewEarliestStartTime(prevNodeAct.startTime + prevNodeAct.duration, PrevNodeInTimeID[0])
 
 
         for NextNodeInTimeID in activity.NextNodeInTime: 
             nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
             if nextNodeAct != None:
-                activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
-                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
+                activity.setNewEarliestStartTime(nextNodeAct.startTime - NextNodeInTimeID[1], NextNodeInTimeID[0])
+                activity.setNewLatestStartTime(nextNodeAct.startTime - activity.duration, NextNodeInTimeID[0])
 
 
         

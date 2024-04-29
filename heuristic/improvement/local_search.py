@@ -273,7 +273,7 @@ class LocalSearch:
 
     def swap_employee(self, route_plan, day):
         route_plan.updateObjective(self.current_iteration, self.total_iterations)
-        best_objective = route_plan.getObjective()
+        best_objective = route_plan.objective
         best_found_candidate = route_plan
 
         for route1 in route_plan.routes[day].values(): 

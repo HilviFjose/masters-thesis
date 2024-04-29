@@ -41,6 +41,7 @@ df_patients.to_pickle(os.path.join(os.getcwd(), 'data', 'patients.pkl'))
 df_treatments.to_pickle(os.path.join(os.getcwd(), 'data', 'treatments.pkl'))
 df_visits.to_pickle(os.path.join(os.getcwd(), 'data', 'visits.pkl'))
 df_activities.to_pickle(os.path.join(os.getcwd(), 'data', 'activities.pkl'))
+
 """
 #RE-USE GENERATED DATA
 file_path_employees = os.path.join(os.getcwd(), 'data', 'employees.pkl')
