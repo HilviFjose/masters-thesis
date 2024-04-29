@@ -20,7 +20,7 @@ from config.construction_config_infusion import *
 from datageneration import distance_matrix
 
 # DATA GENERATION
-"""
+'''
 #df_employees = employeeGeneration.employeeGenerator()      # For Night, Day and Evening shifts
 df_employees = employeeGeneratorOnlyDay()                   # For day shifts
 df_patients_not_complete = patientGenerator(df_employees)
@@ -45,7 +45,7 @@ df_treatments.to_pickle(os.path.join(os.getcwd(), 'data', 'treatments.pkl'))
 df_visits.to_pickle(os.path.join(os.getcwd(), 'data', 'visits.pkl'))
 df_activities.to_pickle(os.path.join(os.getcwd(), 'data', 'activities.pkl'))
 
-"""
+'''
 #RE-USE GENERATED DATA
 file_path_employees = os.path.join(os.getcwd(), 'data', 'employees.pkl')
 df_employees = pd.read_pickle(file_path_employees)
