@@ -17,7 +17,6 @@ from config.construction_config_infusion import *
 from datageneration import distance_matrix
 
 # DATA GENERATION
-
 """
 #df_employees = employeeGeneration.employeeGenerator()      # For Night, Day and Evening shifts
 df_employees = employeeGeneratorOnlyDay()                   # For day shifts
