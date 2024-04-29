@@ -61,9 +61,9 @@ def patientGenerator(df_employees):
     np.random.shuffle(therapy) 
 
     # Distribution of utility, patient allocation, continuity group and heaviness for patients
-    utility = np.random.choice(range(1, 6), size=construction_config_infusion.P_num, p=construction_config_infusion.utilityDistribution)
+    utility = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.utilityDistribution)
     continuityGroup = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.continuityDistribution)
-    heaviness = np.random.choice(range(1, 6), size=construction_config_infusion.P_num, p=construction_config_infusion.heavinessDistribution)
+    heaviness = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.heavinessDistribution)
     if construction_config_infusion.P_num <= 5* construction_config_infusion.E_num:
         print('Number of patients <= 5* number of employees')
         allocation = [1] * round(construction_config_infusion.P_num * construction_config_infusion.allocation)

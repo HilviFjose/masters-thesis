@@ -54,9 +54,9 @@ def patientGenerator(df_employees):
     nTreatments = 1
 
     # Distribution of utility, patient allocation, continuity group and heaviness for patients
-    utility = np.random.choice(range(1, 6), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.utilityDistribution)
+    utility = np.random.choice(range(1, 4), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.utilityDistribution)
     continuityGroup = np.random.choice(range(1, 4), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.continuityDistribution)
-    heaviness = np.random.choice(range(1, 6), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.heavinessDistribution)
+    heaviness = np.random.choice(range(1, 4), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.heavinessDistribution)
     if construction_config_antibiotics.P_num <= 5* construction_config_antibiotics.E_num:
         print('Number of patients <= 5* number of employees')
         allocation = [1] * round(construction_config_antibiotics.P_num * construction_config_antibiotics.allocation)

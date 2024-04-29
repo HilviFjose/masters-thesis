@@ -34,10 +34,10 @@ preferredEmployees = [1, 3, 0]
 allocation = 0.15 #Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
 
 # Patient utility
-utilityDistribution = [1, 0, 0, 0, 0]
+utilityDistribution = [1, 0, 0]
 
 # Heaviness
-heavinessDistribution = [0.5, 0.5, 0, 0, 0] 
+heavinessDistribution = [0.5, 0.5, 0] 
 
 # ACTIVITIES
 pd_min = 60                     #Min pickup and delivery time limit
