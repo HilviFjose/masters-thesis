@@ -405,10 +405,12 @@ class RoutePlan:
         daily_heaviness_within_group = {}
 
         for day in range(1, self.days +1):
+            num_employee_with_profession_on_day = {}
             for route in self.routes[day].values():
                 profession = route.skillLev
                 if profession not in daily_heaviness_within_group:
                     daily_heaviness_within_group[profession] = {}
+                    num_employee_with_profession_on_day[profession] = 0
                 
                 if day not in daily_heaviness_within_group[profession]:
                     daily_heaviness_within_group[profession][day] = route.calculateTotalHeaviness()
@@ -417,13 +419,19 @@ class RoutePlan:
                 else:
                     daily_heaviness_within_group[profession][day] += route.calculateTotalHeaviness()
                 
+                if profession not in num_employee_with_profession_on_day.keys(): 
+                    num_employee_with_profession_on_day[profession] = 0 
+
+                num_employee_with_profession_on_day[profession] += 1  
+                
                 #print(f'Profession {profession} day {day}: {daily_heaviness_within_group[profession][day]}')
             
             # Finnes gjennomsnittlig 'heaviness' for hver profesjon basert på antall ansatte som jobber de ulike dagene.
-            num_employees_day = len(self.routes[day].values()) 
+            #num_employees_day = len(self.routes[day].values()) 
+    
             for profession in daily_heaviness_within_group.keys():
                 if day in daily_heaviness_within_group[profession]:
-                    daily_heaviness_within_group[profession][day] /= num_employees_day
+                    daily_heaviness_within_group[profession][day] /= num_employee_with_profession_on_day[profession]
 
         # Kalkulerer differansen mellom maks og min 'heaviness' for hver profession level
         weekly_diffs = []
