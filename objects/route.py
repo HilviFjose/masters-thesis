@@ -29,6 +29,11 @@ class Route:
         self.locations = []
         self.averageLocation = depot
 
+        self.lastIndexUpdate = None
+        #Flyttingen er mer omfattende når forrige status var True, så vi begynner med den 
+        self.latestInsertStatus = True
+        self.latestModificationWasRemove = False
+
 
     '''
     Ønsker å sortere rutene etter den som har best lokasjon i forhold til aktiviteten som skal legges inn.
@@ -86,6 +91,9 @@ class Route:
                 max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + math.ceil(T_ij[activity.id][j.id]) <= j.startTime):  
                 activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
                 self.route = np.insert(self.route, index_count, activity)
+                self.latestInsertStatus = True 
+                self.lastIndexUpdate = index_count
+                self.latestModificationWasRemove = False
                 if activity.location != depot: 
                     self.locations.append(activity.location)
                     self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
@@ -98,6 +106,9 @@ class Route:
                 S_i + D_i + T_ia + activity.duration + math.ceil(T_ij[activity.id][j.id]) <= j.startTime): 
                 activity.startTime = S_i + D_i + math.ceil(T_ia)
                 self.route = np.insert(self.route, index_count, activity)
+                self.latestInsertStatus = True 
+                self.lastIndexUpdate = index_count
+                self.latestModificationWasRemove = False
                 if activity.location != depot: 
                     self.locations.append(activity.location)
                     self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
@@ -122,6 +133,9 @@ class Route:
             max(activity.earliestStartTime, activity.getNewEarliestStartTime())+ activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
             activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
             self.route = np.insert(self.route, index_count, activity)
+            self.latestInsertStatus = True 
+            self.lastIndexUpdate = index_count
+            self.latestModificationWasRemove = False
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
@@ -134,12 +148,15 @@ class Route:
             S_i + D_i + T_ia + activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
             activity.startTime = S_i + D_i + math.ceil(T_ia)
             self.route = np.insert(self.route, index_count, activity)
+            self.latestInsertStatus = True 
+            self.lastIndexUpdate = index_count
+            self.latestModificationWasRemove = False
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
         
             return True
-
+        self.latestInsertStatus = False 
         return False 
 
 
@@ -179,6 +196,7 @@ class Route:
                 act.employeeNotAllowedDueToPickUpDelivery = []
                 act.startTime = None
                 self.updateActivityDependenciesInRoute(act)
+                self.latestModificationWasRemove = True
                 return
             index += 1 
         return
@@ -222,6 +240,9 @@ class Route:
             max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + math.ceil(T_ij[activity.id][j_id]) <= S_j): 
             activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
             self.route = np.insert(self.route, index, activity)
+            self.latestInsertStatus = True 
+            self.lastIndexUpdate = index
+            self.latestModificationWasRemove = False
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
@@ -232,10 +253,14 @@ class Route:
             S_i + D_i + T_ia + activity.duration + math.ceil(T_ij[activity.id][j_id]) <= S_j): 
             activity.startTime = S_i + D_i + math.ceil(T_ia)
             self.route = np.insert(self.route, index, activity)
+            self.latestInsertStatus = True 
+            self.lastIndexUpdate = index
+            self.latestModificationWasRemove = False
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
             return True
+        self.latestInsertStatus = False
         return False 
     
 
@@ -244,6 +269,9 @@ class Route:
             max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
             activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
             self.route = np.insert(self.route, 0, activity)
+            self.latestInsertStatus = True 
+            self.lastIndexUpdate = 0
+            self.latestModificationWasRemove = False
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
@@ -255,10 +283,14 @@ class Route:
             self.start_time + T_ij[0][activity.id] + activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
             activity.startTime = self.start_time + math.ceil(T_ij[0][activity.id])
             self.route = np.insert(self.route, 0, activity)
+            self.latestInsertStatus = True 
+            self.latestModificationWasRemove = False
+            self.lastIndexUpdate = 0
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
             return True
+        self.latestInsertStatus = False
         return False 
     
     def getActivity(self, actID): 
@@ -268,11 +300,11 @@ class Route:
         return None       
 
 
-    def moveActivitiesEarlier(self, stopIndex): 
+    def moveActivitiesEarlier(self, index): 
         i_id = 0
         S_i = self.start_time
         D_i = 0
-        for j in range(stopIndex): 
+        for j in range(self.lastIndexUpdate, index): 
             act = self.route[j]
 
             new_startTime =  max(act.earliestStartTime, act.getNewEarliestStartTime(), S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
@@ -286,11 +318,79 @@ class Route:
             D_i = act.duration
 
 
-    def moveActivitiesLater(self, stopIndex): 
+    def moveActivitiesLater(self, index): 
         j_id = 0
         S_j = self.end_time
        
-        for i in range(len(self.route)-1, stopIndex-1, -1): 
+        last_index_to_move = self.lastIndexUpdate -1
+        if self.latestInsertStatus == True: 
+            last_index_to_move = self.lastIndexUpdate
+            
+        for i in range(last_index_to_move, index -1 , -1): 
+            act = self.route[i]
+           
+            
+            new_startTime = min(act.latestStartTime, act.getNewLatestStartTime(), S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
+            if new_startTime > act.startTime: 
+                act.startTime = new_startTime
+
+                #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
+                #self.updateActivityDependenciesInRoute(act)
+           
+            j_id = act.id 
+            S_j = act.startTime 
+    
+    def makeSpaceForIndex(self, index): 
+        if len(self.route) == 0:
+            return 
+        
+        for possiblyMovedActivity in self.route: 
+            self.updateActivityBasedOnDependenciesInRoute(possiblyMovedActivity)
+
+        if self.latestModificationWasRemove: 
+            self.makeSpaceForIndexWhenRouteNotCharted(index)
+            return 
+        #Kan vi anta at dersom det ikke er noen 
+        
+
+        if index > self.lastIndexUpdate: 
+            self.moveActivitiesEarlier(index)
+
+        else: 
+            self.moveActivitiesLater(index)
+
+    
+    def makeSpaceForIndexWhenRouteNotCharted(self, index): 
+
+        self.moveAllActivitiesEarlier(index)
+        self.moveAllActivitiesLater(index)
+    
+    def moveAllActivitiesEarlier(self, stopIndex): 
+        i_id = 0
+        S_i = self.start_time
+        D_i = 0
+        for j in range(0, stopIndex): 
+            act = self.route[j]
+
+            new_startTime =  max(act.earliestStartTime, act.getNewEarliestStartTime(), S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
+            if new_startTime < act.startTime: 
+                act.startTime = new_startTime
+                
+                #self.updateActivityDependenciesInRoute(act)
+                
+            i_id = act.id 
+            S_i = act.startTime 
+            D_i = act.duration
+
+ 
+
+    def moveAllActivitiesLater(self, index): 
+        j_id = 0
+        S_j = self.end_time
+       
+   
+            
+        for i in range(len(self.route) -1, index -1 , -1): 
             act = self.route[i]
             
             new_startTime = min(act.latestStartTime, act.getNewLatestStartTime(), S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
@@ -298,19 +398,10 @@ class Route:
                 act.startTime = new_startTime
 
                 #Beg: Når vi endrer et startdispunkt kan det ha effeke på de neste 
-                self.updateActivityDependenciesInRoute(act)
+                #self.updateActivityDependenciesInRoute(act)
            
             j_id = act.id 
             S_j = act.startTime 
-         
-    
-    def makeSpaceForIndex(self, index): 
-        #Det er noe med oppdateringen tilbake til route_plan 
-        #Når vi prøver å sette inn 63 så 
-        #Når vi ved add activity oppdaterer funksjonen på ruten, så henter den de gamle ruteplanene
-        self.moveActivitiesEarlier(index)
-        self.moveActivitiesLater(index)
-
     
     def updateActivityDependenciesInRoute(self, act): 
         for nextActID in act.NextNode: 

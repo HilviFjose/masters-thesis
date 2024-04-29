@@ -55,5 +55,5 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Number of constructed solutions 
-num_of_constructions = 10
+num_of_constructions = 1
 
