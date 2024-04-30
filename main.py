@@ -50,7 +50,7 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState())
+    alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion,  constructor, rnd_state=rnd.RandomState())
 
     destroy_operators = DestroyOperators(alns)
     repair_operators = RepairOperators(alns)

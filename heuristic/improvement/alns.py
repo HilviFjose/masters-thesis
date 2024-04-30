@@ -10,7 +10,7 @@ from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
     def __init__(self,weights, reaction_factor, current_route_plan, criterion,
-                    destruction_degree, constructor, rnd_state=rnd.RandomState()): 
+                     constructor, rnd_state=rnd.RandomState()): 
         self.destroy_operators = []
         self.repair_operators = []
 
@@ -19,7 +19,6 @@ class ALNS:
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
         self.best_route_plan = copy.deepcopy(current_route_plan)
-        self.destruction_degree = destruction_degree
         self.criterion = criterion
         self.constructor = constructor
         self.local_search_req = local_search_req
@@ -152,7 +151,7 @@ class ALNS:
         
         
         self.add_destroy_operator(destroy_operators.related_patients_removal)
-        #self.add_destroy_operator(destroy_operators.related_treatments_removal)
+        self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
         
         # Add repair operators

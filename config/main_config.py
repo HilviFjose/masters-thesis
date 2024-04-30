@@ -16,7 +16,9 @@ local_search_req = 0.02
 k = 3
 
 #The amount of activities to remove in destroy operators
-destruction_degree = 0.4
+#destruction_degree = 0.4
+destruction_degree_beginning = 0.4
+destruction_degree_end = 0.2
 
 # Simulated annealing temperatures -- TODO: these must be tuned
 start_temperature = 60
@@ -55,5 +57,14 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Number of constructed solutions 
-num_of_constructions = 10
+num_of_constructions = 1
 
+'''
+Better insertion gir nok relativt like løsninger, er derfor ikke nødvendig med så mange konstruksjoner 
+'''
+
+#Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
+construction_insertor = 2 #W
+repair_insertor = 1
+
+max_num_explored_branches = 10

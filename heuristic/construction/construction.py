@@ -7,7 +7,7 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subf
 from objects.route_plan import RoutePlan
 from heuristic.improvement.operator.insertor import Insertor
 from helpfunctions import checkCandidateBetterThanBest
-from config.main_config import num_of_constructions, iterations
+from config.main_config import num_of_constructions, iterations, construction_insertor
 
 '''
 Info: ConstructionHeurstic klassen er selve konstruskjonsheurstikken. 
@@ -52,7 +52,7 @@ class ConstructionHeuristic:
                 #Kopierer nåværende ruteplan for denne pasienten 
                 route_plan_with_patient = copy.deepcopy(route_plan)
 
-                patientInsertor = Insertor(self, route_plan_with_patient, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
+                patientInsertor = Insertor(self, route_plan_with_patient, construction_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
                 state = patientInsertor.insert_patient(patient)
             
                 if state == True: 
