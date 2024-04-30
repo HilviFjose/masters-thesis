@@ -6,6 +6,7 @@ import random
 import networkx as nx
 from sklearn.cluster import KMeans
 from scipy.spatial import cKDTree
+import ast
 
 from config import main_config
 
@@ -213,9 +214,10 @@ class RepairOperators:
                 #Steg 1 - Slette i illegal listene 
                 del repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activityID]
                 
-                for i in range(self.constructor.visit_df.shape[0]):
-                    visit = self.constructor.visit_df.index[i] 
-                    if activityID in self.constructor.visit_df.loc[visit, 'activitiesIds']: 
+                for visit in self.constructor.visits_array:
+                    activitiesIds_index =  self.constructor.visits_array[0].tolist().index('activitiesIds')
+                    print("activitiesIds_index", activitiesIds_index)
+                    if activityID in self.constructor.visits_array[visit][activitiesIds_index]: 
                         break
 
                 #Steg 2 - Oppdater allokert dictionariene                
@@ -240,15 +242,18 @@ class RepairOperators:
                 del repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit]
 
                 #Legger til visitet på treatmenten. Vet at treatmenten ligger inne, for hvis ikke så ville ikke visitet vært illegal 
-                for i in range(self.constructor.treatment_df.shape[0]):
-                    treatment = self.constructor.treatment_df.index[i] 
-                    if visit in self.constructor.treatment_df.loc[treatment, 'visitsIds']: 
+                for treatment in self.constructor.treatments_array:
+                    visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
+                    print("treatment", treatment)
+                    print("visitsIds_index",visitsIds_index)
+                    if visit in self.constructor.treatments_array[treatment][visitsIds_index]: 
                         break
 
                 #Steg 2 - Oppdater allokert dictionariene 
                 repaired_route_plan.treatments[treatment].append(visit) 
                 #Legge til visit og activities som hører til treatmentet 
-                repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds']
+                activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+                repaired_route_plan.visits[visit] = self.constructor.visits_array[visit][activitiesIds_index]
 
             #Alternativ 2 - Setter tilbake ruteplanen, dersom ingen insertion 
             else: 
@@ -269,18 +274,19 @@ class RepairOperators:
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
                 
                 #Legger til treatmenten på pasienten. Vet at pasienten allerede ligger inne, for hvis ikke ville ikke treatmenten i utgnaspunktet vært illegal 
-                for i in range(len(self.constructor.patients_array)):
-                    patient = i
-                    treatmentIds_index = self.constructor.patients_array[0].tolist().index('treatmentsIds')
-                    if treatment in self.constructor.patients_array[patient][treatmentIds_index]: 
+                for patient_id in range(len(self.constructor.patients_array)):
+                    treatmentIds_index =  self.constructor.patients_array[0].tolist().index('treatmentsIds')
+                    if treatment in self.constructor.patients_array[patient_id][treatmentIds_index]: 
                         break
 
                 #Steg 2 - Oppdater allokert dictionariene 
-                repaired_route_plan.allocatedPatients[patient].append(treatment)
+                repaired_route_plan.allocatedPatients[patient_id].append(treatment)
                 #Legge til visit og activities som hører til treatmentet 
-                repaired_route_plan.treatments[treatment] = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+                visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
+                activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+                repaired_route_plan.treatments[treatment] = self.constructor.treatments_array[treatment][visitsIds_index]
                 for visit in repaired_route_plan.treatments[treatment]: 
-                    repaired_route_plan.visits[visit] = self.constructor.visit_df.loc[visit, 'activitiesIds'] 
+                    repaired_route_plan.visits[visit] = self.constructor.visits_array[visit][activitiesIds_index]
             #Alternativ 2       
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)

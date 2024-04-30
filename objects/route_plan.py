@@ -588,11 +588,13 @@ class RoutePlan:
                     
     def updateAllocationAfterPatientInsertor(self, patient, constructor): 
         treatmentIds_index = constructor.patients_array[0].tolist().index('treatmentsIds')
+        visitsIds_index = constructor.treatments_array[0].tolist().index('visitsIds')
+        activitiesIds_index = constructor.visits_array[0].tolist().index('activitiesIds')
         self.allocatedPatients[patient] = constructor.patients_array[patient][treatmentIds_index]
         for treatment in self.allocatedPatients[patient]:
-            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
+            self.treatments[treatment] = constructor.treatments_array[treatment][visitsIds_index]
             for visit in self.treatments[treatment]: 
-                self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
+                self.visits[visit] = constructor.visits_array[visit][activitiesIds_index]
 
         #Fjerner pasienten fra ikkeAllokert listen 
         if patient in self.notAllocatedPatients: 

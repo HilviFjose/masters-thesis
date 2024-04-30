@@ -33,7 +33,7 @@ def main():
     activities_container = parameters.activities_information_array
 
     #CONSTRUCTION HEURISTIC
-    constructor = ConstructionHeuristic(df_activities, employees_container, patients_container, df_treatments, df_visits, 5)
+    constructor = ConstructionHeuristic(df_activities, employees_container, patients_container, treatments_containter, visits_container, 5)
     print("Constructing Initial Solution")
     constructor.construct_initial()
     

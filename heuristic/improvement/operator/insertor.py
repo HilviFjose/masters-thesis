@@ -40,8 +40,8 @@ class Insertor:
     
 
     def insert_treatment(self, treatment): 
-    
-        visitList = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+        visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
+        visitList = self.constructor.treatments_array[treatment][visitsIds_index]
 
         old_route_plan = copy.deepcopy(self.route_plan)
 
@@ -55,7 +55,8 @@ class Insertor:
                 self.rev = True
         '''
         #Iterer over alle patterns som er mulige for denne treatmenten
-        patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
+        patternType_index = self.constructor.treatments_array[0].tolist().index('patternType')
+        patterns = pattern[self.constructor.treatments_array[treatment][patternType_index]]
         index_random = [i for i in range(len(patterns))]
         random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
@@ -97,7 +98,8 @@ class Insertor:
    
 
     def simple_insert_visit_on_day(self, visit, day):  
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+        activitiesList = self.constructor.visits_array[visit][activitiesIds_index]
         old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         # Create a list of activity objects
@@ -113,8 +115,8 @@ class Insertor:
     def better_insert_visit_on_day(self, visit, day):
         
         self.InsertionFound_BetterInsertVisit = False 
-
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+        activitiesList = self.constructor.visits_array[visit][activitiesIds_index]
         test_route_plan = copy.deepcopy(self.route_plan)
 
         
@@ -185,8 +187,8 @@ class Insertor:
              
     def best_insert_visit_on_day(self, visit, day):
         self.InsertionFound_BestInsertVisit = False
-        
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+        activitiesList = self.constructor.visits_array[visit][activitiesIds_index]
         test_route_plan = copy.deepcopy(self.route_plan)
         test_route_plan.updateObjective(0, iterations)
         

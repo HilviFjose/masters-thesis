@@ -18,11 +18,11 @@ Gjennom construct_inital funksjonen så oppdateres løsningen, objektivverdien o
 
 
 class ConstructionHeuristic:
-    def __init__(self, activities_df,  employees_array, patients_array, treatment_df, visit_df, days):
+    def __init__(self, activities_df,  employees_array, patients_array, treatments_array, visits_array, days):
         
         self.activities_df = activities_df
-        self.visit_df = visit_df
-        self.treatment_df = treatment_df
+        self.visits_array = visits_array
+        self.treatments_array = treatments_array
         self.patients_array = patients_array
         self.employees = employees_array
         self.days = days
@@ -40,8 +40,6 @@ class ConstructionHeuristic:
  
 
     def construct_initial(self): 
-        #Lager en liste med pasienter i prioritert rekkefølge. 
-        #unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
         patient_list = self.patients_array[1:].tolist()
         allocation_index = self.patients_array[0].tolist().index('allocation')
         agg_utility_index = self.patients_array[0].tolist().index('aggUtility')
@@ -111,63 +109,12 @@ class ConstructionHeuristic:
 
     def updateConstructionAllocationInformation(self, route_plan, patient): 
         treatments_index = self.patients_array[0].tolist().index('treatmentsIds')
+        visits_index = self.treatments_array[0].tolist().index('visitsIds')
+        activities_index = self.visits_array[0].tolist().index('activitiesIds')
         route_plan.allocatedPatients[patient] = self.patients_array[patient, treatments_index]
         for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
-            route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']
+            route_plan.treatments[treatment] = self.treatments_array[treatment][visits_index]
         for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 
-            route_plan.visits[visit] = self.visit_df.loc[visit, 'activitiesIds']
+            route_plan.visits[visit] = self.visits_array[visit][activities_index]
 
-    # -------------------- GAMMEL KODE UNDER, FRA NÅR VI BARE KJØRER EN KONSTRUKJSON ---------------
-   
-    '''
-    def construct_initialG(self): 
-        #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[True, True])
 
-        #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
-        for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
-            #Henter ut raden i pasient dataframes som tilhører pasienten
-            patient = unassigned_patients.index[i] 
-            allocation = unassigned_patients.loc[patient, 'allocation']
-            
-            #Kopierer nåværende ruteplan for denne pasienten 
-            route_plan_with_patient = copy.deepcopy(self.route_plan)
-
-            patientInsertor = Insertor(self, route_plan_with_patient, 1) #Må bestemmes hvor god visitInsertor vi skal bruke
-            state = patientInsertor.insert_patient(patient)
-           
-            if state == True: 
-                #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
-                self.route_plan = patientInsertor.route_plan
-                
-                #Pasienten legges til i hjemmsykehusets liste med pasienter
-                self.updateConstructionAllocationInformation(patient)
-                #Oppdaterer ruteplanen 
-                
-            #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
-            #TODO: Hva trenger egentlig å konstrueres i dette
-            if state == False: 
-                
-            
-                if allocation == 0: 
-                    self.route_plan.notAllocatedPatients.append(patient)
-                else: 
-                    self.route_plan.illegalNotAllocatedPatients.append(patient)
-        
-        #TODO: Oppdatere alle dependencies når vi har konstruert løsning 
-        for day in range(1, 1+ self.days): 
-            for route in self.route_plan.routes[day].values(): 
-                for activity in route.route: 
-                    self.route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
-
-    
-    def updateConstructionAllocationInformationG(self, patient): 
-        self.route_plan.allocatedPatients[patient] = self.patients_df.loc[patient, 'treatmentsIds']
-        for treatment in [item for sublist in self.route_plan.allocatedPatients.values() for item in sublist]: 
-            self.route_plan.treatments[treatment] = self.treatment_df.loc[treatment, 'visitsIds']
-        for visit in [item for sublist in self.route_plan.treatments.values() for item in sublist]: 
-            self.route_plan.visits[visit] = self.visit_df.loc[visit, 'activitiesIds']
-        
-#TODO: Endre slik at dataen ikke må hentes på denne måten
-    '''
-    

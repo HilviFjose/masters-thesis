@@ -73,7 +73,6 @@ class DestroyOperators:
         while activity_count < total_num_activities_to_remove:
             treatmentID = rnd.choice(list(destroyed_route_plan.treatments.keys())) 
 
-            #activity_count += self.constructor.treatment_df.loc[treatmentID, 'nActivities']
             visitIdInTreat = destroyed_route_plan.treatments[treatmentID][0]
             actIdInTreat = destroyed_route_plan.visits[visitIdInTreat][0]
             act = destroyed_route_plan.getActivityFromEntireRoutePlan(actIdInTreat)
@@ -93,7 +92,6 @@ class DestroyOperators:
         while activity_count < total_num_activities_to_remove:
             visitID = rnd.choice(list(destroyed_route_plan.visits.keys())) 
 
-            #activity_count += self.constructor.visit_df.loc[visitID, 'activities']
             actIdInVisit = destroyed_route_plan.visits[visitID][0]
             act = destroyed_route_plan.getActivityFromEntireRoutePlan(actIdInVisit)
             activity_count += act.nActInVisit
@@ -162,7 +160,6 @@ class DestroyOperators:
                 if treatment_contribute < lowest_treatment_contribute: 
                     selected_treatment = treatment
             
-            #activity_count += self.constructor.treatment_df.loc[treatmentID, 'nActivities']
             visitIdInTreat = destroyed_route_plan.treatments[selected_treatment][0]
             actIdInTreat = destroyed_route_plan.visits[visitIdInTreat][0]
             act = destroyed_route_plan.getActivityFromEntireRoutePlan(actIdInTreat)
@@ -320,16 +317,9 @@ class DestroyOperators:
 
     # TAR HENSYN TIL DESTRUCTION DEGREE
     def cluster_distance_activities_removal(self, current_route_plan):
-        # Beregn totalt antall aktiviteter tildelt i løsningen
-        #num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
         num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
 
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
-        
-        # Sorter rutene basert på kjøretid, lengst først
-        #sorted_routes = sorted(
-        #    (route for day, routes in current_route_plan.routes.items() for route in routes),
-        #    key=lambda x: x.travel_time, reverse=True)
         
         sorted_routes =  sorted((route for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values()), key=lambda x: x.travel_time, reverse=True)
 
@@ -339,17 +329,13 @@ class DestroyOperators:
         selected_activities = []
 
         while removed_activities_count < total_num_activities_to_remove and sorted_routes:
-            # Ta for seg ruten med lengst kjøretid
             current_route = sorted_routes.pop(0)
             activities_in_current_route = [activity.id for activity in current_route.route]
             
             if len(activities_in_current_route) == 0:
-                # Hvis den går inn i denne betyr det at vi har gått inn i alle ruter og fjernet noe, men ikke klart å fjerne nok aktiviteter til å dekke destruction degree.
-                # Hvis du vil justere dette kan du justere på hvor mange prosent av hver rute som skal fjernes i hver rute (nå står den på 30 % av ruten)
                 print(f'Removed {removed_activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
                 break
 
-            # Hvis ruten bare har en aktivitet, kan denne aktiviteten fjernes direkte
             elif len(activities_in_current_route) == 1:
                 removed_activities_count += 1
                 total_num_activities_to_remove -= 1
@@ -360,7 +346,6 @@ class DestroyOperators:
 
             removed_activities_count += len(selected_activities)
     
-           
             if removed_activities_count >= total_num_activities_to_remove:
                 break
 
@@ -372,7 +357,7 @@ class DestroyOperators:
 
 
 
-#---------- RSPREAD DISTANCE REMOVAL ----------
+#---------- SPREAD DISTANCE REMOVAL ----------
     
     # TAR HENSYN TIL DESTRUCTION DEGREE
     def spread_distance_patients_removal(self, current_route_plan):
@@ -584,121 +569,52 @@ class DestroyOperators:
         return destroyed_route_plan, None, True
 
     def related_treatments_removal(self, current_route_plan):
-        #TODO: Forbedre ytelse, den har veldig dårlig ytelse nå. 
-
-        # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
-        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
+        num_act_allocated = sum(len(route.route) for day in range(1, current_route_plan.days+1) for route in current_route_plan.routes[day].values())
         total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
 
-        # Forberede liste med treatments og deres aktiviteter
         allocatedTreatmentsIds = list(current_route_plan.treatments.keys())
 
-        # Velger en random treatment og finner hvilket pattern og patterntype det har i ruteplanen.
+        # Choose a random treatment ID and get its pattern type
         primary_treatmentId = random.choice(allocatedTreatmentsIds)
-        filtered_row = self.constructor.treatment_df.loc[[primary_treatmentId]]
-        patternType = self.constructor.treatment_df.loc[primary_treatmentId, 'patternType']
-        TreatSamePatternType = self.constructor.treatment_df[self.constructor.treatment_df['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
+        patternType_index = self.constructor.treatments_array[0].index('patternType')
+        patternType = self.constructor.treatments_array[primary_treatmentId][patternType_index]
 
+        # Filter treatments having the same pattern type
+        TreatSamePatternType = [i for i in range(1, len(self.constructor.treatments_array)) if self.constructor.treatments_array[i][patternType_index] == patternType and i in allocatedTreatmentsIds]
 
+        # Assuming treatments are directly correlated with visits and activities
+        activitiesIds_index = self.constructor.visits_array[0].index('activitiesIds')
+        visitID_index = self.constructor.activities_array[0].index('visitId')
 
-        firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
-        visitID = self.constructor.activities_df.loc[firstActId, 'visitId']
-        for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
-            act = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
-            if act != None: 
-                break 
-        
-        #Sjekker her om det 
-        if act == None: 
-            firstDay = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
-        else: 
-            firstDay = current_route_plan.getDayForActivityID(firstActId)
-
-
-
-        #firstDay = current_route_plan.getDayForActivityID(firstActId)  #First day of a treatment and the patterntype decide which pattern is choosen for the treatment
+        # Iterate over treatments to find related ones based on pattern type and other conditions
         related_treatment_list = [primary_treatmentId]
-        #firstAct = current_route_plan.getActivityFromEntireRoutePlan(firstActId)
-        #activities_count = firstAct.nActInTreat
-        #print('Valgt treatment', primary_treatmentId)
-
         activities_count = 0
-        for visitID in current_route_plan.treatments[primary_treatmentId]: 
-            activities_count += len(current_route_plan.visits[visitID])
+        firstActInTreatSamePatternType = []
 
-        # Fjerner treatments som har samme pattern
-        filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
-        firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
-        firstActInTreatSamePatternType.remove(firstActId) 
-        #print('Utgangspunkt: ', firstActId)
+        # Collect first activities of each treatment for comparison
+        for treat_id in TreatSamePatternType:
+            first_activity_ids = self.constructor.visits_array[self.constructor.treatments_array[treat_id][visitID_index]][activitiesIds_index]
+            firstActInTreatSamePatternType.append(first_activity_ids[0] if first_activity_ids else None)
 
-
-        '''
-        Treatmentet skal bort uansett hva som ligger i illegalListene 
-        '''
-        #print('firstActInTreatment',firstActInTreatSamePatternType)
-        #actSamePatternType = self.constructor.activities_df[self.constructor.activities_df['treatmentId'].isin(TreatSamePatternType)].index.tolist()
+        # Filter based on activities and other conditions
         for actId in firstActInTreatSamePatternType:
             if activities_count >= total_num_activities_to_remove:
                 break
 
-            '''
-            Hente ut samme visitet for aktiviteten. Iterer over for å finne dagen. Dersom ikke så henter vi den i illegalVisit, for da må den ligge der
-            
-            Kan hende vi har kommet helt ned, men at ingen av aktivitenene har ligget nede 
-            '''
-            visitID = self.constructor.activities_df.loc[actId, 'visitId']
-            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
-                act = current_route_plan.getActivityFromEntireRoutePlan(actId)
-                if act != None: 
-                    break 
-            
-            #Sjekker her om det 
-            if act == None: 
-                day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
-            else: 
-                day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(actId)
+            visitID = self.constructor.activities_array[actId][visitID_index]
+            day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(actId)
 
-            if day_for_first_activity_in_treatment == firstDay:
-                firstActInTreatSamePatternType.remove(actId)
-                #print('Samme dag: ', actId)
-                treatment_for_activity = self.constructor.activities_df.loc[actId, 'treatmentId']
+            # Compare days to decide on removal
+            treatment_for_activity = self.constructor.activities_array[actId][self.constructor.activities_array[0].index('treatmentId')]
+            if treatment_for_activity not in related_treatment_list:
+                related_treatment_list.append(treatment_for_activity)
+                activities_count += len(self.constructor.visits_array[visitID][activitiesIds_index])
 
-                if treatment_for_activity not in related_treatment_list:
-                    related_treatment_list.append(treatment_for_activity)
-                    activities_count += self.constructor.treatment_df.loc[treatment_for_activity, 'nActivities']
-
-
-        # Fjerner treatments som har samme patterntype (gitt at destruction degree ikke er oppfylt fra forrige for-løkke)
-        for actId in firstActInTreatSamePatternType:
-            if activities_count >= total_num_activities_to_remove:
-                break
-            #print('Ikke samme dag: ', actId)
-            visitID = self.constructor.activities_df.loc[actId, 'visitId']
-            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
-                act = current_route_plan.getActivityFromEntireRoutePlan(actId)
-                if act != None: 
-                    break 
-            
-            #Sjekker her om det 
-            if act == None: 
-                day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
-            else: 
-                day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(actId)
-            
-            
-            if day_for_first_activity_in_treatment != firstDay:
-                treatment_for_activity = self.constructor.activities_df.loc[actId, 'treatmentId']
-                if treatment_for_activity not in related_treatment_list:
-                    related_treatment_list.append(treatment_for_activity)
-                    activities_count += self.constructor.treatment_df.loc[treatment_for_activity, 'nActivities']
-        # Removing related treatments
+        # Removing treatments from the route plan
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         for treatId in related_treatment_list:
-            destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan)[0] 
+            destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan)[0]
 
-        #print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
-        
         return destroyed_route_plan, None, True
 
    
@@ -730,8 +646,9 @@ class DestroyOperators:
                 return self.patients_removal(current_route_plan, patientsIDs_to_removed)
        
         #Vet at vi ikke har nådd tilstrekkelig antall aktiviteter ved å bare fjerne aktivitene som er i illegalActiviy 
+        patientId_index = self.constructor.visits_array[0].tolist().index('patientId')
         for illegalVisitID in current_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys(): 
-            allocated_patientID_for_illegalVisitID = self.constructor.visit_df.loc[illegalVisitID, 'patientId']
+            allocated_patientID_for_illegalVisitID = self.constructor.visits_array[illegalVisitID][patientId_index]
             if allocated_patientID_for_illegalVisitID in patientsIDs_to_removed: 
                 continue
 
@@ -744,8 +661,9 @@ class DestroyOperators:
                 return self.patients_removal(current_route_plan, patientsIDs_to_removed)
         
         #Går illegal Treatments og legger til relaterte pasienter i pasienter som skal fjernes 
+        patientId_index = self.constructor.treatments_array[0].tolist().index('patientId')
         for illegalTreatmentID in current_route_plan.illegalNotAllocatedTreatments: 
-            allocated_patientID_for_illegalTreatmentID = self.constructor.treatment_df.loc[illegalTreatmentID, 'patientId']
+            allocated_patientID_for_illegalTreatmentID = self.constructor.treatments_array[illegalTreatmentID][patientId_index]
             if allocated_patientID_for_illegalTreatmentID in patientsIDs_to_removed: 
                 continue
 
@@ -835,15 +753,17 @@ class DestroyOperators:
         del route_plan.allocatedPatients[patient_removed] 
            
         treatmentsIds_index = self.constructor.patients_array[0].tolist().index('treatmentsIds')
+        visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
+        activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
         treatments_for_patient = self.constructor.patients_array[patient_removed][treatmentsIds_index]
         for possible_illegal_treatment in treatments_for_patient: 
             if possible_illegal_treatment in route_plan.illegalNotAllocatedTreatments: 
                 route_plan.illegalNotAllocatedTreatments.remove(possible_illegal_treatment)
-            visits_in_treatment = self.constructor.treatment_df.loc[possible_illegal_treatment, 'visitsIds']
+            visits_in_treatment = self.constructor.treatments_array[possible_illegal_treatment][visitsIds_index]
             for not_longer_illegal_visit in visits_in_treatment: 
                 if not_longer_illegal_visit in list(route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()): 
                     del route_plan.illegalNotAllocatedVisitsWithPossibleDays[not_longer_illegal_visit]
-                activities_in_visits = self.constructor.visit_df.loc[not_longer_illegal_visit, 'activitiesIds']
+                activities_in_visits = self.constructor.visits_array[not_longer_illegal_visit][activitiesIds_index]
                 for not_longer_illegal_activity  in activities_in_visits: 
                     if not_longer_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
                         del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[not_longer_illegal_activity]
@@ -868,11 +788,13 @@ class DestroyOperators:
             route_plan.allocatedPatients[patient_for_treatment].remove(treatment_removed) 
             route_plan.illegalNotAllocatedTreatments.append(treatment_removed) 
 
-            visits_in_treatment = self.constructor.treatment_df.loc[treatment_removed, 'visitsIds']
+            visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
+            visits_in_treatment = self.constructor.treatment_arrays[treatment_removed][visitsIds_index]
             for not_longer_illegal_visit in visits_in_treatment: 
                 if not_longer_illegal_visit in list(route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys()): 
                     del route_plan.illegalNotAllocatedVisitsWithPossibleDays[not_longer_illegal_visit]
-                activities_in_visits = self.constructor.visit_df.loc[not_longer_illegal_visit, 'activitiesIds']
+                activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+                activities_in_visits = self.constructor.visits_array[not_longer_illegal_visit][activitiesIds_index]
                 for not_longer_illegal_activity  in activities_in_visits: 
                     if not_longer_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
                         del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[not_longer_illegal_activity]
@@ -910,8 +832,8 @@ class DestroyOperators:
             route_plan.treatments[treatment_for_visit].remove(visit_removed)
             route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit_removed] = original_day
             #Fjerner aktiviteter som var ullovlige tidligere, men som nå er inkludert i det ulovlige visitet, og ikke står som egen uiloglig aktiviteter 
-            
-            activities_in_visits = self.constructor.visit_df.loc[visit_removed, 'activitiesIds']
+            activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+            activities_in_visits = self.constructor.visits_array[visit_removed][activitiesIds_index]
             for not_longer_illegal_activity  in activities_in_visits: 
                 if not_longer_illegal_activity in list(route_plan.illegalNotAllocatedActivitiesWithPossibleDays.keys()): 
                     del route_plan.illegalNotAllocatedActivitiesWithPossibleDays[not_longer_illegal_activity]
@@ -980,37 +902,7 @@ class DestroyOperators:
 
         return selected_indices
     
-    def kruskalAlgorithm(self, df):
-        travel_time_matrix = travel_matrix_without_rush(df)
-        G = nx.Graph()
-        n = len(travel_time_matrix)  # Antall noder
-        for i in range(n):
-            for j in range(i + 1, n):
-                # Legg til en kant mellom hver node med vekt lik reisetiden
-                G.add_edge(i, j, weight=travel_time_matrix[i][j])
 
-        # Generer MST ved hjelp av Kruskal's algoritme
-        mst = nx.minimum_spanning_tree(G, algorithm='kruskal')
-
-        # Finn og fjern den lengste kanten
-        edges = list(mst.edges(data=True))
-        longest_edge = max(edges, key=lambda x: x[2]['weight'])
-        mst.remove_edge(longest_edge[0], longest_edge[1])
-
-        # MST er nå delt i to deler, og du kan identifisere komponentene (dvs. de to gruppene av IDer)
-        components = list(nx.connected_components(mst))
-        shortest_component = min(components, key=len)
-        longest_component = max(components,key=len)
-
-        # Kart for å mappe indekser tilbake til IDer
-        index_to_id = {index: id for index, id in enumerate(df.index)}
-
-        # Konverter indekser til IDer
-        shortest_ids = [index_to_id[index] for index in shortest_component]
-        longest_ids = [index_to_id[index] for index in longest_component]
-
-        return shortest_ids, longest_ids
-    
 
 
 
