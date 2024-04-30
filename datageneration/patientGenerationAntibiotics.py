@@ -245,7 +245,7 @@ def visitsGenerator(df_treatments):
                 visits_with_five = [visit_ids[0], visit_ids[3]] if three_activities_visit else [visit_ids[3]]
                 visits_with_three = [visit_ids[0]] if not three_activities_visit else [visit_ids[3]]
                 
-                df_visits.loc[df_visits['visitId'].isin(visits_with_five), 'activities'] = 5
+                df_visits.sloc[df_visits['visitId'].isin(visits_with_five), 'activities'] = 5
                 df_visits.loc[df_visits['visitId'].isin(visits_with_three), 'activities'] = 3
                 df_visits.loc[df_visits['visitId'].isin([visit_ids[1], visit_ids[2], visit_ids[4]]), 'activities'] = 1
             

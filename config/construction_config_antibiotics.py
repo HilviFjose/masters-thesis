@@ -6,9 +6,9 @@ P_num = 50                                          # Number of patients
 # Patient demographics
 clinicDistribution = [0.3, 0.2, 0.2, 0.3]
 specialisationDistribution = [0.7, 0.7, 0.7, 0.7]
-patientExtraSupport = [0.8, 0.7, 0.2, 0.4] #Percentage from each clinic that needs extra support 
+patientExtraSupport = [0.65, 0.5, 0.05, 0.2] #Percentage from each clinic that needs extra support 
 
-# Pattern Type Distribution (5days) - Decides visits per treatment
+# Pattern Type Distribution (5days) - Decides visits per treastment
 frequency1 = 0.3                # Five days a week
 frequency2 = 0.0                # Four days a week
 frequency3 = 0.0                # Three days spread throughout the week
