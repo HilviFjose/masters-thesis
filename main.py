@@ -46,8 +46,8 @@ def main():
     criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
 
     localsearch = LocalSearch(initial_route_plan, 1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
-    initial_route_plan = localsearch.do_local_search()
-    initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+    #initial_route_plan = localsearch.do_local_search()
+    #initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
     alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState())

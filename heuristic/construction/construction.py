@@ -72,6 +72,9 @@ class ConstructionHeuristic:
                         route_plan.notAllocatedPatients.append(patient)
                     else: 
                         route_plan.illegalNotAllocatedPatients.append(patient)
+
+                if patient == 3: 
+                    print("la inn pasient 3 nå")
             
             #TODO: Oppdatere alle dependencies når vi har konstruert løsning - Jeg forstår ikke helt denne 
             for day in range(1, 1+ self.days): 
