@@ -1,0 +1,68 @@
+Solution generated at time: 2024-04-30 10:11:50
+
+operator brukt: worst_deviation_patient_removal
+updated objective  [7.5600000000000005, -10, 8, 156]
+objective 3 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes] [9.0, 9, 14, 1]
+primary objective without penalty  10
+visits {75: [281], 76: [282], 73: [277], 144: [506], 146: [510], 147: [511], 148: [512, 513, 514, 515, 516], 77: [283, 284, 285, 286, 287], 74: [278, 279, 280], 145: [507, 508, 509]}
+treatments {28: [75, 76, 73, 77, 74], 50: [144, 146, 147, 148, 145]}
+allocated patients  {28: [28], 50: [50]}
+not allocated  [17, 24, 25, 31, 35, 36, 37, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 27, 29, 30, 32, 34, 40, 42, 43, 44, 45, 46, 47, 48, 49, 38, 26, 41, 19, 18, 39]
+illegalNotAllocatedPatients [33]
+illegalNotAllocatedTreatments []
+illegalNotAllocatedVisits {}
+illegalNotAllocatedActivities {}
+-------------------------------------------------------
+Printer alle rutene
+DAG 1 ANSATT 1
+---------------------
+DAG 1 ANSATT 2
+activity 277 start 931
+---------------------
+DAG 1 ANSATT 3
+activity 506 start 938
+---------------------
+DAG 2 ANSATT 1
+activity 279 start 780.0
+activity 280 start 864.0
+---------------------
+DAG 2 ANSATT 2
+activity 507 start 784.0
+activity 508 start 844.0
+activity 509 start 858.0
+---------------------
+DAG 2 ANSATT 3
+activity 278 start 720.0
+---------------------
+DAG 3 ANSATT 1
+---------------------
+DAG 3 ANSATT 2
+activity 281 start 540.0
+activity 510 start 936
+---------------------
+DAG 3 ANSATT 3
+---------------------
+DAG 4 ANSATT 1
+---------------------
+DAG 4 ANSATT 2
+activity 282 start 570.0
+---------------------
+DAG 4 ANSATT 3
+activity 511 start 938
+---------------------
+DAG 5 ANSATT 1
+activity 512 start 546.0
+activity 513 start 558.0
+activity 283 start 570.0
+activity 515 start 628.0
+activity 516 start 640.0
+activity 284 start 659.0
+activity 286 start 729.0
+activity 287 start 756.0
+---------------------
+DAG 5 ANSATT 2
+activity 285 start 669.0
+---------------------
+DAG 5 ANSATT 3
+activity 514 start 568.0
+---------------------
