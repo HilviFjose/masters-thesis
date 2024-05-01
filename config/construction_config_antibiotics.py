@@ -1,7 +1,7 @@
 # ANTIBIOTICS INFUSION CASE
 # -------------------------
 # PATIENTS
-P_num = 50                                          # Number of patients
+P_num = 75                                          # Number of patients
 
 # Patient demographics
 clinicDistribution = [0.3, 0.2, 0.2, 0.3]
@@ -56,7 +56,7 @@ maxDurationEquip = 30
 
 # EMPLOYEES
 # Number of employees
-E_num = 3
+E_num = 10
 E_generalists = 0.2 #Percentage of employees with profession level 1 and 2 that are generalists
 
 # Distributions of employees

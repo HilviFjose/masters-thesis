@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 10
+iterations = 20
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -55,5 +55,5 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Number of constructed solutions 
-num_of_constructions = 10
+num_of_constructions = 1
 

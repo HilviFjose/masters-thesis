@@ -20,6 +20,7 @@ class SimulatedAnnealing:
         else:
             if candidate_objective[0] < current_objective[0]:
                 diff = current_objective[0] - candidate_objective[0] 
+                print("diff for objektiv 0", diff)
                 probability = np.exp(-diff / self.temperature)
                 accept = (probability >= random_state.random())
                 print("Candidate not better. Accepted det solution?", accept)
@@ -27,6 +28,7 @@ class SimulatedAnnealing:
                 for i in range(1, len(candidate_objective)): 
                     if candidate_objective[i] > current_objective[i]: 
                         diff = candidate_objective[i] - current_objective[i]
+                        print("diff for objektiv",i, diff)
                         probability = np.exp(-diff / self.temperature)
                         accept = (probability >= random_state.random())
                         print("Candidate not better. Accepted det solution?", accept)
