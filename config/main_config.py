@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import math
 
 #TODO: Endre til verdier som er riktige for oss. Hentet fra Anna
 #Denne fila inneholder variabler som brukes i ALNSen
@@ -7,7 +8,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 1
+iterations = 50
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -59,12 +60,14 @@ depot = (59.9365, 10.7396)
 #Number of constructed solutions 
 num_of_constructions = 1
 
-'''
-Better insertion gir nok relativt like løsninger, er derfor ikke nødvendig med så mange konstruksjoner 
-'''
-
 #Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
 construction_insertor = 2 #W
 repair_insertor = 1
+illegal_repair_insertor = 2
+better_repair_insertor = 2 
 
 max_num_explored_branches = 60
+
+#How often should we use better insertion 
+frequecy_of_better_insertion = 0.1
+modNum_for_better_insertion = math.ceil(iterations*frequecy_of_better_insertion) 

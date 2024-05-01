@@ -5,6 +5,7 @@ from tqdm import tqdm
 from helpfunctions import *
 import time 
 
+
 from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
@@ -24,6 +25,8 @@ class ALNS:
         self.local_search_req = local_search_req
         self.iterationNum = 0
         self.weight_scores = weights
+
+        
         
         
     def iterate(self, num_iterations):
@@ -134,7 +137,6 @@ class ALNS:
         # Add destroy operators
         
         self.add_destroy_operator(destroy_operators.random_patient_removal)
-        '''
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
         self.add_destroy_operator(destroy_operators.random_activity_removal)
@@ -154,12 +156,12 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.related_patients_removal)
         self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
-        '''
+
         # Add repair operators
         self.add_repair_operator(repair_operators.greedy_repair)
         #self.add_repair_operator(repair_operators.random_repair)
-        #self.add_repair_operator(repair_operators.complexity_repair)
-        #self.add_repair_operator(repair_operators.regret_k_repair)
+        self.add_repair_operator(repair_operators.complexity_repair)
+        self.add_repair_operator(repair_operators.regret_k_repair)
 
 
     # Add operator to the heuristic instance
