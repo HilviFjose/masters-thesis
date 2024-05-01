@@ -69,7 +69,7 @@ class RepairOperators:
                 repaired_route_plan = copy.deepcopy(old_route_plan)
 
             end_time = time.perf_counter()
-            print("Pasient", patient, "forsøkt innsatt med status", status, "brukte tid", str(end_time-start_time)) 
+            print(status, "Pasient", patient, "brukte tid", str(end_time-start_time)) 
     
         repaired_route_plan.updateObjective(current_iteration, total_iterations)
       

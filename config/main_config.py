@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 10
+iterations = 1
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -67,4 +67,4 @@ Better insertion gir nok relativt like løsninger, er derfor ikke nødvendig med
 construction_insertor = 2 #W
 repair_insertor = 1
 
-max_num_explored_branches = 10
+max_num_explored_branches = 60

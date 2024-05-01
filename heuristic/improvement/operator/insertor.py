@@ -214,8 +214,9 @@ class Insertor:
                 else: 
                     break
         
-        print("self.betterInsertVisit_explored_branches2", self.betterInsertVisit_explored_branches)
-        print("self.InsertionFound_BetterInsertVisitWitLim", self.InsertionFound_BetterInsertVisitWitLim)
+        #print("visit", visit)
+        #print("self.betterInsertVisit_explored_branches2", self.betterInsertVisit_explored_branches)
+        #print("self.InsertionFound_BetterInsertVisitWitLim", self.InsertionFound_BetterInsertVisitWitLim)
         return self.InsertionFound_BetterInsertVisitWitLim
 
 
@@ -231,16 +232,12 @@ class Insertor:
         insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
   
         if insertStatus == False or self.betterInsertVisit_explored_branches > max_num_explored_branches: 
-            print("self.betterInsertVisit_explored_branches før", self.betterInsertVisit_explored_branches)
             self.betterInsertVisit_explored_branches += 1 
-            print("self.betterInsertVisit_explored_branches etter", self.betterInsertVisit_explored_branches)
-            print("BUNNEN AV TRE")
             return
         
         if len(rest_acitivites) == 0: 
             self.route_plan = route_plan
             self.InsertionFound_BetterInsertVisitWitLim = True
-            print("KOMMER TIL GYLDIG INNSETTING self.InsertionFound_BetterInsertVisitWitLim", self.InsertionFound_BetterInsertVisitWitLim )
             return
             
         
