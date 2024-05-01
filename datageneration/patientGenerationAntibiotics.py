@@ -304,11 +304,11 @@ def activitiesGenerator(df_visits):
         if group['numActivitiesInVisit'].iloc[0] == 1:
             activity_ids = group['activityId'].tolist()
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'activityType'] = 'H'
-            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 20         # Health
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 40         # Health
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'skillRequirement'] = 2  
 
         elif group['numActivitiesInVisit'].iloc[0] == 3:
-            # For 3 activities
+            # For 3 activities with structure HEE 
             highest_indices = group.sort_values(by='activityId', ascending=False).index[:2]     # The two activities with the highest id
             df_activities.loc[highest_indices, 'activityType'] = 'E'
             remaining_indices = group.index.difference(highest_indices)
@@ -330,8 +330,8 @@ def activitiesGenerator(df_visits):
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'location'] = f'{construction_config_antibiotics.depot}' 
 
             # Generate duration for the activities #TODO: Tenke hvordan disse skal settes
-            df_activities.loc[(df_activities['patternType'] == 1) & (df_activities['activityId'] == activity_ids[0]), 'duration'] = 60  # Health, for high demand patients
-            df_activities.loc[(df_activities['patternType'] == 4) & (df_activities['activityId'] == activity_ids[0]), 'duration'] = 40  # Health, for low demand patients
+            df_activities.loc[(df_activities['patternType'] == 1) & (df_activities['activityId'] == activity_ids[0]), 'duration'] = 90  # Health, for high demand patients
+            df_activities.loc[(df_activities['patternType'] == 4) & (df_activities['activityId'] == activity_ids[0]), 'duration'] = 60  # Health, for low demand patients
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10  # Equip
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 10  # Equip
 
