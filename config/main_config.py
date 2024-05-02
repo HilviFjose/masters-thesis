@@ -8,7 +8,7 @@ import math
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 20
+iterations = 5
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -66,7 +66,7 @@ repair_insertor = 1
 illegal_repair_insertor = 2
 better_repair_insertor = 1 
 
-max_num_explored_branches = 30
+max_num_explored_branches = 50
 
 #How often should we use better insertion 
 frequecy_of_better_insertion = 0.01

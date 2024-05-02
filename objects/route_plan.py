@@ -13,10 +13,10 @@ from config.main_config import depot
 from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
 from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
 
-
 class RoutePlan:
-    def __init__(self, days, employee_df):
+    def __init__(self, days, employee_df, folder_name):
         self.employee_df = employee_df
+        self.folder_name = folder_name
         
         employee_skills = {} # For å holde styr på ansattes ferdigheter
 
@@ -205,7 +205,7 @@ class RoutePlan:
     def printSolution(self, txtName, operator_string, current_iteration = None):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
         # Åpne filen for å skrive
-        with open(r"results\\" + txtName + ".txt", "w") as log_file:
+        with open(os.path.join(self.folder_name, txtName + ".txt"), "w") as log_file:
             # Omdiriger sys.stdout til filen
             original_stdout = sys.stdout
             sys.stdout = log_file
