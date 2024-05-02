@@ -22,9 +22,13 @@ destruction_degree_beginning = 0.4
 destruction_degree_end = 0.2
 
 # Simulated annealing temperatures -- TODO: these must be tuned
-start_temperature = 60
-end_temperature = 10
-cooling_rate = 0.96
+#start_temperature = 60
+#end_temperature = 10
+#cooling_rate = 0.96
+
+sim_annealing_diff = 0.05
+prob_of_choosing = 0.5 
+rate_T_start_end = 0.2 
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
