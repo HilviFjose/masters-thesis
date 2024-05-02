@@ -4,30 +4,32 @@ import copy
 from tqdm import tqdm 
 from helpfunctions import *
 import time 
-
-
 from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self,weights, reaction_factor, current_route_plan, criterion,
-                     constructor, rnd_state=rnd.RandomState()): 
+    def __init__(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, iteration_update, current_route_plan, criterion, constructor, rnd_state=rnd.RandomState()): 
         self.destroy_operators = []
         self.repair_operators = []
 
         self.rnd_state = rnd_state
-        self.reaction_factor = reaction_factor
+        self.reaction_factor = reaction_factor_default
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
         self.best_route_plan = copy.deepcopy(current_route_plan)
         self.criterion = criterion
         self.constructor = constructor
-        self.local_search_req = local_search_req
         self.iterationNum = 0
-        self.weight_scores = weights
 
-        
-        
+        self.weight_score_better = weight_score_better
+        self.weight_score_accepted = weight_score_accepted
+        self.weight_score_bad = weight_score_bad
+        self.weight_score_best = weight_score_best
+        self.reaction_factor = reaction_factor
+        self.local_search_req = local_search_req
+        self.iteration_update = iteration_update
+
+
         
     def iterate(self, num_iterations):
         found_solutions = {}
@@ -56,11 +58,11 @@ class ALNS:
             d_operator = self.destroy_operators[destroy]
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
-            print("destroy operator", d_operator.__name__)
-            start_time = time.perf_counter()
+            #print("destroy operator", d_operator.__name__)
+            #start_time = time.perf_counter()
             candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
-            end_time = time.perf_counter()
-            print("destroy used time", str(end_time - start_time))  
+            #end_time = time.perf_counter()
+            #print("destroy used time", str(end_time - start_time))  
             candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
 
@@ -72,11 +74,11 @@ class ALNS:
             # Repair solution
             
             r_operator = self.repair_operators[repair]
-            print("repair operator", r_operator.__name__)
-            start_time = time.perf_counter()
+            #print("repair operator", r_operator.__name__)
+            #start_time = time.perf_counter()
             candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, num_iterations)
-            end_time = time.perf_counter()
-            print("destroy used time", str(end_time - start_time))
+            #end_time = time.perf_counter()
+            #print("destroy used time", str(end_time - start_time))
             candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
             r_count[repair] += 1
@@ -110,7 +112,7 @@ class ALNS:
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
-            if (i+1)*iterations_update == 0:
+            if (i+1)* self.iterations_update == 0:
                 # Update weights with scores
                 for destroy in range(len(d_weights)):
                     if d_count[destroy] != 0: 
@@ -186,22 +188,21 @@ class ALNS:
         if criterion.accept_criterion(self.rnd_state, current_route_plan.objective, candidate_route_plan.objective):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
-                weight_score = weight_scores[0]
+                weight_score = self.weight_score_better
             else:
                 # Solution is not better, but accepted
-                weight_score = weight_scores[1]
-
+                weight_score = self.weight_score_accepted
             current_route_plan = copy.deepcopy(candidate_route_plan)
         else:
             # Solution is rejected
             print("Candidate very bad and not accepted.")
-            weight_score = weight_scores[2]
+            weight_score = self.weight_score_bad
 
         # Check if solution is new global best
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
             print("ALNS iteration ", self.iterationNum, " is new global best")
             best_route_plan = copy.deepcopy(candidate_route_plan)
-            weight_score = weight_scores[3]
+            weight_score = self.weight_score_best 
 
         return best_route_plan, current_route_plan, weight_score    
 
