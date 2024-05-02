@@ -182,7 +182,7 @@ def check_consistency(file):
     for i in range(df_patients.shape[0]):
         patientID = df_patients.index[i]
         allocated_patient_dict = get_dictionary(file, 'allocated patients')
-        not_allocated_patient = extract_list(file, 'not allocated')
+        not_allocated_patient = extract_list(file, 'not allocated') + extract_list(file, 'illegalNotAllocatedPatients')
         if patientID in not_allocated_patient: 
             break 
         if patientID not in allocated_patient_dict.keys(): 
