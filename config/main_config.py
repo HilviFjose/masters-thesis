@@ -8,7 +8,7 @@ import math
 reaction_factor_default = 0.7
 
 # Iterations in ALNS
-num_iterations = 5
+iterations = 5
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req_default = 0.02
@@ -73,4 +73,4 @@ max_num_explored_branches = 20
 
 #How often should we use better insertion 
 frequecy_of_better_insertion = 0.01
-modNum_for_better_insertion = math.ceil(num_iterations*frequecy_of_better_insertion) 
+modNum_for_better_insertion = math.ceil(iterations*frequecy_of_better_insertion) 

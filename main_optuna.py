@@ -35,7 +35,6 @@ def main():
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
     
-    iterations = num_iterations
     #CONSTRUCTION HEURISTIC
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")
@@ -69,7 +68,7 @@ def main():
     alns.set_operators(destroy_operators, repair_operators)
 
     #RUN ALNS 
-    best_route_plan = run_alns(alns)
+    best_route_plan = run_alns(alns, iterations)
     
     best_route_plan.updateObjective(iterations, iterations)
     best_route_plan.printSolution("final", "no operator")
@@ -96,17 +95,17 @@ def run_alns(alns, iterations):
 
 def objective(route_plan, criterion, constructor, trial):
     # Suggesting parameters
-    reaction_factor = trial.suggest_float('reaction_factor', 0.4, 0.8, step=0.1)
-    local_search_req = trial.suggest_float('local_search_req', 0.01, 0.05, step=0.01)
-    weight_score_best = trial.suggest_int('weight_score_best', 10, 15)
-    weight_score_better = trial.suggest_int('weight_score_better', 1, 5, 10)
-    weight_score_accepted = trial.suggest_int('weight_score_accepted', 1, 5, 10)
-    iterations_update = trial.suggest_float('iterations_update', 0.1, 0.5, step=0.1)
+    reaction_factor_interval = trial.suggest_float('reaction_factor', 0.4, 0.8, step=0.1)
+    local_search_req_interval = trial.suggest_float('local_search_req', 0.01, 0.05, step=0.01)
+    weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
+    weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
+    weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
+    iterations_update_interval = trial.suggest_float('iterations_update', 0.1, 0.5, step=0.1)
 
     # Configure and run ALNS
-    alns = setup_alns(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, 
-                iterations_update, route_plan, criterion, constructor, rnd_state=rnd.RandomState())
-    result = run_alns(alns, iterations = 10) 
+    alns = setup_alns(weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval, reaction_factor_interval, local_search_req_interval, 
+                iterations_update_interval, route_plan, criterion, constructor, rnd_state=rnd.RandomState())
+    result = run_alns(alns, iterations) 
 
     return result.objective_score  # Objective to minimize
          

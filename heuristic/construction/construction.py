@@ -7,7 +7,7 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subf
 from objects.route_plan import RoutePlan
 from heuristic.improvement.operator.insertor import Insertor
 from helpfunctions import checkCandidateBetterThanBest
-from config.main_config import num_of_constructions, construction_insertor
+from config.main_config import num_of_constructions, iterations, construction_insertor
 
 '''
 Info: ConstructionHeurstic klassen er selve konstruskjonsheurstikken. 
@@ -17,7 +17,7 @@ Gjennom construct_inital funksjonen så oppdateres løsningen, objektivverdien o
 
 
 class ConstructionHeuristic:
-    def __init__(self, activities_df,  employees_df, patients_df, treatment_df, visit_df, days, folder_name, iterations):
+    def __init__(self, activities_df,  employees_df, patients_df, treatment_df, visit_df, days, folder_name):
         
         self.activities_df = activities_df
         self.visit_df = visit_df
@@ -26,7 +26,6 @@ class ConstructionHeuristic:
         self.employees_df = employees_df
         self.days = days
         self.folder_name = folder_name
-        self.iterations = iterations
         #self.route_plan = RoutePlan(days, employees_df) 
 
         self.route_plans = [RoutePlan(days, employees_df, folder_name) for _ in range(num_of_constructions) ]
@@ -54,7 +53,7 @@ class ConstructionHeuristic:
                 #Kopierer nåværende ruteplan for denne pasienten 
                 route_plan_with_patient = copy.deepcopy(route_plan)
 
-                patientInsertor = Insertor(self, route_plan_with_patient, construction_insertor, self.iterations) #Må bestemmes hvor god visitInsertor vi skal bruke
+                patientInsertor = Insertor(self, route_plan_with_patient, construction_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
                 state = patientInsertor.insert_patient(patient)
             
                 if state == True: 
@@ -80,7 +79,7 @@ class ConstructionHeuristic:
                 for route in route_plan.routes[day].values(): 
                     for activity in route.route: 
                         route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
-            route_plan.updateObjective(0, self.iterations)
+            route_plan.updateObjective(0, iterations)
             self.route_plans[j] = route_plan
             
         self.setBestRoutePlan()

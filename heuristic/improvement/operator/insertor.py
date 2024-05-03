@@ -3,11 +3,11 @@ from objects.patterns import pattern
 from objects.activity import Activity
 import random 
 from helpfunctions import * 
-from config.main_config import max_num_explored_branches
+from config.main_config import max_num_explored_branches, iterations
 
 
 class Insertor:
-    def __init__(self, constructor, route_plan, insertion_efficiency_level, iterations):
+    def __init__(self, constructor, route_plan, insertion_efficiency_level):
         self.constructor = constructor
         #self.route_plan = copy.deepcopy(route_plan)
         self.route_plan = route_plan
@@ -17,8 +17,7 @@ class Insertor:
         self.InsertionFound_BetterInsertVisitWitLim = False
         self.InsertionFound_BestInsertVisit = False
         self.betterInsertVisit_explored_branches = 0
-        
-        self.iterations = iterations
+
 
         self.visitOnDayInsertorList = [self.simple_insert_visit_on_day, self.better_insert_visit_on_day_with_iteration_limitation, self.better_insert_visit_on_day,  self.best_insert_visit_on_day]   
         if insertion_efficiency_level >= len(self.visitOnDayInsertorList): 
@@ -266,7 +265,7 @@ class Insertor:
         
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
         test_route_plan = copy.deepcopy(self.route_plan)
-        test_route_plan.updateObjective(0, self.iterations)
+        test_route_plan.updateObjective(0, iterations)
         
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         activity = activities[0]
@@ -297,7 +296,7 @@ class Insertor:
 
 
     def insertNextActiviy_forBestInsertion(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
-        route_plan.updateObjective(0, self.iterations)
+        route_plan.updateObjective(0, iterations)
         #TODO: Sammkjøre denne med andre aktiviteter som fungere 
         #BEG: Må ha med denne også for å sjekke om det er 
         route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
@@ -314,7 +313,7 @@ class Insertor:
             return 
         
         if len(rest_acitivites) == 0: 
-            route_plan.updateObjective(0, self.iterations)
+            route_plan.updateObjective(0, iterations)
          
             if checkCandidateBetterThanBest(route_plan.objective, self.route_plan.objective): 
                 self.route_plan = copy.deepcopy(route_plan)
