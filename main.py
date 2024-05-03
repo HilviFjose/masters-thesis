@@ -12,6 +12,7 @@ from heuristic.improvement.alns import ALNS
 from heuristic.improvement.operator.destroy_operators import DestroyOperators
 from heuristic.improvement.operator.repair_operators import RepairOperators
 from heuristic.improvement.local_search import LocalSearch
+from multipro import setup
 
 import cProfile
 import pstats
@@ -20,6 +21,7 @@ from pstats import SortKey
 def main():
     #TODO: Burde legge til sånn try og accept kriterier her når vi er ferdig. Men Bruker ikke det enda fordi letter å jobbe uten
 
+    mp_config = setup(3,2,3)
     #INPUT DATA
     df_employees = parameters.df_employees
     df_patients = parameters.df_patients
@@ -60,10 +62,9 @@ def main():
    
     alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion,  constructor, rnd_state=rnd.RandomState())
 
-    destroy_operators = DestroyOperators(alns)
-    repair_operators = RepairOperators(alns)
+    
 
-    alns.set_operators(destroy_operators, repair_operators)
+   
 
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)

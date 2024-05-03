@@ -1,5 +1,5 @@
 import numpy as np
-import multiprocess as mp
+import multiprocessing as mp
 from typing import Callable
 
 def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list, mp_config: dict, profile = False):
@@ -17,7 +17,7 @@ def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list,
     #parallel, n_processes = process_in_parallel(n_jobs=len(jobs), **mp_config)
 
     #if parallel:
-    n_processes = mp.cpu_count()
+    n_processes = mp_config['max_processes']
     avg_length = len(jobs) // n_processes
     remainder = len(jobs) % n_processes
 

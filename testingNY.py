@@ -415,7 +415,7 @@ def check_employee_consistency(file_path):
 
 # Example usage
 username = 'agnesost'
-folder_name  = 'results-2024-05-02_17-58-20'
+folder_name  = 'results-2024-05-03_14-16-32'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\initialLS.txt'  # Replace with the actual path to your first file
