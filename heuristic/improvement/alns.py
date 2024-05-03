@@ -8,12 +8,11 @@ from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, iteration_update, current_route_plan, criterion, constructor, rnd_state=rnd.RandomState()): 
+    def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, iteration_update, current_route_plan, criterion, constructor, rnd_state=rnd.RandomState()): 
         self.destroy_operators = []
         self.repair_operators = []
 
         self.rnd_state = rnd_state
-        self.reaction_factor = reaction_factor_default
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
         self.best_route_plan = copy.deepcopy(current_route_plan)
@@ -27,11 +26,11 @@ class ALNS:
         self.weight_score_best = weight_score_best
         self.reaction_factor = reaction_factor
         self.local_search_req = local_search_req
-        self.iteration_update = iteration_update
+        self.iterations_update = iteration_update
 
 
         
-    def iterate(self, num_iterations):
+    def iterate(self, iterations):
         found_solutions = {}
         
         # weights er vekter for å velge operator, score og count brukes for oppdatere weights
@@ -43,7 +42,7 @@ class ALNS:
         d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
-        for i in tqdm(range(num_iterations), colour='#39ff14'):
+        for i in tqdm(range(iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
@@ -63,7 +62,7 @@ class ALNS:
             candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
             #end_time = time.perf_counter()
             #print("destroy used time", str(end_time - start_time))  
-            candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+            candidate_route_plan.updateObjective(self.iterationNum, iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
 
             if not destroyed:
@@ -76,19 +75,19 @@ class ALNS:
             r_operator = self.repair_operators[repair]
             #print("repair operator", r_operator.__name__)
             #start_time = time.perf_counter()
-            candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, num_iterations)
+            candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, iterations)
             #end_time = time.perf_counter()
             #print("destroy used time", str(end_time - start_time))
-            candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+            candidate_route_plan.updateObjective(self.iterationNum, iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
             r_count[repair] += 1
 
             
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 print("Solution promising. Doing local search.")
-                localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
+                localsearch = LocalSearch(candidate_route_plan, self.iterationNum, iterations)
                 candidate_route_plan = localsearch.do_local_search()
-                candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+                candidate_route_plan.updateObjective(self.iterationNum, iterations)
                 
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             #TODO: Skal final candiate printes lenger nede? 

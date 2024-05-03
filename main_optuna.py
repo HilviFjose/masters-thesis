@@ -15,8 +15,10 @@ from heuristic.improvement.local_search import LocalSearch
 import cProfile
 import pstats
 from pstats import SortKey
+from functools import partial
 
 import optuna
+print(optuna.__version__)
 
 def main():
     #INPUT DATA
@@ -26,11 +28,19 @@ def main():
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
 
+    # CREATE RESULTS FOLDER
+    current_datetime = datetime.now()
+    date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+    folder_name = f"results-{date_time_str}"
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
     #CONSTRUCTION HEURISTIC
-    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
+    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
+    iterations = num_iterations
     constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")
     
@@ -49,11 +59,8 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    alns = setup_alns(weight_score_better=weight_score_better_default, weight_score_accepted=weight_score_accepted_default, 
-                      weight_score_bad=weight_score_bad_default, weight_score_best=weight_score_best_default , 
-                      reaction_factor=reaction_factor_default, local_search_req=local_search_req_default, iteration_update=iterations_update_default,
-                      current_route_plan=initial_route_plan, criterion=criterion, constructor=constructor, rnd_state=rnd.RandomState()) 
-    #alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion, constructor, rnd_state=rnd.RandomState())
+    alns = setup_alns(weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
+                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, rnd_state=rnd.RandomState()) 
 
     destroy_operators = DestroyOperators(alns)
     repair_operators = RepairOperators(alns)
@@ -66,37 +73,39 @@ def main():
     best_route_plan.updateObjective(iterations, iterations)
     best_route_plan.printSolution("final", "no operator")
 
+    objective_func = partial(objective, initial_route_plan, criterion, constructor)
+
     #Run optuna
-    study = optuna.create_study(direction='minimize')
-    study.optimize(objective, n_trials=50)
+    study = optuna.create_study(direction='maximize')
+    study.optimize(objective_func, n_trials=50)
     print("Best parameters:", study.best_trial.params)
    
 
-def setup_alns(weight_score_better, weight_score_accepted, weight_score_best, reaction_factor, local_search_req, 
+def setup_alns(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, 
                 iteration_update, current_route_plan, criterion, constructor, rnd_state):
     # Configuration code here
     alns = ALNS(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, 
                 iteration_update, current_route_plan, criterion, constructor, rnd_state)
     return alns
 
-def run_alns(alns):
+def run_alns(alns, iterations):
     # Execute the ALNS process
     best_route_plan = alns.iterate(iterations)
     return best_route_plan
 
-def objective(trial):
+def objective(route_plan, criterion, constructor, trial):
     # Suggesting parameters
-    reaction_factor = trial.suggest_float('reaction_factor', reaction_factor_interval)
-    local_search_req = trial.suggest_float('local_search_req', local_search_interval)
-    weight_score_best = trial.suggest_int('weight_score_best', weight_score_best_interval)
-    weight_score_better = trial.suggest_int('weight_score_better', weight_score_better_interval)
-    weight_score_accepted = trial.suggest_int('weight_score_accepted', weight_score_accepted_interval)
-    iteartions_update = trial.suggest_float('iterations_update', iterations_update_interval)
+    reaction_factor = trial.suggest_float('reaction_factor', 0.4, 0.8, step=0.1)
+    local_search_req = trial.suggest_float('local_search_req', 0.01, 0.05, step=0.01)
+    weight_score_best = trial.suggest_int('weight_score_best', 10, 15)
+    weight_score_better = trial.suggest_int('weight_score_better', 1, 5, 10)
+    weight_score_accepted = trial.suggest_int('weight_score_accepted', 1, 5, 10)
+    iterations_update = trial.suggest_float('iterations_update', 0.1, 0.5, step=0.1)
 
     # Configure and run ALNS
-    alns = setup_alns(weight_score_better=weight, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, 
-                iteration_update, current_route_plan, criterion, constructor, rnd_state)
-    result = run_alns(alns, iterations = 50) 
+    alns = setup_alns(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, 
+                iterations_update, route_plan, criterion, constructor, rnd_state=rnd.RandomState())
+    result = run_alns(alns, iterations = 10) 
 
     return result.objective_score  # Objective to minimize
          
