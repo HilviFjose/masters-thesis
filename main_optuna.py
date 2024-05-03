@@ -49,7 +49,7 @@ def main():
    
     alns = setup_alns(weight_score_better=weight_score_better_default, weight_score_accepted=weight_score_accepted_default, 
                       weight_score_bad=weight_score_bad_default, weight_score_best=weight_score_best_default , 
-                      reaction_factor=reaction_factor_default, local_search_req=local_search_req_default, iteration_update=iterations_update_default
+                      reaction_factor=reaction_factor_default, local_search_req=local_search_req_default, iteration_update=iterations_update_default,
                       current_route_plan=initial_route_plan, criterion=criterion, constructor=constructor, rnd_state=rnd.RandomState()) 
     #alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion, constructor, rnd_state=rnd.RandomState())
 
