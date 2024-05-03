@@ -17,7 +17,7 @@ Gjennom construct_inital funksjonen så oppdateres løsningen, objektivverdien o
 
 
 class ConstructionHeuristic:
-    def __init__(self, activities_df,  employees_df, patients_df, treatment_df, visit_df, days):
+    def __init__(self, activities_df,  employees_df, patients_df, treatment_df, visit_df, days, folder_name):
         
         self.activities_df = activities_df
         self.visit_df = visit_df
@@ -25,9 +25,10 @@ class ConstructionHeuristic:
         self.patients_df = patients_df
         self.employees_df = employees_df
         self.days = days
+        self.folder_name = folder_name
         #self.route_plan = RoutePlan(days, employees_df) 
 
-        self.route_plans = [RoutePlan(days, employees_df) for _ in range(num_of_constructions) ]
+        self.route_plans = [RoutePlan(days, employees_df, folder_name) for _ in range(num_of_constructions) ]
 
         self.route_plan = None
         
