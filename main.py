@@ -2,6 +2,7 @@ import pandas as pd
 import numpy.random as rnd
 import os
 import sys
+from datetime import datetime
 
 import parameters
 from config.main_config import *
@@ -26,8 +27,15 @@ def main():
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
 
+    # CREATE RESULTS FOLDER
+    current_datetime = datetime.now()
+    date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+    folder_name = f"results-{date_time_str}"
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
     #CONSTRUCTION HEURISTIC
-    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5)
+    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
