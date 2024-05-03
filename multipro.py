@@ -17,7 +17,8 @@ def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list,
     #parallel, n_processes = process_in_parallel(n_jobs=len(jobs), **mp_config)
 
     #if parallel:
-    n_processes = mp_config['max_processes']
+    #n_processes = mp_config['max_processes']
+    n_processes = 2 
     avg_length = len(jobs) // n_processes
     remainder = len(jobs) % n_processes
 

@@ -14,11 +14,10 @@ from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
     def __init__(self,weights, reaction_factor, current_route_plan, criterion,
-                     constructor, rnd_state=rnd.RandomState()): 
+                     constructor, mp_config): 
         self.destroy_operators = []
         self.repair_operators = []
 
-        self.rnd_state = rnd_state
         self.reaction_factor = reaction_factor
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
@@ -43,24 +42,27 @@ class ALNS:
         self.d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         self.r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
+        self.mp_config = mp_config
 
 
         
-    def doIteration(self, candidate_route_plan): 
-        destroy = self.select_operator(self.destroy_operators, self.d_weights, self.rnd_state)
+    def doIteration(self, input_tuple): 
+        candidate_route_plan = input_tuple[0]
+        parNum = input_tuple[1]
+        destroy = self.select_operator(self.destroy_operators, self.d_weights)
            
         # Select repair method
-        repair = self.select_operator(self.repair_operators, self.r_weights, self.rnd_state)
+        repair = self.select_operator(self.repair_operators, self.r_weights)
         
         #Destroy solution 
         d_operator = self.destroy_operators[destroy]
 
-        self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
+        self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy_parallel_"+str(parNum), d_operator.__name__)
 
         candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
 
         candidate_route_plan.updateObjective(self.iterationNum, iterations)
-        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
+        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy_parallel_"+str(parNum),d_operator.__name__)
 
         self.d_count[destroy] += 1
 
@@ -73,7 +75,7 @@ class ALNS:
         end_time = time.perf_counter()
         print("destroy used time", str(end_time - start_time))
         candidate_route_plan.updateObjective(self.iterationNum, iterations)
-        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
+        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
         return candidate_route_plan, destroy, repair
 
@@ -90,10 +92,24 @@ class ALNS:
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
 
-            #Select destroy method 
-            results = process_parallel(self.doIteration, function_kwargs={}, jobs=[candidate_route_plan, candidate_route_plan],  )
-            candidate_route_plan, destroy, repair = self.doIteration(candidate_route_plan)
-            
+            #Kjører paralelt. 
+            results = process_parallel(self.doIteration, function_kwargs={}, jobs=[(candidate_route_plan, 1) ,(candidate_route_plan,2)], mp_config=self.mp_config)
+            print("FERDIG PARALELLPROSSESERING", results)
+            candidate_route_plan1, destroy1, repair1 = results[0]
+            candidate_route_plan2, destroy2, repair2 = results[1]
+
+            if checkCandidateBetterThanBest(candidate_route_plan2.objective, candidate_route_plan1.objective): 
+                candidate_route_plan = candidate_route_plan2
+                destroy = destroy2
+                repair = repair2
+
+            else: 
+                candidate_route_plan = candidate_route_plan1
+                destroy = destroy1
+                repair = repair1
+
+
+
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
@@ -187,7 +203,8 @@ class ALNS:
 
     # Select destroy/repair operator
     @staticmethod
-    def select_operator(operators, weights, rnd_state):
+    def select_operator(operators, weights):
+        rnd_state = rnd.RandomState() #Usikker på om dette blir riktig, 
         w = weights / np.sum(weights)
         a = [i for i in range(len(operators))]
         return rnd_state.choice(a=a, p=w)
@@ -195,7 +212,7 @@ class ALNS:
     # Evaluate candidate
     def evaluate_candidate(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
         # If solution is accepted by criterion (simulated annealing)
-        if criterion.accept_criterion(self.rnd_state, current_route_plan.objective, candidate_route_plan.objective):
+        if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
                 weight_score = weight_scores[0]

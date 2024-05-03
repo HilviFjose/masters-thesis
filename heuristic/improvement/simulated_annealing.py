@@ -1,5 +1,6 @@
 import numpy as np
 from helpfunctions import *
+import numpy.random as rnd
 
 class SimulatedAnnealing:
     def __init__(self, start_temperature, end_temperature, cooling_rate):
@@ -9,7 +10,8 @@ class SimulatedAnnealing:
         self.temperature = start_temperature
 
     # Simulated annealing acceptance criterion
-    def accept_criterion(self, random_state, current_objective, candidate_objective):
+    def accept_criterion(self, current_objective, candidate_objective):
+        random_state = rnd.RandomState()
         accept = False
         # Always accept better solution
         if checkCandidateBetterThanBest(candidate_objective, current_objective):
