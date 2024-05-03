@@ -1,7 +1,7 @@
 # ANTIBIOTICS INFUSION CASE
 # -------------------------
 # PATIENTS
-P_num = 75                                          # Number of patients
+P_num = 20                                          # Number of patients
 
 # Patient demographics
 clinicDistribution = [0.14, 0.45, 0.21, 0.20]         # Cancer, Medical, Orthopaedic, Paediatric
