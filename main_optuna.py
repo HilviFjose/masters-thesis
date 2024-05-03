@@ -34,13 +34,14 @@ def main():
     folder_name = f"results-{date_time_str}"
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
-
+    
+    iterations = num_iterations
     #CONSTRUCTION HEURISTIC
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
-    iterations = num_iterations
+    
     constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")
     
