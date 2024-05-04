@@ -74,4 +74,4 @@ modNum_for_better_insertion = math.ceil(iterations*frequecy_of_better_insertion)
 
 
 #Number of paralell processes 
-num_of_paralell_iterations = 2
+num_of_paralell_iterations = 3

@@ -12,7 +12,7 @@ from heuristic.improvement.alns import ALNS
 from heuristic.improvement.operator.destroy_operators import DestroyOperators
 from heuristic.improvement.operator.repair_operators import RepairOperators
 from heuristic.improvement.local_search import LocalSearch
-from multipro import setup
+from multipro import setup, process_parallel
 
 import cProfile
 import pstats
@@ -22,6 +22,7 @@ def main():
     #TODO: Burde legge til sånn try og accept kriterier her når vi er ferdig. Men Bruker ikke det enda fordi letter å jobbe uten
 
     mp_config = setup(3,2,3)
+
     #INPUT DATA
     df_employees = parameters.df_employees
     df_patients = parameters.df_patients
@@ -36,14 +37,21 @@ def main():
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
-    #CONSTRUCTION HEURISTIC
+    
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")
+    #CONSTRUCTION HEURISTIC NORMAL
+    '''
     constructor.construct_initial()
+    '''
+
+    #PARALELL CONSTUCTION 
+    constructor.route_plans = process_parallel(constructor.construct_simple_initial, function_kwargs={} , jobs=[], mp_config= mp_config, paralellNum=num_of_constructions)
+    constructor.setBestRoutePlan
     
     constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")
-    
+
     initial_route_plan = constructor.route_plan 
     print('Allocated patients in initial solution',len(constructor.route_plan.allocatedPatients.keys()))
     print('First objective in initial solution',constructor.route_plan.objective)

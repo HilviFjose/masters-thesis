@@ -3,7 +3,7 @@ import multiprocessing as mp
 from typing import Callable
 from config.main_config import num_of_paralell_iterations
 
-def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list, mp_config: dict, profile = False):
+def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list, mp_config: dict, paralellNum: int, profile = False):
     """Processes a set of jobs in parallel
 
     Args:
@@ -19,7 +19,7 @@ def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list,
 
     #if parallel:
     #n_processes = mp_config['max_processes']
-    n_processes = num_of_paralell_iterations 
+    n_processes = paralellNum 
     avg_length = len(jobs) // n_processes
     remainder = len(jobs) % n_processes
 
@@ -33,7 +33,38 @@ def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list,
         result = res.get()
         results = [item for sublist in result for item in sublist]
         return results
-    
+'''  
+def process_parallel_withFullCpu(job_processor: Callable, function_kwargs: dict, jobs: list, mp_config: dict, paralellNum: int, profile = False):
+    """Processes a set of jobs in parallel
+
+    Args:
+        job_processor (Callable): The function used to process jobs
+        function_kwargs (dict): Arguments to pass to job_processor
+        jobs (list): Jobs to be processed
+        mp_config (dict): Multiprocessing config
+
+    Returns:
+        list: List of results of processed jobs
+    """
+    #parallel, n_processes = process_in_parallel(n_jobs=len(jobs), **mp_config)
+
+    #if parallel:
+    #n_processes = mp_config['max_processes']
+    n_processes = paralellNum 
+    avg_length = len(jobs) // n_processes
+    remainder = len(jobs) % n_processes
+
+    workloads = [jobs[i * avg_length + min(i, remainder):(i + 1) * avg_length + min(i + 1, remainder)] for i in range(n_processes)]
+
+    arg_tuples = [(job_processor, workloads[i], function_kwargs) for i in range(n_processes)]
+
+    with mp.Pool(processes=n_processes) as pool:
+        res = pool.starmap_async(function_wrapper, arg_tuples)
+        res.wait()
+        result = res.get()
+        results = [item for sublist in result for item in sublist]
+        return results
+'''     
 def setup(t0: float, tn: float, tj: float) -> dict:
     """Sets up multiprocessing
 
