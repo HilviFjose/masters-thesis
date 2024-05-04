@@ -1,6 +1,6 @@
 import numpy as np
 from helpfunctions import *
-import numpy.random as rnd 
+import numpy.random as rnd
 
 class SimulatedAnnealing:
     def __init__(self, start_temperature, end_temperature, cooling_rate):

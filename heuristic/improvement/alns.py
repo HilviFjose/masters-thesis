@@ -4,11 +4,17 @@ import copy
 from tqdm import tqdm 
 from helpfunctions import *
 import time 
+from heuristic.improvement.operator.destroy_operators import DestroyOperators
+from heuristic.improvement.operator.repair_operators import RepairOperators
+from multipro import process_parallel
+
+
 from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, iteration_update, current_route_plan, criterion, constructor): 
+    def __init__(self,weights, reaction_factor, current_route_plan, criterion,
+                     constructor, mp_config): 
         self.destroy_operators = []
         self.repair_operators = []
 
@@ -24,7 +30,57 @@ class ALNS:
         self.weight_score_best = weight_score_best
         self.reaction_factor = reaction_factor
         self.local_search_req = local_search_req
-        self.iterations_update = iteration_update
+        self.iterationNum = 0
+        self.weight_scores = weights
+
+        
+
+        destroy_operators = DestroyOperators(self)
+        repair_operators = RepairOperators(self)
+        self.set_operators(destroy_operators, repair_operators)
+
+        self.d_weights = np.ones(len(self.destroy_operators), dtype=np.float16)
+        self.r_weights = np.ones(len(self.repair_operators), dtype=np.float16)
+        self.d_scores = np.ones(len(self.destroy_operators), dtype=np.float16)
+        self.r_scores = np.ones(len(self.repair_operators), dtype=np.float16)
+        # Kan ikke count bare være at vi hver 10 iterasjon eller noe oppdaterer?
+        self.d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
+        self.r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
+
+        self.mp_config = mp_config
+
+
+        
+    def doIteration(self, input_tuple): 
+        candidate_route_plan = input_tuple[0]
+        parNum = input_tuple[1]
+        destroy = self.select_operator(self.destroy_operators, self.d_weights)
+           
+        # Select repair method
+        repair = self.select_operator(self.repair_operators, self.r_weights)
+        
+        #Destroy solution 
+        d_operator = self.destroy_operators[destroy]
+
+        candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
+
+        candidate_route_plan.updateObjective(self.iterationNum, iterations)
+        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy_parallel_"+str(parNum),d_operator.__name__)
+
+        self.d_count[destroy] += 1
+
+        # Repair solution
+        
+        r_operator = self.repair_operators[repair]
+        print("repair operator", r_operator.__name__)
+        start_time = time.perf_counter()
+        candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, iterations)
+        end_time = time.perf_counter()
+        print("destroy used time", str(end_time - start_time))
+        candidate_route_plan.updateObjective(self.iterationNum, iterations)
+        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
+        self.r_count[repair] += 1
+        return candidate_route_plan, destroy, repair
 
 
         
@@ -40,47 +96,38 @@ class ALNS:
         d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
-        for i in tqdm(range(iterations), colour='#39ff14'):
+        for i in tqdm(range(num_iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
 
-            #Select destroy method 
-            destroy = self.select_operator(self.destroy_operators, d_weights)
-           
-            # Select repair method
-            repair = self.select_operator(self.repair_operators, r_weights)
+            self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
+
+            #Kjører paralelt. 
+            '''
+            results = process_parallel(self.doIteration, function_kwargs={}, jobs=[(candidate_route_plan, 1) ,(candidate_route_plan,2)], mp_config=self.mp_config)
+            print("FERDIG PARALELLPROSSESERING", results)
+            candidate_route_plan1, destroy1, repair1 = results[0]
+            candidate_route_plan2, destroy2, repair2 = results[1]
             
-            #Destroy solution 
-            d_operator = self.destroy_operators[destroy]
-
-            self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
-            #print("destroy operator", d_operator.__name__)
-            #start_time = time.perf_counter()
-            candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
-            #end_time = time.perf_counter()
-            #print("destroy used time", str(end_time - start_time))  
-            candidate_route_plan.updateObjective(self.iterationNum, iterations)
-            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
-
-            if not destroyed:
-                break
-
-            d_count[destroy] += 1
-
-            # Repair solution
-            
-            r_operator = self.repair_operators[repair]
-            #print("repair operator", r_operator.__name__)
-            #start_time = time.perf_counter()
-            candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, iterations)
-            #end_time = time.perf_counter()
-            #print("destroy used time", str(end_time - start_time))
-            candidate_route_plan.updateObjective(self.iterationNum, iterations)
-            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
-            r_count[repair] += 1
 
             
+
+            if checkCandidateBetterThanBest(candidate_route_plan2.objective, candidate_route_plan1.objective): 
+                candidate_route_plan = candidate_route_plan2
+                destroy = destroy2
+                repair = repair2
+
+            else: 
+                candidate_route_plan = candidate_route_plan1
+                destroy = destroy1
+                repair = repair1
+
+            '''
+
+            #Kjøre uten parallel 
+            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
+
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, iterations)
@@ -103,25 +150,25 @@ class ALNS:
                 self.best_route_plan, self.current_route_plan, weight_score = self.evaluate_candidate(
                     self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
                 # Update scores
-                d_scores[destroy] += weight_score
-                r_scores[repair] += weight_score
+                self.d_scores[destroy] += weight_score
+                self.r_scores[repair] += weight_score
             
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
             if (i+1)* self.iterations_update == 0:
                 # Update weights with scores
-                for destroy in range(len(d_weights)):
-                    if d_count[destroy] != 0: 
-                        d_weights[destroy] = d_weights[destroy] * (1 - self.reaction_factor) + (self.reaction_factor * d_scores[destroy] / d_count[destroy])
-                for repair in range(len(r_weights)):
-                    if r_count[repair] != 0: 
-                        r_weights[repair] = r_weights[repair] * (1 - self.reaction_factor) + (self.reaction_factor * r_scores[repair] / r_count[repair])
+                for destroy in range(len(self.d_weights)):
+                    if self.d_count[destroy] != 0: 
+                        self.d_weights[destroy] = self.d_weights[destroy] * (1 - self.reaction_factor) + (self.reaction_factor * self.d_scores[destroy] / self.d_count[destroy])
+                for repair in range(len(self.r_weights)):
+                    if self.r_count[repair] != 0: 
+                        self.r_weights[repair] = self.r_weights[repair] * (1 - self.reaction_factor) + (self.reaction_factor * self.r_scores[repair] / self.r_count[repair])
 
                 # Reset scores
-                d_scores = np.ones(
+                self.d_scores = np.ones(
                     len(self.destroy_operators), dtype=np.float16)
-                r_scores = np.ones(
+                self.r_scores = np.ones(
                     len(self.repair_operators), dtype=np.float16)
                 
             # Do local search to local optimum before returning last iteration
@@ -176,6 +223,8 @@ class ALNS:
     @staticmethod
     def select_operator(operators, weights):
         rnd_state = rnd.RandomState()
+    def select_operator(operators, weights):
+        rnd_state = rnd.RandomState() #Usikker på om dette blir riktig, 
         w = weights / np.sum(weights)
         a = [i for i in range(len(operators))]
         return rnd_state.choice(a=a, p=w)
@@ -183,7 +232,7 @@ class ALNS:
     # Evaluate candidate
     def evaluate_candidate(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
         # If solution is accepted by criterion (simulated annealing)
-        if criterion.accept_criterion(current_route_plan.objective, candidate_route_plan.objective):
+        if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
                 weight_score = self.weight_score_better
