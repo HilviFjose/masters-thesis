@@ -57,8 +57,6 @@ class ALNS:
         #Destroy solution 
         d_operator = self.destroy_operators[destroy]
 
-        self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy_parallel_"+str(parNum), d_operator.__name__)
-
         candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
 
         candidate_route_plan.updateObjective(self.iterationNum, iterations)
@@ -92,11 +90,17 @@ class ALNS:
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
 
+            self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
+
             #Kjører paralelt. 
+            '''
             results = process_parallel(self.doIteration, function_kwargs={}, jobs=[(candidate_route_plan, 1) ,(candidate_route_plan,2)], mp_config=self.mp_config)
             print("FERDIG PARALELLPROSSESERING", results)
             candidate_route_plan1, destroy1, repair1 = results[0]
             candidate_route_plan2, destroy2, repair2 = results[1]
+            
+
+            
 
             if checkCandidateBetterThanBest(candidate_route_plan2.objective, candidate_route_plan1.objective): 
                 candidate_route_plan = candidate_route_plan2
@@ -108,7 +112,10 @@ class ALNS:
                 destroy = destroy1
                 repair = repair1
 
+            '''
 
+            #Kjøre uten parallel 
+            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 print("Solution promising. Doing local search.")
