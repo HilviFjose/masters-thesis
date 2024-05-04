@@ -13,8 +13,8 @@ from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self,weights, reaction_factor, current_route_plan, criterion,
-                     constructor, mp_config): 
+    def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, 
+                 reaction_factor, local_search_req, current_route_plan, criterion, constructor, mp_config): 
         self.destroy_operators = []
         self.repair_operators = []
 
@@ -31,8 +31,6 @@ class ALNS:
         self.reaction_factor = reaction_factor
         self.local_search_req = local_search_req
         self.iterationNum = 0
-        self.weight_scores = weights
-
         
 
         destroy_operators = DestroyOperators(self)
@@ -96,7 +94,7 @@ class ALNS:
         d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
-        for i in tqdm(range(num_iterations), colour='#39ff14'):
+        for i in tqdm(range(iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
