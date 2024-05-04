@@ -41,13 +41,15 @@ def main():
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")
     #CONSTRUCTION HEURISTIC NORMAL
-    '''
+    
     constructor.construct_initial()
     '''
 
     #PARALELL CONSTUCTION 
-    constructor.route_plans = process_parallel(constructor.construct_simple_initial, function_kwargs={} , jobs=[], mp_config= mp_config, paralellNum=num_of_constructions)
+    constructor.route_plans = process_parallel(constructor.construct_simple_initial, function_kwargs={} , jobs=[1 for a in range(num_of_constructions)], mp_config= mp_config, paralellNum=num_of_constructions)
+    print(constructor.route_plans)
     constructor.setBestRoutePlan
+    '''
     
     constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")

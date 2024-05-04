@@ -38,7 +38,7 @@ class ConstructionHeuristic:
     Dersom pasientne allokeres legges nå alle de tilhørende treatments, visits og aktiviteter til 
     '''
  
-    def construct_simple_initial(self): 
+    def construct_simple_initial(self, a): 
         route_plan = RoutePlan(self.days, self.employees_df, self.folder_name)
         #Lager en liste med pasienter i prioritert rekkefølge. 
         unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
