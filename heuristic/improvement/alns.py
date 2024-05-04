@@ -8,11 +8,9 @@ from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, iteration_update, current_route_plan, criterion, constructor, rnd_state=rnd.RandomState()): 
+    def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, iteration_update, current_route_plan, criterion, constructor): 
         self.destroy_operators = []
         self.repair_operators = []
-
-        self.rnd_state = rnd_state
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
         self.best_route_plan = copy.deepcopy(current_route_plan)
@@ -48,10 +46,10 @@ class ALNS:
             already_found = False
 
             #Select destroy method 
-            destroy = self.select_operator(self.destroy_operators, d_weights, self.rnd_state)
+            destroy = self.select_operator(self.destroy_operators, d_weights)
            
             # Select repair method
-            repair = self.select_operator(self.repair_operators, r_weights, self.rnd_state)
+            repair = self.select_operator(self.repair_operators, r_weights)
             
             #Destroy solution 
             d_operator = self.destroy_operators[destroy]
@@ -176,7 +174,8 @@ class ALNS:
 
     # Select destroy/repair operator
     @staticmethod
-    def select_operator(operators, weights, rnd_state):
+    def select_operator(operators, weights):
+        rnd_state = rnd.RandomState()
         w = weights / np.sum(weights)
         a = [i for i in range(len(operators))]
         return rnd_state.choice(a=a, p=w)
@@ -184,7 +183,7 @@ class ALNS:
     # Evaluate candidate
     def evaluate_candidate(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
         # If solution is accepted by criterion (simulated annealing)
-        if criterion.accept_criterion(self.rnd_state, current_route_plan.objective, candidate_route_plan.objective):
+        if criterion.accept_criterion(current_route_plan.objective, candidate_route_plan.objective):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
                 weight_score = self.weight_score_better

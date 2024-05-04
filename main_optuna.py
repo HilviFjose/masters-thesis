@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy.random as rnd
 import os
 import sys
 
@@ -18,7 +17,6 @@ from pstats import SortKey
 from functools import partial
 
 import optuna
-print(optuna.__version__)
 
 def main():
     #INPUT DATA
@@ -60,7 +58,7 @@ def main():
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
     alns = setup_alns(weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
-                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, rnd_state=rnd.RandomState()) 
+                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor) 
 
     destroy_operators = DestroyOperators(alns)
     repair_operators = RepairOperators(alns)
@@ -74,18 +72,17 @@ def main():
     best_route_plan.printSolution("final", "no operator")
 
     objective_func = partial(objective, initial_route_plan, criterion, constructor)
-
+  
     #Run optuna
     study = optuna.create_study(direction='maximize')
     study.optimize(objective_func, n_trials=50)
     print("Best parameters:", study.best_trial.params)
-   
 
 def setup_alns(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, 
-                iteration_update, current_route_plan, criterion, constructor, rnd_state):
+                iteration_update, current_route_plan, criterion, constructor):
     # Configuration code here
     alns = ALNS(weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, reaction_factor, local_search_req, 
-                iteration_update, current_route_plan, criterion, constructor, rnd_state)
+                iteration_update, current_route_plan, criterion, constructor)
     return alns
 
 def run_alns(alns, iterations):
@@ -104,7 +101,7 @@ def objective(route_plan, criterion, constructor, trial):
 
     # Configure and run ALNS
     alns = setup_alns(weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval, reaction_factor_interval, local_search_req_interval, 
-                iterations_update_interval, route_plan, criterion, constructor, rnd_state=rnd.RandomState())
+                iterations_update_interval, route_plan, criterion, constructor)
     result = run_alns(alns, iterations) 
 
     return result.objective_score  # Objective to minimize
