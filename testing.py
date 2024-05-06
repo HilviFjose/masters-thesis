@@ -7,6 +7,7 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..'))  # Include subfo
 from config.main_config import *
 import parameters
 import pandas as pd
+from main import folder_name
 
 df_employees = parameters.df_employees
 df_patients = parameters.df_patients
@@ -223,7 +224,6 @@ def check_objective(file_path):
     return status
 
 
-
 def check_precedence_within_file(file):
     status1 = True
     status2a = True
@@ -357,11 +357,11 @@ def check_precedence_within_file(file):
 
 # Example usage
 username = 'hilvif'
-file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initial.txt'  # Replace with the actual path to your first file
-file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
+file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\initial.txt'  # Replace with the actual path to your first file
+file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\initialLS.txt'  # Replace with the actual path to your first file
 #file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\0before_iteration.txt'  # Replace with the actual path to your first file
-file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\results\\final.txt'  # Replace with the actual path to your second file
+file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\final.txt'  # Replace with the actual path to your second file
 file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"] 
 
 status1 = compare_dictionary_with_candidate(file_path_1)

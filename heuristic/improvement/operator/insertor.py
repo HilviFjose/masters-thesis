@@ -120,7 +120,6 @@ class Insertor:
         activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
         activitiesList = self.constructor.visits_array[visit][activitiesIds_index]
         test_route_plan = copy.deepcopy(self.route_plan)
-
         
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         activity = activities[0]
@@ -194,7 +193,8 @@ class Insertor:
         self.InsertionFound_BetterInsertVisitWitLim = False 
         self.betterInsertVisit_explored_branches = 0 
 
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
+        activitiesList = self.constructor.visits_array[visit][activitiesIds_index]
         test_route_plan = copy.deepcopy(self.route_plan)
 
         
@@ -217,9 +217,6 @@ class Insertor:
                 else: 
                     break
         
-        #print("visit", visit)
-        #print("self.betterInsertVisit_explored_branches2", self.betterInsertVisit_explored_branches)
-        #print("self.InsertionFound_BetterInsertVisitWitLim", self.InsertionFound_BetterInsertVisitWitLim)
         return self.InsertionFound_BetterInsertVisitWitLim
 
 

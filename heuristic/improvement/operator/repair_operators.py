@@ -53,7 +53,8 @@ class RepairOperators:
         if current_iteration % main_config.modNum_for_better_insertion == 0: 
             print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
             repair_insertor_level = main_config.better_repair_insertor
-        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
+        utility_index = self.constructor.patients_array[0].tolist().index('utility')
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][utility_index] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
 
         for patient in descendingUtilityNotAllocatedPatients: 
@@ -136,7 +137,8 @@ class RepairOperators:
         if current_iteration % main_config.modNum_for_better_insertion == 0: 
             print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
             repair_insertor_level = main_config.better_repair_insertor
-        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
+        pComplexity_index = self.constructor.patients_array[0].tolist().index('p_complexity')
+        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][pComplexity_index] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get, reverse=True)
         
         for patient in descendingComplexityNotAllocatedPatients: 
@@ -234,9 +236,8 @@ class RepairOperators:
                 #Steg 1 - Slette i illegal listene 
                 del repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activityID]
                 
-                for visit in self.constructor.visits_array:
+                for visit in range(1, len(self.constructor.visits_array)):
                     activitiesIds_index =  self.constructor.visits_array[0].tolist().index('activitiesIds')
-                    print("activitiesIds_index", activitiesIds_index)
                     if activityID in self.constructor.visits_array[visit][activitiesIds_index]: 
                         break
 
@@ -262,10 +263,8 @@ class RepairOperators:
                 del repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit]
 
                 #Legger til visitet på treatmenten. Vet at treatmenten ligger inne, for hvis ikke så ville ikke visitet vært illegal 
-                for treatment in self.constructor.treatments_array:
+                for treatment in range(1, len(self.constructor.treatments_array)):
                     visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
-                    print("treatment", treatment)
-                    print("visitsIds_index",visitsIds_index)
                     if visit in self.constructor.treatments_array[treatment][visitsIds_index]: 
                         break
 
@@ -294,7 +293,7 @@ class RepairOperators:
                 repaired_route_plan.illegalNotAllocatedTreatments.remove(treatment)
                 
                 #Legger til treatmenten på pasienten. Vet at pasienten allerede ligger inne, for hvis ikke ville ikke treatmenten i utgnaspunktet vært illegal 
-                for patient_id in range(len(self.constructor.patients_array)):
+                for patient_id in range(1, len(self.constructor.patients_array)):
                     treatmentIds_index =  self.constructor.patients_array[0].tolist().index('treatmentsIds')
                     if treatment in self.constructor.patients_array[patient_id][treatmentIds_index]: 
                         break
