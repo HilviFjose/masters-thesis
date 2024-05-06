@@ -95,7 +95,7 @@ class ALNS:
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
 
             #Kjører paralelt. 
-            
+            '''
             jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
             
             results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
@@ -107,13 +107,13 @@ class ALNS:
             #Kjøre uten parallel 
             '''
             candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
-            '''
+            
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 #Uten parallell 
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
-                '''
+                
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
 
@@ -126,7 +126,7 @@ class ALNS:
                 for day in range(1, days+1): 
                     candidate_route_plan.routes[day] = results[day-1].routes[day]
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
-                
+                '''
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             #TODO: Skal final candiate printes lenger nede? 
             if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():
