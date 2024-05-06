@@ -109,8 +109,8 @@ class ALNS:
            
             #Kjøre uten parallel 
             
-           
-            
+
+            candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                  

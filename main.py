@@ -29,7 +29,7 @@ def main():
     df_treatments = parameters.df_treatments
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
-
+    '''
     # CREATE RESULTS FOLDER
     current_datetime = datetime.now()
     date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
@@ -37,6 +37,18 @@ def main():
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
+    '''
+    # Specify the parent folder
+    parent_folder = "results"
+
+    # Create a folder with current date and time inside the parent folder
+    current_datetime = datetime.now()
+    date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+    folder_name = f"{parent_folder}-{date_time_str}"
+
+    folder_path = os.path.join(parent_folder, folder_name)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")
