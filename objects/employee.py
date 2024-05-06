@@ -46,10 +46,4 @@ class Employee:
     def getShiftEnd(self, day):  
         return self.shifts[day]["endShift"]
     
-    def getSkillLevel(self): 
-        return self.skillLevel
-    
-    def getID(self): 
-        return self.id
-
-
+   

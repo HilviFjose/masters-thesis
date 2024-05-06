@@ -2,6 +2,7 @@ import pandas as pd
 import numpy.random as rnd
 import os
 import sys
+from datetime import datetime
 
 import parameters
 from config.main_config import *
@@ -26,14 +27,22 @@ def main():
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
 
-    employees_container = parameters.employees__information_array
+    employees_container = parameters.employees_information_array
     patients_container = parameters.patients_information_array
     treatments_containter = parameters.treatments_information_array
     visits_container = parameters.visits_information_array
     activities_container = parameters.activities_information_array
 
+    # CREATE RESULTS FOLDER
+    current_datetime = datetime.now()
+    date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+    folder_name = f"results-{date_time_str}"
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
     #CONSTRUCTION HEURISTIC
-    constructor = ConstructionHeuristic(df_activities, employees_container, patients_container, treatments_containter, visits_container, 5)
+    constructor = ConstructionHeuristic(activities_container, employees_container, patients_container, treatments_containter, visits_container, 5, folder_name)
+    
     print("Constructing Initial Solution")
     constructor.construct_initial()
     
@@ -49,14 +58,15 @@ def main():
 
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
-    criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
+    #criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
+    criterion = SimulatedAnnealing(sim_annealing_diff, prob_of_choosing, rate_T_start_end)
 
     localsearch = LocalSearch(initial_route_plan, 1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan = localsearch.do_local_search()
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion, destruction_degree, constructor, rnd_state=rnd.RandomState())
+    alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion,  constructor, rnd_state=rnd.RandomState())
 
     destroy_operators = DestroyOperators(alns)
     repair_operators = RepairOperators(alns)

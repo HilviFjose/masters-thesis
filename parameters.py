@@ -1,7 +1,6 @@
 import pandas as pd
 import os
-import pickle
-import numpy as np
+
 
 #ANTIBIOTICS CASE
 print("ANTIBIOTICS DATA")
@@ -9,6 +8,8 @@ from datageneration.employeeGenerationAntibiotics import *
 from datageneration.patientGenerationAntibiotics import *
 from config.construction_config_antibiotics import *
 '''
+
+#TODO: Complexity er ikke dobbeltsjekket i infusion casen, så dobbelt sjekk at denne gir comlexity verdier som virker troverdige
 #INFUSION THERAPY CASE
 print("INFUSION DATA")
 from datageneration.employeeGenerationInfusion import *
@@ -55,6 +56,7 @@ def load_array_from_pickle(filepath):
 
 
 # DATA GENERATION
+
 """
 #df_employees = employeeGeneration.employeeGenerator()      # For Night, Day and Evening shifts
 df_employees = employeeGeneratorOnlyDay()                   # For day shifts
@@ -79,14 +81,6 @@ df_patients.to_pickle(os.path.join(os.getcwd(), 'data', 'patients.pkl'))
 df_treatments.to_pickle(os.path.join(os.getcwd(), 'data', 'treatments.pkl'))
 df_visits.to_pickle(os.path.join(os.getcwd(), 'data', 'visits.pkl'))
 df_activities.to_pickle(os.path.join(os.getcwd(), 'data', 'activities.pkl'))
-
-# Convert and save as lists
-save_df_as_array(df_employees, list_paths['employees'])
-save_df_as_array(df_patients, list_paths['patients'])
-save_df_as_array(df_treatments, list_paths['treatments'])
-save_df_as_array(df_visits, list_paths['visits'])
-save_df_as_array(df_activities, list_paths['activities'])
-
 """
 #RE-USE GENERATED DATA
 file_path_employees = os.path.join(os.getcwd(), 'data', 'employees.pkl')

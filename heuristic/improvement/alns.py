@@ -3,13 +3,15 @@ import numpy as np
 import copy
 from tqdm import tqdm 
 from helpfunctions import *
+import time 
+
 
 from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
     def __init__(self,weights, reaction_factor, current_route_plan, criterion,
-                    destruction_degree, constructor, rnd_state=rnd.RandomState()): 
+                     constructor, rnd_state=rnd.RandomState()): 
         self.destroy_operators = []
         self.repair_operators = []
 
@@ -18,12 +20,13 @@ class ALNS:
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
         self.best_route_plan = copy.deepcopy(current_route_plan)
-        self.destruction_degree = destruction_degree
         self.criterion = criterion
         self.constructor = constructor
         self.local_search_req = local_search_req
         self.iterationNum = 0
         self.weight_scores = weights
+
+        
         
         
     def iterate(self, num_iterations):
@@ -53,8 +56,11 @@ class ALNS:
             d_operator = self.destroy_operators[destroy]
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", d_operator.__name__)
-            #print("destroy operator", d_operator.__name__)
-            candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan)   
+            print("destroy operator", d_operator.__name__)
+            #start_time = time.perf_counter()
+            candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
+            #end_time = time.perf_counter()
+            #print("destroy used time", str(end_time - start_time))  
             candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy",d_operator.__name__)
 
@@ -64,9 +70,13 @@ class ALNS:
             d_count[destroy] += 1
 
             # Repair solution
+            
             r_operator = self.repair_operators[repair]
-            #print("repair operator", r_operator.__name__)
+            print("repair operator", r_operator.__name__)
+            #start_time = time.perf_counter()
             candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, num_iterations)
+            #end_time = time.perf_counter()
+            #print("destroy used time", str(end_time - start_time))
             candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair", r_operator.__name__)
             r_count[repair] += 1
@@ -146,10 +156,10 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.related_patients_removal)
         #self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
-        
+
         # Add repair operators
         self.add_repair_operator(repair_operators.greedy_repair)
-        self.add_repair_operator(repair_operators.random_repair)
+        #self.add_repair_operator(repair_operators.random_repair)
         self.add_repair_operator(repair_operators.complexity_repair)
         self.add_repair_operator(repair_operators.regret_k_repair)
 

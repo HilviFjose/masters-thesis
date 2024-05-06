@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import math
 
 #TODO: Endre til verdier som er riktige for oss. Hentet fra Anna
 #Denne fila inneholder variabler som brukes i ALNSen
@@ -7,7 +8,7 @@ from datetime import datetime, timedelta
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 10
+iterations = 100
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -16,12 +17,18 @@ local_search_req = 0.02
 k = 3
 
 #The amount of activities to remove in destroy operators
-destruction_degree = 0.4
+#destruction_degree = 0.4
+destruction_degree_beginning = 0.4
+destruction_degree_end = 0.2
 
 # Simulated annealing temperatures -- TODO: these must be tuned
-start_temperature = 60
-end_temperature = 10
-cooling_rate = 0.96
+#start_temperature = 60
+#end_temperature = 10
+#cooling_rate = 0.96
+
+sim_annealing_diff = 0.05
+prob_of_choosing = 0.5 
+rate_T_start_end = 0.2 
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
@@ -53,5 +60,6 @@ days = 5
 
 #Depot
 depot = (59.9365, 10.7396)
+
 #Number of constructed solutions 
-num_of_constructions = 1
+num_of_constructions = 10

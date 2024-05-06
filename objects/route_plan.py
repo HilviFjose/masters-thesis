@@ -13,10 +13,10 @@ from config.main_config import depot
 from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
 from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
 
-
 class RoutePlan:
-    def __init__(self, days, employees_array):
-        self.employees_array = employees_array
+    def __init__(self, days, employees_array, folder_name):
+        self.employees_array= employees_array
+        self.folder_name = folder_name
         
         employee_skills = {} # For å holde styr på ansattes ferdigheter
 
@@ -41,7 +41,6 @@ class RoutePlan:
 
         #OBS: Jeg forstår ikke hvorfor denne er slik: 
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
-        
         
         self.objective = [0,0,0,0]
         self.weeklyHeaviness = 0
@@ -178,8 +177,6 @@ class RoutePlan:
                         original_day = day
         return original_day
 
-    def getRoutePlan(self): 
-        return self.routes
     
     def printDictionaryTest(self, txtName):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
@@ -208,7 +205,7 @@ class RoutePlan:
     def printSolution(self, txtName, operator_string, current_iteration = None):
         #SKRIV TIL FIL I STEDET FOR TERMINAL
         # Åpne filen for å skrive
-        with open(r"results\\" + txtName + ".txt", "w") as log_file:
+        with open(os.path.join(self.folder_name, txtName + ".txt"), "w") as log_file:
             # Omdiriger sys.stdout til filen
             original_stdout = sys.stdout
             sys.stdout = log_file
@@ -406,6 +403,7 @@ class RoutePlan:
         daily_heaviness_within_group = {}
 
         for day in range(1, self.days +1):
+            num_employee_with_profession_on_day = {}
             for route in self.routes[day].values():
                 profession = route.skillLev
                 if profession not in daily_heaviness_within_group:
@@ -418,13 +416,19 @@ class RoutePlan:
                 else:
                     daily_heaviness_within_group[profession][day] += route.calculateTotalHeaviness()
                 
+                if profession not in num_employee_with_profession_on_day.keys(): 
+                    num_employee_with_profession_on_day[profession] = 0 
+
+                num_employee_with_profession_on_day[profession] += 1  
+                
                 #print(f'Profession {profession} day {day}: {daily_heaviness_within_group[profession][day]}')
             
             # Finnes gjennomsnittlig 'heaviness' for hver profesjon basert på antall ansatte som jobber de ulike dagene.
-            num_employees_day = len(self.routes[day].values()) 
+            #num_employees_day = len(self.routes[day].values()) 
+    
             for profession in daily_heaviness_within_group.keys():
                 if day in daily_heaviness_within_group[profession]:
-                    daily_heaviness_within_group[profession][day] /= num_employees_day
+                    daily_heaviness_within_group[profession][day] /= num_employee_with_profession_on_day[profession]
 
         # Kalkulerer differansen mellom maks og min 'heaviness' for hver profession level
         weekly_diffs = []
@@ -499,11 +503,8 @@ class RoutePlan:
                 for routeActivity in route.route: 
                     self.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
                 return status
-        
-    def getObjective(self): 
-        return self.objective
-    
-  
+
+
 
     def updateActivityBasedOnRoutePlanOnDay(self, activity,day):
         '''
@@ -512,8 +513,8 @@ class RoutePlan:
         '''    
 
         #Her håndteres pick up and delivery
-        if activity.getPickUpActivityID() != 0 : 
-            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.getPickUpActivityID(), day)
+        if activity.pickUpActivityID != 0 : 
+            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.pickUpActivityID, day)
             activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
             
         #Her håndteres presedens.   
@@ -523,27 +524,27 @@ class RoutePlan:
             
             prevNodeAct = self.getActivity(prevNodeID, day)
             if prevNodeAct != None:
-                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.getDuration(), prevNodeID)
+                activity.setNewEarliestStartTime(prevNodeAct.startTime + prevNodeAct.duration, prevNodeID)
 
         for nextNodeID in activity.NextNode: 
             nextNodeAct = self.getActivity(nextNodeID, day)
             if nextNodeAct != None:
-                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.getDuration(), nextNodeID)
+                activity.setNewLatestStartTime(nextNodeAct.startTime - activity.duration, nextNodeID)
         
         #Her håndteres presedens med tidsvindu
         #aktivitetens latest start time oppdateres til å være seneste starttidspunktet til presedensnoden
         for PrevNodeInTimeID in activity.PrevNodeInTime: 
             prevNodeAct = self.getActivity(PrevNodeInTimeID[0], day)
             if prevNodeAct != None:
-                activity.setNewLatestStartTime(prevNodeAct.getStartTime()+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
-                activity.setNewEarliestStartTime(prevNodeAct.getStartTime() + prevNodeAct.duration, PrevNodeInTimeID[0])
+                activity.setNewLatestStartTime(prevNodeAct.startTime+ prevNodeAct.duration + PrevNodeInTimeID[1], PrevNodeInTimeID[0])
+                activity.setNewEarliestStartTime(prevNodeAct.startTime + prevNodeAct.duration, PrevNodeInTimeID[0])
 
 
         for NextNodeInTimeID in activity.NextNodeInTime: 
             nextNodeAct = self.getActivity(NextNodeInTimeID[0], day)
             if nextNodeAct != None:
-                activity.setNewEarliestStartTime(nextNodeAct.getStartTime() - NextNodeInTimeID[1], NextNodeInTimeID[0])
-                activity.setNewLatestStartTime(nextNodeAct.getStartTime() - activity.duration, NextNodeInTimeID[0])
+                activity.setNewEarliestStartTime(nextNodeAct.startTime - NextNodeInTimeID[1], NextNodeInTimeID[0])
+                activity.setNewLatestStartTime(nextNodeAct.startTime - activity.duration, NextNodeInTimeID[0])
 
 
         
