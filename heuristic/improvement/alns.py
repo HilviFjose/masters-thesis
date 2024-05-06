@@ -93,6 +93,9 @@ class ALNS:
             already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
+            '''
+            #Uten parallell
+            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
 
             #Kjører paralelt. 
             '''
@@ -105,28 +108,27 @@ class ALNS:
                     candidate_route_plan, destroy, repair = result
            
             #Kjøre uten parallel 
-            '''
-            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
+            
+           
             
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
-                #Uten parallell 
+                 
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
-                
+                '''
+                #Uten parallell
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
 
                 #Med parallell 
                 '''
-                
-                
                 results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, days+1) ], mp_config=self.mp_config, paralellNum=days)
                 print("GJOR LOKALSØKET I PARALELL")
                 for day in range(1, days+1): 
                     candidate_route_plan.routes[day] = results[day-1].routes[day]
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
-                '''
+                
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             #TODO: Skal final candiate printes lenger nede? 
             if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():

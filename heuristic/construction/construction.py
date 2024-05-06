@@ -137,12 +137,8 @@ class ConstructionHeuristic:
             ): 
              
                 best_route_plan = route_plan
- 
-            
-        print("self.route_plan - FØR", self.route_plan)
+       
         self.route_plan = best_route_plan
-        print("self.route_plan ETTER", self.route_plan)
-        #return best_route_plan
 
 
     def checkIfConstructionIsLegal(self, route_plan): 
