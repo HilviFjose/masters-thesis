@@ -14,7 +14,8 @@ from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
     def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, 
-                 reaction_factor, local_search_req, current_route_plan, criterion, constructor, mp_config): 
+                 reaction_factor, local_search_req, iterations_update_default, current_route_plan, criterion, constructor, mp_config): 
+
         self.destroy_operators = []
         self.repair_operators = []
 
@@ -30,6 +31,7 @@ class ALNS:
         self.weight_score_best = weight_score_best
         self.reaction_factor = reaction_factor
         self.local_search_req = local_search_req
+        self.iterations_update = iterations_update_default
         self.iterationNum = 0
         
 
@@ -49,7 +51,7 @@ class ALNS:
 
 
         
-    def doIteration(self, input_tuple, num_iterations): 
+    def doIteration(self, input_tuple): 
         candidate_route_plan = input_tuple[0]
         parNum = input_tuple[1]
         destroy = self.select_operator(self.destroy_operators, self.d_weights)
@@ -219,8 +221,6 @@ class ALNS:
 
     # Select destroy/repair operator
     @staticmethod
-    def select_operator(operators, weights):
-        rnd_state = rnd.RandomState()
     def select_operator(operators, weights):
         rnd_state = rnd.RandomState() #Usikker på om dette blir riktig, 
         w = weights / np.sum(weights)

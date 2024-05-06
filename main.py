@@ -75,37 +75,46 @@ def main():
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
     alns = ALNS(weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
-                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor) 
+                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config) 
 
 
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
     best_route_plan.updateObjective(iterations, iterations) #Nå lages det ikke noen ruteplan her?
     
-    """
-    objective_func = partial(objective, initial_route_plan, criterion, constructor)
+    objective_func = partial(objective, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config)
 
     #Run optuna
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective_func, n_trials=50)
-    print("Best parameters:", study.best_trial.params)
-    """
+    study = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
+    study.optimize(objective_func, n_trials=2)
+    print("Number of finished trials: ", len(study.trials))
 
-def objective(route_plan, criterion, constructor, trial):
+    # Write best trial parameters to a file
+    results_file = "optuna_results.txt"
+    with open(results_file, "w") as f:
+        for i, trial in enumerate(study.best_trials):
+            f.write(f"Trial {i + 1}:\n")
+            f.write(f"  Params: {trial.params}\n")
+            f.write("  Values:\n")
+            for objective_value in trial.values:
+                f.write(f"    {objective_value}\n")
+            f.write("\n")
+
+def objective(trial, route_plan, criterion, constructor, mp_config):
     # Suggesting parameters
-    reaction_factor_interval = trial.suggest_float('reaction_factor', 0.4, 0.8, step=0.1)
-    local_search_req_interval = trial.suggest_float('local_search_req', 0.01, 0.05, step=0.01)
+    reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.4, 0.5, 0.6, 0.7, 0.8])
+    local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.02, 0.03, 0.04, 0.05])
     weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
     weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
     weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
-    iterations_update_interval = trial.suggest_float('iterations_update', 0.1, 0.5, step=0.1)
+    iterations_update_interval = trial.suggest_categorical('iterations_update', [0.1, 0.2, 0.3, 0.4, 0.5])
 
     # Configure and run ALNS
     alns = ALNS(weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval, reaction_factor_interval, local_search_req_interval, 
-                iterations_update_interval, route_plan, criterion, constructor)
-    result = alns.iterate(iterations)
+                iterations_update_interval, route_plan, criterion, constructor, mp_config)
+    route_plan = alns.iterate(iterations)
 
-    return result.objective_score  # Objective to minimize
+    return route_plan.objective
             
 if __name__ == "__main__":
     main()

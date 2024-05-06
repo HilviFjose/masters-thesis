@@ -1,8 +1,6 @@
 import pandas as pd
 import os
 
-
-
 #ANTIBIOTICS CASE
 print("ANTIBIOTICS DATA")
 from datageneration.employeeGenerationAntibiotics import *
