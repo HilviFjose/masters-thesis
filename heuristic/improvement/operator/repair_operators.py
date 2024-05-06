@@ -50,7 +50,7 @@ class RepairOperators:
 
         repair_insertor_level = main_config.repair_insertor
         if current_iteration % main_config.modNum_for_better_insertion == 0: 
-            print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
+            #print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
             repair_insertor_level = main_config.better_repair_insertor
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
@@ -133,7 +133,7 @@ class RepairOperators:
 
         repair_insertor_level = main_config.repair_insertor
         if current_iteration % main_config.modNum_for_better_insertion == 0: 
-            print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
+            #print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
             repair_insertor_level = main_config.better_repair_insertor
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get, reverse=True)
@@ -179,7 +179,7 @@ class RepairOperators:
         
         repair_insertor_level = main_config.repair_insertor
         if current_iteration % main_config.modNum_for_better_insertion == 0: 
-            print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
+            #print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
 
             repair_insertor_level = main_config.better_repair_insertor
         best_repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)

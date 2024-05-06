@@ -1,5 +1,6 @@
 import numpy as np
 from helpfunctions import *
+import numpy.random as rnd
 import math
 from config.main_config import iterations
 
@@ -23,7 +24,8 @@ class SimulatedAnnealing:
         '''
         
     # Simulated annealing acceptance criterion
-    def accept_criterion(self, random_state, current_objective, candidate_objective):
+    def accept_criterion(self, current_objective, candidate_objective):
+        random_state = rnd.RandomState()
         accept = False
         # Always accept better solution
         if checkCandidateBetterThanBest(candidate_objective, current_objective):

@@ -415,13 +415,13 @@ def check_employee_consistency(file_path):
 
 # Example usage
 username = 'agnesost'
-folder_name  = 'results-2024-05-02_17-58-20'
+folder_name  = 'results-2024-05-04_15-44-23'
 file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\initial.txt'  # Replace with the actual path to your first file
 file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
 #file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\initialLS.txt'  # Replace with the actual path to your first file
 #file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\0before_iteration.txt'  # Replace with the actual path to your first file
 file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\final.txt'  # Replace with the actual path to your second file
-file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"] 
+file_name_list = ["_before_destroy", "_after_destroy", "_after_repair"] 
 
 status1 = compare_dictionary_with_candidate(file_path_1)
 if status1 == False:
@@ -484,11 +484,53 @@ if status8 == False:
     print("SOmething wrong in", file_path_2)
     print("---------------------------")
 
+'''
+Hva vil vi teste her? Vi vil teste hver parallell 
+Vi vil teste 
+'''
 
 for cand in range(1, iterations+1): 
     for file_name in file_name_list: 
-        file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\'+str(cand)+'candidate'+file_name+'.txt'  
+
+        #Tester  
+        for parNum in num_of_paralell_iterations: 
         
+            file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\'+str(cand)+'candidate'+file_name+str(parNum)+'.txt'  
+            
+            status1 = compare_dictionary_with_candidate(file_path_candidate)
+            if status1 == False:
+                print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+                print("---------------------------")
+
+            status2 = compare_allocated_dictionaries(file_path_candidate)
+            if status2 == False: 
+                print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+                print("---------------------------")
+            
+            status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_candidate)
+            if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
+                print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+                print("---------------------------") 
+            
+            status6 = check_objective(file_path_candidate)
+            if status6 == False: 
+                print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+                print("---------------------------")
+
+            status7 = check_employee_consistency(file_path_candidate)
+            if status7 == False: 
+                print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+                print("---------------------------")
+            
+            
+            status8 = check_consistency(file_path_candidate)
+            if status8 == False: 
+                print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
+                print("---------------------------")
+                
+        #Sjekker lokalsøket 
+        file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\'+str(cand)+'candidate'+"_after_local_search"+'.txt'  
+            
         status1 = compare_dictionary_with_candidate(file_path_candidate)
         if status1 == False:
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
