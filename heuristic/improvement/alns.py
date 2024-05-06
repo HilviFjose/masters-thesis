@@ -70,66 +70,64 @@ class ALNS:
         # Repair solution
         
         r_operator = self.repair_operators[repair]
-        print("repair operator", r_operator.__name__)
-        start_time = time.perf_counter()
-        candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, num_iterations)
-        end_time = time.perf_counter()
-        print("destroy used time", str(end_time - start_time))
-        candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+        #print("repair operator", r_operator.__name__)
+        #start_time = time.perf_counter()
+        candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, iterations)
+        #end_time = time.perf_counter()
+        #print("destroy used time", str(end_time - start_time))
+        candidate_route_plan.updateObjective(self.iterationNum, iterations)
         candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
         return candidate_route_plan, destroy, repair
+
+
 
 
         
     def iterate(self, num_iterations):
         found_solutions = {}
         
-        # weights er vekter for å velge operator, score og count brukes for oppdatere weights
-        d_weights = np.ones(len(self.destroy_operators), dtype=np.float16)
-        r_weights = np.ones(len(self.repair_operators), dtype=np.float16)
-        d_scores = np.ones(len(self.destroy_operators), dtype=np.float16)
-        r_scores = np.ones(len(self.repair_operators), dtype=np.float16)
-        # Kan ikke count bare være at vi hver 10 iterasjon eller noe oppdaterer?
-        d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
-        r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
-
+   
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
+            '''
+            #Uten parallell
+            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
 
             #Kjører paralelt. 
             '''
-            results = process_parallel(self.doIteration, fsunction_kwargs={}, jobs=[(candidate_route_plan, 1) ,(candidate_route_plan,2)], mp_config=self.mp_config)
-            print("FERDIG PARALELLPROSSESERING", results)
-            candidate_route_plan1, destroy1, repair1 = results[0]
-            candidate_route_plan2, destroy2, repair2 = results[1]
+            jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
             
-
-            
-
-            if checkCandidateBetterThanBest(candidate_route_plan2.objective, candidate_route_plan1.objective): 
-                candidate_route_plan = candidate_route_plan2
-                destroy = destroy2
-                repair = repair2
-
-            else: 
-                candidate_route_plan = candidate_route_plan1
-                destroy = destroy1
-                repair = repair1
-
-            '''
-
+            results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
+            candidate_route_plan, destroy, repair = results[0]
+            for result in results[1:]: 
+                if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
+                    candidate_route_plan, destroy, repair = result
+           
             #Kjøre uten parallel 
-            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1), num_iterations)
+            
+           
+            
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
+                 
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
+                '''
+                #Uten parallell
                 candidate_route_plan = localsearch.do_local_search()
+                candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+
+                #Med parallell 
+                '''
+                results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, days+1) ], mp_config=self.mp_config, paralellNum=days)
+                print("GJOR LOKALSØKET I PARALELL")
+                for day in range(1, days+1): 
+                    candidate_route_plan.routes[day] = results[day-1].routes[day]
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
                 
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
@@ -200,7 +198,7 @@ class ALNS:
         
         
         self.add_destroy_operator(destroy_operators.related_patients_removal)
-        self.add_destroy_operator(destroy_operators.related_treatments_removal)
+        #self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
 
         # Add repair operators

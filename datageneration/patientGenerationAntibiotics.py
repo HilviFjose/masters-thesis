@@ -59,10 +59,10 @@ def patientGenerator(df_employees):
     continuityGroup = np.random.choice(range(1, 4), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.continuityDistribution)
     heaviness = np.random.choice(range(1, 4), size=construction_config_antibiotics.P_num, p=construction_config_antibiotics.heavinessDistribution)
     if construction_config_antibiotics.P_num <= 5* construction_config_antibiotics.E_num:
-        print('Number of patients <= 5* number of employees')
+        #print('Number of patients <= 5* number of employees')
         allocation = [1] * round(construction_config_antibiotics.P_num * construction_config_antibiotics.allocation)
     else:
-        print('Number of patients > 5* number of employees')
+        #print('Number of patients > 5* number of employees')
         allocation = [1] * round(construction_config_antibiotics.E_num * 0.75)
     allocation.extend([0] * (construction_config_antibiotics.P_num - len(allocation)))
     random.shuffle(allocation)
@@ -588,9 +588,9 @@ def autofillPatient(df_patients, df_treatments, df_activities):
 #TODO: Denne er ikke helt riktig nå, må ta hensyn til startDay!
 def TimeWindowsWithTravel(df_activities, T_ij):
     T_ij_max = round(max([max(row) for row in T_ij]))          # Max travel distance between two activities
-    print(f'T_ij_max: {T_ij_max} minutes')
+    #print(f'T_ij_max: {T_ij_max} minutes')
     T_ij_max_depot = round(max(row[0] for row in T_ij))        # Max travel distance from the depot to an activity
-    print(f'T_ij_max_depot: {T_ij_max_depot} minutes') 
+    #print(f'T_ij_max_depot: {T_ij_max_depot} minutes') 
     
     for visitId, group in df_activities.groupby('visitId'):
         # Total duration of all activities for a given visitId

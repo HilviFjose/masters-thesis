@@ -22,9 +22,13 @@ destruction_degree_beginning = 0.4
 destruction_degree_end = 0.2
 
 # Simulated annealing temperatures -- TODO: these must be tuned
-start_temperature = 60
-end_temperature = 10
-cooling_rate = 0.96
+#start_temperature = 60
+#end_temperature = 10
+#cooling_rate = 0.96
+
+sim_annealing_diff = 0.05
+prob_of_choosing = 0.5 
+rate_T_start_end = 0.2 
 
 # Distance Matrix
 # Buses in Oslo om average drive in 25 kms/h.
@@ -61,7 +65,7 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Number of constructed solutions 
-num_of_constructions = 1
+num_of_constructions = 3  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 #Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
 construction_insertor = 1 #W
@@ -77,4 +81,4 @@ modNum_for_better_insertion = math.ceil(iterations*frequecy_of_better_insertion)
 
 
 #Number of paralell processes 
-num_of_paralell_iterations = 2
+num_of_paralell_iterations = 3
