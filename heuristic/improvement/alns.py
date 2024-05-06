@@ -49,7 +49,7 @@ class ALNS:
 
 
         
-    def doIteration(self, input_tuple): 
+    def doIteration(self, input_tuple, num_iterations): 
         candidate_route_plan = input_tuple[0]
         parNum = input_tuple[1]
         destroy = self.select_operator(self.destroy_operators, self.d_weights)
@@ -72,17 +72,17 @@ class ALNS:
         r_operator = self.repair_operators[repair]
         print("repair operator", r_operator.__name__)
         start_time = time.perf_counter()
-        candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, iterations)
+        candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, num_iterations)
         end_time = time.perf_counter()
         print("destroy used time", str(end_time - start_time))
-        candidate_route_plan.updateObjective(self.iterationNum, iterations)
+        candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
         candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
         return candidate_route_plan, destroy, repair
 
 
         
-    def iterate(self, iterations):
+    def iterate(self, num_iterations):
         found_solutions = {}
         
         # weights er vekter for å velge operator, score og count brukes for oppdatere weights
@@ -94,7 +94,7 @@ class ALNS:
         d_count = np.zeros(len(self.destroy_operators), dtype=np.float16)
         r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
-        for i in tqdm(range(iterations), colour='#39ff14'):
+        for i in tqdm(range(num_iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
@@ -103,7 +103,7 @@ class ALNS:
 
             #Kjører paralelt. 
             '''
-            results = process_parallel(self.doIteration, function_kwargs={}, jobs=[(candidate_route_plan, 1) ,(candidate_route_plan,2)], mp_config=self.mp_config)
+            results = process_parallel(self.doIteration, fsunction_kwargs={}, jobs=[(candidate_route_plan, 1) ,(candidate_route_plan,2)], mp_config=self.mp_config)
             print("FERDIG PARALELLPROSSESERING", results)
             candidate_route_plan1, destroy1, repair1 = results[0]
             candidate_route_plan2, destroy2, repair2 = results[1]
@@ -124,13 +124,13 @@ class ALNS:
             '''
 
             #Kjøre uten parallel 
-            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
+            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1), num_iterations)
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 print("Solution promising. Doing local search.")
-                localsearch = LocalSearch(candidate_route_plan, self.iterationNum, iterations)
+                localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
                 candidate_route_plan = localsearch.do_local_search()
-                candidate_route_plan.updateObjective(self.iterationNum, iterations)
+                candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
                 
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             #TODO: Skal final candiate printes lenger nede? 
@@ -174,6 +174,8 @@ class ALNS:
             localsearch = LocalSearch(self.best_route_plan, iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
             self.best_route_plan = localsearch.do_local_search_to_local_optimum()
             self.best_route_plan.updateObjective(iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+
+            self.best_route_plan.printSolution("final", "no operator")
                 
         return self.best_route_plan
     

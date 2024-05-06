@@ -69,32 +69,32 @@ def main():
 
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
+    best_route_plan.updateObjective(iterations, iterations) #Nå lages det ikke noen ruteplan her?
     
-    best_route_plan.updateObjective(iterations, iterations)
-    best_route_plan.printSolution("final", "no operator")
-
+    """
     objective_func = partial(objective, initial_route_plan, criterion, constructor)
 
     #Run optuna
     study = optuna.create_study(direction='maximize')
     study.optimize(objective_func, n_trials=50)
     print("Best parameters:", study.best_trial.params)
+    """
 
-    def objective(route_plan, criterion, constructor, trial):
-        # Suggesting parameters
-        reaction_factor_interval = trial.suggest_float('reaction_factor', 0.4, 0.8, step=0.1)
-        local_search_req_interval = trial.suggest_float('local_search_req', 0.01, 0.05, step=0.01)
-        weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
-        weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
-        weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
-        iterations_update_interval = trial.suggest_float('iterations_update', 0.1, 0.5, step=0.1)
+def objective(route_plan, criterion, constructor, trial):
+    # Suggesting parameters
+    reaction_factor_interval = trial.suggest_float('reaction_factor', 0.4, 0.8, step=0.1)
+    local_search_req_interval = trial.suggest_float('local_search_req', 0.01, 0.05, step=0.01)
+    weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
+    weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
+    weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
+    iterations_update_interval = trial.suggest_float('iterations_update', 0.1, 0.5, step=0.1)
 
-        # Configure and run ALNS
-        alns = ALNS(weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval, reaction_factor_interval, local_search_req_interval, 
-                    iterations_update_interval, route_plan, criterion, constructor)
-        result = alns.iterate(iterations)
+    # Configure and run ALNS
+    alns = ALNS(weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval, reaction_factor_interval, local_search_req_interval, 
+                iterations_update_interval, route_plan, criterion, constructor)
+    result = alns.iterate(iterations)
 
-        return result.objective_score  # Objective to minimize
+    return result.objective_score  # Objective to minimize
             
 if __name__ == "__main__":
     main()
