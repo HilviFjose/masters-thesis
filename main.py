@@ -86,7 +86,7 @@ def main():
 
     #Run optuna
     study = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
-    study.optimize(objective_func, n_trials=2)
+    study.optimize(objective_func, n_trials=100)
     print("Number of finished trials: ", len(study.trials))
 
     # Write best trial parameters to a file

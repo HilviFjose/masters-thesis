@@ -8,7 +8,7 @@ import math
 reaction_factor_default = 0.7
 
 # Iterations in ALNS
-iterations = 5
+iterations = 1000
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req_default = 0.02
