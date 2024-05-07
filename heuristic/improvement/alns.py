@@ -192,7 +192,6 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
-        
         self.add_destroy_operator(destroy_operators.related_patients_removal)
         self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
