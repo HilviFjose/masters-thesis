@@ -48,7 +48,7 @@ def travel_matrix(df):
         T_ij = [[0 for _ in range(len(D_ij))] for _ in range(len(D_ij))]
         for i in range(len(D_ij)):
             for j in range(len(D_ij)):
-                T_ij[i][j] = (timedelta(hours=(D_ij[i][j] / speed)).total_seconds() / 60)
+                T_ij[i][j] = math.ceil((timedelta(hours=(D_ij[i][j] / speed)).total_seconds() / 60))
     
         # Rush hour modelling:
         '''
@@ -88,7 +88,7 @@ def travel_matrix_without_rush(df):
         T_ij = [[0 for _ in range(len(D_ij))] for _ in range(len(D_ij))]
         for i in range(len(D_ij)):
             for j in range(len(D_ij)):
-                T_ij[i][j] = (timedelta(hours=(D_ij[i][j] / speed)).total_seconds() / 60)
+                T_ij[i][j] = math.ceil((timedelta(hours=(D_ij[i][j] / speed)).total_seconds() / 60))
     
         return T_ij
 
