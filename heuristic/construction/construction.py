@@ -40,14 +40,15 @@ class ConstructionHeuristic:
     '''
  
     def construct_simple_initial(self, a): 
-        route_plan = RoutePlan(self.days, self.employees_df, self.folder_name)
+        route_plan = RoutePlan(self.days, self.employees, self.folder_name)
         #Lager en liste med pasienter i prioritert rekkefølge. 
-        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
+        patient_list = self.patients_array[1:].tolist()
+        unassigned_patients = sorted(patient_list, key=lambda x: (x[2], x[13]))
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
             #Henter ut raden i pasient dataframes som tilhører pasienten
             patient = unassigned_patients.index[i] 
-            allocation = unassigned_patients.loc[patient, 'allocation']
+            allocation = unassigned_patients[patient][2]
             
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(route_plan)

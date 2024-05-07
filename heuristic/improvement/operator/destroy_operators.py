@@ -580,93 +580,83 @@ class DestroyOperators:
         return destroyed_route_plan, None, True
 
     def related_treatments_removal(self, current_route_plan):
-        #TODO: containers
-        #TODO: Forbedre ytelse, den har veldig dårlig ytelse nå. 
+            #TODO: Forbedre ytelse, den har veldig dårlig ytelse nå. 
+            # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
+            num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
+            total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - 
+                                                                        (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
 
-        # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
-        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
-        total_num_activities_to_remove = round(num_act_allocated * main_config.destruction_degree)
+            allocatedTreatmentsIds = list(current_route_plan.treatments.keys())
 
-        allocatedTreatmentsIds = list(current_route_plan.treatments.keys())
-        print("current_route_plan.treatments", current_route_plan.treatments)
+            # Velger en random treatment og finner hvilket pattern og patterntype det har i ruteplanen.
+            primary_treatmentId = random.choice(allocatedTreatmentsIds)
+            filtered_row = self.constructor.treatments_array[primary_treatmentId]
+            patternType = self.constructor.treatments_array[primary_treatmentId][1]
+            TreatSamePatternType = self.constructor.treatment_df[self.constructor.treatment_array['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
 
-        # Choose a random treatment ID and get its pattern type
-        primary_treatmentId = random.choice(allocatedTreatmentsIds)
-        patternType_index = self.constructor.treatments_array[0].index('patternType')
-        patternType = self.constructor.treatments_array[primary_treatmentId][patternType_index]
-
-        # Filter treatments having the same pattern type
-        TreatSamePatternType = [i for i in range(1, len(self.constructor.treatments_array)) if self.constructor.treatments_array[i][patternType_index] == patternType and i in allocatedTreatmentsIds]
-
-        # Assuming treatments are directly correlated with visits and activities
-        activitiesIds_index = self.constructor.visits_array[0].index('activitiesIds')
-        visitID_index = self.constructor.activities_array[0].index('visitId')
-
-        #Vet at vi har funnet de ulike treatmentsene som er riktig 
-        firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
-        visitID = self.constructor.activities_df.loc[firstActId, 'visitId']
-        for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
-            act = current_route_plan.getActivityFromEntireRoutePlan(act)
-            if act != None: 
-                break 
-        
-
-        if act == None: 
-            firstDay = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
-        else: 
-            firstDay = current_route_plan.getDayForActivityID(act)
-
-        related_treatment_list = [primary_treatmentId]
- 
-        activities_count = 0
-        firstActInTreatSamePatternType = []
-
-        # Fjerner treatments som har samme pattern
-        filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
-        firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
-        firstActInTreatSamePatternType.remove(firstActId) 
-    
-        backup_treatments = []
-     
-        for actId in firstActInTreatSamePatternType:
-            if activities_count >= total_num_activities_to_remove:
-                break
-
-            visitID = self.constructor.activities_df.loc[actId, 'visitId']
-            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+            #Vet at vi har funnet de ulike treatmentsene som er riktig 
+            firstActId = self.constructor.treatments_array[filtered_row][20][0]
+            visitID = self.constructor.activities_array[firstActId][12]
+            for act in self.constructor.visits_array[visitID][14]:
                 act = current_route_plan.getActivityFromEntireRoutePlan(act)
                 if act != None: 
                     break 
-            
-
-            if act == None: 
-                day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
-            else: 
-                day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(act)
-
-            treatment_for_activity = self.constructor.activities_df.loc[actId, 'treatmentId']
-
-            if day_for_first_activity_in_treatment == firstDay:
-                if treatment_for_activity not in related_treatment_list:
-                    related_treatment_list.append(treatment_for_activity)
-                    activities_count += len([current_route_plan.visits[visitID] for visitID in current_route_plan.treatments[treatment_for_activity]])
-    
-            
-            else: 
-                if treatment_for_activity not in backup_treatments and treatment_for_activity not in related_treatment_list:
-                    backup_treatments.append(treatment_for_activity)
-
-        while activities_count < total_num_activities_to_remove and len(backup_treatments) > 0: 
-            related_treatment_list.append(backup_treatments.pop(0))
-            activities_count += len([current_route_plan.visits[visitID] for visitID in current_route_plan.treatments[treatment_for_activity]])
-
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        for treatId in related_treatment_list:
-            destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan)[0] 
         
-        return destroyed_route_plan, None, True
+            if act == None: 
+                firstDay = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
+            else: 
+                firstDay = current_route_plan.getDayForActivityID(act)
 
+            related_treatment_list = [primary_treatmentId]
     
+            activities_count = 0
+            for visitID in current_route_plan.treatments[primary_treatmentId]: 
+                activities_count += len(current_route_plan.visits[visitID])
+
+            # Fjerner treatments som har samme pattern
+            filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
+            firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
+            firstActInTreatSamePatternType.remove(firstActId) 
+        
+            backup_treatments = []
+        
+            for actId in firstActInTreatSamePatternType:
+                if activities_count >= total_num_activities_to_remove:
+                    break
+
+                visitID = self.constructor.activities_array[actId][12]
+                for act in self.constructor.visits_array[visitID][14]: 
+                    act = current_route_plan.getActivityFromEntireRoutePlan(act)
+                    if act != None: 
+                        break 
+
+                if act == None: 
+                    day_for_first_activity_in_treatment = current_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visitID]
+                else: 
+                    day_for_first_activity_in_treatment = current_route_plan.getDayForActivityID(act)
+
+                treatment_for_activity = self.contructor.activities_array[actId][13]
+
+                if day_for_first_activity_in_treatment == firstDay:
+                    if treatment_for_activity not in related_treatment_list:
+                        related_treatment_list.append(treatment_for_activity)
+                        activities_count += len([current_route_plan.visits[visitID] for visitID in current_route_plan.treatments[treatment_for_activity]])
+        
+                
+                else: 
+                    if treatment_for_activity not in backup_treatments and treatment_for_activity not in related_treatment_list:
+                        backup_treatments.append(treatment_for_activity)
+
+            while activities_count < total_num_activities_to_remove and len(backup_treatments) > 0: 
+                related_treatment_list.append(backup_treatments.pop(0))
+                activities_count += len([current_route_plan.visits[visitID] for visitID in current_route_plan.treatments[treatment_for_activity]])
+
+            destroyed_route_plan = copy.deepcopy(current_route_plan)
+            for treatId in related_treatment_list:
+                destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan)[0] 
+            
+            return destroyed_route_plan, None, True
+        
 
    
     def patients_removal(self, current_route_plan, patient_list): 

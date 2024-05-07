@@ -53,7 +53,7 @@ class RepairOperators:
         if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
             #print("iteration ", current_iteration, "main_config.modNum_for_fraction_insertion", main_config.modNum_for_fraction_insertion)
             repair_insertor_level = main_config.fraction_repair_insertor
-        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][13] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
 
         for patient in descendingUtilityNotAllocatedPatients: 

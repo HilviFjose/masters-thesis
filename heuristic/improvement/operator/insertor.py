@@ -256,9 +256,9 @@ class Insertor:
         self.InsertionFound_BetterInsertVisitWitLim2 = False 
         self.betterInsertVisit_explored_branches2 = 0 
 
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.constructor.visits_array[visit][14]
 
-        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activities = [Activity(self.constructor.activities_array, activityID) for activityID in activitiesList]
         activity = activities[0]
         rest_acitivites = activities[1:]
       

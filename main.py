@@ -24,23 +24,28 @@ def main():
     mp_config = setup(3,2,3)
 
     #INPUT DATA
-    df_employees = parameters.df_employees
-    df_patients = parameters.df_patients
-    df_treatments = parameters.df_treatments
-    df_visits = parameters.df_visits
-    df_activities = parameters.df_activities
+    employees_container = parameters.employees_information_array
+    patients_container = parameters.patients_information_array
+    treatments_container = parameters.treatments_information_array
+    visits_container = parameters.visits_information_array
+    activities_container = parameters.activities_information_array
 
-    # CREATE RESULTS FOLDER
+    # Specify the parent folder
+    parent_folder = "results"
+
+    # Create a folder with current date and time inside the parent folder
     current_datetime = datetime.now()
     date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-    folder_name = f"results-{date_time_str}"
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+    folder_name = f"{parent_folder}-{date_time_str}"
+
+    folder_path = os.path.join(parent_folder, folder_name)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
     #CONSTRUCTION HEURISTIC
-    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
+    constructor = ConstructionHeuristic(activities_container, employees_container, patients_container, treatments_container, visits_container, 5, folder_name)
     print("Constructing Initial Solution")
-    '''
+    
     #CONSTRUCTION HEURISTIC NORMA
     constructor.construct_initial()
     '''
@@ -48,7 +53,7 @@ def main():
     #PARALELL CONSTUCTION 
     constructor.route_plans = process_parallel(constructor.construct_simple_initial, function_kwargs={} , jobs=[a for a in range(num_of_constructions)], mp_config= mp_config, paralellNum=num_of_constructions)
     constructor.setBestRoutePlan()
-    
+    '''
     
     constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")
