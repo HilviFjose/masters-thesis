@@ -408,16 +408,8 @@ class DestroyOperators:
 
     # TAR HENSYN TIL DESTRUCTION DEGREE
     def spread_distance_activities_removal(self, current_route_plan):
-        # Beregn det totale antallet aktiviteter som skal fjernes fra hele ruteplanen
-        #num_act_allocated = sum(len(route.route) for day, routes in current_route_plan.routes.items() for route in routes)
         num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
-
         total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
-        
-        # Sorter rutene basert på kjøretid, lengst først
-        #sorted_routes = sorted(
-        #    (route for day, routes in current_route_plan.routes.items() for route in routes),
-        #    key=lambda x: x.travel_time, reverse=True)
         
         sorted_routes =  sorted((route for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values()), key=lambda x: x.travel_time, reverse=True)
 
