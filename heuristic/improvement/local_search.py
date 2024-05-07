@@ -73,7 +73,7 @@ class LocalSearch:
 
         return candidate
 
-    
+
     def do_local_search(self):
         candidate = copy.deepcopy(self.candidate)
         
@@ -112,6 +112,42 @@ class LocalSearch:
             for emplID in employeeOnDayList: 
                 new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
+
+        return candidate
+    
+    def do_local_search_on_day(self, day):
+        candidate = copy.deepcopy(self.candidate)
+        
+        #CHANGE EMPLOYEE
+        candidate = self.change_employee(candidate, day)
+        candidate = self.change_employee(candidate, day)
+        
+        # SWAP EMPLOYEE
+        candidate = self.swap_employee(candidate, day)
+        candidate = self.swap_employee(candidate, day)
+
+        # MOVE ACTIVITY
+        
+        employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+        for emplID in employeeOnDayList: 
+            new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+            candidate.insertNewRouteOnDay(new_route, day)
+    
+        employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+        for emplID in employeeOnDayList: 
+            new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+            candidate.insertNewRouteOnDay(new_route, day)
+
+        # SWAP ACTIVITY 
+        employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+        for emplID in employeeOnDayList: 
+            new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+            candidate.insertNewRouteOnDay(new_route, day)
+    
+        employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
+        for emplID in employeeOnDayList: 
+            new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
+            candidate.insertNewRouteOnDay(new_route, day)
 
         return candidate
  

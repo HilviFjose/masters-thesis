@@ -8,11 +8,22 @@ from config.main_config import *
 import parameters
 import pandas as pd
 
+
 df_employees = parameters.df_employees
 df_patients = parameters.df_patients
 df_treatments = parameters.df_treatments
 df_visits = parameters.df_visits
 df_activities = parameters.df_activities
+
+username = 'agnesost'
+path = 'c:\\Users\\'+username+'\\masters-thesis\\results'
+items = os.listdir(path)
+         
+
+# Filter out only the directories that match your naming convention
+results_folders = [item for item in items if os.path.isdir(os.path.join(path, item)) and item.startswith("results-")]
+folder_name = results_folders[3]  #Velg hvilken i results du vil teste 
+
 
 def extract_activities(file_path):
     """Extract activity numbers from a given file and identify duplicates."""
@@ -412,82 +423,61 @@ def check_employee_consistency(file_path):
     return True 
 
 #------------ TEST FOR SAMEEMPLOYEE -----------------
-
-# Example usage
-username = 'agnesost'
-folder_name  = 'results-2024-05-02_17-58-20'
-file_path_1 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\initial.txt'  # Replace with the actual path to your first file
-file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\candidate_after_initial_local_search.txt'  # Replace with the actual path to your first file
-#file_path_2 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\initialLS.txt'  # Replace with the actual path to your first file
-#file_path_3 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\0before_iteration.txt'  # Replace with the actual path to your first file
-file_path_4 = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\final.txt'  # Replace with the actual path to your second file
-file_name_list = ["_before_destroy", "_after_destroy", "_after_repair", "_after_local_search"] 
-
-status1 = compare_dictionary_with_candidate(file_path_1)
-if status1 == False:
-    print("SOmething wrong in", file_path_1)
-    print("---------------------------")
-
-status2 = compare_allocated_dictionaries(file_path_1)
-if status2 == False: 
-    print("SOmething wrong in", file_path_1)
-    print("---------------------------")
-
-status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_1)
-if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
-    print("SOmething wrong in", file_path_1)
-    print("---------------------------") 
-
-status6 = check_objective(file_path_1)
-if status6 == False: 
-    print("SOmething wrong in", file_path_1)
-    print("---------------------------")
-
-status7 = check_employee_consistency(file_path_1)
-if status7 == False: 
-    print("SOmething wrong in", file_path_1)
-    print("---------------------------")
-
-status8 = check_consistency(file_path_1)
-if status8 == False: 
-    print("SOmething wrong in", file_path_1)
-    print("---------------------------")
+file_name_list = ["_before_destroy", "_after_destroy", "_after_repair"] 
 
 
-status1 = compare_dictionary_with_candidate(file_path_2)
-if status1 == False:
-    print("SOmething wrong in", file_path_2)
-    print("---------------------------")
-
-status2 = compare_allocated_dictionaries(file_path_2)
-if status2 == False: 
-    print("SOmething wrong in", file_path_2)
-    print("---------------------------")
-
-status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_2)
-if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
-    print("SOmething wrong in", file_path_2)
-    print("---------------------------") 
-
-status6 = check_objective(file_path_2)
-if status6 == False: 
-    print("SOmething wrong in", file_path_2)
-    print("---------------------------")
-
-status7 = check_employee_consistency(file_path_2)
-if status7 == False: 
-    print("SOmething wrong in", file_path_2)
-    print("---------------------------")
-
-status8 = check_consistency(file_path_2)
-if status8 == False: 
-    print("SOmething wrong in", file_path_2)
-    print("---------------------------")
+# ----------------- TEST FOR INITIAL AND INITIAL AFTER LOCAL SEARCH ----------------------
+general_file_path = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+folder_name  # Replace with the actual path to your first file
+file_names = ['\\initial.txt', '\\candidate_after_initial_local_search.txt' ]
 
 
+for file_name in file_names: 
+    file_path = general_file_path+file_name
+    status1 = compare_dictionary_with_candidate(file_path)
+    if status1 == False:
+        print("SOmething wrong in", file_path)
+        print("---------------------------")
+
+    status2 = compare_allocated_dictionaries(file_path)
+    if status2 == False: 
+        print("SOmething wrong in", file_path)
+        print("---------------------------")
+
+    status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path)
+    if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
+        print("SOmething wrong in", file_path)
+        print("---------------------------") 
+
+    status6 = check_objective(file_path)
+    if status6 == False: 
+        print("SOmething wrong in", file_path)
+        print("---------------------------")
+
+    status7 = check_employee_consistency(file_path)
+    if status7 == False: 
+        print("SOmething wrong in", file_path)
+        print("---------------------------")
+
+    status8 = check_consistency(file_path)
+    if status8 == False: 
+        print("SOmething wrong in", file_path)
+        print("---------------------------")
+
+# -------------------------- TEST FOR ALL ITERATIONS  ------------------
 for cand in range(1, iterations+1): 
+
+    file_name_list = [str(cand)+"candidate_before_destroy"]
+    org_file_names = ['candidate_after_destroy_parallel_', 'candidate_after_repair_parallel_']
+    for file_name in org_file_names: 
+        parallel_file_list = [str(cand)+file_name+str(parNum) for parNum in range(1, num_of_paralell_iterations+1)]
+        file_name_list += parallel_file_list
+
+    
+    file_name_list +=  [str(cand)+"candidate_after_paralell", str(cand)+"candidate_after_local_search", str(cand)+"candidate_final"]
+    
     for file_name in file_name_list: 
-        file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\'+folder_name+'\\'+str(cand)+'candidate'+file_name+'.txt'  
+  
+        file_path_candidate = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+folder_name+'\\'+file_name+'.txt'  
         
         status1 = compare_dictionary_with_candidate(file_path_candidate)
         if status1 == False:
@@ -519,36 +509,40 @@ for cand in range(1, iterations+1):
         if status8 == False: 
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
+                
 
-status1 = compare_dictionary_with_candidate(file_path_2)
+
+# -------------------------- TEST FOR FINAL  ------------------
+file_path = general_file_path+'\\final.txt' 
+status1 = compare_dictionary_with_candidate(file_path)
 if status1 == False:
-    print("SOmething wrong in", file_path_2)
+    print("SOmething wrong in", file_path)
     print("---------------------------")
 
-status2 = compare_allocated_dictionaries(file_path_4)
+status2 = compare_allocated_dictionaries(file_path)
 if status2 == False: 
-    print("SOmething wrong in", file_path_4)
+    print("SOmething wrong in", file_path)
     print("---------------------------")
 
-status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path_4)
+status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path)
 if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
-    print("SOmething wrong in", file_path_4)
+    print("SOmething wrong in", file_path)
     print("---------------------------") 
 
-status6 = check_objective(file_path_4)
+status6 = check_objective(file_path)
 if status6 == False: 
-    print("SOmething wrong in", file_path_4)
+    print("SOmething wrong in", file_path)
     print("---------------------------")
 
-status7 = check_employee_consistency(file_path_4)
+status7 = check_employee_consistency(file_path)
 if status7 == False: 
-    print("SOmething wrong in", file_path_4)
+    print("SOmething wrong in", file_path)
     print("---------------------------")
 
-status8 = check_consistency(file_path_4)
+status8 = check_consistency(file_path)
 if status8 == False: 
-    print("SOmething wrong in", file_path_4)
+    print("SOmething wrong in", file_path)
     print("---------------------------")
 
 
-#NY FEIL HER 
+print("FERDIG TESTET")

@@ -39,6 +39,49 @@ class ConstructionHeuristic:
     Dersom pasientne allokeres legges nå alle de tilhørende treatments, visits og aktiviteter til 
     '''
  
+    def construct_simple_initial(self, a): 
+        route_plan = RoutePlan(self.days, self.employees_df, self.folder_name)
+        #Lager en liste med pasienter i prioritert rekkefølge. 
+        unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
+        #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
+        for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
+            #Henter ut raden i pasient dataframes som tilhører pasienten
+            patient = unassigned_patients.index[i] 
+            allocation = unassigned_patients.loc[patient, 'allocation']
+            
+            #Kopierer nåværende ruteplan for denne pasienten 
+            route_plan_with_patient = copy.deepcopy(route_plan)
+
+            patientInsertor = Insertor(self, route_plan_with_patient, construction_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
+            state = patientInsertor.insert_patient(patient)
+        
+            if state == True: 
+                #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
+                route_plan = patientInsertor.route_plan
+                
+                #Pasienten legges til i hjemmsykehusets liste med pasienter
+                self.updateConstructionAllocationInformation(route_plan, patient)
+                #Oppdaterer ruteplanen 
+                
+            #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
+            #TODO: Hva trenger egentlig å konstrueres i dette
+            if state == False: 
+                
+            
+                if allocation == 0: 
+                    route_plan.notAllocatedPatients.append(patient)
+                else: 
+                    route_plan.illegalNotAllocatedPatients.append(patient)
+        
+        #TODO: Oppdatere alle dependencies når vi har konstruert løsning - Jeg forstår ikke helt denne 
+        for day in range(1, 1+ self.days): 
+            for route in route_plan.routes[day].values(): 
+                for activity in route.route: 
+                    route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
+        route_plan.updateObjective(0, iterations)
+
+        return route_plan 
+        
 
     def construct_initial(self): 
         patient_list = self.patients_array[1:].tolist()
@@ -94,7 +137,6 @@ class ConstructionHeuristic:
             ): 
              
                 best_route_plan = route_plan
-
         self.route_plan = best_route_plan
 
 

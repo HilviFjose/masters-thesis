@@ -62,16 +62,22 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Number of constructed solutions 
-num_of_constructions = 1
+num_of_constructions = 3  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
-#Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
-construction_insertor = 1 #W
+#Insertor choises [0,1,2, 3] for [simple, better with limited regret 1, better sith limited regeret 2, better, best ]
+construction_insertor = 2 #W
 repair_insertor = 1
-illegal_repair_insertor = 1
-better_repair_insertor = 1 
+illegal_repair_insertor = 2
 
-max_num_explored_branches = 50
 
-#How often should we use better insertion 
-frequecy_of_better_insertion = 0.01
-modNum_for_better_insertion = math.ceil(iterations*frequecy_of_better_insertion) 
+max_num_regret1 = 20
+max_num_regret2 = 100
+
+#Insertor som kan brukes en andel av gangene 
+fraction_repair_insertor = 1 
+frequecy_of_fraction_insertion = 0.5
+modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
+
+
+#Number of paralell processes 
+num_of_paralell_iterations = 1

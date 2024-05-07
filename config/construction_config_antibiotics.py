@@ -32,7 +32,7 @@ heavinessDistribution = [0.5, 0.5, 0]
 
 # EMPLOYEES
 # Number of employees
-E_num = 3
+E_num = 8
 E_generalists = 0.2 #Percentage of employees with profession level 1 and 2 that are generalists
 
 # Profession Level 
