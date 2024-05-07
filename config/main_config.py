@@ -70,7 +70,7 @@ repair_insertor = 1
 illegal_repair_insertor = 1
 better_repair_insertor = 1 
 
-max_num_explored_branches = 40
+max_num_explored_branches = 30
 
 #How often should we use better insertion 
 frequecy_of_better_insertion = 0.01
