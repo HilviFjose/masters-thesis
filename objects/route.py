@@ -70,7 +70,7 @@ class Route:
             return False
 
         S_i = self.start_time
-        T_ia = math.ceil(T_ij[0][activity.id])
+        T_ia = T_ij[0][activity.id]
         D_i = 0 
         index_count = 0 
         i = None
@@ -83,7 +83,7 @@ class Route:
            
             if (activity.possibleToInsert == True) and (
                 S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
-                max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + math.ceil(T_ij[activity.id][j.id]) <= j.startTime):  
+                max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + T_ij[activity.id][j.id]) <= j.startTime:  
                 activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
                 self.route = np.insert(self.route, index_count, activity)
                 if activity.location != depot: 
@@ -95,8 +95,8 @@ class Route:
             if (activity.possibleToInsert == True) and (
                 min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia) and (
                 S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and  (
-                S_i + D_i + T_ia + activity.duration + math.ceil(T_ij[activity.id][j.id]) <= j.startTime): 
-                activity.startTime = S_i + D_i + math.ceil(T_ia)
+                S_i + D_i + T_ia + activity.duration + T_ij[activity.id][j.id]) <= j.startTime: 
+                activity.startTime = S_i + D_i + T_ia
                 self.route = np.insert(self.route, index_count, activity)
                 if activity.location != depot: 
                     self.locations.append(activity.location)
@@ -104,7 +104,7 @@ class Route:
       
                 return True
             S_i = j.startTime
-            T_ia = math.ceil(T_ij[j.id][activity.id])
+            T_ia = T_ij[j.id][activity.id]
             D_i = j.duration
             i = j 
             index_count +=1
@@ -119,7 +119,7 @@ class Route:
                 
         if (activity.possibleToInsert == True) and (
             S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
-            max(activity.earliestStartTime, activity.getNewEarliestStartTime())+ activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
+            max(activity.earliestStartTime, activity.getNewEarliestStartTime())+ activity.duration + T_ij[activity.id][0]) <= self.end_time: 
             activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
             self.route = np.insert(self.route, index_count, activity)
             if activity.location != depot: 
@@ -131,8 +131,8 @@ class Route:
         if (activity.possibleToInsert == True) and (
             min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia) and (
             S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and (
-            S_i + D_i + T_ia + activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
-            activity.startTime = S_i + D_i + math.ceil(T_ia)
+            S_i + D_i + T_ia + activity.duration + T_ij[activity.id][0]) <= self.end_time: 
+            activity.startTime = S_i + D_i + T_ia
             self.route = np.insert(self.route, index_count, activity)
             if activity.location != depot: 
                 self.locations.append(activity.location)
@@ -162,13 +162,13 @@ class Route:
         self.deviationPrefSpes = 0
         for act in self.route: 
             j = act.id
-            self.travel_time += math.ceil(T_ij[i][j])
+            self.travel_time += T_ij[i][j]
             i = j 
             self.aggSkillDiff += self.employee.skillLevel - act.skillReq
             self.suitability += act.suitability
             if act.prefSpes != None and act.prefSpes != self.employee.clinic: 
                 self.deviationPrefSpes += 1
-        self.travel_time += math.ceil(T_ij[i][0])
+        self.travel_time += T_ij[i][0]
    
     #TODO: Oppdates ikke oppover igjen i hierarkiet
     def removeActivityID(self, activityID):
@@ -184,6 +184,8 @@ class Route:
         return
 
     
+
+
     def insertActivityOnIndex(self, activity, index):
 
         if self.checkTrueFalse(activity) == False: 
@@ -210,6 +212,7 @@ class Route:
             S_i = i.startTime
             D_i = i.duration
             T_ia = T_ij[i_id][activity.id]
+
         if index == len(self.route): 
             j_id = 0
             S_j = self.end_time
@@ -219,7 +222,7 @@ class Route:
             S_j = j.startTime
 
         if S_i + D_i + T_ia <= max(activity.earliestStartTime, activity.getNewEarliestStartTime()) and (
-            max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + math.ceil(T_ij[activity.id][j_id]) <= S_j): 
+            max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + T_ij[activity.id][j_id]) <= S_j: 
             activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
             self.route = np.insert(self.route, index, activity)
             if activity.location != depot: 
@@ -229,8 +232,8 @@ class Route:
         
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia and (
             S_i + D_i + T_ia >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and  (
-            S_i + D_i + T_ia + activity.duration + math.ceil(T_ij[activity.id][j_id]) <= S_j): 
-            activity.startTime = S_i + D_i + math.ceil(T_ia)
+            S_i + D_i + T_ia + activity.duration + T_ij[activity.id][j_id]) <= S_j: 
+            activity.startTime = S_i + D_i + T_ia
             self.route = np.insert(self.route, index, activity)
             if activity.location != depot: 
                 self.locations.append(activity.location)
@@ -241,7 +244,7 @@ class Route:
 
     def insertToEmptyList(self, activity): 
         if self.start_time + T_ij[0][activity.id] <= max(activity.earliestStartTime, activity.getNewEarliestStartTime()) and (
-            max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
+            max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + T_ij[activity.id][0]) <= self.end_time: 
             activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
             self.route = np.insert(self.route, 0, activity)
             if activity.location != depot: 
@@ -252,8 +255,8 @@ class Route:
    
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= self.start_time + T_ij[0][activity.id] and (
             self.start_time + T_ij[0][activity.id] >= max(activity.earliestStartTime, activity.getNewEarliestStartTime())) and  (
-            self.start_time + T_ij[0][activity.id] + activity.duration + math.ceil(T_ij[activity.id][0]) <= self.end_time): 
-            activity.startTime = self.start_time + math.ceil(T_ij[0][activity.id])
+            self.start_time + T_ij[0][activity.id] + activity.duration + T_ij[activity.id][0]) <= self.end_time: 
+            activity.startTime = self.start_time + T_ij[0][activity.id]
             self.route = np.insert(self.route, 0, activity)
             if activity.location != depot: 
                 self.locations.append(activity.location)
@@ -275,7 +278,7 @@ class Route:
         for j in range(stopIndex): 
             act = self.route[j]
 
-            new_startTime =  max(act.earliestStartTime, act.getNewEarliestStartTime(), S_i + D_i + math.ceil(T_ij[i_id][act.id]) )
+            new_startTime =  max(act.earliestStartTime, act.getNewEarliestStartTime(), S_i + D_i + T_ij[i_id][act.id]) 
             if new_startTime < act.startTime: 
                 act.startTime = new_startTime
                 
@@ -293,7 +296,7 @@ class Route:
         for i in range(len(self.route)-1, stopIndex-1, -1): 
             act = self.route[i]
             
-            new_startTime = min(act.latestStartTime, act.getNewLatestStartTime(), S_j - math.ceil(T_ij[act.id][j_id]) - act.duration )
+            new_startTime = min(act.latestStartTime, act.getNewLatestStartTime(), S_j - T_ij[act.id][j_id] - act.duration )
             if new_startTime > act.startTime: 
                 act.startTime = new_startTime
 
