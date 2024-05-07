@@ -8,7 +8,7 @@ import math
 reaction_factor_default = 0.7
 
 # Iterations in ALNS
-iterations = 1000
+iterations = 400
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req_default = 0.02
@@ -70,10 +70,10 @@ num_of_constructions = 3  #OBS: Bør ikke settes til over 5, for er usikkert hvr
 #Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
 construction_insertor = 1 #W
 repair_insertor = 1
-illegal_repair_insertor = 2
+illegal_repair_insertor = 1
 better_repair_insertor = 1 
 
-max_num_explored_branches = 20
+max_num_explored_branches = 40
 
 #How often should we use better insertion 
 frequecy_of_better_insertion = 0.01
