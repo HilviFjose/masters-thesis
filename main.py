@@ -29,15 +29,7 @@ def main():
     df_treatments = parameters.df_treatments
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
-    '''
-    # CREATE RESULTS FOLDER
-    current_datetime = datetime.now()
-    date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-    folder_name = f"results-{date_time_str}"
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
-
-    '''
+   
     # Specify the parent folder
     parent_folder = "results"
 
