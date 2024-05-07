@@ -106,8 +106,7 @@ class ALNS:
             for result in results[1:]: 
                 if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
                     candidate_route_plan, destroy, repair = result
-           
-            #Kjøre uten parallel 
+             
             
 
             candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
@@ -195,7 +194,7 @@ class ALNS:
         
         
         self.add_destroy_operator(destroy_operators.related_patients_removal)
-        #self.add_destroy_operator(destroy_operators.related_treatments_removal)
+        self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
 
         # Add repair operators
