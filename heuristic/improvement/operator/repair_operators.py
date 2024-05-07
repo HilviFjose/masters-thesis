@@ -49,9 +49,9 @@ class RepairOperators:
   
 
         repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_better_insertion == 0: 
-            #print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
-            repair_insertor_level = main_config.better_repair_insertor
+        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
+            #print("iteration ", current_iteration, "main_config.modNum_for_fraction_insertion", main_config.modNum_for_fraction_insertion)
+            repair_insertor_level = main_config.fraction_repair_insertor
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
 
@@ -92,8 +92,8 @@ class RepairOperators:
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)   
     
         repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_better_insertion == 0: 
-            repair_insertor_level = main_config.better_repair_insertor
+        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
+            repair_insertor_level = main_config.fraction_repair_insertor
         randomNotAllocatedPatients = repaired_route_plan.notAllocatedPatients
         random.shuffle(randomNotAllocatedPatients)
 
@@ -132,9 +132,9 @@ class RepairOperators:
 
 
         repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_better_insertion == 0: 
-            #print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
-            repair_insertor_level = main_config.better_repair_insertor
+        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
+            #print("iteration ", current_iteration, "main_config.modNum_for_fraction_insertion", main_config.modNum_for_fraction_insertion)
+            repair_insertor_level = main_config.fraction_repair_insertor
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get, reverse=True)
         
@@ -178,10 +178,10 @@ class RepairOperators:
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
         repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_better_insertion == 0: 
-            #print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
+        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
+            #print("iteration ", current_iteration, "main_config.modNum_for_fraction_insertion", main_config.modNum_for_fraction_insertion)
 
-            repair_insertor_level = main_config.better_repair_insertor
+            repair_insertor_level = main_config.fraction_repair_insertor
         best_repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
         best_repaired_route_plan_with_k_regret.updateObjective(current_iteration, total_iterations)
         for k in range(1, main_config.k): 
