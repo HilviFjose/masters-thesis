@@ -3,7 +3,7 @@ from objects.patterns import pattern
 from objects.activity import Activity
 import random 
 from helpfunctions import * 
-from config.main_config import iterations, max_num_explored_branches
+from config.main_config import iterations, max_num_regret1, max_num_regret2
 
 
 class Insertor:
@@ -14,12 +14,16 @@ class Insertor:
         self.rev = False
 
         self.InsertionFound_BetterInsertVisit = False
-        self.InsertionFound_BetterInsertVisitWitLim = False
+        self.InsertionFound_BetterInsertVisitWitLim1 = False
+        self.betterInsertVisit_explored_branches1 = 0
+        self.InsertionFound_BetterInsertVisitWitLim2 = False
+        self.betterInsertVisit_explored_branches2 = 0
+        
         self.InsertionFound_BestInsertVisit = False
-        self.betterInsertVisit_explored_branches = 0
+        
 
 
-        self.visitOnDayInsertorList = [self.simple_insert_visit_on_day, self.better_insert_visit_on_day_with_iteration_limitation, self.better_insert_visit_on_day,  self.best_insert_visit_on_day]   
+        self.visitOnDayInsertorList = [self.simple_insert_visit_on_day, self.better_insert_visit_on_day_with_iteration_limitation1, self.better_insert_visit_on_day_with_iteration_limitation2,  self.better_insert_visit_on_day,  self.best_insert_visit_on_day]   
         if insertion_efficiency_level >= len(self.visitOnDayInsertorList): 
             print("IKKE GYLDIG insertion_efficiency_level")
         self.insertVisitOnDay = self.visitOnDayInsertorList[insertion_efficiency_level] #Dette er en funskjon 
@@ -179,17 +183,10 @@ class Insertor:
                 else: 
                     break
 
-    
-    '''
-    Når skal vi si at den er ferdig. Kan telle hver gang den kommer til en stopp
 
-    Denne har returnert tidligere når vi har funnet en løsning som fungerer nå vil vi returnere 
-    '''
-
-    def better_insert_visit_on_day_with_iteration_limitation(self, visit, day):
-        
-        self.InsertionFound_BetterInsertVisitWitLim = False 
-        self.betterInsertVisit_explored_branches = 0 
+    def better_insert_visit_on_day_with_iteration_limitation1(self, visit, day):
+        self.InsertionFound_BetterInsertVisitWitLim1 = False 
+        self.betterInsertVisit_explored_branches1 = 0 
 
         activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
         #test_route_plan = copy.deepcopy(self.route_plan)
@@ -201,24 +198,24 @@ class Insertor:
       
         #old_route_plan = copy.deepcopy(test_route_plan)
         for route in self.route_plan.getSortedRoutes(activity, day):
-            if self.InsertionFound_BetterInsertVisitWitLim == True or self.betterInsertVisit_explored_branches > max_num_explored_branches: 
+            if self.InsertionFound_BetterInsertVisitWitLim1 == True or self.betterInsertVisit_explored_branches1 > max_num_regret1: 
                 break 
             for index_place in range(len(route.route)+1): 
             
                 test_route_plan = copy.deepcopy(self.route_plan)
 
-                if self.InsertionFound_BetterInsertVisitWitLim == False and self.betterInsertVisit_explored_branches <= max_num_explored_branches: 
-                    self.insertNextActiviy_forBetterInsertion_with_iteration_limitation(activity, rest_acitivites, test_route_plan, day, route.employee.id, index_place)
-                    if self.InsertionFound_BetterInsertVisitWitLim == True: 
+                if self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 <= max_num_regret1: 
+                    self.insertNextActiviy_forBetterInsertion_with_iteration_limitation1(activity, rest_acitivites, test_route_plan, day, route.employee.id, index_place)
+                    if self.InsertionFound_BetterInsertVisitWitLim1 == True: 
                         break
                 else: 
                     break
         
-        return self.InsertionFound_BetterInsertVisitWitLim
+        return self.InsertionFound_BetterInsertVisitWitLim1
 
 
 
-    def insertNextActiviy_forBetterInsertion_with_iteration_limitation(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
+    def insertNextActiviy_forBetterInsertion_with_iteration_limitation1(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
         #TODO: Sammkjøre denne med andre aktiviteter som fungere 
         #BEG: Må ha med denne også for å sjekke om det er 
         route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
@@ -228,13 +225,13 @@ class Insertor:
 
         insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
   
-        if insertStatus == False or self.betterInsertVisit_explored_branches > max_num_explored_branches: 
-            self.betterInsertVisit_explored_branches += 1 
+        if insertStatus == False or self.betterInsertVisit_explored_branches1 > max_num_regret1: 
+            self.betterInsertVisit_explored_branches1 += 1 
             return
         
         if len(rest_acitivites) == 0: 
             self.route_plan = route_plan
-            self.InsertionFound_BetterInsertVisitWitLim = True
+            self.InsertionFound_BetterInsertVisitWitLim1 = True
             return
             
         
@@ -247,29 +244,95 @@ class Insertor:
         #for route in route_plan.getSortedRoutes(activity, day):
         #old_route_plan = route_plan
         for route in route_plan.getSortedRoutes(next_actitivy, day):  
-            if self.InsertionFound_BetterInsertVisitWitLim == True  or self.betterInsertVisit_explored_branches > max_num_explored_branches: 
+            if self.InsertionFound_BetterInsertVisitWitLim1 == True  or self.betterInsertVisit_explored_branches1 > max_num_regret1: 
                 break
             for index_place in range(len(route.route)+1): 
                 next_route_plan = copy.deepcopy(route_plan)
                 #route_plan = copy.deepcopy(old_route_plan)
     
-                if self.InsertionFound_BetterInsertVisitWitLim == False: 
-                    self.insertNextActiviy_forBetterInsertion_with_iteration_limitation(next_actitivy, rest_acitivites, next_route_plan, day, route.employee.id, index_place)
-                    if self.InsertionFound_BetterInsertVisitWitLim  or self.betterInsertVisit_explored_branches > max_num_explored_branches: 
+                if self.InsertionFound_BetterInsertVisitWitLim1 == False: 
+                    self.insertNextActiviy_forBetterInsertion_with_iteration_limitation1(next_actitivy, rest_acitivites, next_route_plan, day, route.employee.id, index_place)
+                    if self.InsertionFound_BetterInsertVisitWitLim1  or self.betterInsertVisit_explored_branches1 > max_num_regret1: 
                         break
                 else: 
                     break
+ 
 
-        '''
-        for route in route_plan.getSortedRoutes(next_activity, day):
-            if self.InsertionFound_BetterInsertVisitWitLim or self.betterInsertVisit_explored_branches > max_num_explored_branches:
-                break
-            for new_index_place in range(len(route.route) + 1):
-                route_plan = copy.deepcopy(old_route_plan)  # Restore before each attempt
-                self.insertNextActiviy_forBetterInsertion_with_iteration_limitation(next_activity, rest_activities, route_plan, day, route.employee.id, new_index_place)
-                if self.InsertionFound_BetterInsertVisitWitLim:
+
+    '''
+    Hva er fordelen med å gjøre det sånn som dette? Kan bare sette en max_num_of_explored_branches. Hvorfor hvis det funker helt fint som dette. 
+    Prøver på denne først 
+    '''
+    def better_insert_visit_on_day_with_iteration_limitation2(self, visit, day):
+
+        self.InsertionFound_BetterInsertVisitWitLim2 = False 
+        self.betterInsertVisit_explored_branches2 = 0 
+
+        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+
+        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activity = activities[0]
+        rest_acitivites = activities[1:]
+      
+        for route in self.route_plan.getSortedRoutes(activity, day):
+            if self.InsertionFound_BetterInsertVisitWitLim2 == True or self.betterInsertVisit_explored_branches2 > max_num_regret2: 
+                break 
+            for index_place in range(len(route.route)+1): 
+            
+                test_route_plan = copy.deepcopy(self.route_plan)
+
+                if self.InsertionFound_BetterInsertVisitWitLim2 == False and self.betterInsertVisit_explored_branches2 <= max_num_regret2: 
+                    self.insertNextActiviy_forBetterInsertion_with_iteration_limitation2(activity, rest_acitivites, test_route_plan, day, route.employee.id, index_place)
+                    if self.InsertionFound_BetterInsertVisitWitLim2 == True: 
+                        break
+                else: 
                     break
-        '''
+        
+        return self.InsertionFound_BetterInsertVisitWitLim2
+
+
+
+    def insertNextActiviy_forBetterInsertion_with_iteration_limitation2(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
+        #TODO: Sammkjøre denne med andre aktiviteter som fungere 
+        #BEG: Må ha med denne også for å sjekke om det er 
+        route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
+       
+        for activitiesWithPossibleNewUpdated in route_plan.routes[day][employeeID].route: 
+            route_plan.updateActivityBasedOnRoutePlanOnDay(activitiesWithPossibleNewUpdated, day)
+
+        insertStatus = route_plan.routes[day][employeeID].insertActivityOnIndex(activity, index_place)
+  
+        if insertStatus == False or self.betterInsertVisit_explored_branches2 > max_num_regret2: 
+            self.betterInsertVisit_explored_branches2 += 1 
+            return
+        
+        if len(rest_acitivites) == 0: 
+            self.route_plan = route_plan
+            self.InsertionFound_BetterInsertVisitWitLim2 = True
+            return
+            
+        
+        next_actitivy = rest_acitivites[0]
+        rest_acitivites = rest_acitivites[1:] 
+        
+       
+        #old_route_plan = copy.deepcopy(route_plan)
+        #TODO: Den under skal vel sorteres på next-activity 
+        #for route in route_plan.getSortedRoutes(activity, day):
+        #old_route_plan = route_plan
+        for route in route_plan.getSortedRoutes(next_actitivy, day):  
+            if self.InsertionFound_BetterInsertVisitWitLim2 == True  or self.betterInsertVisit_explored_branches2 > max_num_regret2: 
+                break
+            for index_place in range(len(route.route)+1): 
+                next_route_plan = copy.deepcopy(route_plan)
+                #route_plan = copy.deepcopy(old_route_plan)
+    
+                if self.InsertionFound_BetterInsertVisitWitLim2 == False: 
+                    self.insertNextActiviy_forBetterInsertion_with_iteration_limitation2(next_actitivy, rest_acitivites, next_route_plan, day, route.employee.id, index_place)
+                    if self.InsertionFound_BetterInsertVisitWitLim2  or self.betterInsertVisit_explored_branches2 > max_num_regret2: 
+                        break
+                else: 
+                    break
         
 
              
