@@ -513,8 +513,8 @@ class RoutePlan:
         '''    
 
         #Her håndteres pick up and delivery
-        if activity.pickUpActivityID != 0 : 
-            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.pickUpActivityID, day)
+        if activity.sameEmployeeAcitivtyID != 0 : 
+            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.sameEmployeeAcitivtyID, day)
             activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
             
         #Her håndteres presedens.   
@@ -588,14 +588,11 @@ class RoutePlan:
                         return day
                     
     def updateAllocationAfterPatientInsertor(self, patient, constructor): 
-        treatmentIds_index = constructor.patients_array[0].tolist().index('treatmentsIds')
-        visitsIds_index = constructor.treatments_array[0].tolist().index('visitsIds')
-        activitiesIds_index = constructor.visits_array[0].tolist().index('activitiesIds')
-        self.allocatedPatients[patient] = constructor.patients_array[patient][treatmentIds_index]
+        self.allocatedPatients[patient] = constructor.patients_array[patient][11]
         for treatment in self.allocatedPatients[patient]:
-            self.treatments[treatment] = constructor.treatments_array[treatment][visitsIds_index]
+            self.treatments[treatment] = constructor.treatments_array[treatment][18]
             for visit in self.treatments[treatment]: 
-                self.visits[visit] = constructor.visits_array[visit][activitiesIds_index]
+                self.visits[visit] = constructor.visits_array[visit][14]
 
         #Fjerner pasienten fra ikkeAllokert listen 
         if patient in self.notAllocatedPatients: 

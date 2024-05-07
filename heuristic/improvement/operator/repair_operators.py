@@ -53,8 +53,7 @@ class RepairOperators:
         if current_iteration % main_config.modNum_for_better_insertion == 0: 
             print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
             repair_insertor_level = main_config.better_repair_insertor
-        utility_index = self.constructor.patients_array[0].tolist().index('utility')
-        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][utility_index] for patient in repaired_route_plan.notAllocatedPatients}
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][13] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
 
         for patient in descendingUtilityNotAllocatedPatients: 
@@ -137,8 +136,7 @@ class RepairOperators:
         if current_iteration % main_config.modNum_for_better_insertion == 0: 
             print("iteration ", current_iteration, "main_config.modNum_for_better_insertion", main_config.modNum_for_better_insertion)
             repair_insertor_level = main_config.better_repair_insertor
-        pComplexity_index = self.constructor.patients_array[0].tolist().index('p_complexity')
-        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][pComplexity_index] for patient in repaired_route_plan.notAllocatedPatients}
+        descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][14] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get, reverse=True)
         
         for patient in descendingComplexityNotAllocatedPatients: 
@@ -177,8 +175,7 @@ class RepairOperators:
 
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
 
-        utility_index = self.constructor.patients_array[0].tolist().index('utility')
-        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][utility_index] for patient in repaired_route_plan.notAllocatedPatients}
+        descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_array[patient][13] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
         repair_insertor_level = main_config.repair_insertor
@@ -224,7 +221,7 @@ class RepairOperators:
         activityIterationDict = copy.copy(repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays)
         
         for activityID, day in activityIterationDict.items():
-            activity = Activity(self.constructor.activities_df, activityID)
+            activity = Activity(self.constructor.activities_array, activityID)
 
             #BEG: Jeg tror egentlig ikke vi trenger den som er under her 
             repaired_route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
@@ -237,8 +234,7 @@ class RepairOperators:
                 del repaired_route_plan.illegalNotAllocatedActivitiesWithPossibleDays[activityID]
                 
                 for visit in range(1, len(self.constructor.visits_array)):
-                    activitiesIds_index =  self.constructor.visits_array[0].tolist().index('activitiesIds')
-                    if activityID in self.constructor.visits_array[visit][activitiesIds_index]: 
+                    if activityID in self.constructor.visits_array[visit][14]: 
                         break
 
                 #Steg 2 - Oppdater allokert dictionariene                
@@ -264,15 +260,13 @@ class RepairOperators:
 
                 #Legger til visitet på treatmenten. Vet at treatmenten ligger inne, for hvis ikke så ville ikke visitet vært illegal 
                 for treatment in range(1, len(self.constructor.treatments_array)):
-                    visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
-                    if visit in self.constructor.treatments_array[treatment][visitsIds_index]: 
+                    if visit in self.constructor.treatments_array[treatment][18]: 
                         break
 
                 #Steg 2 - Oppdater allokert dictionariene 
                 repaired_route_plan.treatments[treatment].append(visit) 
                 #Legge til visit og activities som hører til treatmentet 
-                activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
-                repaired_route_plan.visits[visit] = self.constructor.visits_array[visit][activitiesIds_index]
+                repaired_route_plan.visits[visit] = self.constructor.visits_array[visit][14]
 
             #Alternativ 2 - Setter tilbake ruteplanen, dersom ingen insertion 
             else: 
@@ -294,18 +288,15 @@ class RepairOperators:
                 
                 #Legger til treatmenten på pasienten. Vet at pasienten allerede ligger inne, for hvis ikke ville ikke treatmenten i utgnaspunktet vært illegal 
                 for patient_id in range(1, len(self.constructor.patients_array)):
-                    treatmentIds_index =  self.constructor.patients_array[0].tolist().index('treatmentsIds')
-                    if treatment in self.constructor.patients_array[patient_id][treatmentIds_index]: 
+                    if treatment in self.constructor.patients_array[patient_id][11]: 
                         break
 
                 #Steg 2 - Oppdater allokert dictionariene 
                 repaired_route_plan.allocatedPatients[patient_id].append(treatment)
                 #Legge til visit og activities som hører til treatmentet 
-                visitsIds_index = self.constructor.treatments_array[0].tolist().index('visitsIds')
-                activitiesIds_index = self.constructor.visits_array[0].tolist().index('activitiesIds')
-                repaired_route_plan.treatments[treatment] = self.constructor.treatments_array[treatment][visitsIds_index]
+                repaired_route_plan.treatments[treatment] = self.constructor.treatments_array[treatment][18]
                 for visit in repaired_route_plan.treatments[treatment]: 
-                    repaired_route_plan.visits[visit] = self.constructor.visits_array[visit][activitiesIds_index]
+                    repaired_route_plan.visits[visit] = self.constructor.visits_array[visit][14]
             #Alternativ 2       
             else:
                 repaired_route_plan = copy.deepcopy(old_route_plan)

@@ -42,15 +42,13 @@ class ConstructionHeuristic:
 
     def construct_initial(self): 
         patient_list = self.patients_array[1:].tolist()
-        allocation_index = self.patients_array[0].tolist().index('allocation')
-        agg_utility_index = self.patients_array[0].tolist().index('aggUtility')
-        sorted_unassigned_patients = sorted(patient_list, key=lambda x: (x[allocation_index], x[agg_utility_index]))
+        sorted_unassigned_patients = sorted(patient_list, key=lambda x: (x[2], x[13]))
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
         for j in range(len(self.route_plans)): 
             route_plan = self.route_plans[j]
             for i in tqdm(range(len(sorted_unassigned_patients)), colour='#39ff14'):
                 patient_id = i+1
-                allocation = sorted_unassigned_patients[i][allocation_index]
+                allocation = sorted_unassigned_patients[i][2]
                 
                 #Kopierer nåværende ruteplan for denne pasienten 
                 route_plan_with_patient = copy.deepcopy(route_plan)
@@ -96,8 +94,6 @@ class ConstructionHeuristic:
             ): 
              
                 best_route_plan = route_plan
- 
-            
 
         self.route_plan = best_route_plan
 
@@ -109,13 +105,11 @@ class ConstructionHeuristic:
     
 
     def updateConstructionAllocationInformation(self, route_plan, patient): 
-        treatments_index = self.patients_array[0].tolist().index('treatmentsIds')
-        visits_index = self.treatments_array[0].tolist().index('visitsIds')
-        activities_index = self.visits_array[0].tolist().index('activitiesIds')
-        route_plan.allocatedPatients[patient] = self.patients_array[patient, treatments_index]
+        route_plan.allocatedPatients[patient] = self.patients_array[patient][11] 
         for treatment in [item for sublist in route_plan.allocatedPatients.values() for item in sublist]: 
-            route_plan.treatments[treatment] = self.treatments_array[treatment][visits_index]
+            route_plan.treatments[treatment] = self.treatments_array[treatment][18]
         for visit in [item for sublist in route_plan.treatments.values() for item in sublist]: 
-            route_plan.visits[visit] = self.visits_array[visit][activities_index]
+            route_plan.visits[visit] = self.visits_array[visit][14]
+
 
 

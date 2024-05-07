@@ -336,7 +336,7 @@ class LocalSearch:
 
                 employee = route_plan.getEmployeeIDAllocatedForActivity(activity, day)
                 otherEmployees = route_plan.getListOtherEmplIDsOnDay(activity.id, day)
-                sameEmployeeActivity = route_plan.getActivity(activity.pickUpActivityID, day)
+                sameEmployeeActivity = route_plan.getActivity(activity.sameEmployeeAcitivtyID, day)
 
                 for othEmpl in otherEmployees: 
                     new_candidate = copy.deepcopy(route_plan)

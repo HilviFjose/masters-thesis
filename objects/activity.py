@@ -11,31 +11,33 @@ For å opprette en aktivitet må dataframene som inneholder aktivitetne til ID-e
 '''
 
 class Activity:
-    def __init__(self, df, id):
+    def __init__(self, activities_array, id):
         self.id = id 
-        self.latestStartTime = df.loc[id]["latestStartTime"]
-        self.earliestStartTime = df.loc[id]["earliestStartTime"]
-        self.duration = df.loc[id]["duration"]
-        self.skillReq = df.loc[id]["skillRequirement"]
-        self.heaviness = df.loc[id]["heaviness"]
-        self.pickUpActivityID = df.loc[id]["sameEmployeeActivityId"]
-        self.location = self.makeLocationTuple(df.loc[id]["location"])   #Endret på denne for å få til lokasjon 
-        self.employeeRestricions = df.loc[id]["employeeRestriction"]
-        self.continuityGroup = df.loc[id]["continuityGroup"]
-        self.employeeHistory = df.loc[id]["employeeHistory"]
-        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(df.loc[id]["prevPrece"])
+        #activities_array[0] =  ['patientId', 'activityType', 'numActivitiesInVisit', 'earliestStartTime', 'latestStartTime', 'duration', 'synchronisation',
+        #'skillRequirement', 'clinic', 'nextPrece', 'prevPrece', 'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location', 'employeeRestriction', 
+        #'heaviness', 'utility' 'allocation' 'patternType' 'employeeHistory' 'continuityGroup' 'specialisationPreferred' 'a_complexity' 'v_complexity' 'nActInTreat'
+        #'t_complexity' 'nActInPatient']
+        self.latestStartTime = activities_array[id][4]
+        self.earliestStartTime = activities_array[id][3]
+        self.duration = activities_array[id][5]
+        self.skillReq = activities_array[id][7]
+        self.heaviness = activities_array[id][16]
+        self.sameEmployeeAcitivtyID = activities_array[id][11]
+        self.location = self.makeLocationTuple(activities_array[id][14])  
+        self.employeeRestricions = activities_array[id][15]
+        self.continuityGroup = activities_array[id][21]
+        self.employeeHistory = activities_array[id][20]
+        self.PrevNode, self.PrevNodeInTime= self.makePresNodes(activities_array[id][10])
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
-        self.NextNode, self.NextNodeInTime = self.makePresNodes(df.loc[id]["nextPrece"])
-        self.patient = df.loc[id]["patientId"]
-        self.treatmentId = df.loc[id]["treatmentId"]
-
-        self.nActInPatient = df.loc[id]["nActInPatient"]
-        self.nActInTreat = df.loc[id]["nActInTreat"]
-        self.nActInVisit = df.loc[id]["numActivitiesInVisit"]
-
-        self.suitability = df.loc[id]["utility"]
-
-        self.prefSpes = df.loc[id]["specialisationPreferred"]
+        self.NextNode, self.NextNodeInTime = self.makePresNodes(activities_array[id][9])
+        self.patient = activities_array[id][0]
+        self.treatmentId = activities_array[id][13]
+        self.nActInPatient = activities_array[id][27]
+        self.nActInTreat = activities_array[id][25]
+        self.nActInVisit = activities_array[id][2]
+        self.suitability = activities_array[id][17]
+        self.prefSpes = activities_array[id][22]
+        self.visitId = activities_array[id][12]
         
         self.startTime = None
         #self.newLatestStartTime = 1440
@@ -50,8 +52,6 @@ class Activity:
 
         self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
         self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
-
-        self.sameEmployeeAcitivtyID = df.loc[id]["sameEmployeeActivityId"]
         
     #make funskjonene setter parameterne til Acitivy objektet 
     

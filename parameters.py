@@ -71,10 +71,10 @@ def load_array_from_pickle(filepath):
             return data
 
 #ARRAYS FOR MORE EFFICIENT INFORMATION FETCHING
-employees_information_array = load_array_from_pickle(file_path_employees)
-patients_information_array = load_array_from_pickle(file_path_patients)
-treatments_information_array = load_array_from_pickle(file_path_treatments)
-visits_information_array = load_array_from_pickle(file_path_visits)
+employees_information_array = load_array_from_pickle(file_path_employees) #['professionalLevel' 'clinic' 'schedule']
+patients_information_array = load_array_from_pickle(file_path_patients) #['nTreatments' 'utility' 'allocation' 'employeeRestriction' 'continuityGroup' 'employeeHistory' 'heaviness' 'location' 'clinic' 'specialisationPreferred' 'extraSupport' 'treatmentsIds' 'nVisits' 'aggUtility' 'p_complexity' 'nActivities']
+treatments_information_array = load_array_from_pickle(file_path_treatments) #['patientId' 'patternType' 'pattern' 'visits' 'location' 'employeeRestriction' 'heaviness' 'utility' 'pattern_complexity' 'nActInTreat' 'allocation' 'employeeHistory' 'continuityGroup' 'clinic' 'specialisationPreferred' 'extraSupport' 't_complexity' 'complexity' 'visitsIds' 'nActivities' 'activitiesIds']
+visits_information_array = load_array_from_pickle(file_path_visits) #['treatmentId' 'patientId' 'clinic' 'specialisationPreferred' 'location' 'employeeRestriction' 'heaviness' 'utility' 'allocation' 'patternType' 'employeeHistory' 'continuityGroup' 'activities' 'v_complexity' 'activitiesIds']
 activities_information_array = load_array_from_pickle(file_path_activities)
 
 
