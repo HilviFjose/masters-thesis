@@ -4,30 +4,33 @@
 P_num = 50                                          # Number of patients
 
 # Patient demographics
-therapyDistribution = [0.3, 0.25, 0.3, 0.15]        # Distribution of patients receiving either antibiotics, nutrition/fluids, advanced infusion therapy, or a combination of them (= 2 out of three) 
+#therapyDistribution = [0.3, 0.25, 0.3, 0.15]        # Distribution of patients receiving either antibiotics, nutrition/fluids, advanced infusion therapy, or a combination of them (= 2 out of three) 
 clinicDistribution = [0.25, 0.57, 0.03, 0.15]       # Cancer, Medical, Orthopaedic, Paediatric
-specialisationDistribution = [1, 1, 1, 1]          # Percentage from each clinic that prefers a specialist
 patientExtraSupport = [0.5, 0.9, 0.2, 0.1]          # Percentage from each clinic that needs extra support 
 clinicsWithNutrition = [1,1,0,1]
 clinicsWithAdvanced = [1,1,0,1]
 clinicsWithCombination = [1,1,0,1]
 
 # Cancer clinic
+therapiesCancer = [5/35*0.9, 5/35*0.9, 25/35*0.9, 0.1] #15 % of the patients have a combination of therapies
 continuityCancer = [[0, 0.5, 0.5], [0, 0.5, 0.5], [0.4, 0.5, 0.1]] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
 utilityCancer = [[1, 0, 0], [0, 0.5, 0.5], [0.1, 0.2, 0.7]]
 workloadCancer = [[0.5, 0.5, 0], [0.4, 0.3, 0.3], [0.1, 0.4, 0.5]]
 
 # Medical Clinic
+therapiesMedical = [10/30*0.9, 10/30*0.9, 10/30*0.9, 0.1]
 continuityMedical = [[0, 0.5, 0.5], [0, 0.5, 0.5], [0.1, 0.3, 0.6]] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
 utilityMedical = [[1, 0, 0], [0.4, 0.5, 0.1], [0.4, 0.5, 0.1]]
 workloadMedical = [[0.5, 0.5, 0], [0.2, 0.3, 0.5], [0, 0.5, 0.5]]
 
 # Orthopaedic Clinic
+therapiesOrtho = [1, 0, 0, 0]
 continuityOrtho = [[0, 0.5, 0.5], [], []] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
 utilityOrtho = [[1, 0, 0], [], []]
 workloadOrtho = [[0.5, 0.5, 0], [], []]
 
 # Paediatric Clinic
+therapiesPaedia = [10/35*0.9, 5/35*0.9, 20/35*0.9, 0.1]
 continuityPaedia = [[0, 0.5, 0.5], [0.2, 0.4, 0.4], [0.7, 0.2, 0.1]] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
 utilityPaedia = [[1, 0, 0], [0.1, 0.2, 0.7], [0, 0.1, 0.9]]
 workloadPaedia = [[0.5, 0.5, 0], [0, 0.5, 0.5], [0, 0.3, 0.7]]

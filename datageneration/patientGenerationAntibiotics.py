@@ -10,16 +10,6 @@ from config import construction_config_antibiotics
 from datageneration import employeeGenerationAntibiotics
 
 def locationGenerator(locations, radius_km, num_points):
-    """Forklaring fra chatten:
-    For å generere et bestemt antall punkter innenfor arealet av en sirkel, kan vi tilpasse tilnærmingen ved 
-    å bruke en metode som lar oss plassere punkter tilfeldig, men innenfor grensene av sirkelens radius. 
-    Denne metoden involverer å generere tilfeldige vinkler og radiuser for hvert punkt, slik at de faller innenfor 
-    den definerte sirkelen. Dette sikrer at punktene er jevnt fordelt over hele området, ikke bare langs kanten.
-    Vi kan bruke polar koordinatsystemet hvor et punkt er definert av en radius fra sentrum og en vinkel i forhold 
-    til en referanseakse. For å oppnå dette, genererer vi tilfeldige vinkler (i radianer) og tilfeldige radiuser 
-    (som en brøkdel av den totale radiusen), og konverterer deretter disse polar koordinatene til kartesiske 
-    koordinater (latitude og longitude) for å passe inn i vår geografiske kontekst"""
-
     points = []
     for _ in range(num_points):
         # Velger en tilfeldig lokasjon fra listen
@@ -81,7 +71,6 @@ def patientGenerator(df_employees):
         'heaviness': heaviness,
         'location': locations,
         'clinic': clinic,
-        'specialisationPreferred': None,
         'extraSupport': 'no'
     })
 
@@ -90,40 +79,28 @@ def patientGenerator(df_employees):
         if clinic == 1: 
             # Finn indeksene til pasientene i denne klinikken
             indexes = group.index
-            # Beregn antallet pasienter som skal få oppdatert deres specialisationPreferred og extraSupport
-            numSpecialisationPreferred = int(len(indexes) * construction_config_antibiotics.specialisationDistribution[0]) 
+            # Beregn antallet pasienter som skal få oppdatert deres extraSupport
             numExtraSupport = int(len(indexes) * construction_config_antibiotics.patientExtraSupport[0])
             # Velg tilfeldige pasienter fra disse gruppene for oppdatering
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
             # Oppdater kun de valgte pasientene
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 1
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
 
         elif clinic == 2: 
             indexes = group.index
-            numSpecialisationPreferred = int(len(indexes) * construction_config_antibiotics.specialisationDistribution[1]) 
             numExtraSupport = int(len(indexes) * construction_config_antibiotics.patientExtraSupport[1])
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)   
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 2
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
 
         elif clinic == 3: 
             indexes = group.index
-            numSpecialisationPreferred = int(len(indexes) * construction_config_antibiotics.specialisationDistribution[2]) 
             numExtraSupport = int(len(indexes) * construction_config_antibiotics.patientExtraSupport[2])
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 3
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
         elif clinic == 4: 
             indexes = group.index
-            numSpecialisationPreferred = int(len(indexes) * construction_config_antibiotics.specialisationDistribution[3])
             numExtraSupport = int(len(indexes) * construction_config_antibiotics.patientExtraSupport[3]) 
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 4
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
 
         
@@ -193,7 +170,6 @@ def treatmentGenerator(df_patients):
     df_treatments['employeeHistory'] = expanded_rows['employeeHistory'] #Lagt til for Gurobi
     df_treatments['continuityGroup'] = expanded_rows['continuityGroup'] #Lagt til for Gurobi
     df_treatments['clinic'] = expanded_rows['clinic']
-    df_treatments['specialisationPreferred'] = expanded_rows['specialisationPreferred']
     df_treatments['extraSupport'] = expanded_rows['extraSupport']
 
     # Generate pattern type for each treatment. Will decide the number of visits per treatment.
@@ -220,13 +196,13 @@ def treatmentGenerator(df_patients):
     return df_treatments
 
 def visitsGenerator(df_treatments):
-    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'activities', 'clinic', 'specialisationPreferred', 'location'])
+    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'activities', 'clinic', 'location'])
 
     # Generate rows for each visit with the treatmentId and patientId
     expanded_rows = df_treatments.loc[df_treatments.index.repeat(df_treatments['visits'])].reset_index(drop=False)
     expanded_rows['visitId'] = range(1, len(expanded_rows) + 1)
 
-    df_visits = expanded_rows[['visitId', 'treatmentId', 'patientId', 'clinic', 'specialisationPreferred','location']].copy()
+    df_visits = expanded_rows[['visitId', 'treatmentId', 'patientId', 'clinic','location']].copy()
     df_visits[['employeeRestriction', 'heaviness', 'utility', 'allocation', 'patternType', 'employeeHistory', 'continuityGroup']] = expanded_rows[['employeeRestriction', 'heaviness', 'utility', 'allocation', 'patternType', 'employeeHistory', 'continuityGroup']]
   
     # Distribution of number of activities per visit
@@ -274,7 +250,7 @@ def visitsGenerator(df_treatments):
 def activitiesGenerator(df_visits):
     df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 
                                           'duration', 'synchronisation', 'skillRequirement', 'clinic', 'nextPrece', 'prevPrece', 
-                                          'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location'])
+                                          'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location', 'specialisationPreferred'])
 
     # Generate rows for each activity with the visitId, treatmentId and patientId
     expanded_rows = df_visits.loc[df_visits.index.repeat(df_visits['activities'])].reset_index(drop=False)
@@ -294,7 +270,6 @@ def activitiesGenerator(df_visits):
     df_activities['patternType'] = expanded_rows['patternType'] #Lagt til for Gurobi
     df_activities['employeeHistory'] = expanded_rows['employeeHistory'] #Lagt til for Gurobi
     df_activities['continuityGroup'] = expanded_rows['continuityGroup'] #Lagt til for Gurobi
-    df_activities['specialisationPreferred'] = expanded_rows['specialisationPreferred']
 
     # Distribute activities between healthcare activities 'H' and equipment activities 'E'
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital
@@ -384,7 +359,6 @@ def activitiesGenerator(df_visits):
     df_activities.loc[df_activities['activityType'] == 'E', 'heaviness'] = 1
     df_activities.loc[df_activities['activityType'] == 'E', 'utility'] = 0
     df_activities.loc[df_activities['activityType'] == 'E', 'continuityGroup'] = 3
-    df_activities.loc[df_activities['activityType'] == 'E', 'specialisationPreferred'] = None
     df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'] = df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'].apply(lambda x: {0: []})
 
         
