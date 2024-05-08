@@ -4,7 +4,7 @@
 P_num = 20                                          # Number of patients
 
 # Patient demographics
-clinicDistribution = [0.14, 0.45, 0.21, 0.20]         # Cancer, Medical, Orthopaedic, Paediatric
+clinicDistribution = [0.12, 0.64, 0.09, 0.15]         # Cancer, Medical, Orthopaedic, Paediatric
 specialisationDistribution = [0.7, 0.7, 0.7, 0.7]   # Percentage from each clinic that prefers a specialist
 patientExtraSupport = [0.5, 0.9, 0.2, 0.1]          # Percentage from each clinic that needs extra support 
 
