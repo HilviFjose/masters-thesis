@@ -65,12 +65,16 @@ depot = (59.9365, 10.7396)
 num_of_constructions = 3  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 #Insertor choises [0,1,2,3] for [simple, better with limited regret 1, better sith limited regeret 2, better, best ]
-construction_insertor = 2 #W
+construction_insertor = 3 
 repair_insertor = 1
 illegal_repair_insertor = 2
 
 
+<<<<<<< HEAD
 max_num_regret1 = 30
+=======
+max_num_regret1 = 20
+>>>>>>> 65555279ae7fea754141bf0532f651782aaae8c7
 max_num_regret2 = 50
 
 #Insertor som kan brukes en andel av gangene 
@@ -80,4 +84,4 @@ modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insert
 
 
 #Number of paralell processes 
-num_of_paralell_iterations = 1
+num_of_paralell_iterations = 3
