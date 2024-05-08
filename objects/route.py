@@ -246,6 +246,7 @@ class Route:
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
            
             return True
+        
         return False 
     
 

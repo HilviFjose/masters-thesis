@@ -41,8 +41,6 @@ class RoutePlan:
 
         #OBS: Jeg forstår ikke hvorfor denne er slik: 
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
-
-        self.routes_grouped_by_skill = self.makeRoutesGroupedBySkill()  
         
         self.objective = [0,0,0,0]
         self.weeklyHeaviness = 0
@@ -109,11 +107,13 @@ class RoutePlan:
                 else:
                     routes_grouped_by_skill_for_day[skill_level].append(route)
             route_grouped_by_skill[day] = routes_grouped_by_skill_for_day
+
         return route_grouped_by_skill
             
                 
     def getSortedRoutes(self, activity, day): 
-        routes = [item for key, value_list in self.routes_grouped_by_skill[day].items() if key >= activity.skillReq for item in value_list]
+        routes = [route for route in self.routes[day].values() if route.skillLev >= activity.skillReq]
+        #routes = [item for key, value_list in self.makeRoutesGroupedBySkill()[day].items() if key >= activity.skillReq for item in value_list]
         return sorted(routes, key=lambda route: (len(route.route), route.skillLev))
 
     
@@ -121,9 +121,18 @@ class RoutePlan:
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
         # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
         # Grupperer ruter basert på profesjonen til den ansatte
-      
-        routes_grouped_by_skill = self.routes_grouped_by_skill[day]
+    
+        #routes_grouped_by_skill = self.makeRoutesGroupedBySkill()[day]
          # Iterer gjennom sorterte professionLevels og iterer i tilfeldig rekkefølge
+
+        routes_grouped_by_skill = {}
+        for route in self.routes[day].values():
+            skill_level = route.skillLev 
+            if skill_level not in routes_grouped_by_skill:
+                routes_grouped_by_skill[skill_level] = [route]
+            else:
+                routes_grouped_by_skill[skill_level].append(route)
+
         routes = []
         for act_skill_level in range (activity.skillReq, 4): 
             try:
