@@ -7,9 +7,9 @@ from objects.employee import Employee
 from objects.activity import Activity
 #from objects.distances import T_ij
 from parameters import T_ij
-import math
 import copy 
 from config.main_config import depot
+import time
 
 class Route:
     def __init__(self, day, employee):
@@ -190,13 +190,17 @@ class Route:
 
         if self.checkTrueFalse(activity) == False: 
             return False
+        
 
         self.makeSpaceForIndex(index)
+      
         #Beg: Må oppdatere verdiene innad basert på det som er flyttet 
 
         self.updateActivityBasedOnDependenciesInRoute(activity)
         for possiblyMovedActivity in self.route: 
             self.updateActivityBasedOnDependenciesInRoute(possiblyMovedActivity)
+
+        
 
         if len(self.route) == 0: 
             return self.insertToEmptyList(activity)
@@ -225,9 +229,11 @@ class Route:
             max(activity.earliestStartTime, activity.getNewEarliestStartTime()) + activity.duration + T_ij[activity.id][j_id]) <= S_j: 
             activity.startTime = max(activity.earliestStartTime, activity.getNewEarliestStartTime())
             self.route = np.insert(self.route, index, activity)
+          
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+
             return True
         
         if min(activity.latestStartTime, activity.getNewLatestStartTime()) >= S_i + D_i + T_ia and (
@@ -235,9 +241,11 @@ class Route:
             S_i + D_i + T_ia + activity.duration + T_ij[activity.id][j_id]) <= S_j: 
             activity.startTime = S_i + D_i + T_ia
             self.route = np.insert(self.route, index, activity)
+     
             if activity.location != depot: 
                 self.locations.append(activity.location)
                 self.averageLocation = (sum(x[0] for x in self.locations) / len(self.locations), sum(x[1] for x in self.locations) / len(self.locations))
+           
             return True
         return False 
     

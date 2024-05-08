@@ -85,10 +85,6 @@ class RoutePlan:
         
 
     '''
-    
-    def sortRoutesByNumberOfActivitiesInRoute(self, routes):
-        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
-        return sorted(routes, key=lambda route: (len(route.route), route.skillLev))
 
 
     def sortRoutesByAcitivyLocation(self, routes, activity):
@@ -116,19 +112,15 @@ class RoutePlan:
             
                 
     def getSortedRoutes(self, activity, day): 
-        
+        routes = [item for key, value_list in self.routes_grouped_by_skill[day].items() if key >= activity.skillReq for item in value_list]
+        return sorted(routes, key=lambda route: (len(route.route), route.skillLev))
+
+    
+    def getSortedRoutesForBetter(self, activity, day):     
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
         # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
         # Grupperer ruter basert på profesjonen til den ansatte
-        '''
-        routes_grouped_by_skill = {}
-        for route in self.routes[day].values():
-            skill_level = route.skillLev 
-            if skill_level not in routes_grouped_by_skill:
-                routes_grouped_by_skill[skill_level] = [route]
-            else:
-                routes_grouped_by_skill[skill_level].append(route)
-        '''
+      
         routes_grouped_by_skill = self.routes_grouped_by_skill[day]
          # Iterer gjennom sorterte professionLevels og iterer i tilfeldig rekkefølge
         routes = []
@@ -139,12 +131,13 @@ class RoutePlan:
             except: 
                 routes_for_skill = []
      
-            #routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
+            routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
             #random.shuffle(routes_for_skill)
             
             routes += routes_for_skill
 
-        return self.sortRoutesByNumberOfActivitiesInRoute(routes)
+        return routes
+
 
     def addActivityOnDay(self, activity, day):
      
