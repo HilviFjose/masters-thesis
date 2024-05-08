@@ -191,7 +191,6 @@ class Route:
         if self.checkTrueFalse(activity) == False: 
             return False
         
-
         self.makeSpaceForIndex(index)
       
         #Beg: Må oppdatere verdiene innad basert på det som er flyttet 
