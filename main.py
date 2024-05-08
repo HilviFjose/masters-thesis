@@ -45,7 +45,7 @@ def main():
     #CONSTRUCTION HEURISTIC
     constructor = ConstructionHeuristic(activities_container, employees_container, patients_container, treatments_container, visits_container, 5, folder_name)
     print("Constructing Initial Solution")
-    
+    '''
     #CONSTRUCTION HEURISTIC NORMA
     constructor.construct_initial()
     '''
@@ -53,7 +53,7 @@ def main():
     #PARALELL CONSTUCTION 
     constructor.route_plans = process_parallel(constructor.construct_simple_initial, function_kwargs={} , jobs=[a for a in range(num_of_constructions)], mp_config= mp_config, paralellNum=num_of_constructions)
     constructor.setBestRoutePlan()
-    '''
+    
     
     constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")
