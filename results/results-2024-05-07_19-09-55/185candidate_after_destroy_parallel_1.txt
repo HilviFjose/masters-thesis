@@ -1,0 +1,160 @@
+Solution generated at time: 2024-05-08 01:18:50
+
+operator brukt: related_patients_removal
+updated objective  [-3.75, -2, 17, 462]
+objective 3 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes] [15.5, 30, 0, 19]
+primary objective without penalty  24
+visits {88: [240, 241, 242, 243, 244], 87: [235, 236, 237, 238, 239], 95: [275, 276, 277, 278, 279], 64: [162], 66: [168], 67: [169], 68: [170, 171, 172], 119: [361], 120: [362], 186: [548], 188: [554], 189: [555], 190: [556, 557, 558], 121: [363, 364, 365, 366, 367], 96: [280, 281, 282, 283, 284], 118: [358, 359, 360], 65: [163, 164, 165, 166, 167], 117: [357], 187: [549, 550, 551, 552, 553], 11: [23], 12: [24, 25, 26, 27, 28], 13: [29], 14: [30], 15: [31, 32, 33]}
+treatments {23: [88, 87], 27: [95, 96], 16: [64, 66, 67, 68, 65], 35: [119, 120, 121, 118, 117], 53: [186, 188, 189, 190, 187], 3: [11, 12, 13, 14, 15]}
+allocated patients  {23: [23], 27: [27], 16: [16], 35: [35], 53: [53], 3: [3]}
+not allocated  [1, 6, 8, 12, 13, 15, 20, 34, 36, 41, 44, 45, 47, 49, 51, 68, 73, 74, 22, 28, 29, 54, 70, 11, 61, 58, 32, 38, 9, 71, 46, 2, 26, 17, 19, 57, 14, 25, 37, 7, 40, 64, 39, 43, 30, 42, 52, 55, 59, 24, 60, 63, 48, 62, 75, 56, 67, 72, 66, 10, 31, 50, 33, 4, 5, 21]
+illegalNotAllocatedPatients [69, 18, 65]
+illegalNotAllocatedTreatments []
+illegalNotAllocatedVisits {}
+illegalNotAllocatedActivities {}
+-------------------------------------------------------
+Printer alle rutene
+DAG 1 ANSATT 1
+activity 235 start 506.0
+activity 236 start 520.0
+activity 238 start 570.0
+activity 239 start 584.0
+activity 275 start 720.0
+activity 276 start 742.0
+activity 278 start 792.0
+activity 279 start 814.0
+---------------------
+DAG 1 ANSATT 2
+---------------------
+DAG 1 ANSATT 3
+---------------------
+DAG 1 ANSATT 6
+---------------------
+DAG 1 ANSATT 7
+---------------------
+DAG 1 ANSATT 8
+---------------------
+DAG 1 ANSATT 4
+activity 162 start 690.0
+activity 277 start 752.0
+---------------------
+DAG 1 ANSATT 5
+activity 237 start 530.0
+activity 23 start 573.0
+activity 548 start 794
+activity 357 start 843
+---------------------
+DAG 2 ANSATT 1
+activity 24 start 510.0
+activity 25 start 526.0
+activity 27 start 596.0
+activity 28 start 612.0
+activity 163 start 635
+activity 164 start 648
+activity 549 start 700
+activity 550 start 716
+activity 166 start 774
+activity 552 start 792
+activity 167 start 808
+activity 553 start 847
+activity 359 start 892
+activity 360 start 916
+---------------------
+DAG 2 ANSATT 2
+---------------------
+DAG 2 ANSATT 3
+---------------------
+DAG 2 ANSATT 6
+---------------------
+DAG 2 ANSATT 7
+---------------------
+DAG 2 ANSATT 8
+---------------------
+DAG 2 ANSATT 4
+---------------------
+DAG 2 ANSATT 5
+activity 26 start 536.0
+activity 165 start 658
+activity 551 start 726
+activity 358 start 795
+---------------------
+DAG 3 ANSATT 1
+---------------------
+DAG 3 ANSATT 2
+---------------------
+DAG 3 ANSATT 3
+---------------------
+DAG 3 ANSATT 6
+---------------------
+DAG 3 ANSATT 7
+---------------------
+DAG 3 ANSATT 8
+---------------------
+DAG 3 ANSATT 4
+activity 29 start 720.0
+activity 554 start 813
+activity 361 start 862
+activity 168 start 917
+---------------------
+DAG 3 ANSATT 5
+---------------------
+DAG 4 ANSATT 1
+activity 280 start 480.0
+activity 281 start 502.0
+activity 283 start 565.0
+activity 284 start 587.0
+activity 240 start 597.0
+activity 241 start 630.0
+activity 243 start 696.0
+activity 244 start 710.0
+---------------------
+DAG 4 ANSATT 2
+---------------------
+DAG 4 ANSATT 3
+---------------------
+DAG 4 ANSATT 4
+---------------------
+DAG 4 ANSATT 5
+activity 282 start 512.0
+activity 242 start 640.0
+activity 30 start 683.0
+activity 555 start 813
+activity 362 start 862
+activity 169 start 917
+---------------------
+DAG 4 ANSATT 6
+---------------------
+DAG 4 ANSATT 7
+---------------------
+DAG 4 ANSATT 8
+---------------------
+DAG 5 ANSATT 1
+activity 363 start 480.0
+activity 364 start 504.0
+activity 366 start 640.0
+activity 367 start 664.0
+activity 32 start 725.0
+activity 33 start 741.0
+activity 557 start 908
+activity 558 start 924
+activity 171 start 937
+activity 172 start 950
+---------------------
+DAG 5 ANSATT 2
+---------------------
+DAG 5 ANSATT 3
+---------------------
+DAG 5 ANSATT 4
+---------------------
+DAG 5 ANSATT 5
+activity 365 start 514.0
+activity 31 start 635.0
+activity 556 start 749
+activity 170 start 847
+---------------------
+DAG 5 ANSATT 6
+---------------------
+DAG 5 ANSATT 7
+---------------------
+DAG 5 ANSATT 8
+---------------------

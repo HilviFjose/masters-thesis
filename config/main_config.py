@@ -70,8 +70,8 @@ repair_insertor = 1
 illegal_repair_insertor = 2
 
 
-max_num_regret1 = 20
-max_num_regret2 = 40
+max_num_regret1 = 30
+max_num_regret2 = 50
 
 #Insertor som kan brukes en andel av gangene 
 fraction_repair_insertor = 1 
