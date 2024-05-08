@@ -4,6 +4,7 @@ import os
 
 
 #ANTIBIOTICS CASE
+
 print("ANTIBIOTICS DATA")
 from datageneration.employeeGenerationAntibiotics import *
 from datageneration.patientGenerationAntibiotics import *
