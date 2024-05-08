@@ -88,13 +88,17 @@ class RoutePlan:
 
     def sortRoutesByAcitivyLocation(self, routes, activity):
         #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
+        random.shuffle(routes)
+        return routes
+  
+        '''
         if activity.location == depot: 
             random.shuffle(routes)
             return routes
   
    
         return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity.location[0]) + abs(route.averageLocation[1]- activity.location[1]))
-
+        '''
 
                 
     def getSortedRoutes(self, activity, day): 
