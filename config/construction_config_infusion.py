@@ -4,15 +4,33 @@
 P_num = 50                                          # Number of patients
 
 # Patient demographics
-therapyDistribution = [0.6, 0.2, 0.2]               # Distribution of patients receiving either antibiotics, nutrition/fluids or more advanced infusion therapy
-clinicDistribution = [0.27, 0.48, 0.06, 0.19]       # Cancer, Medical, Orthopaedic, Paediatric
-specialisationDistribution = [1, 1, 1, 1]           # Percentage from each clinic that prefers a specialist
+therapyDistribution = [0.3, 0.25, 0.3, 0.15]        # Distribution of patients receiving either antibiotics, nutrition/fluids, advanced infusion therapy, or a combination of them (= 2 out of three) 
+clinicDistribution = [0.25, 0.57, 0.03, 0.15]       # Cancer, Medical, Orthopaedic, Paediatric
+specialisationDistribution = [1, 1, 1, 1]          # Percentage from each clinic that prefers a specialist
 patientExtraSupport = [0.5, 0.9, 0.2, 0.1]          # Percentage from each clinic that needs extra support 
-clinicsWithNutrition = [1,0,0,0]
-clinicsWithAdvanced = [0,1,1,0]
+clinicsWithNutrition = [1,1,0,1]
+clinicsWithAdvanced = [1,1,0,1]
+clinicsWithCombination = [1,1,0,1]
 
-# Distributions of treatments for each patient
-T_numProb = [0.9, 0.1, 0]                           # Probability of the number of treatments from 1 to 3
+# Cancer clinic
+continuityCancer = [[0, 0.5, 0.5], [0, 0.5, 0.5], [0.4, 0.5, 0.1]] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
+utilityCancer = [[1, 0, 0], [0, 0.5, 0.5], [0.1, 0.2, 0.7]]
+workloadCancer = [[0.5, 0.5, 0], [0.4, 0.3, 0.3], [0.1, 0.4, 0.5]]
+
+# Medical Clinic
+continuityMedical = [[0, 0.5, 0.5], [0, 0.5, 0.5], [0.1, 0.3, 0.6]] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
+utilityMedical = [[1, 0, 0], [0.4, 0.5, 0.1], [0.4, 0.5, 0.1]]
+workloadMedical = [[0.5, 0.5, 0], [0.2, 0.3, 0.5], [0, 0.5, 0.5]]
+
+# Orthopaedic Clinic
+continuityOrtho = [[0, 0.5, 0.5], [], []] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
+utilityOrtho = [[1, 0, 0], [], []]
+workloadOrtho = [[0.5, 0.5, 0], [], []]
+
+# Paediatric Clinic
+continuityPaedia = [[0, 0.5, 0.5], [0.2, 0.4, 0.4], [0.7, 0.2, 0.1]] #Antibiotics, Nutrtion&Fluids and Advanced. Level 1,2,3
+utilityPaedia = [[1, 0, 0], [0.1, 0.2, 0.7], [0, 0.1, 0.9]]
+workloadPaedia = [[0.5, 0.5, 0], [0, 0.5, 0.5], [0, 0.3, 0.7]]
 
 # Patterns
 patterns_5days = [1]                                                # Patterntype 1
@@ -23,7 +41,7 @@ patterns_2daysfollowing = [11,12,13,14]                             # Patterntyp
 patterns_1day = [15,16,17,18,19]                                    # Patterntype 6
 
 # Continuity distribution
-continuityDistribution = [0, 0.5, 0.5]              # Top 1 employee, top 3 employees, all employees
+#continuityDistribution = [0, 0.5, 0.5]              # Top 1 employee, top 3 employees, all employees
 continuityScore = [2, 1, 0]                 
 preferredEmployees = [1, 3, 0]
 
@@ -31,10 +49,10 @@ preferredEmployees = [1, 3, 0]
 allocation = 0.15 # Percentage already allocated to AHH (Overwritten if P_num > 5* E_num')
 
 # Patient utility
-utilityDistribution = [0.5, 0.5, 0]
+#utilityDistribution = [0.5, 0.5, 0]
 
 # Heaviness
-heavinessDistribution = [0.5, 0.5, 0] 
+#heavinessDistribution = [0.5, 0.5, 0] 
 
 # EMPLOYEES
 # Number of employees

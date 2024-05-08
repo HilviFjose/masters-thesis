@@ -47,7 +47,7 @@ def locationGenerator(locations, radius_km, num_points):
 
 #TODO: gå gjennom presedens, same employee, location på aktiviteter for alle casene
 #TODO: overstyre preferred specialisation
-#TODO: Legge inn riktig fordeling mellom klinikker og fordeling på terapier
+#TODO: Oppdatere prosentandel som skal få ulike fordelinger på terapier
 #TODO: Legge inn distribusjoner på pasienter (continuity, heaviness, utility)
 #TODO: Legge inn at noen pasienter har flere typer terapier (15 % eller noe)
 
@@ -63,14 +63,12 @@ def patientGenerator(df_employees):
     # Distribuiton of therapy types
     num_antibiotic = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[0])
     num_nutrition = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[1])
-    num_advanced = construction_config_infusion.P_num - (num_antibiotic + num_nutrition)
-    therapy = (['antibiotics'] * num_antibiotic) + (['nutrition'] * num_nutrition) + (['advanced'] * num_advanced)
+    num_advanced = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[2])
+    num_combination = construction_config_infusion.P_num - (num_antibiotic + num_nutrition + num_advanced)
+    therapy = (['antibiotics'] * num_antibiotic) + (['nutrition'] * num_nutrition) + (['advanced'] * num_advanced) + (['combination'] * num_combination)
     np.random.shuffle(therapy) 
 
-    # Distribution of utility, patient allocation, continuity group and heaviness for patients
-    utility = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.utilityDistribution)
-    continuityGroup = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.continuityDistribution)
-    heaviness = np.random.choice(range(1, 4), size=construction_config_infusion.P_num, p=construction_config_infusion.heavinessDistribution)
+    # Pre-allocated patients
     if construction_config_infusion.P_num <= 5* construction_config_infusion.E_num:
         print('Number of patients <= 5* number of employees')
         allocation = [1] * round(construction_config_infusion.P_num * construction_config_infusion.allocation)
@@ -89,6 +87,8 @@ def patientGenerator(df_employees):
             possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithNutrition) if available]
         elif t == 'advanced':
             possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithAdvanced) if available]
+        elif t == 'combination':
+            possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithCombination) if available]
         else:
             possible_clinics = list(range(1, len(construction_config_infusion.clinicDistribution) + 1))
         
@@ -110,17 +110,104 @@ def patientGenerator(df_employees):
         'therapy': therapy,
         'clinic': clinics,
         'nTreatments': nTreatments,
-        'utility': utility,
+        'utility': 0,
         'allocation': allocation,
         'employeeRestriction': None,  
-        'continuityGroup': continuityGroup,
+        'continuityGroup': 0,
         'employeeHistory': None,  
-        'heaviness': heaviness,
+        'heaviness': 0,
         'location': locations,
         'specialisationPreferred': None,
         'extraSupport': 'no'
     })
 
+    # Distribution of utility, patient allocation, continuity group and heaviness for patients
+    for clinic, c_group in df_patients.groupby('clinic'):
+        if clinic == 1: #Cancer
+            for therapy, t_group in c_group.groupby('therapy'):    
+                if therapy == 'antibiotics':
+                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    utility_dist = construction_config_infusion.utilityCancer[0]
+                    continuity_dist = construction_config_infusion.continuityCancer[0]
+                    workload_dist = construction_config_infusion.workloadCancer[0]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+                
+                elif therapy == 'nutrition':
+                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    utility_dist = construction_config_infusion.utilityCancer[1]
+                    continuity_dist = construction_config_infusion.continuityCancer[1]
+                    workload_dist = construction_config_infusion.workloadCancer[1]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+
+                elif therapy == 'advanced':
+                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    utility_dist = construction_config_infusion.utilityCancer[2]
+                    continuity_dist = construction_config_infusion.continuityCancer[2]
+                    workload_dist = construction_config_infusion.workloadCancer[2]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+
+                else: #Combination of therapies, follows the same distributions as the advanced
+                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    utility_dist = construction_config_infusion.utilityCancer[2]
+                    continuity_dist = construction_config_infusion.continuityCancer[2]
+                    workload_dist = construction_config_infusion.workloadCancer[2]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+        
+        elif clinic == 2: #Medical
+            print('ikke fordelt')
+        elif clinic == 3: #Orthopaedic
+            print('ikke fordelt')
+        elif clinic == 4: #Paediatrics
+            print('ikke fordelt')
+    
     # Update preferred specialisations for some of the patients
     for clinic, group in df_patients.groupby('clinic'):
         if clinic == 1: 
@@ -159,7 +246,6 @@ def patientGenerator(df_employees):
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
             df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 4
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
-
         
     # Employee Restrictions
     num_restricted_patients = int(len(df_patients) * construction_config_infusion.employeeRestrict)      # 5 % of the patients have a restriction against an employee
@@ -216,6 +302,11 @@ def treatmentGenerator(df_patients):
     # Generate rows for each treatment with the patientId
     expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
     expanded_rows['treatmentId'] = range(1, len(expanded_rows) + 1)
+
+    # Distribute combination therapies
+    for i in range(num_combination):
+        combination_type = np.random.choice(['antibiotics+nutrition', 'antibiotics+advanced', 'nutrition+advanced'], 1)[0]
+        therapy[therapy.index('combination')] = combination_type.split('+')
     
     df_treatments['treatmentId'] = expanded_rows['treatmentId']
     df_treatments['patientId'] = expanded_rows['patientId']

@@ -299,22 +299,24 @@ def activitiesGenerator(df_visits):
     # Distribute activities between healthcare activities 'H' and equipment activities 'E'
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital
     # Generate synchronised activities (for visits with 4 or 6 activities)     
-    for visitId, group in df_activities.groupby('visitId'):
-        if group['numActivitiesInVisit'].iloc[0] == 1:
-            activity_ids = group['activityId'].tolist()
+    for visitId, groupV in df_activities.groupby('visitId'):
+        if groupV['numActivitiesInVisit'].iloc[0] == 1:
+            activity_ids = groupV['activityId'].tolist()
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'activityType'] = 'H'
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 40         # Health
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'skillRequirement'] = 2  
 
-        elif group['numActivitiesInVisit'].iloc[0] == 3:
+        elif groupV['numActivitiesInVisit'].iloc[0] == 3:
             # For 3 activities with structure HEE 
-            highest_indices = group.sort_values(by='activityId', ascending=False).index[:2]     # The two activities with the highest id
+            highest_indices = groupV.sort_values(by='activityId', ascending=False).index[:2]     # The two activities with the highest id
             df_activities.loc[highest_indices, 'activityType'] = 'E'
-            remaining_indices = group.index.difference(highest_indices)
+            df_activities.loc[highest_indices, 'skillRequirement'] = 1
+            remaining_indices = groupV.index.difference(highest_indices)
             df_activities.loc[remaining_indices, 'activityType'] = 'H'
+            df_activities.loc[remaining_indices, 'skillRequirement'] = 2
 
             # Precedence and time limit for pick-up and delivery at the start of the visit
-            activity_ids = group['activityId'].tolist()
+            activity_ids = groupV['activityId'].tolist()
             pd_time = 90
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = f"{activity_ids[-3]}: {pd_time}"
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[0]}: {pd_time}"
@@ -334,24 +336,20 @@ def activitiesGenerator(df_visits):
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10  # Equip
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 10  # Equip
 
-            # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
-            for activityType, group in df_activities.groupby('activityType'):
-                if activityType == 'E':
-                    df_activities.loc[group.index, 'skillRequirement'] = 1
-                else:
-                    df_activities.loc[group.index, 'skillRequirement'] = 2
-
         else:
             # For more than 5 activities - 'E' to the two last and two first activities (pick-up and delivery)
-            lowest_indices = group.sort_values(by='activityId').index[:2]                       # The two activities with the lowest id
-            highest_indices = group.sort_values(by='activityId', ascending=False).index[:2]     # The two activities with the highest id
+            lowest_indices = groupV.sort_values(by='activityId').index[:2]                       # The two activities with the lowest id
+            highest_indices = groupV.sort_values(by='activityId', ascending=False).index[:2]     # The two activities with the highest id
             df_activities.loc[lowest_indices, 'activityType'] = 'E'
+            df_activities.loc[lowest_indices, 'skillRequirement'] = 1
             df_activities.loc[highest_indices, 'activityType'] = 'E'
-            remaining_indices = group.index.difference(lowest_indices.union(highest_indices))
+            df_activities.loc[highest_indices, 'skillRequirement'] = 1
+            remaining_indices = groupV.index.difference(lowest_indices.union(highest_indices))
             df_activities.loc[remaining_indices, 'activityType'] = 'H'  
+            df_activities.loc[remaining_indices, 'skillRequirement'] = 3
             
             # Precedence and time limits for pick-up and delivery
-            activity_ids = group['activityId'].tolist()
+            activity_ids = groupV['activityId'].tolist()
             pd_time1 = 120
             pd_time2 = 90
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'prevPrece'] = f"{activity_ids[0]}: {pd_time1}"                                           # Pick-up and delivery at the start
@@ -382,14 +380,6 @@ def activitiesGenerator(df_visits):
             df_activities.loc[df_activities['activityId'] == activity_ids[3], 'duration'] = 10      # Equip
             df_activities.loc[df_activities['activityId'] == activity_ids[4], 'duration'] = 10      # Equip
 
-            # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
-            for activityType, group in df_activities.groupby('activityType'):
-                if activityType == 'E':
-                    df_activities.loc[group.index, 'skillRequirement'] = 1
-                else:
-                    df_activities.loc[group.index, 'skillRequirement'] = 3
-
-
     # Overwrite heaviness, utility, continuity level and employee history for Equipment activities
     df_activities.loc[df_activities['activityType'] == 'E', 'heaviness'] = 1
     df_activities.loc[df_activities['activityType'] == 'E', 'utility'] = 0
@@ -399,8 +389,8 @@ def activitiesGenerator(df_visits):
 
         
     # Generate earliest and latest start times of activities
-    for visitId, group in df_activities.groupby('visitId'):
-        patternType = group['patternType'].iloc[0]  
+    for visitId, groupV in df_activities.groupby('visitId'):
+        patternType = groupV['patternType'].iloc[0]  
         startDay = construction_config_antibiotics.startday / 60         # Tilsvarer klokka 8
         endDay = construction_config_antibiotics.endday / 60             # Tilsvarer klokka 16
         
@@ -431,8 +421,8 @@ def activitiesGenerator(df_visits):
                 earliestStartTime, latestStartTime = endDay - 4, endDay  # 12-16
 
         # Oppdater df_activities med de genererte tidene (konverter til minutter igjen)
-        df_activities.loc[group.index, 'earliestStartTime'] = earliestStartTime * 60
-        df_activities.loc[group.index, 'latestStartTime'] = latestStartTime * 60 
+        df_activities.loc[groupV.index, 'earliestStartTime'] = earliestStartTime * 60
+        df_activities.loc[groupV.index, 'latestStartTime'] = latestStartTime * 60 
      
     #TODO: Finne ut hvordan dette skal være for antibiotica case
     # Generate complexity for treatments, visits and activities
