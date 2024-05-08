@@ -51,7 +51,6 @@ def travel_matrix(df):
                 T_ij[i][j] = math.ceil((timedelta(hours=(D_ij[i][j] / speed)).total_seconds() / 60))
     
         # Rush hour modelling:
-        #TODO: Se på om vi må gjøre dette annerledes og generere rush hour factor basert på tiden som faktisk settes i heuristikken
         '''
         for k in range(len(T_ij)):
             average_start_time = (df.iloc[k]["earliestStartTime"] + df.iloc[k]["latestStartTime"]) / 2
