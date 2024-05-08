@@ -275,82 +275,36 @@ class DestroyOperators:
 
         return destroyed_route_plan, None, True
     
-    def cluster_distance_activities_removal(self, current_route_plan):
-        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
-        total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - 
-                                                                    (main_config.destruction_degree_beginning - main_config.destruction_degree_end) * self.alns.iterationNum / main_config.iterations))
-        
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        removed_activities_count = 0
-
-        # Using a sorted list of routes based on travel time, reverse order
-        sorted_routes = sorted(current_route_plan.routes.values(), key=lambda route: route.travel_time, reverse=True)
-        selected_activities = []
-
-        while removed_activities_count < total_num_activities_to_remove and sorted_routes:
-            current_route = sorted_routes.pop(0)
-            activities_in_current_route = [activity.id for activity in current_route.route]
-
-            if not activities_in_current_route:
-                continue
-
-            activities_and_location = [(activity.id, self.constructor.activities_array[activity.id][14]) for activity in current_route.route if activity.id < len(self.constructor.activities_array)]
-
-            selected_activities.extend(self.k_means_clustering(activities_and_location))
-
-            # Summing removed activities and breaking loop if the count reaches the required total
-            removed_activities_count += len(selected_activities)
-            if removed_activities_count >= total_num_activities_to_remove:
-                break
-
-        # Removing the selected activities from the route plan
-        for activityID in selected_activities:
-            destroyed_route_plan = self.activity_removal(activityID, destroyed_route_plan)[0]
-
-        return destroyed_route_plan, None, True
-    
-    def cluster_distance_patients_removalG(self, current_route_plan): 
-        '''
-        Ender ofte opp med å fjerne en del mer aktiviteter enn ønsket, fordi funksjonen er skrevet slik at den alltid fjerner et helt cluster (siden det gir mest mening). 
-        TODO: Sjekke om det fungerer bra å dele allocated patients i flere cluster enn 2 hver gang, slik at antall pasienter som fjernes i hver iterasjon i while-løkken er mindre. 
-        
-        '''
-        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
-        total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - 
-                                                                    (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
-        
-        # Forbered en kopi av ruteplanen for modifikasjoner
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
-        removed_activities_count = 0
-
-        while removed_activities_count < total_num_activities_to_remove:
-            # Oppdater listen over tildelte pasienter basert på den nåværende (potensielt modifiserte) ruteplanen
-            allocatedPatientsIds = list(destroyed_route_plan.allocatedPatients.keys())
-            if not allocatedPatientsIds:  # Avslutt hvis det ikke er flere pasienter å fjerne
-                break
-
-            patients_and_location = []
-            for i in range(len(self.constructor.patients_array)):
-                for patient in allocatedPatientsIds:
-                    if i == patient: 
-                        patients_and_location.append((patient, self.constructor.patients_array[patient][7]))
-
-            selected_patients = self.k_means_clustering(patients_and_location)
-
-            # Beregn antallet aktiviteter som vil bli fjernet i denne iterasjonen
-            activities_to_remove_now = sum([self.constructor.patients_array[patient_id][15] for patient_id in selected_patients])
+    def cluster_distance_activities_removal(self):
+            num_act_allocated = sum(len(route['route']) for route in self.current_route_plan['routes'].values())
+            total_num_activities_to_remove = round(num_act_allocated * (self.main_config['destruction_degree_beginning'] - 
+                                                                        (self.main_config['destruction_degree_beginning'] - self.main_config['destruction_degree_end']) * self.current_route_plan['iterationNum'] / self.main_config['iterations']))
             
-            for patientID in selected_patients:
-                destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
+            destroyed_route_plan = copy.deepcopy(self.current_route_plan)
+            removed_activities_count = 0
 
-            removed_activities_count += activities_to_remove_now
-            
-            if removed_activities_count >= total_num_activities_to_remove:
-                break
+            sorted_routes = sorted(self.current_route_plan['routes'].values(), key=lambda route: route['travel_time'], reverse=True)
+            selected_activities = []
 
-        #print(f'Removed {removed_activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * (main_config.destruction_degree_beginning - (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))}') # with a destruction degree {main_config.destruction_degree}')
+            while removed_activities_count < total_num_activities_to_remove and sorted_routes:
+                current_route = sorted_routes.pop(0)
+                activities_in_current_route = [activity['id'] for activity in current_route['route']]
 
-        return destroyed_route_plan, None, True
+                if not activities_in_current_route:
+                    continue
+
+                activities_and_location = [(activity['id'], self.constructor.activities_array[activity][14]) for activity in current_route['route'] if activity['id'] < len(self.constructor.activities_array)]
+
+                selected_activities.extend(self.k_means_clustering(activities_and_location))
+
+                removed_activities_count += len(selected_activities)
+                if removed_activities_count >= total_num_activities_to_remove:
+                    break
+
+            for activityID in selected_activities:
+                destroyed_route_plan['routes'] = self.activity_removal(activityID, destroyed_route_plan['routes'])
+
+            return destroyed_route_plan
 
 
 
@@ -400,7 +354,7 @@ class DestroyOperators:
         return destroyed_route_plan, None, True
     
     
-    def k_means_clusteringG(self, tuple_with_loc, n_clusters=2):
+    def k_means_clustering(self, tuple_with_loc, n_clusters=2):
         coordinates = []
         unique_locs = {}
         
@@ -418,14 +372,20 @@ class DestroyOperators:
         coordinates = np.array(coordinates)
 
         # Adjusting the number of clusters if necessary
-        actual_clusters = min(len(set(map(tuple, coordinates))), n_clusters)
+        actual_clusters = min(len(unique_locs), n_clusters)
 
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=actual_clusters, random_state=0).fit(coordinates)
         labels = kmeans.labels_
 
+        # Map patient ids with their corresponding cluster label
+        # Recreate the original structure for mapping
+        expanded_tuple_with_loc = []
+        for _, loc in tuple_with_loc:
+            expanded_tuple_with_loc.extend([(_, loc)] * unique_locs[loc])
+
         # Combine patient ids with their corresponding cluster label
-        tuple_with_labels = [(pat[0], label) for pat, label in zip(tuple_with_loc, labels)]
+        tuple_with_labels = [(pat[0], label) for pat, label in zip(expanded_tuple_with_loc, labels)]
 
         # Identify the indices of the activities in the smallest cluster
         cluster_sizes = {label: 0 for label in range(actual_clusters)}
@@ -435,28 +395,7 @@ class DestroyOperators:
         selected_indices = [pat for pat, label in tuple_with_labels if label == smallest_cluster_label]
 
         return selected_indices
-    
-
-    def k_means_clustering(self, tuple_with_loc, n_clusters=2):
-
-        # Simplify and optimize location counting
-        loc_counter = Counter(loc for _, loc in tuple_with_loc)
-        coordinates = np.array(list(loc_counter.elements()))
-
-        # Ensuring the number of clusters does not exceed unique locations
-        actual_clusters = min(len(loc_counter), n_clusters)
-
-        kmeans = KMeans(n_clusters=actual_clusters, random_state=0).fit(coordinates)
-        labels = kmeans.labels_
-
-        # Mapping patients to clusters and selecting the smallest cluster
-        patient_to_cluster = {patient: label for (patient, _), label in zip(tuple_with_loc, labels)}
-        smallest_cluster = min(set(labels), key=labels.count)
-
-        return [patient for patient, cluster in patient_to_cluster.items() if cluster == smallest_cluster]
         
-
-    
 
 
 #---------- SPREAD DISTANCE REMOVAL ----------
