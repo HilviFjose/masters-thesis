@@ -116,7 +116,7 @@ class Insertor:
         rest_acitivites = activities[1:]
       
         old_route_plan = copy.deepcopy(test_route_plan)
-        for route in test_route_plan.getSortedRoutes(activity, day):
+        for route in test_route_plan.getSortedRoutesForBetter(activity, day):
             if self.InsertionFound_BetterInsertVisit == True: 
                 break 
             for index_place in range(len(route.route)+1): 
@@ -158,7 +158,7 @@ class Insertor:
         
        
         old_route_plan = copy.deepcopy(route_plan)
-        for route in route_plan.getSortedRoutes(activity, day): 
+        for route in route_plan.getSortedRoutesForBetter(activity, day): 
             if self.InsertionFound_BetterInsertVisit == True: 
                 break
             for index_place in range(len(route.route)+1): 
