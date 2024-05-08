@@ -93,7 +93,7 @@ class ALNS:
             already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
-           
+            
             #Uten parallell
             candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
 
@@ -106,8 +106,8 @@ class ALNS:
             for result in results[1:]: 
                 if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
                     candidate_route_plan, destroy, repair = result
-             
             '''
+            
 
             candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
@@ -180,10 +180,10 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
         self.add_destroy_operator(destroy_operators.random_activity_removal)
-        
-        self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
-        self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
-        self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
+        """
+        #self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
+        #self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
+        #self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
         """
         self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
@@ -191,9 +191,9 @@ class ALNS:
         
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
-        """
+        
         self.add_destroy_operator(destroy_operators.related_patients_removal)
-        #self.add_destroy_operator(destroy_operators.related_treatments_removal)
+        self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
         """
         # Add repair operators

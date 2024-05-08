@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
 from objects.route_plan import RoutePlan
-from heuristic.improvement.operator.insertor import Insertor
+from heuristic.improvement.insertor import Insertor
 from helpfunctions import checkCandidateBetterThanBest
 from config.main_config import num_of_constructions, iterations, construction_insertor
 
@@ -45,23 +45,22 @@ class ConstructionHeuristic:
         patient_list = self.patients_array[1:].tolist()
         unassigned_patients = sorted(patient_list, key=lambda x: (x[2], x[13]))
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
-        for i in tqdm(range(unassigned_patients.shape[0]), colour='#39ff14'):
-            #Henter ut raden i pasient dataframes som tilhører pasienten
-            patient = unassigned_patients.index[i] 
-            allocation = unassigned_patients[patient][2]
+        for i in tqdm(range(len(unassigned_patients)), colour='#39ff14'):
+            patient_id = i+1
+            allocation = unassigned_patients[i][2]
             
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(route_plan)
 
             patientInsertor = Insertor(self, route_plan_with_patient, construction_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
-            state = patientInsertor.insert_patient(patient)
+            state = patientInsertor.insert_patient(patient_id)
         
             if state == True: 
                 #Construksjonsheuristikkens ruteplan oppdateres til å inneholde pasienten
                 route_plan = patientInsertor.route_plan
                 
                 #Pasienten legges til i hjemmsykehusets liste med pasienter
-                self.updateConstructionAllocationInformation(route_plan, patient)
+                self.updateConstructionAllocationInformation(route_plan, patient_id)
                 #Oppdaterer ruteplanen 
                 
             #Hvis pasienten ikke kan legges inn puttes den i Ikke allokert lista
@@ -70,9 +69,9 @@ class ConstructionHeuristic:
                 
             
                 if allocation == 0: 
-                    route_plan.notAllocatedPatients.append(patient)
+                    route_plan.notAllocatedPatients.append(patient_id)
                 else: 
-                    route_plan.illegalNotAllocatedPatients.append(patient)
+                    route_plan.illegalNotAllocatedPatients.append(patient_id)
         
         #TODO: Oppdatere alle dependencies når vi har konstruert løsning - Jeg forstår ikke helt denne 
         for day in range(1, 1+ self.days): 

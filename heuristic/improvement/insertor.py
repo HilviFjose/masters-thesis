@@ -108,7 +108,7 @@ class Insertor:
     def better_insert_visit_on_day(self, visit, day):
         
         self.InsertionFound_BetterInsertVisit = False 
-        activitiesList = self.constructor.visits_array[visit][18]
+        activitiesList = self.constructor.visits_array[visit][14]
         test_route_plan = copy.deepcopy(self.route_plan)
         
         activities = [Activity(self.constructor.activities_array, activityID) for activityID in activitiesList]

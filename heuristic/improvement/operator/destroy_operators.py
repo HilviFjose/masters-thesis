@@ -1,8 +1,10 @@
 import pandas as pd
+import numpy as np
 import copy
 import math
 import numpy.random as rnd 
 import random 
+import ast
 import networkx as nx
 from sklearn.cluster import KMeans
 from scipy.spatial import cKDTree
@@ -51,8 +53,6 @@ class DestroyOperators:
         # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
         num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
         total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
-
-
         activity_count = 0
         destroyed_route_plan = copy.deepcopy(current_route_plan)
         while activity_count < total_num_activities_to_remove:
@@ -113,7 +113,6 @@ class DestroyOperators:
         while activity_count < total_num_activities_to_remove:
             selected_activity = rnd.choice([item for sublist in destroyed_route_plan.visits.values() for item in sublist])
             activity_count += 1
-            print("selected", selected_activity)
             self.activity_removal(selected_activity, destroyed_route_plan)[0]
         return destroyed_route_plan, None, True
    
@@ -144,44 +143,12 @@ class DestroyOperators:
             destroyed_route_plan = self.patient_removal(selected_patient, destroyed_route_plan)[0]
 
         return destroyed_route_plan, None, True
-    """
-    def worst_deviation_treatment_removalG(self, current_route_plan):
-
-    # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
-    num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
-    total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
-    
-    lowest_treatment_contribute = 1000
-    activity_count = 0
-    destroyed_route_plan = copy.deepcopy(current_route_plan)
-    while activity_count < total_num_activities_to_remove: 
-        selected_treatment = None 
-        #list  = [activity.suitability for activity in [destroyed_route_plan.visits[visitID] for visitID in current_route_plan.treatments[selected_treatment]]]
-        for treatment in list(destroyed_route_plan.treatments.keys()): 
-            treatment_contribute = 0 
-            for visit in destroyed_route_plan.treatments[treatment]:
-                for activityID in destroyed_route_plan.visits[visit]:
-                    treatment_contribute += activity.suitability
-            if treatment_contribute < lowest_treatment_contribute: 
-                selected_treatment = treatment
-        
-        '''
-        Itererr for hver gang for å finne den neste verste. 
-        '''
-        visitIdInTreat = destroyed_route_plan.treatments[selected_treatment][0]
-        actIdInTreat = destroyed_route_plan.visits[visitIdInTreat][0]
-        act = destroyed_route_plan.getActivityFromEntireRoutePlan(actIdInTreat)
-        activity_count += act.nActInTreat
-
-        destroyed_route_plan = self.treatment_removal(selected_treatment, destroyed_route_plan)[0]
-
-        return destroyed_route_plan, None, True
-    """
     
     def worst_deviation_treatment_removal(self, current_route_plan):
-        treatments_to_remove = {}
         destroyed_route_plan = copy.deepcopy(current_route_plan)
+        treatments_to_remove = {}
 
+        # Calculate utility contribution for each treatment
         for treatmentID, visitIDlist in destroyed_route_plan.treatments.items():
             treatment_utility_contribute = 0 
             for visitID in visitIDlist:
@@ -189,21 +156,22 @@ class DestroyOperators:
                     if visitID == vis: 
                         for activityID in activityIDlist:
                             treatment_utility_contribute += destroyed_route_plan.getActivity(activityID, destroyed_route_plan.getDayForActivityID(activityID)).suitability
+            treatments_to_remove[treatmentID] = treatment_utility_contribute
 
-        treatments_to_remove[treatmentID] = [treatment_utility_contribute]
-               
-        sorted_treatments_to_remove = {k: v for k, v in sorted(treatments_to_remove.items(), key=lambda item: item[1])}
-        total_num_treatments_to_remove = round(len(sorted_treatments_to_remove) * (main_config.destruction_degree_beginning - 
-                                                                           (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
+        # Sort treatments based on utility contribution in ascending order
+        sorted_treatments = sorted(treatments_to_remove.items(), key=lambda item: item[1])
 
-        for selected_treatment in list(sorted_treatments_to_remove.keys())[:total_num_treatments_to_remove]: 
+        # Calculate number of treatments to remove based on destruction degree
+        total_num_treatments_to_remove = round(len(sorted_treatments) * (main_config.destruction_degree_beginning - 
+                                                                        (main_config.destruction_degree_beginning - main_config.destruction_degree_end) * self.alns.iterationNum / main_config.iterations))
+
+        # Remove the specified number of treatments with the lowest utility contributions
+        for selected_treatment, _ in sorted_treatments[:total_num_treatments_to_remove]:
             for selected_visit in destroyed_route_plan.treatments[selected_treatment]:
                 for selected_activity in destroyed_route_plan.visits[selected_visit]:
                     destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
-            
-        return destroyed_route_plan, None, True
 
-    
+        return destroyed_route_plan, None, True
 
     def worst_deviation_visit_removal(self, current_route_plan):
         visits_to_remove = {}
@@ -236,16 +204,49 @@ class DestroyOperators:
                 destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
         
         return destroyed_route_plan, None, True
+    
+    def worst_deviation_activity_removal(self, current_route_plan):
+        num_act_allocated = sum(len(route.route) for day in range(1, current_route_plan.days+1) for route in current_route_plan.routes[day].values())
+        total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - 
+                                                                    (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
 
+        activities_to_remove = {}
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
 
-    def worst_deviation_activity_removal(self, current_route_plan): 
+        for day in range(1, destroyed_route_plan.days + 1): 
+            for route in destroyed_route_plan.routes[day].values(): 
+                for activity_index, activity in enumerate(route.route):
+                    before_activity_id = route.route[activity_index - 1].id if activity_index != 0 else None
+                    after_activity_id = route.route[activity_index + 1].id if activity_index != (len(route.route) - 1) else None
+
+                    # Calculate contributions
+                    activity_skilldiff_contribute = destroyed_route_plan.getRouteSkillLevForActivityID(activity.id) - activity.skillReq
+                    activity_travel_time = 0
+                    if before_activity_id is not None and activity.id is not None:
+                        activity_travel_time += T_ij[before_activity_id][activity.id]
+                    if activity.id is not None and after_activity_id is not None:
+                        activity_travel_time += T_ij[activity.id][after_activity_id]
+                    if before_activity_id is not None and after_activity_id is not None:
+                        activity_travel_time -= T_ij[before_activity_id][after_activity_id]
+
+                    activities_to_remove[activity] = [-activity_skilldiff_contribute, -activity_travel_time]
+
+        # Sorting activities based on their contribution metrics
+        sorted_activities = sorted(activities_to_remove.items(), key=lambda item: item[1])
+
+        # Removing activities
+        for selected_activity, _ in sorted_activities[:total_num_activities_to_remove]: 
+            destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
+
+        return destroyed_route_plan, None, True
+
+    def worst_deviation_activity_removalG(self, current_route_plan): 
         #TODO: Virker som denne operatoren ble veldig treg ved å legge in destruction degree på denne måten
         num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
         total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - 
                                                                     (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
 
         activities_to_remove = {}
-        
         destroyed_route_plan = copy.deepcopy(current_route_plan)
      
         for day in range(1, destroyed_route_plan.days +1): 
@@ -266,10 +267,8 @@ class DestroyOperators:
                     activities_to_remove[activity] = [-activity_skilldiff_contribute, -activity_travel_time]
             
         sorted_activities_to_remove = {k: v for k, v in sorted(activities_to_remove.items(), key=lambda item: item[1])}
-        print("sort", sorted_activities_to_remove)
 
         for selected_activity in list(sorted_activities_to_remove.keys())[:total_num_activities_to_remove]: 
-            print("selact!!!!", selected_activity.id)
             destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
             
         return destroyed_route_plan, None, True
@@ -366,7 +365,7 @@ class DestroyOperators:
             
 
         return destroyed_route_plan, None, True
-
+    
 
 
 #---------- SPREAD DISTANCE REMOVAL ----------
@@ -378,8 +377,14 @@ class DestroyOperators:
 
         allocatedPatientsIds = list(current_route_plan.allocatedPatients.keys())
 
+        patients_and_location = []
+        for i in range(len(self.constructor.patients_array)):
+            for patient in allocatedPatientsIds:
+                if i == patient: 
+                    patients_and_location.append((patient, self.constructor.patients_array[patient][7]))
+
         # Beregne "spread" for hver pasient
-        nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(allocatedPatientsIds)
+        nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(patients_and_location)
 
         # Sortere pasientene basert på "spread"
         patients_with_spread = list(zip(allocatedPatientsIds, nearest_neighbor_distances))
@@ -408,50 +413,41 @@ class DestroyOperators:
 
     # TAR HENSYN TIL DESTRUCTION DEGREE
     def spread_distance_activities_removal(self, current_route_plan):
-        num_act_allocated = sum(len(route.route) for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values())
-        total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))
+        num_act_allocated = sum(len(route.route) for day in range(1, current_route_plan.days + 1) for route in current_route_plan.routes[day].values())
+        total_num_activities_to_remove = round(num_act_allocated * (main_config.destruction_degree_beginning - 
+                                                                (main_config.destruction_degree_beginning - main_config.destruction_degree_end) * self.alns.iterationNum / main_config.iterations))
         
-        sorted_routes =  sorted((route for day in range(1,current_route_plan.days+1) for route in current_route_plan.routes[day].values()), key=lambda x: x.travel_time, reverse=True)
-
-        
+        sorted_routes = sorted((route for day in range(1, current_route_plan.days + 1) for route in current_route_plan.routes[day].values()), key=lambda x: x.travel_time, reverse=True)
+        destroyed_route_plan = copy.deepcopy(current_route_plan)
         activities_to_remove = []
+
         while total_num_activities_to_remove > 0 and sorted_routes:
-            # Ta for seg ruten med lengst kjøretid
             current_route = sorted_routes.pop(0)
             activities_in_current_route = [activity.id for activity in current_route.route]
-            
-            if len(activities_in_current_route) == 0:
-                # Hvis den går inn i denne betyr det at vi har gått inn i alle ruter og fjernet noe, men ikke klart å fjerne nok aktiviteter til å dekke destruction degree.
-                # Hvis du vil justere dette kan du justere på hvor mange prosent av hver rute som skal fjernes i hver rute (nå står den på 30 % av ruten)
-                #print(f'Removed {len(activities_to_remove)} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * (main_config.destruction_degree_beginning - (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))}')
-                break
 
-            # Hvis ruten bare har en aktivitet, kan denne aktiviteten fjernes direkte
+            if len(activities_in_current_route) == 0:
+                break
             elif len(activities_in_current_route) == 1:
-                activities_to_remove += activities_in_current_route
+                activities_to_remove.append(activities_in_current_route[0])
                 total_num_activities_to_remove -= 1
                 continue
-            
-            # Velg aktiviteter for fjerning fra den nåværende ruten
-            df_selected_activities = self.constructor.activities_df.loc[activities_in_current_route]           
-            nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(df_selected_activities)
-            
-            # Beregn hvor mange aktiviteter som skal fjernes fra denne ruten
-            num_activities_to_remove = min(total_num_activities_to_remove, round(len(nearest_neighbor_distances) * 0.3))  #TODO : Tenke litt på hvor mye av en rute som skal fjernes
-            activities_to_remove_indices = np.argsort(-nearest_neighbor_distances)[:num_activities_to_remove]
-            activities_to_remove += df_selected_activities.iloc[activities_to_remove_indices].index.tolist()
-            
-            # Oppdater antallet aktiviteter som gjenstår å fjerne
-            total_num_activities_to_remove -= num_activities_to_remove
-            
 
-        # Kopier ruteplanen og fjern de valgte aktivitetene
-        #destroyed_route_plan = copy.deepcopy(current_route_plan)
-        destroyed_route_plan = copy.deepcopy(current_route_plan)
+            activities_and_locations = [(act, self.constructor.activities_array[act][14]) for act in activities_in_current_route]       
+            nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(activities_and_locations)
+
+            num_activities_to_remove = min(total_num_activities_to_remove, round(len(nearest_neighbor_distances) * 0.3))
+            activities_to_remove_indices = np.argsort(-nearest_neighbor_distances)[:num_activities_to_remove]
+            activities_to_remove.extend([activities_in_current_route[idx] for idx in activities_to_remove_indices])
+
+            total_num_activities_to_remove -= num_activities_to_remove
+
         for activityID in activities_to_remove:
             destroyed_route_plan = self.activity_removal(activityID, destroyed_route_plan)[0]
 
         return destroyed_route_plan, None, True
+
+    
+    
 
 
 #---------- RELATED REMOVAL ----------
@@ -882,47 +878,69 @@ class DestroyOperators:
 
     def k_means_clustering(self, tuple_with_loc, n_clusters=2):
         coordinates = []
-        for _, loc in tuple_with_loc:
-            # Assuming loc is already a tuple of (latitude, longitude)
-            lat, lon = loc
-            coordinates.append((lat, lon))
-        coordinates = np.array(coordinates)
+        unique_locs = {}
         
+        # Aggregating and counting duplicate locations
+        for _, loc in tuple_with_loc:
+            if loc in unique_locs:
+                unique_locs[loc] += 1
+            else:
+                unique_locs[loc] = 1
+
+        # Preparing the data for clustering, considering unique locations
+        for loc, count in unique_locs.items():
+            coordinates.extend([loc] * count)
+            
+        coordinates = np.array(coordinates)
+
+        # Adjusting the number of clusters if necessary
+        actual_clusters = min(len(set(map(tuple, coordinates))), n_clusters)
+
         # Perform k-means clustering
-        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(coordinates)
+        kmeans = KMeans(n_clusters=actual_clusters, random_state=0).fit(coordinates)
         labels = kmeans.labels_
 
-        # Create a list to combine patient ids with their corresponding cluster label
+        # Combine patient ids with their corresponding cluster label
         tuple_with_labels = [(pat[0], label) for pat, label in zip(tuple_with_loc, labels)]
 
-        # Calculate the cluster sizes
-        cluster_sizes = {label: 0 for label in range(n_clusters)}
+        # Identify the indices of the activities in the smallest cluster
+        cluster_sizes = {label: 0 for label in range(actual_clusters)}
         for _, label in tuple_with_labels:
             cluster_sizes[label] += 1
-
-        # Find the smallest cluster
         smallest_cluster_label = min(cluster_sizes, key=cluster_sizes.get)
-
-        # Identify and select the indices of the activities in the smallest cluster
         selected_indices = [pat for pat, label in tuple_with_labels if label == smallest_cluster_label]
 
         return selected_indices
+    
 
-    def find_nearest_neighbors_with_kdtree(self, selected_patients):
-        patients_and_location = []
-        for i in range(len(self.constructor.patients_array)):
-            for patient in selected_patients:
-                if i == patient: 
-                    patients_and_location.append((patient, self.constructor.patients_array[patient][7]))
- 
-        coordinates = []
-        for _, loc in patients_and_location:
-            # Assuming loc is already a tuple of (latitude, longitude)
-            lat, lon = loc
-            coordinates.append((lat, lon))
-        coordinates = np.array(coordinates)
+    def find_nearest_neighbors_with_kdtree(self, tuple_with_location):
+            coordinates = []
 
-        tree = cKDTree(coordinates)
-        nearest_neighbor_distances = tree.query(coordinates, k=2)[0][:, 1]
+            # Cleaning and parsing location data
+            for _, loc in tuple_with_location:
+                if isinstance(loc, str):
+                    # This handles locations stored as strings, converting them to tuples
+                    try:
+                        loc = ast.literal_eval(loc)
+                    except ValueError:
+                        print(f"Error parsing location: {loc}")
+                        continue
+                # Assuming loc is now a tuple of (latitude, longitude)
+                try:
+                    lat, lon = loc
+                    coordinates.append((lat, lon))
+                except ValueError:
+                    print(f"Invalid location format: {loc}")
+                    continue
+
+            coordinates = np.array(coordinates)
+
+            # Construct KDTree and query for nearest neighbor distances
+            if coordinates.size == 0:
+                print("No valid coordinates provided.")
+                return []
+
+            tree = cKDTree(coordinates)
+            nearest_neighbor_distances = tree.query(coordinates, k=2)[0][:, 1]
         
-        return nearest_neighbor_distances
+            return nearest_neighbor_distances

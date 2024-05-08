@@ -21,7 +21,7 @@ from helpfunctions import checkCandidateBetterThanBest
 from objects.activity import Activity
 from config.construction_config_infusion import *
 from datageneration.distance_matrix import *
-from heuristic.improvement.operator.insertor import Insertor
+from heuristic.improvement.insertor import Insertor
 from parameters import T_ij
 
 #TODO: Finne ut hva operator funksjonene skal returnere 
