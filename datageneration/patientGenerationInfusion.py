@@ -779,8 +779,6 @@ def activitiesGenerator(df_visits):
 
             num_of_act_in_visit = len(visit_group)
             # Visit complexity
-            #v_complexity = len(visit_group) + v_timeRatio + v_preceRatio #TODO: Finne en måte å regne ut denne på
-            #df_activities.loc[df_activities['visitId'] == visitId, 'v_complexity'] = v_complexity
             v_complexity = construction_config_infusion.v_w_oportunity_space* visit_duration/visitTimeWindow + (
                 construction_config_infusion.v_w_num_act*num_of_act_in_visit/construction_config_infusion.max_num_of_activities_in_visit)
             df_activities.loc[df_activities['visitId'] == visitId, 'v_complexity'] = v_complexity
@@ -802,10 +800,7 @@ def activitiesGenerator(df_visits):
         num_of_possible_patterns = len(pattern[patternTypeForTreatments])
         t_complexity = t_complexity*(max_num_of_patterns+1-num_of_possible_patterns)/max_num_of_patterns
 
-        #t_complexity = int(numActInTreat + t_preceRatio + t_timeRatio) #TODO: Finne en måte å regne ut denne på
         df_activities.loc[df_activities['treatmentId'] == treatmentId, 'nActInTreat'] = numActInTreat
-        #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_preceRatio'] = t_preceRatio
-        #df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_timeRatio'] = t_timeRatio
         df_activities.loc[df_activities['treatmentId'] == treatmentId, 't_complexity'] = t_complexity
 
     for patientId, patient_group in df_activities.groupby('patientId'):
