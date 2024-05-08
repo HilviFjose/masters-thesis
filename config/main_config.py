@@ -62,12 +62,12 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Number of constructed solutions 
-num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 3  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 #Insertor choises [0,1,2,3] for [simple, better with limited regret 1, better sith limited regeret 2, better, best ]
-construction_insertor = 1 #W
+construction_insertor = 3 #W
 repair_insertor = 1
-illegal_repair_insertor = 1
+illegal_repair_insertor = 2
 
 
 max_num_regret1 = 20
