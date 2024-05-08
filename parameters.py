@@ -21,7 +21,7 @@ from config.construction_config_infusion import *
 from datageneration import distance_matrix
 
 # DATA GENERATION
-'''
+
 #df_employees = employeeGeneration.employeeGenerator()      # For Night, Day and Evening shifts
 df_employees = employeeGeneratorOnlyDay()                   # For day shifts
 df_patients_not_complete = patientGenerator(df_employees)
@@ -59,13 +59,6 @@ df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
 
-'''
-#TEST DATA - not randomly generated
-df_activities  = pd.read_csv("data/test/ActivitiesNY.csv").set_index(["activityId"]) 
-df_employees = pd.read_csv("data/test/EmployeesNY.csv").set_index(["employeeId"])
-df_patients = pd.read_csv("data/test/PatientsNY.csv").set_index(["patientId"])
-df_treatments = pd.read_csv("data/test/TreatmentsNY.csv").set_index(["treatmentId"])
-df_visits = pd.read_csv("data/test/VisitsNY.csv").set_index(["visitId"])
 '''
 #GENERATING DISTANCE MATRIX
 depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_antibiotics.depot]})
