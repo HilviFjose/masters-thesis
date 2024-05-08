@@ -40,7 +40,8 @@ class RoutePlan:
 
         #OBS: Jeg forstår ikke hvorfor denne er slik: 
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
-        
+
+        self.routes_grouped_by_skill = self.makeRoutesGroupedBySkill()  
         
         self.objective = [0,0,0,0]
         self.weeklyHeaviness = 0
@@ -84,7 +85,11 @@ class RoutePlan:
         
 
     '''
-        
+    
+    def sortRoutesByNumberOfActivitiesInRoute(self, routes):
+        #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
+        return sorted(routes, key=lambda route: (len(route.route), route.skillLev))
+
 
     def sortRoutesByAcitivyLocation(self, routes, activity):
         #Sjekker om det er depot aktivitet, da returnere bare listen random av hva som lønner seg 
@@ -96,13 +101,26 @@ class RoutePlan:
         return sorted(routes, key=lambda route: abs(route.averageLocation[0] - activity.location[0]) + abs(route.averageLocation[1]- activity.location[1]))
 
 
+    def makeRoutesGroupedBySkill(self): 
+        route_grouped_by_skill = {day: {} for day in range(1, self.days+1)}      
+        for day in range (1, self.days+1): 
+            routes_grouped_by_skill_for_day = {}
+            for route in self.routes[day].values():
+                skill_level = route.skillLev 
+                if skill_level not in routes_grouped_by_skill_for_day:
+                    routes_grouped_by_skill_for_day[skill_level] = [route]
+                else:
+                    routes_grouped_by_skill_for_day[skill_level].append(route)
+            route_grouped_by_skill[day] = routes_grouped_by_skill_for_day
+        return route_grouped_by_skill
+            
                 
     def getSortedRoutes(self, activity, day): 
         
         #TODO: Her er det mulig å velge hvilken metode som er ønskelig å kjøre med. De gir ganske ulike resultater. 
         # De metodene som bruker random-biblioteket vil gi nye løsninger for hver kjøring (med samme datasett).
         # Grupperer ruter basert på profesjonen til den ansatte
-        
+        '''
         routes_grouped_by_skill = {}
         for route in self.routes[day].values():
             skill_level = route.skillLev 
@@ -110,23 +128,23 @@ class RoutePlan:
                 routes_grouped_by_skill[skill_level] = [route]
             else:
                 routes_grouped_by_skill[skill_level].append(route)
-      
-        # Iterer gjennom sorterte professionLevels og iterer i tilfeldig rekkefølge
-        act_skill_level = activity.skillReq
+        '''
+        routes_grouped_by_skill = self.routes_grouped_by_skill[day]
+         # Iterer gjennom sorterte professionLevels og iterer i tilfeldig rekkefølge
         routes = []
-        for act_skill_level in range (act_skill_level, 4): 
+        for act_skill_level in range (activity.skillReq, 4): 
             try:
                 routes_for_skill = routes_grouped_by_skill[act_skill_level]
             #TODO: Sortere hvor mange som er 
             except: 
                 routes_for_skill = []
      
-            routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
+            #routes_for_skill = self.sortRoutesByAcitivyLocation(routes_for_skill, activity)
             #random.shuffle(routes_for_skill)
             
             routes += routes_for_skill
 
-        return routes
+        return self.sortRoutesByNumberOfActivitiesInRoute(routes)
 
     def addActivityOnDay(self, activity, day):
      
