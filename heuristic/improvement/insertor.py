@@ -44,10 +44,11 @@ class Insertor:
     #TODO: Sjekke denne funksjonen. Finne ut hvor denne funksjonaliteten skal ligge, for i de andre illegal funksjonene så er det 
     
 
-    def insert_treatment(self, treatment): 
+    def insert_treatment(self, treatment):
     
         visitList = self.constructor.treatment_df.loc[treatment, 'visitsIds']
 
+        #TODO: Denne tror jeg kan vekk 
         old_route_plan = copy.deepcopy(self.route_plan)
 
         '''
@@ -65,7 +66,8 @@ class Insertor:
         random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
         for index in index_random:
-            self.route_plan = copy.deepcopy(old_route_plan)
+            self.route_plan = old_route_plan
+            #self.route_plan = copy.deepcopy(old_route_plan) Gammeldeepcopy 0805
             insertStatus = self.insert_visit_with_pattern(visitList, patterns[index]) 
             if insertStatus == True:
                 return True

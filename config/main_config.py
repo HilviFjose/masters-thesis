@@ -8,7 +8,7 @@ import math
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 0
+iterations = 20
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -65,13 +65,13 @@ depot = (59.9365, 10.7396)
 num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 #Insertor choises [0,1,2,3, 4] for [simple, better with limited regret 1, better sith limited regeret 2, better, best ]
-construction_insertor = 3 #W
+construction_insertor = 2 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
 
 
 max_num_regret1 = 20
-max_num_regret2 = 200
+max_num_regret2 = 100
 
 #Insertor som kan brukes en andel av gangene 
 fraction_repair_insertor = 1 
