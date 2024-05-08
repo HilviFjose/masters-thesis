@@ -158,18 +158,6 @@ class Activity:
         else: 
             self.possibleToInsert = True
             
-    
-
-
-    def setemployeeNotAllowedDueToPickUpDelivery(self, list): 
-        self.employeeNotAllowedDueToPickUpDelivery = list 
-
-
-    def restartActivity(self): 
-        self.startTime = None
-        self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
-        self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
-        self.employeeNotAllowedDueToPickUpDelivery = []
-        self.possibleToInsert = True
+ 
 
  

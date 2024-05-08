@@ -535,7 +535,7 @@ class RoutePlan:
         #Her håndteres pick up and delivery
         if activity.pickUpActivityID != 0 : 
             otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.pickUpActivityID, day)
-            activity.setemployeeNotAllowedDueToPickUpDelivery(otherEmplOnDay)
+            activity.employeeNotAllowedDueToPickUpDelivery = otherEmplOnDay 
             
         #Her håndteres presedens.   
         #Aktivitetns earliests starttidspunkt oppdateres basert på starttidspunktet til presedens aktiviten
