@@ -41,6 +41,14 @@ def main():
     folder_path = os.path.join(parent_folder, folder_name)
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
+
+    config_info_file_path = os.path.join(folder_path, "0config_info" + ".txt")
+
+    with open("config/main_config.py", 'r') as file:
+        content = file.read()
+
+    with open(config_info_file_path, 'w') as file:
+        file.write(content)
     
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     print("Constructing Initial Solution")

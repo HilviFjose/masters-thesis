@@ -22,6 +22,9 @@ k = 3
 destruction_degree_beginning = 0.4
 destruction_degree_end = 0.2
 
+destruction_degree_start_intervall = 0.15
+destruction_degree_end_intervall = 0.50
+
 # Simulated annealing temperatures -- TODO: these must be tuned
 #start_temperature = 60
 #end_temperature = 10
@@ -63,8 +66,7 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Number of constructed solutions 
-num_of_constructions = 10  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
-num_of_constructions = 10  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 3  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 #Insertor choises [0,1,2,3] for [simple, better with limited regret 1, better sith limited regeret 2, better, best ]
 construction_insertor = 2 #W
@@ -85,4 +87,8 @@ modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insert
 
 #Number of paralell processes 
 num_of_paralell_iterations = 3
-num_of_paralell_iterations = 3
+
+#Boolean for paralell 
+doParalellLocalSearch = True
+doParalellDestroyRepair = True
+
