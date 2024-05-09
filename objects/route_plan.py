@@ -111,7 +111,7 @@ class RoutePlan:
             
                 
     def getSortedRoutes(self, activity, day): 
-        routes = [route for route in self.routes[day].values() if route.skillLev >= activity.skillReq]
+        routes = [route for route in self.routes[day].values() if route.checkTrueFalse(activity)]
         #routes = [item for key, value_list in self.makeRoutesGroupedBySkill()[day].items() if key >= activity.skillReq for item in value_list]
         return sorted(routes, key=lambda route: (len(route.route), route.skillLev))
 

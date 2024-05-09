@@ -112,7 +112,7 @@ class ALNS:
             candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
-                 
+                start_time = time.perf_counter()
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
                 '''
@@ -127,6 +127,8 @@ class ALNS:
                 for day in range(1, days+1): 
                     candidate_route_plan.routes[day] = results[day-1].routes[day]
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+                end_time = time.perf_counter()
+                print("Lokalsøket bruker", str(end_time -start_time))
                 
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             #TODO: Skal final candiate printes lenger nede? 

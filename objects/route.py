@@ -50,20 +50,7 @@ class Route:
 #TODO: Denne klassen kan omstrukturers slik at addActivity bruker add activity on index. Slik at det blir færre funskjoner
     def addActivity(self, activity_in):
         activity = copy.deepcopy(activity_in)
-        #Kan ikke restarte den her når den muligens skal legges inn basert på infoen før 
-        #activity.restartActivity()
-        '''
-        Funkjsonenen sjekker først om aktivitetnen oppfyller krav for å være i ruten
-        Funkjsonen itererer vi over alle mellomrom mellom aktivitene som ligger i ruten. 
-        Ugangspunktet er altså at ruten går fra i til j, og det skal byttes ut med å gå fra i til a og a til j 
-
-        Arg: 
-        activity (Activity) aktivitetsobjektet som skal legges til i ruten 
-
-        Return: 
-        True/False på om aktiviteten er blitt lagt til i ruten 
-        '''
-
+        
         if  self.employee.id == activity.employeeRestricions or (
             self.employee.id in activity.employeeNotAllowedDueToPickUpDelivery) or (
                 activity.skillReq > self.skillLev) or (activity.possibleToInsert == False): 
