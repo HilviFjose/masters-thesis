@@ -42,7 +42,8 @@ def main():
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-    #CONSTRUCTION HEURISTIC
+
+    
     constructor = ConstructionHeuristic(activities_container, employees_container, patients_container, treatments_container, visits_container, 5, folder_name)
     print("Constructing Initial Solution")
     '''
