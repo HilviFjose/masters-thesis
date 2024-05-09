@@ -93,19 +93,21 @@ class ALNS:
             already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
-            '''
-            #Uten parallell
-            candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
-
-            #Kjører paralelt. 
-            '''
-            jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
             
-            results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
-            candidate_route_plan, destroy, repair = results[0]
-            for result in results[1:]: 
-                if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
-                    candidate_route_plan, destroy, repair = result
+            if not doParalellDestroyRepair:
+                #Uten parallell
+                candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
+
+            else:
+                #Kjører paralelt. 
+                
+                jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
+                
+                results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
+                candidate_route_plan, destroy, repair = results[0]
+                for result in results[1:]: 
+                    if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
+                        candidate_route_plan, destroy, repair = result
              
             
 
@@ -115,17 +117,18 @@ class ALNS:
                  
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
-                '''
-                #Uten parallell
-                candidate_route_plan = localsearch.do_local_search()
-                candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
+                
+                if not doParalellLocalSearch:
+                    #Uten parallell
+                    candidate_route_plan = localsearch.do_local_search()
 
-                #Med parallell 
-                '''
-                results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, days+1) ], mp_config=self.mp_config, paralellNum=days)
-                print("GJOR LOKALSØKET I PARALELL")
-                for day in range(1, days+1): 
-                    candidate_route_plan.routes[day] = results[day-1].routes[day]
+                else: 
+                    #Med parallell 
+                    results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, days+1) ], mp_config=self.mp_config, paralellNum=days)
+                    print("GJOR LOKALSØKET I PARALELL")
+                    for day in range(1, days+1): 
+                        candidate_route_plan.routes[day] = results[day-1].routes[day]
+                    
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
                 
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
