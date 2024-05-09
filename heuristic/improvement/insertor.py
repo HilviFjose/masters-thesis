@@ -32,7 +32,7 @@ class Insertor:
     def insert_patient(self, patient):
         old_route_plan = copy.deepcopy(self.route_plan)
         #TODO: Treatments bør sorteres slik at de mest kompliserte komme tidligst
-        treamentList = self.constructor.patients_df.loc[patient, 'treatmentsIds']
+        treamentList = self.constructor.patients_array[patient][11]
         for treatment in treamentList: 
             status = self.insert_treatment(treatment)
             if status == False: 
@@ -44,24 +44,14 @@ class Insertor:
     #TODO: Sjekke denne funksjonen. Finne ut hvor denne funksjonaliteten skal ligge, for i de andre illegal funksjonene så er det 
     
 
-    def insert_treatment(self, treatment):
-    
-        visitList = self.constructor.treatment_df.loc[treatment, 'visitsIds']
+    def insert_treatment(self, treatment): 
+        visitList = self.constructor.treatments_array[treatment][18]
 
         #TODO: Denne tror jeg kan vekk 
         old_route_plan = copy.deepcopy(self.route_plan)
 
-        '''
-            #Reverserer listen annen hver gang for å ikke alltid begynne med pattern på starten av uken
-            if self.rev == True:
-                patterns =  reversed(pattern[self.constructor.treatment_df.loc[treatment, 'patternType']])
-                self.rev = False
-            else: 
-                patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
-                self.rev = True
-        '''
         #Iterer over alle patterns som er mulige for denne treatmenten
-        patterns = pattern[self.constructor.treatment_df.loc[treatment, 'patternType']]
+        patterns = pattern[self.constructor.treatments_array[treatment][1]]
         index_random = [i for i in range(len(patterns))]
         random.shuffle(index_random) #TODO: Hvis du skal feilsøke kan du vurdere å kommentere ut denne linjen. 
 
@@ -104,11 +94,11 @@ class Insertor:
    
 
     def simple_insert_visit_on_day(self, visit, day):  
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.constructor.visits_array[visit][18]
         old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         # Create a list of activity objects
-        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activities = [Activity(self.constructor.activities_array, activityID) for activityID in activitiesList]
         for activity in activities: 
             activityStatus = self.route_plan.addActivityOnDay(activity, day)
             if activityStatus == False: 
@@ -121,10 +111,10 @@ class Insertor:
         
         self.InsertionFound_BetterInsertVisit = False 
 
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.constructor.visits_array[visit][14]
 
         
-        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activities = [Activity(self.constructor.activities_array, activityID) for activityID in activitiesList]
         activity = activities[0]
         rest_acitivites = activities[1:]
       
@@ -188,11 +178,11 @@ class Insertor:
         self.InsertionFound_BetterInsertVisitWitLim1 = False 
         self.betterInsertVisit_explored_branches1 = 0 
 
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.constructor.visits_array[visit][14]
         #test_route_plan = copy.deepcopy(self.route_plan)
 
         
-        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activities = [Activity(self.constructor.activities_array, activityID) for activityID in activitiesList]
         activity = activities[0]
         rest_acitivites = activities[1:]
       
@@ -268,9 +258,9 @@ class Insertor:
         self.InsertionFound_BetterInsertVisitWitLim2 = False 
         self.betterInsertVisit_explored_branches2 = 0 
 
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.constructor.visits_array[visit][14]
 
-        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activities = [Activity(self.constructor.activities_array, activityID) for activityID in activitiesList]
         activity = activities[0]
         rest_acitivites = activities[1:]
 
@@ -339,12 +329,11 @@ class Insertor:
              
     def best_insert_visit_on_day(self, visit, day):
         self.InsertionFound_BestInsertVisit = False
-        
-        activitiesList = self.constructor.visit_df.loc[visit, 'activitiesIds']
+        activitiesList = self.constructor.visits_array[visit][18]
         test_route_plan = copy.deepcopy(self.route_plan)
         test_route_plan.updateObjective(0, iterations)
         
-        activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
+        activities = [Activity(self.constructor.activities_array, activityID) for activityID in activitiesList]
         activity = activities[0]
         rest_acitivites = activities[1:]
       
@@ -411,27 +400,3 @@ class Insertor:
                 self.insertNextActiviy_forBestInsertion(next_actitivy, rest_acitivites, route_plan, day, route.employee.id, index_place)
                     
                 
-
-    
-
-    
-    '''
-    Blir dette et bredde først søk? Nei fordi den søker seg
-
-    Den komme seg ned, finner løsningen. Men på vei opp så må den gjøre alle de andre 
-    
-    Må ha en form for while, slik at den bare kjører hvis den forrige ikke fill true 
-    Begynne på laveste nivå
-
-    Hva skal true returnere. Den setter ruteplanen og den setter den globale verdien, så vi trenger ikke ha de andre true/false lenger? 
-
-    Må ha en eller annen global variabel som sier om vi har funnet dette punktet 
-
-
-    Teste med å printe hvert steg når en aktivitet legges til. 
-
-    Videre arbeid: 
-    Dette er ikke en best insertion. 
-    Hvordan skulle man laget best insertion: Kan bruke mye av det samme som nå, bare at man endrer til at den går gjennom alle muligheter, og velger den som gir best resultat. 
-    Jeg er veldig usikker på hvor lang tid det tar å kjøre disse insertionene.
-    '''

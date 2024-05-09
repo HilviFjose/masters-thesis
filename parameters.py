@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import pickle
 
 #ANTIBIOTICS CASE
 
@@ -55,6 +56,26 @@ file_path_visits = os.path.join(os.getcwd(), 'data', 'visits.pkl')
 df_visits = pd.read_pickle(file_path_visits)
 file_path_activities = os.path.join(os.getcwd(), 'data', 'activities.pkl')
 df_activities = pd.read_pickle(file_path_activities)
+
+# Function to load list from pickle
+def load_array_from_pickle(filepath):
+    with open(filepath, 'rb') as f:
+        data = pickle.load(f)
+        if isinstance(data, pd.DataFrame):
+            # If data is a DataFrame, convert it to a 2D array
+            header = data.columns.values
+            data_array = np.vstack([header, data.values])
+            return data_array
+        elif isinstance(data, np.ndarray):
+            # If data is already an array, return it as is
+            return data
+
+#ARRAYS FOR MORE EFFICIENT INFORMATION FETCHING
+employees_information_array = load_array_from_pickle(file_path_employees) #['professionalLevel' 'clinic' 'schedule']
+patients_information_array = load_array_from_pickle(file_path_patients) #['nTreatments' 'utility' 'allocation' 'employeeRestriction' 'continuityGroup' 'employeeHistory' 'heaviness' 'location' 'clinic' 'specialisationPreferred' 'extraSupport' 'treatmentsIds' 'nVisits' 'aggUtility' 'p_complexity' 'nActivities']
+treatments_information_array = load_array_from_pickle(file_path_treatments) #['patientId' 'patternType' 'pattern' 'visits' 'location' 'employeeRestriction' 'heaviness' 'utility' 'pattern_complexity' 'nActInTreat' 'allocation' 'employeeHistory' 'continuityGroup' 'clinic' 'specialisationPreferred' 'extraSupport' 't_complexity' 'complexity' 'visitsIds' 'nActivities' 'activitiesIds']
+visits_information_array = load_array_from_pickle(file_path_visits) #['treatmentId' 'patientId' 'clinic' 'specialisationPreferred' 'location' 'employeeRestriction' 'heaviness' 'utility' 'allocation' 'patternType' 'employeeHistory' 'continuityGroup' 'activities' 'v_complexity' 'activitiesIds']
+activities_information_array = load_array_from_pickle(file_path_activities)
 
 
 #GENERATING DISTANCE MATRIX

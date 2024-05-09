@@ -14,8 +14,8 @@ from config.main_config import penalty_act, penalty_visit, penalty_treat, penalt
 from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
 
 class RoutePlan:
-    def __init__(self, days, employee_df, folder_name):
-        self.employee_df = employee_df
+    def __init__(self, days, employees_array, folder_name):
+        self.employees_array= employees_array
         self.folder_name = folder_name
         
         employee_skills = {} # For å holde styr på ansattes ferdigheter
@@ -23,9 +23,10 @@ class RoutePlan:
         self.employees = [] #Antar at de alle ansatte jobber alle dager
 
         #Lager employees objektene og lagerer de i en liste 
-        for key, value in employee_df.iterrows():
-            emp = Employee(employee_df, key)
-            employee_skills[key] = value['professionalLevel'] 
+        for emp_id in range(1, len(employees_array)):
+            emp = Employee(employees_array[emp_id], emp_id)
+            professional_level = emp.skillLevel
+            employee_skills[emp_id] = professional_level
             self.employees.append(emp)
 
         self.routes = {day: {employee.id: None for employee in self.employees} for day in range(1, days+1)}
@@ -223,6 +224,13 @@ class RoutePlan:
             sys.stdout = original_stdout
  
     def printSolution(self, txtName, operator_string, current_iteration = None):
+        # Ensure directory exists
+        results_dir = os.path.join('results', self.folder_name)
+        os.makedirs(results_dir, exist_ok=True)
+
+        # Open the file for writing in the correct directory
+        file_path = os.path.join(results_dir, txtName + ".txt")
+        with open(file_path, "w") as log_file:
         # Ensure directory exists
         results_dir = os.path.join('results', self.folder_name)
         os.makedirs(results_dir, exist_ok=True)
@@ -612,19 +620,11 @@ class RoutePlan:
                         return day
                     
     def updateAllocationAfterPatientInsertor(self, patient, constructor): 
-        #Oppdaterer allokerings dictionariene 
-        '''
-        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
-        for treatment in [item for sublist in self.allocatedPatients.values() for item in sublist]: 
-            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
-        for visit in [item for sublist in self.treatments.values() for item in sublist]: 
-            self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
-        '''
-        self.allocatedPatients[patient] = constructor.patients_df.loc[patient, 'treatmentsIds']
+        self.allocatedPatients[patient] = constructor.patients_array[patient][11]
         for treatment in self.allocatedPatients[patient]:
-            self.treatments[treatment] = constructor.treatment_df.loc[treatment, 'visitsIds']
+            self.treatments[treatment] = constructor.treatments_array[treatment][18]
             for visit in self.treatments[treatment]: 
-                self.visits[visit] = constructor.visit_df.loc[visit, 'activitiesIds']
+                self.visits[visit] = constructor.visits_array[visit][14]
 
         #Fjerner pasienten fra ikkeAllokert listen 
         if patient in self.notAllocatedPatients: 

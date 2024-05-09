@@ -12,7 +12,7 @@ patientExtraSupport = [0.5, 0.9, 0.2, 0.1]          # Percentage from each clini
 patterns_5days = [1]                                                # Patterntype 1
 patterns_4days = [2,3,4,5,6]                                        # Patterntype 2
 patterns_3days = [7]                                                # Patterntype 3
-pattern_2daysspread = [8,9,10]                                      # Patterntype 4
+pattern_2daysspread = [8,9,10]                                      # sPatterntype 4
 patterns_2daysfollowing = [11,12,13,14]                             # Patterntype 5
 patterns_1day = [15,16,17,18,19]                                    # Patterntype 6
 

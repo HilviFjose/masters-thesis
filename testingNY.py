@@ -15,7 +15,7 @@ df_treatments = parameters.df_treatments
 df_visits = parameters.df_visits
 df_activities = parameters.df_activities
 
-username = 'agnesost'
+username = 'hilvif'
 path = 'c:\\Users\\'+username+'\\masters-thesis\\results'
 items = os.listdir(path)
          

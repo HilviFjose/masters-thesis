@@ -24,12 +24,12 @@ def main():
     mp_config = setup(3,2,3)
 
     #INPUT DATA
-    df_employees = parameters.df_employees
-    df_patients = parameters.df_patients
-    df_treatments = parameters.df_treatments
-    df_visits = parameters.df_visits
-    df_activities = parameters.df_activities
-   
+    employees_container = parameters.employees_information_array
+    patients_container = parameters.patients_information_array
+    treatments_container = parameters.treatments_information_array
+    visits_container = parameters.visits_information_array
+    activities_container = parameters.activities_information_array
+
     # Specify the parent folder
     parent_folder = "results"
 
@@ -50,7 +50,7 @@ def main():
     with open(config_info_file_path, 'w') as file:
         file.write(content)
     
-    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
+    constructor = ConstructionHeuristic(activities_container, employees_container, patients_container, treatments_container, visits_container, 5, folder_name)
     print("Constructing Initial Solution")
     '''
     #CONSTRUCTION HEURISTIC NORMA
