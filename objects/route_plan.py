@@ -224,9 +224,13 @@ class RoutePlan:
             sys.stdout = original_stdout
  
     def printSolution(self, txtName, operator_string, current_iteration = None):
-        #SKRIV TIL FIL I STEDET FOR TERMINAL
-        # Åpne filen for å skrive
-        with open(os.path.join('results\\'+self.folder_name, txtName + ".txt"), "w") as log_file:
+        # Ensure directory exists
+        results_dir = os.path.join('results', self.folder_name)
+        os.makedirs(results_dir, exist_ok=True)
+
+        # Open the file for writing in the correct directory
+        file_path = os.path.join(results_dir, txtName + ".txt")
+        with open(file_path, "w") as log_file:
             # Omdiriger sys.stdout til filen
             original_stdout = sys.stdout
             sys.stdout = log_file
