@@ -93,7 +93,7 @@ class ALNS:
             already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
-            '''
+            
             #Uten parallell
             candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
 
@@ -106,7 +106,7 @@ class ALNS:
             for result in results[1:]: 
                 if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
                     candidate_route_plan, destroy, repair = result
-            
+            '''
             
 
             candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
@@ -115,7 +115,7 @@ class ALNS:
                  
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
-                '''
+                
                 #Uten parallell
                 candidate_route_plan = localsearch.do_local_search()
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
@@ -127,7 +127,7 @@ class ALNS:
                 for day in range(1, days+1): 
                     candidate_route_plan.routes[day] = results[day-1].routes[day]
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
-                
+                '''
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             #TODO: Skal final candiate printes lenger nede? 
             if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():
@@ -175,7 +175,7 @@ class ALNS:
     
     def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
-
+        
         #self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
@@ -185,17 +185,17 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
-  
-        #self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
-        #self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
-       
+     
+        self.add_destroy_operator(destroy_operators.cluster_distance_patients_removal)
+        self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
+        
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
         self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
         self.add_destroy_operator(destroy_operators.related_patients_removal)
         self.add_destroy_operator(destroy_operators.related_treatments_removal)
         self.add_destroy_operator(destroy_operators.related_visits_removal)
-  
+    
         # Add repair operators
         self.add_repair_operator(repair_operators.greedy_repair)
         #self.add_repair_operator(repair_operators.random_repair)
