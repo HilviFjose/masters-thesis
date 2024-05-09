@@ -131,8 +131,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
                 
                 elif therapy == 'nutrition':
                     # Distributions
@@ -150,8 +150,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
 
                 elif therapy == 'advanced':
                     # Distributions
@@ -169,8 +169,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
 
                 else: #Combination of therapies, follows the same distributions as the advanced
                     # Distributions
@@ -188,8 +188,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
         
         elif clinic == 2: #Medical
             for therapy, t_group in c_group.groupby('therapy'):    
@@ -209,8 +209,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
                 
                 elif therapy == 'nutrition':
                     # Distributions
@@ -228,8 +228,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
 
                 elif therapy == 'advanced':
                     # Distributions
@@ -247,8 +247,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
 
                 else: #Combination of therapies, follows the same distributions as the advanced
                     # Distributions
@@ -266,8 +266,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
         elif clinic == 3: #Orthopaedic
             #ONLY ANTIBIOTICS IS RELEVANT
             for therapy, t_group in c_group.groupby('therapy'):    
@@ -287,8 +287,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
                 
         elif clinic == 4: #Paediatrics
             for therapy, t_group in c_group.groupby('therapy'):        
@@ -308,8 +308,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
                 
                 elif therapy == 'nutrition':
                     # Distributions
@@ -327,8 +327,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
 
                 elif therapy == 'advanced':
                     # Distributions
@@ -346,8 +346,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
 
                 else: #Combination of therapies, follows the same distributions as the advanced
                     # Distributions
@@ -365,8 +365,8 @@ def patientGenerator(df_employees):
 
                     # Assign these generated values back to the DataFrame
                     df_patients.loc[t_group.index, 'utility'] = utility
-                    df_patients.loc[t_group.index, 'continuity'] = continuity
-                    df_patients.loc[t_group.index, 'workload'] = workload
+                    df_patients.loc[t_group.index, 'continuityGroup'] = continuity
+                    df_patients.loc[t_group.index, 'heaviness'] = workload
                     
     # Distribute combination therapies
     for therapy, group in df_patients.groupby('therapy'):
