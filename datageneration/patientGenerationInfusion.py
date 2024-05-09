@@ -11,16 +11,6 @@ from datageneration import employeeGenerationInfusion
 from objects.patterns import pattern
 
 def locationGenerator(locations, radius_km, num_points):
-    """Forklaring fra chatten:
-    For å generere et bestemt antall punkter innenfor arealet av en sirkel, kan vi tilpasse tilnærmingen ved 
-    å bruke en metode som lar oss plassere punkter tilfeldig, men innenfor grensene av sirkelens radius. 
-    Denne metoden involverer å generere tilfeldige vinkler og radiuser for hvert punkt, slik at de faller innenfor 
-    den definerte sirkelen. Dette sikrer at punktene er jevnt fordelt over hele området, ikke bare langs kanten.
-    Vi kan bruke polar koordinatsystemet hvor et punkt er definert av en radius fra sentrum og en vinkel i forhold 
-    til en referanseakse. For å oppnå dette, genererer vi tilfeldige vinkler (i radianer) og tilfeldige radiuser 
-    (som en brøkdel av den totale radiusen), og konverterer deretter disse polar koordinatene til kartesiske 
-    koordinater (latitude og longitude) for å passe inn i vår geografiske kontekst"""
-
     points = []
     for _ in range(num_points):
         # Velger en tilfeldig lokasjon fra listen
@@ -45,29 +35,13 @@ def locationGenerator(locations, radius_km, num_points):
         
     return points
 
-
 #TODO: gå gjennom presedens, same employee, location på aktiviteter for alle casene
-#TODO: overstyre preferred specialisation
-#TODO: Oppdatere prosentandel som skal få ulike fordelinger på terapier
-#TODO: Legge inn distribusjoner på pasienter (continuity, heaviness, utility)
-#TODO: Legge inn at noen pasienter har flere typer terapier (15 % eller noe)
 
 def patientGenerator(df_employees):
     patientIds = list(range(1, construction_config_infusion.P_num + 1))
     
     # Generate random location for each patient
     locations = locationGenerator(construction_config_infusion.refLoc, construction_config_infusion.area, construction_config_infusion.P_num)
-    
-    # Distribution of number of treatments per patient
-    nTreatments = 1 #TODO må legge inn mulighet for at noen pasienter har flere treatments igjen
-
-    # Distribuiton of therapy types
-    num_antibiotic = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[0])
-    num_nutrition = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[1])
-    num_advanced = int(construction_config_infusion.P_num * construction_config_infusion.therapyDistribution[2])
-    num_combination = construction_config_infusion.P_num - (num_antibiotic + num_nutrition + num_advanced)
-    therapy = (['antibiotics'] * num_antibiotic) + (['nutrition'] * num_nutrition) + (['advanced'] * num_advanced) + (['combination'] * num_combination)
-    np.random.shuffle(therapy) 
 
     # Pre-allocated patients
     if construction_config_infusion.P_num <= 5* construction_config_infusion.E_num:
@@ -78,39 +52,50 @@ def patientGenerator(df_employees):
         allocation = [1] * round(construction_config_infusion.E_num * 0.75)
     allocation.extend([0] * (construction_config_infusion.P_num - len(allocation)))
     random.shuffle(allocation)
+    
+    # Distribution of clinics
+    num_cancer = int(construction_config_infusion.P_num * construction_config_infusion.clinicDistribution[0])
+    num_medical = int(construction_config_infusion.P_num * construction_config_infusion.clinicDistribution[1])
+    num_ortho = int(construction_config_infusion.P_num * construction_config_infusion.clinicDistribution[2]) 
+    num_paedia = construction_config_infusion.P_num - (num_cancer + num_medical + num_ortho)
+    clinic = ([1 for _ in range(num_cancer)] + [2 for _ in range(num_medical)] + [3 for _ in range(num_ortho)] + [4 for _ in range(num_paedia)])
+    #random.shuffle(clinic)
 
-    # Distribution of patients between clinics based on therapy type
-    clinic_counts = {i+1: 0 for i in range(len(construction_config_infusion.clinicDistribution))}     # Initialiser en tellevariabel for antall pasienter tildelt hver klinikk
-    clinics = []
-    for t in therapy:
-        possible_clinics = []
-        if t == 'nutrition':
-            possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithNutrition) if available]
-        elif t == 'advanced':
-            possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithAdvanced) if available]
-        elif t == 'combination':
-            possible_clinics = [i+1 for i, available in enumerate(construction_config_infusion.clinicsWithCombination) if available]
-        else:
-            possible_clinics = list(range(1, len(construction_config_infusion.clinicDistribution) + 1))
+    therapy_distributions = {
+        1: construction_config_infusion.therapiesCancer,   # Kreftklinikk
+        2: construction_config_infusion.therapiesMedical,  # Medisinsk klinikk
+        3: construction_config_infusion.therapiesOrtho,    # Ortopedisk klinikk
+        4: construction_config_infusion.therapiesPaedia    # Pediatrisk klinikk
+    }
+
+    # Terapityper
+    therapy_types = ['antibiotics', 'nutrition', 'advanced', 'combination']
+
+    # Opprett en tom liste for å lagre terapier til alle pasienter
+    therapy = []
+
+    # Generer terapier basert på klinikkfordeling og spesifikke terapifordelinger
+    for clinic_id, num_patients in enumerate([num_cancer, num_medical, num_ortho, num_paedia], start=1):
+        clinic_therapy_distribution = therapy_distributions[clinic_id]
         
-        # Juster vektingen for mulige klinikker basert på ønsket fordeling og nåværende tildeling
-        weights = [construction_config_infusion.clinicDistribution[i-1] - (clinic_counts[i] / construction_config_infusion.P_num) for i in possible_clinics]
-        weights = [w if w > 0 else 0 for w in weights]  # Sørger for at vekter ikke blir negative
-        if sum(weights) > 0:
-            weights = [w / sum(weights) for w in weights]  # Normaliserer vekter
-            chosen_clinic = np.random.choice(possible_clinics, p=weights)
-        else:
-            chosen_clinic = np.random.choice(possible_clinics)
+        therapy_counts = [int(num_patients * prop) for prop in clinic_therapy_distribution]
+        # Korrigere for eventuelle avrundingsfeil ved å justere siste terapi
+        correction = num_patients - sum(therapy_counts)
+        therapy_counts[-1] += correction
         
-        clinics.append(chosen_clinic)
-        clinic_counts[chosen_clinic] += 1
+        clinic_therapies = []
+        for therapy_index, count in enumerate(therapy_counts):
+            clinic_therapies.extend([therapy_types[therapy_index]] * count)
+        
+        np.random.shuffle(clinic_therapies)
+        therapy.extend(clinic_therapies)
 
     # Prepare DataFrame
     df_patients = pd.DataFrame({
         'patientId': patientIds,
         'therapy': therapy,
-        'clinic': clinics,
-        'nTreatments': nTreatments,
+        'clinic': clinic,
+        'nTreatments': 1,
         'utility': 0,
         'allocation': allocation,
         'employeeRestriction': None,  
@@ -118,16 +103,20 @@ def patientGenerator(df_employees):
         'employeeHistory': None,  
         'heaviness': 0,
         'location': locations,
-        'specialisationPreferred': None,
         'extraSupport': 'no'
     })
+
+    # Update number of treatments for the patient with therapy type "combination"
+    for therapy, group in df_patients.groupby('therapy'):
+        if therapy == 'combination':
+            df_patients.loc[group.index, 'nTreatments'] = 2          
 
     # Distribution of utility, patient allocation, continuity group and heaviness for patients
     for clinic, c_group in df_patients.groupby('clinic'):
         if clinic == 1: #Cancer
             for therapy, t_group in c_group.groupby('therapy'):    
                 if therapy == 'antibiotics':
-                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    # Distributions
                     utility_dist = construction_config_infusion.utilityCancer[0]
                     continuity_dist = construction_config_infusion.continuityCancer[0]
                     workload_dist = construction_config_infusion.workloadCancer[0]
@@ -146,7 +135,7 @@ def patientGenerator(df_employees):
                     df_patients.loc[t_group.index, 'workload'] = workload
                 
                 elif therapy == 'nutrition':
-                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    # Distributions
                     utility_dist = construction_config_infusion.utilityCancer[1]
                     continuity_dist = construction_config_infusion.continuityCancer[1]
                     workload_dist = construction_config_infusion.workloadCancer[1]
@@ -165,7 +154,7 @@ def patientGenerator(df_employees):
                     df_patients.loc[t_group.index, 'workload'] = workload
 
                 elif therapy == 'advanced':
-                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    # Distributions
                     utility_dist = construction_config_infusion.utilityCancer[2]
                     continuity_dist = construction_config_infusion.continuityCancer[2]
                     workload_dist = construction_config_infusion.workloadCancer[2]
@@ -184,7 +173,7 @@ def patientGenerator(df_employees):
                     df_patients.loc[t_group.index, 'workload'] = workload
 
                 else: #Combination of therapies, follows the same distributions as the advanced
-                    # Get the distribution configurations for antibiotics in the cancer clinic
+                    # Distributions
                     utility_dist = construction_config_infusion.utilityCancer[2]
                     continuity_dist = construction_config_infusion.continuityCancer[2]
                     workload_dist = construction_config_infusion.workloadCancer[2]
@@ -203,51 +192,217 @@ def patientGenerator(df_employees):
                     df_patients.loc[t_group.index, 'workload'] = workload
         
         elif clinic == 2: #Medical
-            print('ikke fordelt')
+            for therapy, t_group in c_group.groupby('therapy'):    
+                if therapy == 'antibiotics':
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityMedical[0]
+                    continuity_dist = construction_config_infusion.continuityMedical[0]
+                    workload_dist = construction_config_infusion.workloadMedical[0]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+                
+                elif therapy == 'nutrition':
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityMedical[1]
+                    continuity_dist = construction_config_infusion.continuityMedical[1]
+                    workload_dist = construction_config_infusion.workloadMedical[1]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+
+                elif therapy == 'advanced':
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityMedical[2]
+                    continuity_dist = construction_config_infusion.continuityMedical[2]
+                    workload_dist = construction_config_infusion.workloadMedical[2]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+
+                else: #Combination of therapies, follows the same distributions as the advanced
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityMedical[2]
+                    continuity_dist = construction_config_infusion.continuityMedical[2]
+                    workload_dist = construction_config_infusion.workloadMedical[2]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
         elif clinic == 3: #Orthopaedic
-            print('ikke fordelt')
+            #ONLY ANTIBIOTICS IS RELEVANT
+            for therapy, t_group in c_group.groupby('therapy'):    
+                if therapy == 'antibiotics':
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityOrtho[0]
+                    continuity_dist = construction_config_infusion.continuityOrtho[0]
+                    workload_dist = construction_config_infusion.workloadOrtho[0]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+                
         elif clinic == 4: #Paediatrics
-            print('ikke fordelt')
-    
-    # Update preferred specialisations for some of the patients
+            for therapy, t_group in c_group.groupby('therapy'):        
+                if therapy == 'antibiotics':
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityPaedia[0]
+                    continuity_dist = construction_config_infusion.continuityPaedia[0]
+                    workload_dist = construction_config_infusion.workloadPaedia[0]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+                
+                elif therapy == 'nutrition':
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityPaedia[1]
+                    continuity_dist = construction_config_infusion.continuityPaedia[1]
+                    workload_dist = construction_config_infusion.workloadPaedia[1]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+
+                elif therapy == 'advanced':
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityPaedia[2]
+                    continuity_dist = construction_config_infusion.continuityPaedia[2]
+                    workload_dist = construction_config_infusion.workloadPaedia[2]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+
+                else: #Combination of therapies, follows the same distributions as the advanced
+                    # Distributions
+                    utility_dist = construction_config_infusion.utilityPaedia[2]
+                    continuity_dist = construction_config_infusion.continuityPaedia[2]
+                    workload_dist = construction_config_infusion.workloadPaedia[2]
+
+                    # Calculate the number of patients in this group
+                    num_patients = t_group.shape[0]
+
+                    # Generate the attributes based on the distribution for the entire group
+                    utility = np.random.choice([1, 2, 3], size=num_patients, p=utility_dist)
+                    continuity = np.random.choice([1, 2, 3], size=num_patients, p=continuity_dist)
+                    workload = np.random.choice([1, 2, 3], size=num_patients, p=workload_dist)
+
+                    # Assign these generated values back to the DataFrame
+                    df_patients.loc[t_group.index, 'utility'] = utility
+                    df_patients.loc[t_group.index, 'continuity'] = continuity
+                    df_patients.loc[t_group.index, 'workload'] = workload
+                    
+    # Distribute combination therapies
+    for therapy, group in df_patients.groupby('therapy'):
+        if therapy == 'combination':
+            # For each patient in the combination therapy group, choose a combination therapy randomly
+            combination_choices = ['antibiotics+nutrition', 'antibiotics+advanced', 'nutrition+advanced']
+            # Use apply to modify each row in the 'combination' group
+            df_patients.loc[group.index, 'therapy'] = group['therapy'].apply(lambda x: np.random.choice(combination_choices))
+
+    # Update high demand patients
     for clinic, group in df_patients.groupby('clinic'):
         if clinic == 1: 
             # Finn indeksene til pasientene i denne klinikken
             indexes = group.index
-            # Beregn antallet pasienter som skal få oppdatert deres specialisationPreferred og extraSupport
-            numSpecialisationPreferred = int(len(indexes) * construction_config_infusion.specialisationDistribution[0]) 
+            # Beregn antallet pasienter som skal få oppdatert deres extraSupport
             numExtraSupport = int(len(indexes) * construction_config_infusion.patientExtraSupport[0])
             # Velg tilfeldige pasienter fra disse gruppene for oppdatering
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
             # Oppdater kun de valgte pasientene
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 1
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
         elif clinic == 2: 
             indexes = group.index
-            numSpecialisationPreferred = int(len(indexes) * construction_config_infusion.specialisationDistribution[1]) 
             numExtraSupport = int(len(indexes) * construction_config_infusion.patientExtraSupport[1])
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)   
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 2
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
         elif clinic == 3: 
             indexes = group.index
-            numSpecialisationPreferred = int(len(indexes) * construction_config_infusion.specialisationDistribution[2]) 
             numExtraSupport = int(len(indexes) * construction_config_infusion.patientExtraSupport[2])
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 3
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
         elif clinic == 4: 
             indexes = group.index
-            numSpecialisationPreferred = int(len(indexes) * construction_config_infusion.specialisationDistribution[3])
             numExtraSupport = int(len(indexes) * construction_config_infusion.patientExtraSupport[3]) 
-            selectedSpecialisationPreferred = np.random.choice(indexes, size=numSpecialisationPreferred, replace=False)
             selectedExtraSupport = np.random.choice(indexes, size = numExtraSupport, replace=False)
-            df_patients.loc[selectedSpecialisationPreferred, 'specialisationPreferred'] = 4
             df_patients.loc[selectedExtraSupport, 'extraSupport'] = 'yes'
-        
+
     # Employee Restrictions
     num_restricted_patients = int(len(df_patients) * construction_config_infusion.employeeRestrict)      # 5 % of the patients have a restriction against an employee
     restricted_patient_indices = np.random.choice(df_patients.index, size=num_restricted_patients, replace=False) # Random patients get employee restrictions
@@ -303,11 +458,6 @@ def treatmentGenerator(df_patients):
     # Generate rows for each treatment with the patientId
     expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
     expanded_rows['treatmentId'] = range(1, len(expanded_rows) + 1)
-
-    # Distribute combination therapies
-    for i in range(num_combination):
-        combination_type = np.random.choice(['antibiotics+nutrition', 'antibiotics+advanced', 'nutrition+advanced'], 1)[0]
-        therapy[therapy.index('combination')] = combination_type.split('+')
     
     df_treatments['treatmentId'] = expanded_rows['treatmentId']
     df_treatments['patientId'] = expanded_rows['patientId']
@@ -321,8 +471,15 @@ def treatmentGenerator(df_patients):
     df_treatments['employeeHistory'] = expanded_rows['employeeHistory'] #Lagt til for Gurobi
     df_treatments['continuityGroup'] = expanded_rows['continuityGroup'] #Lagt til for Gurobi
     df_treatments['clinic'] = expanded_rows['clinic']
-    df_treatments['specialisationPreferred'] = expanded_rows['specialisationPreferred']
     df_treatments['extraSupport'] = expanded_rows['extraSupport']
+
+    # Split the combination therapies into their components
+    for patient_id, group in expanded_rows.groupby('patientId'):
+        if group['therapy'].str.contains(r'\+').any():
+            indices = group.index.tolist()
+            therapies = group['therapy'].iloc[0].split('+')
+            df_treatments.at[indices[0], 'therapy'] = therapies[0]
+            df_treatments.at[indices[1], 'therapy'] = therapies[1]
 
     # Generate pattern type for each treatment. Will decide the number of visits per treatment.
     for therapy, group in df_treatments.groupby('therapy'):
@@ -332,7 +489,7 @@ def treatmentGenerator(df_patients):
                     df_treatments.loc[idx, 'patternType'] = 1                       # Five days a week 
                 else:
                     df_treatments.loc[idx, 'patternType'] = 4                       # Two days spread throughout the week
-        if therapy == 'nutrition':
+        elif therapy == 'nutrition':
             for idx, row in group.iterrows():
                 if row['extraSupport'] == 'yes':
                     patternType_choice = np.random.choice([1, 3], p=[0.5, 0.5])     # Five days a week or three days spread throughout the week 
@@ -372,13 +529,13 @@ def treatmentGenerator(df_patients):
     return df_treatments
 
 def visitsGenerator(df_treatments):
-    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'therapy','activities', 'clinic', 'specialisationPreferred', 'location'])
+    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'therapy','activities', 'clinic', 'location'])
 
     # Generate rows for each visit with the treatmentId and patientId
     expanded_rows = df_treatments.loc[df_treatments.index.repeat(df_treatments['visits'])].reset_index(drop=False)
     expanded_rows['visitId'] = range(1, len(expanded_rows) + 1)
 
-    df_visits = expanded_rows[['visitId', 'treatmentId', 'patientId', 'therapy', 'clinic', 'specialisationPreferred','location']].copy()
+    df_visits = expanded_rows[['visitId', 'treatmentId', 'patientId', 'therapy', 'clinic','location']].copy()
     df_visits[['employeeRestriction', 'heaviness', 'utility', 'allocation', 'patternType', 'employeeHistory', 'continuityGroup']] = expanded_rows[['employeeRestriction', 'heaviness', 'utility', 'allocation', 'patternType', 'employeeHistory', 'continuityGroup']]
   
     # Distribution of number of activities per visit
@@ -419,7 +576,7 @@ def visitsGenerator(df_treatments):
 
 def activitiesGenerator(df_visits):
     df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 
-                                          'duration', 'synchronisation', 'skillRequirement', 'clinic', 'nextPrece', 'prevPrece', 
+                                          'duration', 'synchronisation', 'skillRequirement', 'clinic', 'specialisationPreferred', 'nextPrece', 'prevPrece', 
                                           'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location'])
 
     # Generate rows for each activity with the visitId, treatmentId and patientId
@@ -441,12 +598,11 @@ def activitiesGenerator(df_visits):
     df_activities['patternType'] = expanded_rows['patternType'] #Lagt til for Gurobi
     df_activities['employeeHistory'] = expanded_rows['employeeHistory'] #Lagt til for Gurobi
     df_activities['continuityGroup'] = expanded_rows['continuityGroup'] #Lagt til for Gurobi
-    df_activities['specialisationPreferred'] = expanded_rows['specialisationPreferred']
 
     # Distribute activities between healthcare activities 'H' and equipment activities 'E'
     # Generate precedence, same employee requirements and change location for pick-up and delivery at the hospital
     # Generate synchronised activities (for visits with 4 or 6 activities)     
-    for treatId, groupT in df_activities['treatmentId']:
+    for treatId, groupT in df_activities.groupby('treatmentId'):
         # ANTIBIOTICS
         if groupT['therapy'].iloc[0] == 'antibiotics':
             for visitId, groupV in groupT.groupby('visitId'):
@@ -462,6 +618,7 @@ def activitiesGenerator(df_visits):
                     df_activities.loc[highest_indices, 'activityType'] = 'E'
                     remaining_indices = groupV.index.difference(highest_indices)
                     df_activities.loc[remaining_indices, 'activityType'] = 'H'
+                    df_activities.loc[remaining_indices, 'skillRequirement'] = 2
 
                     # Precedence and time limit for pick-up and delivery at the start of the visit
                     activity_ids = groupV['activityId'].tolist()
@@ -484,11 +641,6 @@ def activitiesGenerator(df_visits):
                     df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10  # Equip
                     df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 10  # Equip
 
-                    # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
-                    for activityType, groupA in df_activities.groupby('activityType'):
-                        if activityType == 'H':
-                            df_activities.loc[groupA.index, 'skillRequirement'] = 2
-
                 else:
                     # For more than 5 activities - 'E' to the two last and two first activities (pick-up and delivery)
                     lowest_indices = groupV.sort_values(by='activityId').index[:2]                       # The two activities with the lowest id
@@ -497,7 +649,8 @@ def activitiesGenerator(df_visits):
                     df_activities.loc[highest_indices, 'activityType'] = 'E'
                     remaining_indices = groupV.index.difference(lowest_indices.union(highest_indices))
                     df_activities.loc[remaining_indices, 'activityType'] = 'H'  
-                    
+                    df_activities.loc[remaining_indices, 'skillRequirement'] = 3
+
                     # Precedence and time limits for pick-up and delivery
                     activity_ids = groupV['activityId'].tolist()
                     pd_time1 = 120
@@ -530,19 +683,15 @@ def activitiesGenerator(df_visits):
                     df_activities.loc[df_activities['activityId'] == activity_ids[3], 'duration'] = 10      # Equip
                     df_activities.loc[df_activities['activityId'] == activity_ids[4], 'duration'] = 10      # Equip
 
-                    # Generate Skill Requirement for activities. Remember to divide between Equipment and Healthcare activities        
-                    for activityType, groupA in df_activities.groupby('activityType'):
-                        if activityType == 'H':
-                            df_activities.loc[groupA.index, 'skillRequirement'] = 3
-
         # NUTRITION AND FLUIDS
         elif groupT['therapy'].iloc[0] == 'nutrition':
             for visitId, groupV in groupT.groupby('visitId'):
                 # For 3 activities with structure EEH
-                sorted_indices = group.sort_values(by='activityId').index[:2]  # The two activities with the lowest id
+                sorted_indices = groupV.sort_values(by='activityId').index[:2]  # The two activities with the lowest id
                 df_activities.loc[sorted_indices, 'activityType'] = 'E'
-                remaining_indices = group.index.difference(sorted_indices)
+                remaining_indices = groupV.index.difference(sorted_indices)
                 df_activities.loc[remaining_indices, 'activityType'] = 'H'
+                df_activities.loc[remaining_indices, 'skillRequirement'] = 2
 
                 # Precedence and time limit for pick-up and delivery at the start of the visit
                 activity_ids = groupV['activityId'].tolist()
@@ -564,17 +713,13 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10         # Equip
                 df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 40         # Health
 
-                # Generate Skill Requirement for activities (overwritten for the healthcare activitiy within 1 of the visits within each treatment)     
-                for activityType, groupA in df_activities.groupby('activityType'):
-                    if activityType == 'H':
-                        df_activities.loc[groupA.index, 'skillRequirement'] = 2
-
             # Overskrive noen parametere for 1 av visitene
             if groupT['patternType'].iloc[0] == 6:   # One day
                 #Visit structure: EEH included cleaning
                 activity_ids = groupV['activityId'].tolist()
                 df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 60         # Health
                 df_activities.loc[df_activities['activityId'] == activity_ids[2], 'skillRequirement'] = 3 
+                df_activities.loc[df_activities['activityId'] == activity_ids[2], 'specialisationPreferred'] = df_activities.loc[df_activities['activityId'] == activity_ids[2], 'clinic']
 
             elif (groupT['patternType'].iloc[0] == 3) or (groupT['patternType'].iloc[0] == 1): # Three days and five days
                 #Visit structure: EEH included cleaning
@@ -584,6 +729,7 @@ def activitiesGenerator(df_visits):
                 specific_row = groupT[groupT['visitId'] == random_visit_id].iloc[-1]
                 df_activities.loc[specific_row.name, 'duration'] = 60
                 df_activities.loc[specific_row.name, 'skillRequirement'] = 3
+                df_activities.loc[specific_row.name, 'specialisationPreferred'] = df_activities.loc[specific_row.name, 'clinic']
 
         # ADVANCED
         else: 
@@ -593,6 +739,8 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[sorted_indices, 'activityType'] = 'E'
                 remaining_indices = groupT.index.difference(sorted_indices)
                 df_activities.loc[remaining_indices, 'activityType'] = 'H'
+                df_activities.loc[remaining_indices, 'skillRequirement'] = 3
+                df_activities.loc[remaining_indices, 'specialisationPreferred'] = df_activities.loc[remaining_indices, 'clinic']
 
                 # Precedence and time limit for pick-up and delivery at the start of the visit
                 activity_ids = groupT['activityId'].tolist()
@@ -613,11 +761,6 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'] == activity_ids[0], 'duration'] = 10         # Equip
                 df_activities.loc[df_activities['activityId'] == activity_ids[1], 'duration'] = 10         # Equip
                 df_activities.loc[df_activities['activityId'] == activity_ids[2], 'duration'] = 60         # Health
-
-                # Generate Skill Requirement for activities      
-                for activityType, groupA in df_activities.groupby('activityType'):
-                    if activityType == 'H':
-                        df_activities.loc[groupA.index, 'skillRequirement'] = 3
                 
             elif groupT['patternType'].iloc[0] == 5: # Two consecutive days
                 #Visit structure: First HEE, second EEH
@@ -629,6 +772,7 @@ def activitiesGenerator(df_visits):
                 first_visit_activities = groupT[groupT['visitId'] == first_visit_id]
                 sorted_indices_first = first_visit_activities.sort_values(by='activityId').index
                 df_activities.loc[sorted_indices_first[0], 'activityType'] = 'H'
+                df_activities.loc[sorted_indices_first[0], 'skillRequirement'] = 2
                 df_activities.loc[sorted_indices_first[1:], 'activityType'] = 'E'
                 
                 # Correct activity_ids for first visit
@@ -650,11 +794,6 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'].isin([activity_ids[0]]), 'duration'] = 30
                 df_activities.loc[df_activities['activityId'].isin([activity_ids[1]]), 'duration'] = 10
                 df_activities.loc[df_activities['activityId'].isin([activity_ids[2]]), 'duration'] = 10
-                
-                # Generate Skill Requirement for activities for first visit
-                for activityType, groupA in df_activities.groupby('activityType'):
-                    if activityType == 'H':
-                        df_activities.loc[groupA.index, 'skillRequirement'] = 2
 
                 # Second visit: EEH
                 second_visit_activities = groupT[groupT['visitId'] == second_visit_id]
@@ -662,6 +801,8 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[sorted_indices_second, 'activityType'] = 'E'
                 remaining_indices_second = second_visit_activities.index.difference(sorted_indices_second)
                 df_activities.loc[remaining_indices_second, 'activityType'] = 'H'
+                df_activities.loc[remaining_indices_second, 'skillRequirement'] = 3
+                df_activities.loc[remaining_indices_second, 'specialisationPreferred'] = df_activities.loc[remaining_indices_second, 'clinic']
                 
                 # Correct activity_ids for second visit
                 activity_ids = second_visit_activities['activityId'].tolist()  # Ensure this is for the second visit
@@ -682,18 +823,12 @@ def activitiesGenerator(df_visits):
                 df_activities.loc[df_activities['activityId'].isin([activity_ids[0]]), 'duration'] = 10
                 df_activities.loc[df_activities['activityId'].isin([activity_ids[1]]), 'duration'] = 10
                 df_activities.loc[df_activities['activityId'].isin([activity_ids[2]]), 'duration'] = 60
-                
-                # Generate Skill Requirement for activities for second visit
-                for activityType, groupA in df_activities.groupby('activityType'):
-                    if activityType == 'H':
-                        df_activities.loc[groupA.index, 'skillRequirement'] = 3
 
     # Overwrite heaviness, utility, continuity level and employee history for Equipment activities
-    df_activities.loc[df_activities['activityTyoe'] == 'E', 'skillRequirement'] = 1
+    df_activities.loc[df_activities['activityType'] == 'E', 'skillRequirement'] = 1
     df_activities.loc[df_activities['activityType'] == 'E', 'heaviness'] = 1
     df_activities.loc[df_activities['activityType'] == 'E', 'utility'] = 0
     df_activities.loc[df_activities['activityType'] == 'E', 'continuityGroup'] = 3
-    df_activities.loc[df_activities['activityType'] == 'E', 'specialisationPreferred'] = None
     df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'] = df_activities.loc[df_activities['activityType'] == 'E', 'employeeHistory'].apply(lambda x: {0: []})
 
     # Generate earliest and latest start times of activities

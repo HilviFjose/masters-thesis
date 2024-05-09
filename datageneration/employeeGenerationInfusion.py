@@ -140,9 +140,7 @@ def employeeGeneratorOnlyDay():
             'professionalLevel': e[1],
             'clinic': c,
             'schedule': e[2]
-        }, ignore_index=True)
-
-    
+        }, ignore_index=True)    
     
     file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
     df_employees.to_csv(file_path, index=False)

@@ -4,7 +4,7 @@ import os
 
 
 #ANTIBIOTICS CASE
-
+'''
 print("ANTIBIOTICS DATA")
 from datageneration.employeeGenerationAntibiotics import *
 from datageneration.patientGenerationAntibiotics import *
@@ -17,7 +17,7 @@ print("INFUSION DATA")
 from datageneration.employeeGenerationInfusion import *
 from datageneration.patientGenerationInfusion import *
 from config.construction_config_infusion import *
-'''
+
 from datageneration import distance_matrix
 
 # DATA GENERATION
@@ -61,7 +61,7 @@ df_activities = pd.read_pickle(file_path_activities)
 
 '''
 #GENERATING DISTANCE MATRIX
-depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_antibiotics.depot]})
+depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_infusion.depot]})
 depot_row = depot_row.set_index(['activityId'])
 # Legger til depot_row i begynnelsen av df_activities
 df_activities_depot = pd.concat([depot_row, df_activities], axis=0)
