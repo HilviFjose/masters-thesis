@@ -63,6 +63,8 @@ def patientGenerator(df_employees):
     # Prepare DataFrame
     df_patients = pd.DataFrame({
         'patientId': patientIds,
+        'therapy': 'antibiotics',
+        'clinic': clinic,
         'nTreatments': nTreatments,
         'utility': utility,
         'allocation': allocation,
@@ -71,7 +73,6 @@ def patientGenerator(df_employees):
         'employeeHistory': None,  # Assuming no initial history
         'heaviness': heaviness,
         'location': locations,
-        'clinic': clinic,
         'extraSupport': 'no'
     })
 
@@ -155,7 +156,9 @@ def patientGenerator(df_employees):
     return df_patients
 
 def treatmentGenerator(df_patients):
-    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat'])
+    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'therapy', 'clinic', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat'])
+
+    #df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat'])
 
     # Generate rows for each treatment with the patientId
     expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
@@ -197,13 +200,13 @@ def treatmentGenerator(df_patients):
     return df_treatments
 
 def visitsGenerator(df_treatments):
-    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'activities', 'clinic', 'location'])
+    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'therapy','activities', 'clinic', 'location'])
 
     # Generate rows for each visit with the treatmentId and patientId
     expanded_rows = df_treatments.loc[df_treatments.index.repeat(df_treatments['visits'])].reset_index(drop=False)
     expanded_rows['visitId'] = range(1, len(expanded_rows) + 1)
 
-    df_visits = expanded_rows[['visitId', 'treatmentId', 'patientId', 'clinic','location']].copy()
+    df_visits = expanded_rows[['visitId', 'treatmentId', 'patientId', 'therapy', 'clinic','location']].copy()
     df_visits[['employeeRestriction', 'heaviness', 'utility', 'allocation', 'patternType', 'employeeHistory', 'continuityGroup']] = expanded_rows[['employeeRestriction', 'heaviness', 'utility', 'allocation', 'patternType', 'employeeHistory', 'continuityGroup']]
   
     # Distribution of number of activities per visit
@@ -250,8 +253,8 @@ def visitsGenerator(df_treatments):
 
 def activitiesGenerator(df_visits):
     df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 
-                                          'duration', 'synchronisation', 'skillRequirement', 'clinic', 'nextPrece', 'prevPrece', 
-                                          'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location', 'specialisationPreferred'])
+                                          'duration', 'synchronisation', 'skillRequirement', 'clinic', 'specialisationPreferred', 'nextPrece', 'prevPrece', 
+                                          'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location', 'therapy'])
 
     # Generate rows for each activity with the visitId, treatmentId and patientId
     expanded_rows = df_visits.loc[df_visits.index.repeat(df_visits['activities'])].reset_index(drop=False)
