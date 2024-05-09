@@ -13,21 +13,26 @@ from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self,weights, reaction_factor, current_route_plan, criterion,
-                     constructor, mp_config): 
+    def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, 
+                 reaction_factor, local_search_req, iterations_update_default, current_route_plan, criterion, constructor, mp_config): 
+
         self.destroy_operators = []
         self.repair_operators = []
-
-        self.reaction_factor = reaction_factor
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
         self.best_route_plan = copy.deepcopy(current_route_plan)
         self.criterion = criterion
         self.constructor = constructor
-        self.local_search_req = local_search_req
         self.iterationNum = 0
-        self.weight_scores = weights
 
+        self.weight_score_better = weight_score_better
+        self.weight_score_accepted = weight_score_accepted
+        self.weight_score_bad = weight_score_bad
+        self.weight_score_best = weight_score_best
+        self.reaction_factor = reaction_factor
+        self.local_search_req = local_search_req
+        self.iterations_update = iterations_update_default
+        self.iterationNum = 0
         
 
         destroy_operators = DestroyOperators(self)
@@ -84,9 +89,7 @@ class ALNS:
     def iterate(self, num_iterations):
         found_solutions = {}
         
-        # weights er vekter for å velge operator, score og count brukes for oppdatere weights
-        
-
+   
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
@@ -150,7 +153,7 @@ class ALNS:
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
-            if (i+1)*iterations_update == 0:
+            if (i+1)* self.iterations_update == 0:
                 # Update weights with scores
                 for destroy in range(len(self.d_weights)):
                     if self.d_count[destroy] != 0: 
@@ -170,6 +173,8 @@ class ALNS:
             localsearch = LocalSearch(self.best_route_plan, iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
             self.best_route_plan = localsearch.do_local_search_to_local_optimum()
             self.best_route_plan.updateObjective(iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+
+            self.best_route_plan.printSolution("final", "no operator")
                 
         return self.best_route_plan
     
@@ -226,22 +231,21 @@ class ALNS:
         if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
-                weight_score = weight_scores[0]
+                weight_score = self.weight_score_better
             else:
                 # Solution is not better, but accepted
-                weight_score = weight_scores[1]
-
+                weight_score = self.weight_score_accepted
             current_route_plan = copy.deepcopy(candidate_route_plan)
         else:
             # Solution is rejected
             print("Candidate very bad and not accepted.")
-            weight_score = weight_scores[2]
+            weight_score = self.weight_score_bad
 
         # Check if solution is new global best
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
             print("ALNS iteration ", self.iterationNum, " is new global best")
             best_route_plan = copy.deepcopy(candidate_route_plan)
-            weight_score = weight_scores[3]
+            weight_score = self.weight_score_best 
 
         return best_route_plan, current_route_plan, weight_score    
 

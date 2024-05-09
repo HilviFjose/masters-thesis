@@ -27,7 +27,6 @@ from parameters import T_ij
 class RepairOperators:
     def __init__(self, alns):
         self.constructor = alns.constructor
-
         self.count = 0 
 
 
