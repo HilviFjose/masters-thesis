@@ -86,9 +86,9 @@ def main():
     best_route_plan = alns.iterate(iterations)
     best_route_plan.updateObjective(iterations, iterations) #Nå lages det ikke noen ruteplan her?
     
-    objective_func = partial(objective, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config)
-
+    """
     #Run optuna
+    objective_func = partial(objective, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config)
     study = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
     study.optimize(objective_func, n_trials=100)
     print("Number of finished trials: ", len(study.trials))
@@ -103,7 +103,8 @@ def main():
             for objective_value in trial.values:
                 f.write(f"    {objective_value}\n")
             f.write("\n")
-
+    """
+    
 def objective(trial, route_plan, criterion, constructor, mp_config):
     # Suggesting parameters
     reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.4, 0.5, 0.6, 0.7, 0.8])
