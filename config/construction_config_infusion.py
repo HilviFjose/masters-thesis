@@ -4,7 +4,6 @@
 P_num = 50                                          # Number of patients
 
 # Patient demographics
-#therapyDistribution = [0.3, 0.25, 0.3, 0.15]        # Distribution of patients receiving either antibiotics, nutrition/fluids, advanced infusion therapy, or a combination of them (= 2 out of three) 
 clinicDistribution = [0.25, 0.57, 0.03, 0.15]       # Cancer, Medical, Orthopaedic, Paediatric
 patientExtraSupport = [0.5, 0.9, 0.2, 0.1]          # Percentage from each clinic that needs extra support 
 clinicsWithNutrition = [1,1,0,1]
@@ -65,6 +64,10 @@ E_generalists = 0.2 #Percentage of employees with profession level 1 and 2 that 
 # Profession Level 
 professionLevels = [1, 2, 3, 4]
 professionLevelsProb =  [0.2, 0.3, 0.5, 0] #index 0: level 1
+
+# Clinic distribution
+E_clinicDistribution = [0.25, 0.6, 0, 0.15]       # Cancer, Medical, Orthopaedic, Paediatric
+
 
 # Employee Restrictions and History
 employeeRestrict = 0.05

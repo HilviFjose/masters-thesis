@@ -138,7 +138,7 @@ def employeeGeneratorOnlyDay():
         df_employees = df_employees._append({
             'employeeId': e[0],
             'professionalLevel': e[1],
-            'clinic': c,
+            'clinic': 0,
             'schedule': e[2]
         }, ignore_index=True)
 
