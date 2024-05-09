@@ -78,6 +78,5 @@ fraction_repair_insertor = 1
 frequecy_of_fraction_insertion = 0.5
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
-
 #Number of paralell processes 
 num_of_paralell_iterations = 3
