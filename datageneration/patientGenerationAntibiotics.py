@@ -399,13 +399,6 @@ def activitiesGenerator(df_visits):
         df_activities.loc[groupV.index, 'earliestStartTime'] = earliestStartTime * 60
         df_activities.loc[groupV.index, 'latestStartTime'] = latestStartTime * 60 
      
-    #TODO: Finne ut hvordan dette skal være for antibiotica case
-    # Generate complexity for treatments, visits and activities
-    # Activity complexity - only based on duration and time windows
-    #df_activities['a_complexity'] = round((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration'])
-    #df_activities['a_complexity'] = ((df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration']).round()
-    #df_activities['a_complexity'] = (df_activities['latestStartTime'] - df_activities['earliestStartTime']) / df_activities['duration']
-    
     # Calculate the first part of the complexity score for activity based on duration and opportunity space
     complexity_part1 = construction_config_antibiotics.a_w_oportunity_space * (df_activities['duration'] / (df_activities['latestStartTime'] - df_activities['earliestStartTime']))
 
