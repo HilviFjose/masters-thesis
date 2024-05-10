@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
 import math
 
-#TODO: Endre til verdier som er riktige for oss. Hentet fra Anna
-#Denne fila inneholder variabler som brukes i ALNSen
+#Number of constructed solutions 
+num_of_constructions = 5  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
 reaction_factor_default = 0.7
 
 # Iterations in ALNS
-iterations = 400
+iterations = 100
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req_default = 0.02
@@ -18,8 +18,8 @@ k = 3
 
 #The amount of activities to remove in destroy operators
 #destruction_degree = 0.4
-destruction_degree_beginning = 0.4
-destruction_degree_end = 0.2
+destruction_degree_high_default = 0.4
+destruction_degree_low_default = 0.2
 
 # Simulated annealing temperatures -- TODO: these must be tuned
 #start_temperature = 60
@@ -64,13 +64,10 @@ days = 5
 #Depot
 depot = (59.9365, 10.7396)
 
-#Number of constructed solutions 
-num_of_constructions = 10  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
-
 #Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
-construction_insertor = 1 #W
+construction_insertor = 2 #W
 repair_insertor = 1
-illegal_repair_insertor = 1
+illegal_repair_insertor = 2
 
 
 max_num_regret1 = 50

@@ -78,49 +78,251 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    alns = ALNS(weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
+    '''
+    alns = ALNS(destruction_degree_low_default, destruction_degree_high_default, weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config) 
-
 
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
     best_route_plan.updateObjective(iterations, iterations) #Nå lages det ikke noen ruteplan her?
-    
-    """
-    #Run optuna
-    objective_func = partial(objective, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config)
-    study = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
-    study.optimize(objective_func, n_trials=100)
-    print("Number of finished trials: ", len(study.trials))
+    '''
 
-    # Write best trial parameters to a file
-    results_file = "optuna_results.txt"
-    with open(results_file, "w") as f:
-        for i, trial in enumerate(study.best_trials):
-            f.write(f"Trial {i + 1}:\n")
-            f.write(f"  Params: {trial.params}\n")
-            f.write("  Values:\n")
-            for objective_value in trial.values:
-                f.write(f"    {objective_value}\n")
-            f.write("\n")
-    """
+    #RUN OPTUNA
+    #DESTRUCTION DEGREE
+    search_space = {'destruction_degree': [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]]}
+    sampler = optuna.samplers.GridSampler(search_space)
+    study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
+    #study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
+    objective_func = partial(objective_destruction_degree, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config)
+    study_destruction_degree.optimize(objective_func)
+    #study_destruction_degree.optimize(objective_func, n_trials=5)
     
+    write_trials_to_csv(study_destruction_degree, folder_name, 'destruction_degree')
+    best_trial_destruction_degree = find_best_trial_lexicographically(study_destruction_degree) 
+    destruction_degree_tuned = best_trial_destruction_degree.params['destruction_degree']
+    destruction_degree_low_tuned, destruction_degree_high_tuned = destruction_degree_tuned
+    print("DESTRUCTION DEGREE - Number of finished trials: ", len(study_destruction_degree.trials))
+    print('destruction_degree_tuned', destruction_degree_tuned)
+
+    #WEIGHT SCORES
+    search_space = {
+            'weight_score_best': list(range(10, 16)),  # Fra 10 til 15 inklusive
+            'weight_score_better': list(range(1, 11)),  # Fra 1 til 10 inklusive
+            'weight_score_accepted': list(range(1, 11))  # Fra 1 til 10 inklusive
+        }
+    sampler = optuna.samplers.GridSampler(search_space)
+    study_weight_scores = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
+    #study_weight_scores = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
+    objective_func = partial(objective_weight_scores, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+                             destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned)
+    study_weight_scores.optimize(objective_func)    
+    #study_weight_scores.optimize(objective_func, n_trials=20)
+
+    write_trials_to_csv(study_weight_scores, folder_name, 'weight_scores')
+    best_trial_weight_scores = find_best_trial_lexicographically(study_weight_scores)
+    weight_score_best_tuned = best_trial_weight_scores.params['weight_score_best']
+    weight_score_better_tuned = best_trial_weight_scores.params['weight_score_better']
+    weight_score_accepted_tuned = best_trial_weight_scores.params['weight_score_accepted']
+    print("WEIGHT SCORES - Number of finished trials: ", len(study_weight_scores.trials))
+    print(f'weight scores, best {weight_score_best_tuned}, better {weight_score_better_tuned}, accepted {weight_score_accepted_tuned}')
+
+    #REACTION FACTOR AND NUMBER OF ITERATION FOR UPDATING WEIGHTS
+    search_space = {
+            'reaction_factor': [0.4, 0.5, 0.6, 0.7, 0.8],
+            'iterations_update': [0.1, 0.2, 0.3, 0.4, 0.5]
+        }
+    sampler = optuna.samplers.GridSampler(search_space)
+    study_reaction_factor_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'],sampler=sampler)
+    #study_reaction_factor_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
+    objective_func = partial(objective_reaction_factor_iterations_update, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+                             destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
+                             weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned)
+    study_reaction_factor_iterations_update.optimize(objective_func)
+    #study_reaction_factor_iterations_update.optimize(objective_func, n_trials=20)
+
+    write_trials_to_csv(study_reaction_factor_iterations_update, folder_name, 'reaction_factor_iterations_update')
+    best_trial_reaction_factor_iterations_update = find_best_trial_lexicographically(study_reaction_factor_iterations_update)
+    reaction_factor_tuned = best_trial_reaction_factor_iterations_update.params['reaction_factor']
+    iterations_update_tuned = best_trial_reaction_factor_iterations_update.params['iterations_update']
+    print("REACTION FACTOR AND ITERATIONS UPDATE - Number of finished trials: ", len(study_reaction_factor_iterations_update.trials))
+
+    #LOCAL SEARCH REQUIREMENT
+    search_space = {'local_search_req': [0.01, 0.02, 0.03, 0.04, 0.05]}
+    sampler = optuna.samplers.GridSampler(search_space)
+    study_local_search = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
+    #study_local_search = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
+    objective_func = partial(objective_local_search, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+                             destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
+                             weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned,
+                             reaction_factor_tuned=reaction_factor_tuned, iterations_update_tuned=iterations_update_tuned)
+    study_local_search.optimize(objective_func)
+    #study_local_search.optimize(objective_func, n_trials=5)
+
+    write_trials_to_csv(study_local_search, folder_name, 'local_search')
+    best_trial_local_search = find_best_trial_lexicographically(study_local_search)
+    local_search_tuned = best_trial_local_search.params['local_search_req']
+    print("LOCAL SEARCH - Number of finished trials: ", len(study_local_search.trials))
+
+    print('-----------------------------')
+    print('FINAL PARAMETERS AFTER TUNING')
+    print('destruction_degree_tuned', destruction_degree_tuned)
+    print(f'weight scores, best {weight_score_best_tuned}, better {weight_score_better_tuned}, accepted {weight_score_accepted_tuned}')
+    print(f'reaction_factor {reaction_factor_tuned}, iterations_update {iterations_update_tuned}')
+    print(f'local_search_req {local_search_tuned}')
+         
+'''KOMPLETT KRYSSTUNING
 def objective(trial, route_plan, criterion, constructor, mp_config):
     # Suggesting parameters
-    reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.4, 0.5, 0.6, 0.7, 0.8])
-    local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.02, 0.03, 0.04, 0.05])
+    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]])
     weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
     weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
     weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
+    reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.4, 0.5, 0.6, 0.7, 0.8])
+    local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.02, 0.03, 0.04, 0.05])
     iterations_update_interval = trial.suggest_categorical('iterations_update', [0.1, 0.2, 0.3, 0.4, 0.5])
 
     # Configure and run ALNS
-    alns = ALNS(weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval, reaction_factor_interval, local_search_req_interval, 
-                iterations_update_interval, route_plan, criterion, constructor, mp_config)
+    alns = ALNS(destruction_degree_low, destruction_degree_high, weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval,
+                    reaction_factor_interval, local_search_req_interval, iterations_update_interval, route_plan, criterion, constructor, mp_config)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective
-            
+'''
+
+def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_config):
+    # Suggesting parameters
+    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]])
+
+    # Configure and run ALNS
+    alns = ALNS([destruction_degree_low, destruction_degree_high], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default,
+                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config)
+    route_plan = alns.iterate(iterations)
+
+    return route_plan.objective
+
+def objective_weight_scores(trial, route_plan, criterion, constructor, mp_config, destruction_degree_low_tuned, destruction_degree_high_tuned):
+    # Suggesting parameters
+    weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
+    weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
+    weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
+    
+    # Configure and run ALNS
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval,
+                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config)
+    route_plan = alns.iterate(iterations)
+
+    return route_plan.objective
+
+def objective_reaction_factor_iterations_update(trial, route_plan, criterion, constructor, mp_config, 
+              destruction_degree_low_tuned, destruction_degree_high_tuned, 
+              weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned):
+    # Suggesting parameters
+    reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.4, 0.5, 0.6, 0.7, 0.8])
+    iterations_update_interval = trial.suggest_categorical('iterations_update', [0.1, 0.2, 0.3, 0.4, 0.5])
+
+    # Configure and run ALNS
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
+                    reaction_factor_interval, local_search_req_default, iterations_update_interval, route_plan, criterion, constructor, mp_config)
+    route_plan = alns.iterate(iterations)
+
+    return route_plan.objective
+
+def objective_local_search(trial, route_plan, criterion, constructor, mp_config, 
+              destruction_degree_low_tuned, destruction_degree_high_tuned, 
+              weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned, 
+              reaction_factor_tuned, iterations_update_tuned):
+    # Suggesting parameters
+    local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.02, 0.03, 0.04, 0.05])
+
+    # Configure and run ALNS
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
+                    reaction_factor_tuned, local_search_req_interval, iterations_update_tuned, route_plan, criterion, constructor, mp_config)
+    route_plan = alns.iterate(iterations)
+
+    return route_plan.objective
+
+def find_best_trial_lexicographically(study):
+    best_trial = None
+    found_better = False 
+
+    def is_better(a, b):
+        all_equal = True
+        for i, direction in enumerate(study.directions):
+            if direction == optuna.study.StudyDirection.MAXIMIZE:
+                if a[i] > b[i]:
+                    return True
+                elif a[i] < b[i]:
+                    all_equal = False
+            else:  # MINIMIZE
+                if a[i] < b[i]:
+                    return True
+                elif a[i] > b[i]:
+                    all_equal = False
+        return False 
+
+    for trial in study.trials:
+        if trial.state == optuna.trial.TrialState.COMPLETE:
+            if best_trial is None or is_better(trial.values, best_trial.values):
+                best_trial = trial
+                found_better = True
+
+    if best_trial and not found_better:
+        print("Alle trials har like verdier.")
+    else: 
+        print('Best trial', best_trial.number)
+    
+    return best_trial    
+        
+def write_trials_to_csv(study, folder_name, tuning_parameters):
+    # Ensure directory exists
+    results_dir = os.path.join('results', folder_name, tuning_parameters)
+    os.makedirs(results_dir, exist_ok=True)
+
+    # Open the file for writing in the correct directory
+    file_path = os.path.join(results_dir, "optuna_results.txt")
+
+    # Collect data for DataFrame
+    data = []
+    for trial in study.trials:
+        # Format parameters as string for display
+        params_str = ', '.join([f"{k}: {v}" for k, v in trial.params.items()])
+        row = {
+            "Trial Number": trial.number,
+            "First Objective": trial.values[0],
+            "Second Objective": trial.values[1],
+            "Third Objective": trial.values[2],
+            "Fourth Objective": trial.values[3],
+            "Parameters": params_str  # Add formatted parameters string
+        }
+        data.append(row)
+        
+    # Create DataFrame
+    df = pd.DataFrame(data)
+    df.sort_values(by=["First Objective", "Second Objective", "Third Objective", "Fourth Objective"], ascending=[False, True, True, True], inplace=True)
+    csv_file_path = os.path.join(results_dir, "trials_data.csv")
+    df.to_csv(csv_file_path, index=False)
+
+def write_trials_to_file(study, folder_name, tuning_parameters):
+    # Ensure directory exists
+    results_dir = os.path.join('results', folder_name, tuning_parameters)
+    os.makedirs(results_dir, exist_ok=True)
+
+    # Open the file for writing in the correct directory
+    file_path = os.path.join(results_dir, "optuna_results.txt")
+
+    # Write best trial parameters to a file
+    with open(file_path, "w") as f:
+        for i, trial in enumerate(study.best_trials):
+            now = datetime.now()
+            f.write('Trial generated at time: {}\n\n'.format(now.strftime("%Y-%m-%d %H:%M:%S")))
+            f.write(f"Trial {i}:\n")
+            f.write(f"  Params: {trial.params}\n")
+            f.write("  Objective values:\n")
+            for objective_value in trial.values:
+                f.write(f"    {objective_value}\n")
+            f.write("\n")
+
+        
 if __name__ == "__main__":
     main()
     """

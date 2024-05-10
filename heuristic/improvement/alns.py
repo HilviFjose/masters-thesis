@@ -13,7 +13,7 @@ from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, 
+    def __init__(self, destruction_degree_interval, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, 
                  reaction_factor, local_search_req, iterations_update_default, current_route_plan, criterion, constructor, mp_config): 
 
         self.destroy_operators = []
@@ -23,7 +23,6 @@ class ALNS:
         self.best_route_plan = copy.deepcopy(current_route_plan)
         self.criterion = criterion
         self.constructor = constructor
-        self.iterationNum = 0
 
         self.weight_score_better = weight_score_better
         self.weight_score_accepted = weight_score_accepted
@@ -33,6 +32,9 @@ class ALNS:
         self.local_search_req = local_search_req
         self.iterations_update = iterations_update_default
         self.iterationNum = 0
+
+        self.destruction_degree_interval = destruction_degree_interval
+        self.destruction_degree = 0
         
 
         destroy_operators = DestroyOperators(self)
@@ -48,6 +50,8 @@ class ALNS:
         self.r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
         self.mp_config = mp_config
+
+        self.random_numbers = np.round(np.random.uniform(low=destruction_degree_interval[0], high=destruction_degree_interval[1], size=iterations),1)
 
 
         
@@ -82,26 +86,26 @@ class ALNS:
         self.r_count[repair] += 1
         return candidate_route_plan, destroy, repair
 
-
-
-
         
     def iterate(self, num_iterations):
         found_solutions = {}
         
-   
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
+
+            self.destruction_degree = 0.3#self.random_numbers[self.iterationNum-1]
+
             '''
             #Uten parallell
             candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
 
             #Kjører paralelt. 
             '''
+
             jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
             
             results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
@@ -126,7 +130,7 @@ class ALNS:
                 #Med parallell 
                 '''
                 results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, days+1) ], mp_config=self.mp_config, paralellNum=days)
-                print("GJOR LOKALSØKET I PARALELL")
+                print("GJOR LOKALSØKET I PARALLELL")
                 for day in range(1, days+1): 
                     candidate_route_plan.routes[day] = results[day-1].routes[day]
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
@@ -181,12 +185,12 @@ class ALNS:
     def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
         
-        #self.add_destroy_operator(destroy_operators.random_patient_removal)
+        self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
         self.add_destroy_operator(destroy_operators.random_activity_removal)
         
-        #self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
+        self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
