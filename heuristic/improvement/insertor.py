@@ -194,15 +194,23 @@ class Insertor:
         activity = activities[0]
         rest_acitivites = activities[1:]
       
+        #Alternativ hvor vi søker mer random 
         '''
-        list = [(route, index) for route in self.route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
-        kan shuffle den, og da har du komboen du vil iterer over. 
-        while not empty and de andre . 
-        print("list", list)
+        combinations_route_index = [(route, index) for route in self.route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
+        random.shuffle(combinations_route_index)
+        while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
+            route, index_place = combinations_route_index.pop(0)
+            test_route_plan = copy.deepcopy(self.route_plan)
 
-
+            if self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 <= max_num_regret1: 
+                self.insertNextActiviy_forBetterInsertion_with_iteration_limitation1(activity, rest_acitivites, test_route_plan, day, route.employee.id, index_place)
+                if self.InsertionFound_BetterInsertVisitWitLim1 == True: 
+                    break
+            else: 
+                break
+        return self.InsertionFound_BetterInsertVisitWitLim1
+            
         '''
-
         #old_route_plan = copy.deepcopy(test_route_plan)
         for route in self.route_plan.getSortedRoutes(activity, day):
             if self.InsertionFound_BetterInsertVisitWitLim1 == True or self.betterInsertVisit_explored_branches1 > max_num_regret1: 
@@ -218,8 +226,9 @@ class Insertor:
                 else: 
                     break
         
+        
         return self.InsertionFound_BetterInsertVisitWitLim1
-
+        
 
 
     def insertNextActiviy_forBetterInsertion_with_iteration_limitation1(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
@@ -250,6 +259,23 @@ class Insertor:
         #TODO: Den under skal vel sorteres på next-activity 
         #for route in route_plan.getSortedRoutes(activity, day):
         #old_route_plan = route_plan
+        '''
+        combinations_route_index = [(route, index) for route in route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
+        random.shuffle(combinations_route_index)
+        while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
+            route, index_place = combinations_route_index.pop(0)
+            next_route_plan = copy.deepcopy(route_plan)
+                #route_plan = copy.deepcopy(old_route_plan)
+    
+            if self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1: 
+                self.insertNextActiviy_forBetterInsertion_with_iteration_limitation1(next_actitivy, rest_acitivites, next_route_plan, day, route.employee.id, index_place)
+                if self.InsertionFound_BetterInsertVisitWitLim1: 
+                    break
+            else: 
+                break
+
+        '''
+
         for route in route_plan.getSortedRoutes(next_actitivy, day):  
             if self.InsertionFound_BetterInsertVisitWitLim1 == True  or self.betterInsertVisit_explored_branches1 > max_num_regret1: 
                 break
@@ -263,6 +289,9 @@ class Insertor:
                         break
                 else: 
                     break
+        
+        
+
  
 
 
@@ -280,7 +309,21 @@ class Insertor:
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         activity = activities[0]
         rest_acitivites = activities[1:]
+        '''
+        combinations_route_index = [(route, index) for route in self.route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
+        random.shuffle(combinations_route_index)
+        while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
+            route, index_place = combinations_route_index.pop(0)
+            test_route_plan = copy.deepcopy(self.route_plan)
 
+            if self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 <= max_num_regret1: 
+                self.insertNextActiviy_forBetterInsertion_with_iteration_limitation1(activity, rest_acitivites, test_route_plan, day, route.employee.id, index_place)
+                if self.InsertionFound_BetterInsertVisitWitLim1 == True: 
+                    break
+            else: 
+                break
+        return self.InsertionFound_BetterInsertVisitWitLim1
+        '''
         for route in self.route_plan.getSortedRoutes(activity, day):
             if self.InsertionFound_BetterInsertVisitWitLim2 == True or self.betterInsertVisit_explored_branches2 > max_num_regret2: 
                 break 
@@ -327,7 +370,22 @@ class Insertor:
         #TODO: Den under skal vel sorteres på next-activity 
         #for route in route_plan.getSortedRoutes(activity, day):
         #old_route_plan = route_plan
-        
+        '''
+        combinations_route_index = [(route, index) for route in route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
+        random.shuffle(combinations_route_index)
+        while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
+            route, index_place = combinations_route_index.pop(0)
+            next_route_plan = copy.deepcopy(route_plan)
+                #route_plan = copy.deepcopy(old_route_plan)
+    
+            if self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1: 
+                self.insertNextActiviy_forBetterInsertion_with_iteration_limitation1(next_actitivy, rest_acitivites, next_route_plan, day, route.employee.id, index_place)
+                if self.InsertionFound_BetterInsertVisitWitLim1: 
+                    break
+            else: 
+                break
+        '''
+
         for route in route_plan.getSortedRoutes(next_actitivy, day):  
             if self.InsertionFound_BetterInsertVisitWitLim2 == True  or self.betterInsertVisit_explored_branches2 > max_num_regret2: 
                 break
