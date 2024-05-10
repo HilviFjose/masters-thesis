@@ -453,8 +453,12 @@ def patientGenerator(df_employees):
     return df_patients
 
 def treatmentGenerator(df_patients):
-    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'therapy', 'clinic', 'patternType','pattern','visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat'])
-
+    #df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'therapy', 'clinic', 'patternType','pattern',
+    #                                      'visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat'])
+    
+    df_treatments = pd.DataFrame(columns=['treatmentId', 'patientId', 'patternType','pattern',
+                                          'visits', 'location', 'employeeRestriction','heaviness','utility', 'pattern_complexity', 'nActInTreat', 'therapy', 'clinic']) 
+    
     # Generate rows for each treatment with the patientId
     expanded_rows = df_patients.loc[df_patients.index.repeat(df_patients['nTreatments'])].reset_index(drop=False)
     expanded_rows['treatmentId'] = range(1, len(expanded_rows) + 1)
@@ -529,7 +533,10 @@ def treatmentGenerator(df_patients):
     return df_treatments
 
 def visitsGenerator(df_treatments):
-    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'therapy','activities', 'clinic', 'location'])
+    #df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'therapy','activities', 'clinic', 'location'])
+
+
+    df_visits = pd.DataFrame(columns=['visitId', 'treatmentId', 'patientId', 'clinic', 'location', 'therapy','activities' ])
 
     # Generate rows for each visit with the treatmentId and patientId
     expanded_rows = df_treatments.loc[df_treatments.index.repeat(df_treatments['visits'])].reset_index(drop=False)
@@ -575,9 +582,14 @@ def visitsGenerator(df_treatments):
     return df_visits
 
 def activitiesGenerator(df_visits):
-    df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 
-                                          'duration', 'synchronisation', 'skillRequirement', 'clinic', 'specialisationPreferred', 'nextPrece', 'prevPrece', 
-                                          'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location'])
+    #df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 'duration', 'synchronisation', 'skillRequirement', 'clinic', 'specialisationPreferred', 'nextPrece', 'prevPrece','sameEmployeeActivityId', 'visitId', 'treatmentId', 'location'])
+    
+    df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 'duration', 'synchronisation', 'skillRequirement', 'clinic', 'nextPrece', 'prevPrece', 'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location', 'specialisationPreferred', 'therapy'])
+                                          
+    
+    #activities_array[0] =               ['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 'duration', 'synchronisation', 'skillRequirement', 'clinic', 'nextPrece', 'prevPrece', 'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location', 'employeeRestriction', 
+        #'heaviness', 'utility' 'allocation' 'patternType' 'employeeHistory' 'continuityGroup' 'specialisationPreferred' 'a_complexity' 'v_complexity' 'nActInTreat'
+        #'t_complexity' 'nActInPatient']
 
     # Generate rows for each activity with the visitId, treatmentId and patientId
     expanded_rows = df_visits.loc[df_visits.index.repeat(df_visits['activities'])].reset_index(drop=False)

@@ -4,7 +4,7 @@ import pickle
 
 #ANTIBIOTICS CASE
 
-antibiotics_data = True 
+antibiotics_data = False 
 generate_new_data = False 
 folder_name = 'data'
 
