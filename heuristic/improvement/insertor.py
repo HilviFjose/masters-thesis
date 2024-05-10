@@ -168,8 +168,6 @@ class Insertor:
         next_actitivy = rest_acitivites[0]
         rest_acitivites = rest_acitivites[1:] 
         
-       
-        
         for route in route_plan.getSortedRoutesForBetter(activity, day): 
             if self.InsertionFound_BetterInsertVisit == True: 
                 break
@@ -196,6 +194,15 @@ class Insertor:
         activity = activities[0]
         rest_acitivites = activities[1:]
       
+        '''
+        list = [(route, index) for route in self.route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
+        kan shuffle den, og da har du komboen du vil iterer over. 
+        while not empty and de andre . 
+        print("list", list)
+
+
+        '''
+
         #old_route_plan = copy.deepcopy(test_route_plan)
         for route in self.route_plan.getSortedRoutes(activity, day):
             if self.InsertionFound_BetterInsertVisitWitLim1 == True or self.betterInsertVisit_explored_branches1 > max_num_regret1: 

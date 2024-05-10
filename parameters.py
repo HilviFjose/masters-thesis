@@ -4,7 +4,7 @@ import os
 #ANTIBIOTICS CASE
 
 antibiotics_data = True 
-generate_new_data = True 
+generate_new_data = False 
 folder_name = 'data'
 
 if antibiotics_data:
@@ -50,21 +50,7 @@ if generate_new_data:
     df_activities.to_pickle(os.path.join(os.getcwd(), folder_name, 'activities.pkl'))
 
 
-    #GENERATING DISTANCE MATRIX
-    if antibiotics_data: 
-        depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_antibiotics.depot]})
-    else: 
-        depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_infusion.depot]})
 
-    depot_row = depot_row.set_index(['activityId'])
-    # Legger til depot_row i begynnelsen av df_activities
-    df_activities_depot = pd.concat([depot_row, df_activities], axis=0)
-
-    T_ij = distance_matrix.travel_matrix(df_activities_depot)
-
-    #ADDING TRAVEL DISTANCE TO TIME WINDOWS
-    #Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
-    df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
 else: 
     #RE-USE GENERATED DATA
@@ -80,6 +66,20 @@ else:
     df_activities = pd.read_pickle(file_path_activities)
 
 
+#GENERATING DISTANCE MATRIX
+if antibiotics_data: 
+    depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_antibiotics.depot]})
+else: 
+    depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_infusion.depot]})
 
+depot_row = depot_row.set_index(['activityId'])
+# Legger til depot_row i begynnelsen av df_activities
+df_activities_depot = pd.concat([depot_row, df_activities], axis=0)
+
+T_ij = distance_matrix.travel_matrix(df_activities_depot)
+
+#ADDING TRAVEL DISTANCE TO TIME WINDOWS
+#Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
+df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
 

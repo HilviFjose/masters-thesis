@@ -1,7 +1,7 @@
-from objects.route_plan import RoutePlan
+#from objects.route_plan import RoutePlan
 from helpfunctions import *
 import copy
-import numpy as np 
+#import numpy as np 
 
 #TODO: Tenke mer over hvike operatorer vi har innad på en dag i vår struktur. 
 #Det må være noen operatorer for alle typer aktiviteter.

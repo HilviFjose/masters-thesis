@@ -1,12 +1,12 @@
-import pandas as pd
+#import pandas as pd
 import copy
-import math
-import numpy.random as rnd 
+#import math
+#import numpy.random as rnd 
 import random 
-import networkx as nx
-from sklearn.cluster import KMeans
-from scipy.spatial import cKDTree
-import time
+#import networkx as nx
+#from sklearn.cluster import KMeans
+#from scipy.spatial import cKDTree
+#import time
 
 from config import main_config
 

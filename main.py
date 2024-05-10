@@ -1,7 +1,7 @@
-import pandas as pd
-import numpy.random as rnd
+#import pandas as pd
+#import numpy.random as rnd
 import os
-import sys
+#import sys
 from datetime import datetime
 
 import parameters
@@ -9,14 +9,14 @@ from config.main_config import *
 from heuristic.construction.construction import ConstructionHeuristic
 from heuristic.improvement.simulated_annealing import SimulatedAnnealing
 from heuristic.improvement.alns import ALNS
-from heuristic.improvement.operator.destroy_operators import DestroyOperators
-from heuristic.improvement.operator.repair_operators import RepairOperators
+#from heuristic.improvement.operator.destroy_operators import DestroyOperators
+#from heuristic.improvement.operator.repair_operators import RepairOperators
 from heuristic.improvement.local_search import LocalSearch
 from multipro import setup, process_parallel
 
-import cProfile
-import pstats
-from pstats import SortKey
+#import cProfile
+#import pstats
+#from pstats import SortKey
 
 def main():
     #TODO: Burde legge til sånn try og accept kriterier her når vi er ferdig. Men Bruker ikke det enda fordi letter å jobbe uten

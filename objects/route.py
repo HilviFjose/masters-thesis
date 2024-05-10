@@ -1,15 +1,15 @@
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import sys
 import os
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from objects.employee import Employee
-from objects.activity import Activity
+#from objects.employee import Employee
+#from objects.activity import Activity
 #from objects.distances import T_ij
 from parameters import T_ij
 import copy 
 from config.main_config import depot
-import time
+#import time
 
 class Route:
     def __init__(self, day, employee):
@@ -170,7 +170,6 @@ class Route:
             index += 1 
         return
 
-    
 
 
     def insertActivityOnIndex(self, activity, index):

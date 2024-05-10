@@ -1,6 +1,6 @@
-import pandas as pd
-import copy
-import math
+#import pandas as pd
+#import copy
+#import math
 import numpy.random as rnd 
 import random 
 import networkx as nx
@@ -69,7 +69,7 @@ class DestroyOperators:
 
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
             
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
     
     def random_treatment_removal(self, destroyed_route_plan):
         # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
@@ -89,7 +89,7 @@ class DestroyOperators:
 
             destroyed_route_plan = self.treatment_removal(treatmentID, destroyed_route_plan)[0]
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
     
     def random_visit_removal(self, destroyed_route_plan):
         # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
@@ -108,7 +108,7 @@ class DestroyOperators:
 
             destroyed_route_plan = self.visit_removal(visitID, destroyed_route_plan)[0]
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
     
     def random_activity_removal(self, destroyed_route_plan): 
         # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
@@ -121,7 +121,7 @@ class DestroyOperators:
             selected_activity = rnd.choice([item for sublist in destroyed_route_plan.visits.values() for item in sublist])
             activity_count += 1
             self.activity_removal(selected_activity, destroyed_route_plan)[0]
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
    
  #---------- WORST DEVIATION REMOVAL ----------   
 
@@ -148,7 +148,7 @@ class DestroyOperators:
 
             destroyed_route_plan = self.patient_removal(selected_patient, destroyed_route_plan)[0]
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
     
     def worst_deviation_treatment_removal(self, destroyed_route_plan):
         # Beregn totalt antall aktiviteter tildelt i løsningen og hvor mange som skal fjernes basert på destruction degree
@@ -176,7 +176,7 @@ class DestroyOperators:
 
             destroyed_route_plan = self.treatment_removal(selected_treatment, destroyed_route_plan)[0]
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
     
 
@@ -218,7 +218,7 @@ class DestroyOperators:
             for selected_activity in destroyed_route_plan.visits[selected_visit]:
                 destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
         
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
 
     def worst_deviation_activity_removal(self, destroyed_route_plan): 
@@ -259,7 +259,7 @@ class DestroyOperators:
         for selected_activity in list(sorted_activities_to_remove.keys())[:total_num_activities_to_remove]: 
             destroyed_route_plan = self.activity_removal(selected_activity, destroyed_route_plan)[0]
             
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
     
 #---------- CLUSTER DISTANCE REMOVAL ----------
     
@@ -301,7 +301,7 @@ class DestroyOperators:
 
         #print(f'Removed {removed_activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * (main_config.destruction_degree_beginning - (main_config.destruction_degree_beginning-main_config.destruction_degree_end)*self.alns.iterationNum/main_config.iterations))}') # with a destruction degree {main_config.destruction_degree}')
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
 
     def find_nearest_neighbors_with_kdtree(self, df, location_col='location'):
@@ -380,7 +380,7 @@ class DestroyOperators:
             destroyed_route_plan = self.activity_removal(activityID, destroyed_route_plan)[0]
             
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
 
 
@@ -422,7 +422,7 @@ class DestroyOperators:
         for patientID in patients_to_remove:
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
     # TAR HENSYN TIL DESTRUCTION DEGREE
     def spread_distance_activities_removal(self, destroyed_route_plan):
@@ -477,7 +477,7 @@ class DestroyOperators:
         for activityID in activities_to_remove:
             destroyed_route_plan = self.activity_removal(activityID, destroyed_route_plan)[0]
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
 
 #---------- RELATED REMOVAL ----------
@@ -606,7 +606,7 @@ class DestroyOperators:
         #print(f'Removed visits: ', removed_visits)
         #print(f'Removed {activities_count} of {num_act_allocated} allocated activities. Wanted to remove {round(num_act_allocated * main_config.destruction_degree)} with a destruction degree {main_config.destruction_degree}')
 
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
     def related_treatments_removal(self, destroyed_route_plan):
         #TODO: Forbedre ytelse, den har veldig dårlig ytelse nå. 
@@ -617,7 +617,6 @@ class DestroyOperators:
 
         # Forberede liste med treatments og deres aktiviteter
         allocatedTreatmentsIds = list(destroyed_route_plan.treatments.keys())
-        print("current_route_plan.treatments", destroyed_route_plan.treatments)
 
         # Velger en random treatment og finner hvilket pattern og patterntype det har i ruteplanen.
         primary_treatmentId = random.choice(allocatedTreatmentsIds)
@@ -696,7 +695,7 @@ class DestroyOperators:
         for treatId in related_treatment_list:
             destroyed_route_plan = self.treatment_removal(treatId, destroyed_route_plan)[0] 
         
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
 
     
 
@@ -705,7 +704,7 @@ class DestroyOperators:
         #destroyed_route_plan = copy.deepcopy(current_route_plan)
         for patientID in patient_list: 
             destroyed_route_plan = self.patient_removal(patientID, destroyed_route_plan)[0]
-        return destroyed_route_plan, None, True
+        return destroyed_route_plan
  
 
     def related_patients_removal(self, current_route_plan):

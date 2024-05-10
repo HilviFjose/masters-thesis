@@ -1,4 +1,4 @@
-import numpy.random as rnd 
+#import numpy.random as rnd 
 import numpy as np 
 import copy
 from tqdm import tqdm 
@@ -53,11 +53,12 @@ class ALNS:
            
         # Select repair method
         repair = self.select_operator(self.repair_operators, self.r_weights)
-        
+  
+
         #Destroy solution 
         d_operator = self.destroy_operators[destroy]
 
-        candidate_route_plan, removed_activities, destroyed = d_operator(candidate_route_plan) 
+        candidate_route_plan = d_operator(candidate_route_plan) 
 
         candidate_route_plan.updateObjective(self.iterationNum, iterations)
         candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy_parallel_"+str(parNum),d_operator.__name__)
@@ -220,10 +221,10 @@ class ALNS:
     # Select destroy/repair operator
     @staticmethod
     def select_operator(operators, weights):
-        rnd_state = rnd.RandomState() #Usikker på om dette blir riktig, 
         w = weights / np.sum(weights)
         a = [i for i in range(len(operators))]
-        return rnd_state.choice(a=a, p=w)
+        return np.random.choice(a=a, p=w)
+
     
     # Evaluate candidate
     def evaluate_candidate(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):

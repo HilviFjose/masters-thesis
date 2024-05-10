@@ -8,8 +8,7 @@ import math
 reaction_factor = 0.7
 
 # Iterations in ALNS
-iterations = 400
-iterations = 400
+iterations = 10
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req = 0.02
@@ -22,8 +21,6 @@ k = 3
 destruction_degree_beginning = 0.4
 destruction_degree_end = 0.2
 
-destruction_degree_start_intervall = 0.15
-destruction_degree_end_intervall = 0.50
 
 # Simulated annealing temperatures -- TODO: these must be tuned
 #start_temperature = 60

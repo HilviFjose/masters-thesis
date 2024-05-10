@@ -1,6 +1,6 @@
 
-import pandas as pd
-import numpy as np
+#import pandas as pd
+#import numpy as np
 import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
@@ -145,7 +145,7 @@ class RoutePlan:
             
             routes += routes_for_skill
 
-        return routes
+        return [route for route in routes if route.checkTrueFalse(activity)]
 
 
     def addActivityOnDay(self, activity, day):
