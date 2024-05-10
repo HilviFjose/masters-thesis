@@ -154,7 +154,7 @@ class DestroyOperators:
                 for vis, activityIDlist in destroyed_route_plan.visits.items():
                     if visitID == vis: 
                         for activityID in activityIDlist:
-                            treatment_utility_contribute += self.constructor.activities_array[activityID][17]
+                            treatment_utility_contribute += self.constructor.activities_array[activityID][19]
             treatments_to_remove[treatmentID] = treatment_utility_contribute
 
         # Sort treatments based on utility contribution in ascending order
@@ -262,8 +262,8 @@ class DestroyOperators:
             allocatedPatientsIds = list(destroyed_route_plan.allocatedPatients.keys())
             if not allocatedPatientsIds:
                 break
-
-            patients_and_location = [(patient, self.constructor.patients_array[patient][7]) for patient in allocatedPatientsIds if patient < len(self.constructor.patients_array)]
+            
+            patients_and_location = [(patient, self.constructor.patients_array[patient][9]) for patient in allocatedPatientsIds if patient < len(self.constructor.patients_array)]
 
             selected_patients = self.k_means_clustering(patients_and_location)
             activities_to_remove_now = sum(self.constructor.patients_array[patient_id][15] for patient_id in selected_patients)
@@ -370,7 +370,7 @@ class DestroyOperators:
         for i in range(len(self.constructor.patients_array)):
             for patient in allocatedPatientsIds:
                 if i == patient: 
-                    patients_and_location.append((patient, self.constructor.patients_array[patient][7]))
+                    patients_and_location.append((patient, self.constructor.patients_array[patient][9]))
 
         # Beregne "spread" for hver pasient
         nearest_neighbor_distances = self.find_nearest_neighbors_with_kdtree(patients_and_location)
@@ -571,12 +571,16 @@ class DestroyOperators:
         primary_treatmentId = random.choice(allocatedTreatmentsIds)
         filtered_row = self.constructor.treatments_array[primary_treatmentId]
         patternType = self.constructor.treatments_array[primary_treatmentId][1]
-        TreatSamePatternType = self.constructor.treatment_df[self.constructor.treatment_array['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
+        #TreatSamePatternType = self.constructor.treatment_df[self.constructor.treatment_array['patternType'] == patternType].index.intersection(allocatedTreatmentsIds).tolist()
+        TreatSamePatternType = [treatment_id for treatment_id in allocatedTreatmentsIds if self.constructor.treatments_array[treatment_id][1] == patternType]
 
         #Vet at vi har funnet de ulike treatmentsene som er riktig 
-        firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
-        visitID = self.constructor.activities_df.loc[firstActId, 'visitId']
-        for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+        firstActId = filtered_row[20][0]
+        #firstActId = filtered_row['activitiesIds'].apply(lambda x: x[0] if x else None).iloc[0] #Henter ut første aktivitet for gitt treatment
+        #visitID = self.constructor.activities_df.loc[firstActId, 'visitId']
+        visitID = self.constructor.activities_array[firstActId][12]
+
+        for act in self.constructor.visits_array[visitID][14]:
             act = destroyed_route_plan.getActivityFromEntireRoutePlan(act)
             if act != None: 
                 break 
@@ -596,8 +600,11 @@ class DestroyOperators:
             activities_count += len(destroyed_route_plan.visits[visitID])
 
             # Fjerner treatments som har samme pattern
-            filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
-            firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
+            #filtered_df = self.constructor.treatment_df.loc[TreatSamePatternType]
+            #firstActInTreatSamePatternType = [ids[0] if ids else None for ids in filtered_df['activitiesIds']] #Liste: Første aktivitet i alle treatments som har samme patterntype og er allokert i current_route_plan
+            
+            firstActInTreatSamePatternType = [self.constructor.treatments_array[treatID][20][0] for treatID in TreatSamePatternType]
+
             firstActInTreatSamePatternType.remove(firstActId) 
         
             backup_treatments = []
@@ -606,8 +613,10 @@ class DestroyOperators:
                 if activities_count >= total_num_activities_to_remove:
                     break
 
-            visitID = self.constructor.activities_df.loc[actId, 'visitId']
-            for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
+            visitID = self.constructor.activities_array[actId][12]
+            #self.constructor.activities_df.loc[actId, 'visitId']
+            for act in self.constructor.visits_array[visitID][14]:
+            #for act in self.constructor.visit_df.loc[visitID, 'activitiesIds']: 
                 act = destroyed_route_plan.getActivityFromEntireRoutePlan(act)
                 if act != None: 
                     break 
@@ -622,7 +631,7 @@ class DestroyOperators:
             else: 
                 day_for_first_activity_in_treatment = destroyed_route_plan.getDayForActivityID(act)
 
-                treatment_for_activity = self.contructor.activities_array[actId][13]
+                treatment_for_activity = self.constructor.activities_array[actId][13]
 
             if day_for_first_activity_in_treatment == firstDay:
                 if treatment_for_activity not in related_treatment_list:
@@ -771,7 +780,7 @@ class DestroyOperators:
         return self.updateDictionariesForRoutePlanActivityLevel(selected_activity, destroyed_route_plan, original_day)
    
     def updateDictionariesForRoutePlanPatientLevel(self, patient_removed, route_plan):
-        allocation = self.constructor.patients_array[patient_removed][2]
+        allocation = self.constructor.patients_array[patient_removed][4]
         if allocation == 0: 
             route_plan.notAllocatedPatients.append(patient_removed)
         else: 

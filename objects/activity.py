@@ -21,22 +21,22 @@ class Activity:
         self.earliestStartTime = activities_array[id][3]
         self.duration = activities_array[id][5]
         self.skillReq = activities_array[id][7]
-        self.heaviness = activities_array[id][16]
+        self.heaviness = activities_array[id][18]
         self.sameEmployeeAcitivtyID = activities_array[id][11]
         self.location = self.makeLocationTuple(activities_array[id][14])  
-        self.employeeRestricions = activities_array[id][15]
-        self.continuityGroup = activities_array[id][21]
-        self.employeeHistory = activities_array[id][20]
+        self.employeeRestricions = activities_array[id][17]
+        self.continuityGroup = activities_array[id][23]
+        self.employeeHistory = activities_array[id][22]
         self.PrevNode, self.PrevNodeInTime= self.makePresNodes(activities_array[id][10])
         #TODO: Den gjensidige avhengigheten må legges inn i datagenereringen 
         self.NextNode, self.NextNodeInTime = self.makePresNodes(activities_array[id][9])
         self.patient = activities_array[id][0]
         self.treatmentId = activities_array[id][13]
-        self.nActInPatient = activities_array[id][27]
-        self.nActInTreat = activities_array[id][25]
+        self.nActInPatient = activities_array[id][28]
+        self.nActInTreat = activities_array[id][26]
         self.nActInVisit = activities_array[id][2]
-        self.suitability = activities_array[id][17]
-        self.prefSpes = activities_array[id][22]
+        self.suitability = activities_array[id][19]
+        self.prefSpes = activities_array[id][15]
         self.visitId = activities_array[id][12]
         
         self.startTime = None

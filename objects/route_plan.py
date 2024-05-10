@@ -224,13 +224,7 @@ class RoutePlan:
             sys.stdout = original_stdout
  
     def printSolution(self, txtName, operator_string, current_iteration = None):
-        # Ensure directory exists
-        results_dir = os.path.join('results', self.folder_name)
-        os.makedirs(results_dir, exist_ok=True)
-
-        # Open the file for writing in the correct directory
-        file_path = os.path.join(results_dir, txtName + ".txt")
-        with open(file_path, "w") as log_file:
+        
         # Ensure directory exists
         results_dir = os.path.join('results', self.folder_name)
         os.makedirs(results_dir, exist_ok=True)
@@ -545,8 +539,8 @@ class RoutePlan:
         '''    
 
         #Her håndteres pick up and delivery
-        if activity.pickUpActivityID != 0 : 
-            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.pickUpActivityID, day)
+        if activity.sameEmployeeAcitivtyID != 0 : 
+            otherEmplOnDay = self.getListOtherEmplIDsOnDay(activity.sameEmployeeAcitivtyID, day)
             activity.employeeNotAllowedDueToPickUpDelivery = otherEmplOnDay 
             
         #Her håndteres presedens.   

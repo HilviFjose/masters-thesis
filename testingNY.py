@@ -15,14 +15,14 @@ df_treatments = parameters.df_treatments
 df_visits = parameters.df_visits
 df_activities = parameters.df_activities
 
-username = 'hilvif'
+username = 'agnesost'
 path = 'c:\\Users\\'+username+'\\masters-thesis\\results'
 items = os.listdir(path)
          
 
 # Filter out only the directories that match your naming convention
 results_folders = [item for item in items if os.path.isdir(os.path.join(path, item)) and item.startswith("results-")]
-folder_name = results_folders[7]  #Velg hvilken i results du vil teste 
+folder_name = results_folders[9]  #Velg hvilken i results du vil teste 
 
 
 def extract_activities(file_path):

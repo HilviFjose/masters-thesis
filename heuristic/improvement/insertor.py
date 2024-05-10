@@ -94,7 +94,7 @@ class Insertor:
    
 
     def simple_insert_visit_on_day(self, visit, day):  
-        activitiesList = self.constructor.visits_array[visit][18]
+        activitiesList = self.constructor.visits_array[visit][14]
         old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         # Create a list of activity objects
