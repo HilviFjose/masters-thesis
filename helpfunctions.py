@@ -16,6 +16,6 @@ def isPromisingLS(candidate_objective, current_objective, local_search_requireme
     if candidate_objective[0] < current_objective[0]: 
         return False 
     for i in range(1, len(candidate_objective)): 
-        if candidate_objective[i] >= current_objective[i] * (1 - local_search_requirement): 
-            return True 
-    return False
+        if candidate_objective[i] <= current_objective[i] * (1 - local_search_requirement): 
+            return False
+    return True 
