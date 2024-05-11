@@ -12,6 +12,32 @@ For å opprette en aktivitet må dataframene som inneholder aktivitetne til ID-e
 
 class Activity:
     def __init__(self, df, id):
+
+        activity_data = df.loc[id]
+        
+        self.id = id
+        self.latestStartTime = activity_data["latestStartTime"]
+        self.earliestStartTime = activity_data["earliestStartTime"]
+        self.duration = activity_data["duration"]
+        self.skillReq = activity_data["skillRequirement"]
+        self.heaviness = activity_data["heaviness"]
+        self.pickUpActivityID = activity_data["sameEmployeeActivityId"]
+        self.location = self.makeLocationTuple(activity_data["location"])
+        self.employeeRestricions = activity_data["employeeRestriction"]
+        self.continuityGroup = activity_data["continuityGroup"]
+        self.employeeHistory = activity_data["employeeHistory"]
+        self.PrevNode, self.PrevNodeInTime = self.makePresNodes(activity_data["prevPrece"])
+        self.NextNode, self.NextNodeInTime = self.makePresNodes(activity_data["nextPrece"])
+        self.patient = activity_data["patientId"]
+        self.treatmentId = activity_data["treatmentId"]
+        self.nActInPatient = activity_data["nActInPatient"]
+        self.nActInTreat = activity_data["nActInTreat"]
+        self.nActInVisit = activity_data["numActivitiesInVisit"]
+        self.suitability = activity_data["utility"]
+        self.prefSpes = activity_data["specialisationPreferred"]
+        self.sameEmployeeAcitivtyID = activity_data["sameEmployeeActivityId"]
+
+        '''
         self.id = id 
         self.latestStartTime = df.loc[id]["latestStartTime"]
         self.earliestStartTime = df.loc[id]["earliestStartTime"]
@@ -36,7 +62,8 @@ class Activity:
         self.suitability = df.loc[id]["utility"]
 
         self.prefSpes = df.loc[id]["specialisationPreferred"]
-        
+        self.sameEmployeeAcitivtyID = df.loc[id]["sameEmployeeActivityId"]
+        '''
         self.startTime = None
         #self.newLatestStartTime = 1440
         #self.newEeariestStartTime = 0
@@ -51,7 +78,7 @@ class Activity:
         self.newEeariestStartTime = dict.fromkeys(self.dependentActivities, 0)
         self.newLatestStartTime = dict.fromkeys(self.dependentActivities, 1440)
 
-        self.sameEmployeeAcitivtyID = df.loc[id]["sameEmployeeActivityId"]
+        
         
     #make funskjonene setter parameterne til Acitivy objektet 
     

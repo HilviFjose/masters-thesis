@@ -114,7 +114,7 @@ class ALNS:
 
             candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
-            if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
+            if isPromisingLS(candidate_route_plan.objective, self.current_route_plan.objective, self.local_search_req) == True: 
                 start_time = time.perf_counter()
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)

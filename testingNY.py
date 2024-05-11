@@ -22,8 +22,8 @@ items = os.listdir(path)
 
 # Filter out only the directories that match your naming convention
 results_folders = [item for item in items if os.path.isdir(os.path.join(path, item)) and item.startswith("results-")]
-folder_name = results_folders[10]  #Velg hvilken i results du vil teste 
-
+folder_name = results_folders[4]  #Velg hvilken i results du vil teste 
+print("tester folder", folder_name)
 
 def extract_activities(file_path):
     """Extract activity numbers from a given file and identify duplicates."""
