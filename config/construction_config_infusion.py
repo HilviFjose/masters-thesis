@@ -63,7 +63,7 @@ E_generalists = 0.2 #Percentage of employees with profession level 1 and 2 that 
 
 # Profession Level 
 professionLevels = [1, 2, 3, 4]
-professionLevelsProb =  [0.2, 0.3, 0.5, 0] #index 0: level 1
+professionLevelsProb =  [0.1, 0.4311, 0.4689, 0] #index 0: level 1
 
 # Clinic distribution
 E_clinicDistribution = [0.25, 0.6, 0, 0.15]       # Cancer, Medical, Orthopaedic, Paediatric

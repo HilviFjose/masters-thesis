@@ -11,7 +11,7 @@ import random
 import datetime
 from config.main_config import depot
 from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
-from config.main_config import weight_C, weight_DW, weight_WW, weight_SG, weight_S
+from config.main_config import  weight_DW, weight_WW, weight_SG, weight_S
 
 class RoutePlan:
     def __init__(self, days, employee_df, folder_name):
@@ -362,7 +362,6 @@ class RoutePlan:
         return first_objective
     
     def updateObjective(self, current_iteration, total_iterations): 
-        weight_C, weight_DW, weight_WW, weight_SG, weight_S
         self.objective = [0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()

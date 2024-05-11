@@ -86,13 +86,13 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    '''
-    alns = ALNS(destruction_degree_low_default, destruction_degree_high_default, weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
+    
+    alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config) 
 
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
-    best_route_plan.updateObjective(iterations, iterations) #Nå lages det ikke noen ruteplan her?
+    best_route_plan.updateObjective(iterations, iterations)
     best_route_plan.printSolution("final", "no operator")
 
     '''
@@ -203,6 +203,7 @@ def main():
     print(f'reaction_factor {reaction_factor_tuned}') 
     print(f'iterations_update {iterations_update_tuned}')
     print(f'local_search_req {local_search_tuned}')
+    '''
          
 '''KOMPLETT KRYSSTUNING
 def objective(trial, route_plan, criterion, constructor, mp_config):

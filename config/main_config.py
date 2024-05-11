@@ -2,13 +2,13 @@ from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
-num_of_constructions = 5  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
 reaction_factor_default = 0.7
 
 # Iterations in ALNS
-iterations = 100
+iterations = 400
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req_default = 0.02
@@ -18,8 +18,8 @@ k = 3
 
 #The amount of activities to remove in destroy operators
 #destruction_degree = 0.4
-destruction_degree_high_default = 0.4
-destruction_degree_low_default = 0.2
+destruction_degree_high_default = 0.3
+destruction_degree_low_default = 0.15
 
 # Simulated annealing temperatures -- TODO: these must be tuned
 #start_temperature = 60
@@ -52,7 +52,7 @@ penalty_visit = 5           # Penalty per illegal visit
 penalty_act = 3             # Penalty per illegal activity 
 
 # Weights for objectives
-weight_C = 0.0              # Max continuity of care
+#weight_C = 0.0              # Max continuity of care
 weight_DW = 0.3             # Balance daily workload
 weight_WW = 0.3             # Balance weekly workload
 weight_S = 0.2              # Min skill difference
@@ -64,7 +64,7 @@ days = 5
 #Depot
 depot = (59.9365, 10.7396)
 
-#Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
+#Insertor choises [0,1,2, 3, 4] for [simple, better with max reg1, better with max regret2, better, best ]
 construction_insertor = 2 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
@@ -73,7 +73,7 @@ max_num_regret1 = 50
 max_num_regret2 = 100
 
 #Insertor som kan brukes en andel av gangene 
-fraction_repair_insertor = 1 
+fraction_repair_insertor = 1
 frequecy_of_fraction_insertion = 0.01
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
