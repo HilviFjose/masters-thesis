@@ -13,21 +13,28 @@ from config.main_config import *
 from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
-    def __init__(self,weights, reaction_factor, current_route_plan, criterion,
-                     constructor, mp_config): 
+    def __init__(self, destruction_degree_interval, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, 
+                 reaction_factor, local_search_req, iterations_update_default, current_route_plan, criterion, constructor, mp_config): 
+
         self.destroy_operators = []
         self.repair_operators = []
-
-        self.reaction_factor = reaction_factor
 
         self.current_route_plan = copy.deepcopy(current_route_plan)
         self.best_route_plan = copy.deepcopy(current_route_plan)
         self.criterion = criterion
         self.constructor = constructor
-        self.local_search_req = local_search_req
-        self.iterationNum = 0
-        self.weight_scores = weights
 
+        self.weight_score_better = weight_score_better
+        self.weight_score_accepted = weight_score_accepted
+        self.weight_score_bad = weight_score_bad
+        self.weight_score_best = weight_score_best
+        self.reaction_factor = reaction_factor
+        self.local_search_req = local_search_req
+        self.iterations_update = iterations_update_default
+        self.iterationNum = 0
+
+        self.destruction_degree_interval = destruction_degree_interval
+        self.destruction_degree = 0
         
 
         destroy_operators = DestroyOperators(self)
@@ -43,6 +50,8 @@ class ALNS:
         self.r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
         self.mp_config = mp_config
+
+        self.random_numbers = np.round(np.random.uniform(low=destruction_degree_interval[0], high=destruction_degree_interval[1], size=iterations),1)
 
 
         
@@ -78,22 +87,17 @@ class ALNS:
         self.r_count[repair] += 1
         return candidate_route_plan, destroy, repair
 
-
-
-
         
     def iterate(self, num_iterations):
         found_solutions = {}
         
-        # weights er vekter for å velge operator, score og count brukes for oppdatere weights
-        
-
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
             already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
+            self.destruction_degree = self.random_numbers[self.iterationNum-1]
             
             if not doParalellDestroyRepair:
                 #Uten parallell
@@ -156,7 +160,7 @@ class ALNS:
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
-            if (i+1)*iterations_update == 0:
+            if (i+1)* self.iterations_update == 0:
                 # Update weights with scores
                 for destroy in range(len(self.d_weights)):
                     if self.d_count[destroy] != 0: 
@@ -182,12 +186,12 @@ class ALNS:
     def set_operators(self, destroy_operators, repair_operators):
         # Add destroy operators
         
-        #self.add_destroy_operator(destroy_operators.random_patient_removal)
+        self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
         self.add_destroy_operator(destroy_operators.random_activity_removal)
         
-        #self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
+        self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_visit_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_activity_removal)
@@ -232,22 +236,21 @@ class ALNS:
         if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
-                weight_score = weight_scores[0]
+                weight_score = self.weight_score_better
             else:
                 # Solution is not better, but accepted
-                weight_score = weight_scores[1]
-
+                weight_score = self.weight_score_accepted
             current_route_plan = copy.deepcopy(candidate_route_plan)
         else:
             # Solution is rejected
             print("Candidate very bad and not accepted.")
-            weight_score = weight_scores[2]
+            weight_score = self.weight_score_bad
 
         # Check if solution is new global best
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
             print("ALNS iteration ", self.iterationNum, " is new global best")
             best_route_plan = copy.deepcopy(candidate_route_plan)
-            weight_score = weight_scores[3]
+            weight_score = self.weight_score_best 
 
         return best_route_plan, current_route_plan, weight_score    
 

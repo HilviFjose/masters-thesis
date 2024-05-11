@@ -1,26 +1,25 @@
 from datetime import datetime, timedelta
 import math
 
-#TODO: Endre til verdier som er riktige for oss. Hentet fra Anna
-#Denne fila inneholder variabler som brukes i ALNSen
+#Number of constructed solutions 
+num_of_constructions = 5  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
-reaction_factor = 0.7
+reaction_factor_default = 0.7
 
 # Iterations in ALNS
-iterations = 30
+iterations = 100
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
-local_search_req = 0.02
+local_search_req_default = 0.02
 
 # k-repair value
 k = 3
 
 #The amount of activities to remove in destroy operators
 #destruction_degree = 0.4
-destruction_degree_beginning = 0.4
-destruction_degree_end = 0.2
-
+destruction_degree_high_default = 0.4
+destruction_degree_low_default = 0.2
 
 # Simulated annealing temperatures -- TODO: these must be tuned
 #start_temperature = 60
@@ -37,10 +36,13 @@ speed = 40
 rush_factor = 2
 
 # Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
-weight_scores = [10, 5, 0, 15]
+weight_score_best_default = 15
+weight_score_better_default = 10
+weight_score_accepted_default = 5
+weight_score_bad = 0
 
 # Iterations between each weight update in ALNS
-iterations_update = 0.1
+iterations_update_default = 0.1
 
 # Penalty in first objective for infeasible solution
 # TODO: these must be tuned
@@ -62,17 +64,11 @@ days = 5
 #Depot
 depot = (59.9365, 10.7396)
 
-#Number of constructed solutions 
-num_of_constructions = 3  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
-
-#Insertor choises [0,1,2,3] for [simple, better with limited regret 1, better sith limited regeret 2, better, best ]
+#Insertor choises [0,1,2, 3] for [simple, better with limited branches in search, better, best ]
 construction_insertor = 2 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
 
-
-max_num_regret1 = 50
-max_num_regret2 = 100
 max_num_regret1 = 50
 max_num_regret2 = 100
 

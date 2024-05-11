@@ -66,6 +66,7 @@ else:
     df_activities = pd.read_pickle(file_path_activities)
 
 
+
 #GENERATING DISTANCE MATRIX
 if antibiotics_data: 
     depot_row = pd.DataFrame({'activityId': [0], 'location': [construction_config_antibiotics.depot]})
