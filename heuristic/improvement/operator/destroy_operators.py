@@ -631,7 +631,8 @@ class DestroyOperators:
             else: 
                 day_for_first_activity_in_treatment = destroyed_route_plan.getDayForActivityID(act)
 
-                treatment_for_activity = self.constructor.activities_array[actId][13]
+
+            treatment_for_activity = self.constructor.activities_array[actId][13]
 
             if day_for_first_activity_in_treatment == firstDay:
                 if treatment_for_activity not in related_treatment_list:
