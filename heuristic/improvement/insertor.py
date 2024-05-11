@@ -195,7 +195,7 @@ class Insertor:
         rest_acitivites = activities[1:]
       
         #Alternativ hvor vi søker mer random 
-        '''
+        
         combinations_route_index = [(route, index) for route in self.route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
         random.shuffle(combinations_route_index)
         while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
@@ -228,7 +228,7 @@ class Insertor:
         
         
         return self.InsertionFound_BetterInsertVisitWitLim1
-        
+        '''
 
 
     def insertNextActiviy_forBetterInsertion_with_iteration_limitation1(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
@@ -259,7 +259,7 @@ class Insertor:
         #TODO: Den under skal vel sorteres på next-activity 
         #for route in route_plan.getSortedRoutes(activity, day):
         #old_route_plan = route_plan
-        '''
+       
         combinations_route_index = [(route, index) for route in route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
         random.shuffle(combinations_route_index)
         while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
@@ -290,7 +290,7 @@ class Insertor:
                 else: 
                     break
         
-        
+        '''
 
  
 
@@ -309,7 +309,7 @@ class Insertor:
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         activity = activities[0]
         rest_acitivites = activities[1:]
-        '''
+        
         combinations_route_index = [(route, index) for route in self.route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
         random.shuffle(combinations_route_index)
         while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
@@ -339,7 +339,7 @@ class Insertor:
                     break
         
         return self.InsertionFound_BetterInsertVisitWitLim2
-
+        '''
 
 
     def insertNextActiviy_forBetterInsertion_with_iteration_limitation2(self, activity, rest_acitivites, route_plan, day, employeeID, index_place):
@@ -370,7 +370,7 @@ class Insertor:
         #TODO: Den under skal vel sorteres på next-activity 
         #for route in route_plan.getSortedRoutes(activity, day):
         #old_route_plan = route_plan
-        '''
+        
         combinations_route_index = [(route, index) for route in route_plan.getSortedRoutes(activity, day) for index in range(len(route.route)+1)]
         random.shuffle(combinations_route_index)
         while len(combinations_route_index) != 0 and self.InsertionFound_BetterInsertVisitWitLim1 == False and self.betterInsertVisit_explored_branches1 < max_num_regret1:
@@ -399,7 +399,7 @@ class Insertor:
                         break
                 else: 
                     break
-        
+        '''
 
              
     def best_insert_visit_on_day(self, visit, day):

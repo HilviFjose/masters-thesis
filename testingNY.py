@@ -22,7 +22,8 @@ items = os.listdir(path)
 
 # Filter out only the directories that match your naming convention
 results_folders = [item for item in items if os.path.isdir(os.path.join(path, item)) and item.startswith("results-")]
-folder_name = results_folders[0]  #Velg hvilken i results du vil teste 
+folder_name = results_folders[1]  #Velg hvilken i results du vil teste
+print("nå sjekker vi fil index", 1) 
 
 
 def extract_activities(file_path):
