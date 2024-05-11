@@ -82,12 +82,17 @@ class LocalSearch:
             candidate = self.change_employee(candidate, day)
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
+
+        candidate.printSolution("candidate_after_initial_local_search_after_change_empl", "ingen operator")
+
         
         # SWAP EMPLOYEE
         for day in range(1, self.days + 1):
            candidate = self.swap_employee(candidate, day)
         for day in range(1, self.days + 1):
             candidate = self.swap_employee(candidate, day)
+
+        candidate.printSolution("candidate_after_initial_local_search_after_swap_empl", "ingen operator")
 
         # MOVE ACTIVITY
         for day in range(1, self.days + 1):
@@ -101,6 +106,9 @@ class LocalSearch:
                 new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
 
+        candidate.printSolution("candidate_after_initial_local_search_after_ma", "ingen operator")
+
+
         # SWAP ACTIVITY 
         for day in range(1, self.days + 1):
             employeeOnDayList = [route.employee.id for route in candidate.routes[day].values()]
@@ -112,6 +120,8 @@ class LocalSearch:
             for emplID in employeeOnDayList: 
                 new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
+        
+        candidate.printSolution("candidate_after_initial_local_search_after_sa", "ingen operator")
 
         return candidate
     
@@ -307,6 +317,9 @@ class LocalSearch:
         return best_found_route
     
 
+    '''
+    Her skal det være en eller annen feil, det er i denne funksjonen. 
+    '''
     def swap_employee(self, route_plan, day):
         route_plan.updateObjective(self.current_iteration, self.total_iterations)
         best_objective = route_plan.objective
@@ -318,39 +331,37 @@ class LocalSearch:
                     continue
                 for activity1 in route1.route: 
                     for activity2 in route2.route: 
-                        
-                        new_route1 = copy.deepcopy(route1)
-                        new_route2 = copy.deepcopy(route2)
+                        new_candidate = copy.deepcopy(route_plan)
+
+                        #Kunne muligens bare hentet rutene fra new candidiate. 
+                        new_route1 = new_candidate.routes[day][route1.employee.id]
+                        new_route2 = new_candidate.routes[day][route2.employee.id]
 
                         new_route1.removeActivityID(activity1.id)
                         new_route2.removeActivityID(activity2.id)
                         
-                        #TESTLEGGER TIL 
-                        for testAct in new_route1.route: 
-                            route_plan.updateActivityBasedOnRoutePlanOnDay(testAct, new_route1.day)
-                            new_route1.updateActivityBasedOnDependenciesInRoute(testAct)
-
-                        #TESTLEGGER TIL 
-                        for testAct in new_route2.route: 
-                            route_plan.updateActivityBasedOnRoutePlanOnDay(testAct, new_route2.day)
-                            new_route2.updateActivityBasedOnDependenciesInRoute(testAct)
-                        #TODO: Nå sendes routeplan inn her. har ikke sjekket premissene. Var ikke med før
                         
-                        for routeActivity in new_route1.route: 
-                            route_plan.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
-                        route_plan.updateActivityBasedOnRoutePlanOnDay(activity2, day)
+                        #Oppdaterer grenser for alle aktiviteter som er i rute 1 
+                        for testAct in new_route1.route: 
+                            new_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, new_route1.day)
+                            #new_route1.updateActivityBasedOnDependenciesInRoute(testAct)
+
+                        new_candidate.updateActivityBasedOnRoutePlanOnDay(activity2, day)
                         status = new_route1.addActivity(activity2)
                         if status == False: 
                             continue
-              
-                        for routeActivity in new_route2.route: 
-                            route_plan.updateActivityBasedOnRoutePlanOnDay(routeActivity, day)
-                        route_plan.updateActivityBasedOnRoutePlanOnDay(activity1, day)
+
+                        
+                        #TESTLEGGER TIL 
+                        for testAct in new_route2.route: 
+                            new_candidate.updateActivityBasedOnRoutePlanOnDay(testAct, new_route2.day)
+                        #TODO: Nå sendes routeplan inn her. har ikke sjekket premissene. Var ikke med før
+                        new_candidate.updateActivityBasedOnRoutePlanOnDay(activity1, day)
                         status = new_route2.addActivity(activity1)
                         if status == False: 
                             continue
                   
-                        new_candidate = copy.deepcopy(route_plan) 
+                         
                         new_candidate.insertNewRouteOnDay(new_route1, day)
                         new_candidate.insertNewRouteOnDay(new_route2, day)
                         new_candidate.updateObjective(self.current_iteration, self.total_iterations)
@@ -359,6 +370,7 @@ class LocalSearch:
                             best_objective = new_candidate.objective
                             best_found_candidate = new_candidate 
         return best_found_candidate
+    
 
     
 

@@ -13,6 +13,8 @@ def checkCandidateBetterThanBest(candidateObj, currObj):
 
 # TODO: Tenke på hvordan vi evaluerer om kandidaten er bedre leksikografisk 
 def isPromisingLS(candidate_objective, current_objective, local_search_requirement):
+    if candidate_objective[0] > current_objective[0]: 
+        return True
     if candidate_objective[0] < current_objective[0]: 
         return False 
     for i in range(1, len(candidate_objective)): 

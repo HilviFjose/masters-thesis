@@ -21,8 +21,8 @@ items = os.listdir(path)
          
 
 # Filter out only the directories that match your naming convention
-results_folders = [item for item in items if os.path.isdir(os.path.join(path, item)) and item.startswith("results-")]
-folder_name = results_folders[4]  #Velg hvilken i results du vil teste 
+results_folders = [item for item in items if os.path.isdir(os.path.join(path, item))]# and item.startswith("results-")]
+folder_name = results_folders[1]  #Velg hvilken i results du vil teste 
 print("tester folder", folder_name)
 
 def extract_activities(file_path):
@@ -428,7 +428,11 @@ file_name_list = ["_before_destroy", "_after_destroy", "_after_repair"]
 
 # ----------------- TEST FOR INITIAL AND INITIAL AFTER LOCAL SEARCH ----------------------
 general_file_path = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+folder_name  # Replace with the actual path to your first file
-file_names = ['\\initial.txt', '\\candidate_after_initial_local_search.txt' ]
+file_names = ['\\initial.txt', '\\candidate_after_initial_local_search.txt', 
+              "\\candidate_after_initial_local_search_after_change_empl.txt",  
+              "\\candidate_after_initial_local_search_after_swap_empl.txt", 
+              "\\candidate_after_initial_local_search_after_ma.txt",
+              "\\candidate_after_initial_local_search_after_sa.txt"]
 
 
 for file_name in file_names: 

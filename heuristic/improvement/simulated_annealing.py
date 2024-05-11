@@ -6,17 +6,17 @@ from config.main_config import iterations
 
 class SimulatedAnnealing:
     def __init__(self, sim_annealing_diff, prob_of_choosing, rate_T_start_end):
-
+        
         self.start_temperature = -sim_annealing_diff/math.log(prob_of_choosing)
         self.end_temperature = self.start_temperature*rate_T_start_end
         self.cooling_rate = (self.end_temperature/self.start_temperature)**(1/iterations)
         self.temperature = self.start_temperature
-
+        '''
         print("self.start_temperature", self.start_temperature)
         print("self.end_temperature", self.end_temperature)
         print("self.cooling_rate", self.cooling_rate)
         
-        '''
+        
         self.start_temperature = start_temperature
         self.end_temperature = end_temperature
         self.cooling_rate = cooling_rate

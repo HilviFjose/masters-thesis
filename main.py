@@ -83,17 +83,19 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
+
     alns = ALNS(weight_scores, reaction_factor, initial_route_plan, criterion,  constructor, mp_config)
 
     
-
+    
    
-
+    
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
     
     best_route_plan.updateObjective(iterations, iterations)
     best_route_plan.printSolution("final", "no operator")
+    
          
 if __name__ == "__main__":
     main()
