@@ -171,11 +171,11 @@ class ALNS:
                 self.r_scores = np.ones(
                     len(self.repair_operators), dtype=np.float16)
                 
-            # Do local search to local optimum before returning last iteration
-            self.best_route_plan.printSolution("candidate_before_final_local_search", "ingen operator")
-            localsearch = LocalSearch(self.best_route_plan, iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
-            self.best_route_plan = localsearch.do_local_search_to_local_optimum()
-            self.best_route_plan.updateObjective(iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+        # Do local search to local optimum before returning last iteration
+        self.best_route_plan.printSolution("candidate_before_final_local_search", "ingen operator")
+        localsearch = LocalSearch(self.best_route_plan, iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+        self.best_route_plan = localsearch.do_local_search_to_local_optimum()
+        self.best_route_plan.updateObjective(iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
                 
         return self.best_route_plan
     
