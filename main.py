@@ -88,7 +88,7 @@ def main():
    
     
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
-                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config) 
+                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
 
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
@@ -206,7 +206,7 @@ def main():
     '''
          
 '''KOMPLETT KRYSSTUNING
-def objective(trial, route_plan, criterion, constructor, mp_config):
+def objective(trial, route_plan, criterion, constructor, mp_config, folder_path):
     # Suggesting parameters
     destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]])
     weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
@@ -218,41 +218,41 @@ def objective(trial, route_plan, criterion, constructor, mp_config):
 
     # Configure and run ALNS
     alns = ALNS(destruction_degree_low, destruction_degree_high, weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval,
-                    reaction_factor_interval, local_search_req_interval, iterations_update_interval, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_interval, local_search_req_interval, iterations_update_interval, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective
 '''
 
-def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_config):
+def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_config, folder_path):
     # Suggesting parameters
     destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low, destruction_degree_high], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default,
-                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective
 
-def objective_weight_score_best(trial, route_plan, criterion, constructor, mp_config, destruction_degree_low_tuned, destruction_degree_high_tuned):
+def objective_weight_score_best(trial, route_plan, criterion, constructor, mp_config, folder_path, destruction_degree_low_tuned, destruction_degree_high_tuned):
     # Suggesting parameters
     weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
     
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_interval,
-                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective
 
-def objective_weight_score_better(trial, route_plan, criterion, constructor, mp_config, destruction_degree_low_tuned, destruction_degree_high_tuned, weight_score_best_tuned):
+def objective_weight_score_better(trial, route_plan, criterion, constructor, mp_config, folder_path, destruction_degree_low_tuned, destruction_degree_high_tuned, weight_score_best_tuned):
     # Suggesting parameters
     weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
     
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_interval, weight_score_accepted_default, weight_score_bad, weight_score_best_tuned,
-                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective
@@ -268,7 +268,7 @@ def objective_weight_score_accepted(trial, route_plan, criterion, constructor, m
 
     return route_plan.objective
 
-def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_config, 
+def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_config, folder_path, 
               destruction_degree_low_tuned, destruction_degree_high_tuned, 
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned):
     # Suggesting parameters
@@ -276,7 +276,7 @@ def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_conf
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
-                    reaction_factor_interval, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_interval, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective
@@ -295,7 +295,7 @@ def objective_iterations_update(trial, route_plan, criterion, constructor, mp_co
 
     return route_plan.objective
 
-def objective_local_search(trial, route_plan, criterion, constructor, mp_config, 
+def objective_local_search(trial, route_plan, criterion, constructor, mp_config, folder_path, 
               destruction_degree_low_tuned, destruction_degree_high_tuned, 
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned, 
               reaction_factor_tuned, iterations_update_tuned):
@@ -304,7 +304,7 @@ def objective_local_search(trial, route_plan, criterion, constructor, mp_config,
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
-                    reaction_factor_tuned, local_search_req_interval, iterations_update_tuned, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_tuned, local_search_req_interval, iterations_update_tuned, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective

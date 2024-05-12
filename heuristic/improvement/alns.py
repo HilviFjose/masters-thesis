@@ -4,6 +4,7 @@ import copy
 from tqdm import tqdm 
 from helpfunctions import *
 import time 
+import os
 from heuristic.improvement.operator.destroy_operators import DestroyOperators
 from heuristic.improvement.operator.repair_operators import RepairOperators
 from multipro import process_parallel
@@ -14,7 +15,9 @@ from heuristic.improvement.local_search import LocalSearch
 
 class ALNS:
     def __init__(self, destruction_degree_interval, weight_score_better, weight_score_accepted, weight_score_bad, weight_score_best, 
-                 reaction_factor, local_search_req, iterations_update_default, current_route_plan, criterion, constructor, mp_config): 
+                 reaction_factor, local_search_req, iterations_update_default, current_route_plan, criterion, constructor, mp_config, folder_path): 
+
+        self.folder_path = folder_path
 
         self.destroy_operators = []
         self.repair_operators = []
@@ -251,6 +254,11 @@ class ALNS:
             print("ALNS iteration ", self.iterationNum, " is new global best")
             best_route_plan = copy.deepcopy(candidate_route_plan)
             weight_score = self.weight_score_best 
+
+            # Open the file for writing in the correct directory
+            file_path = os.path.join(self.folder_path, "0config_info.txt")
+            with open(file_path, "a") as file: 
+                file.write(f"ALNS iteration {self.iterationNum} is new global best\n")
 
         return best_route_plan, current_route_plan, weight_score    
 
