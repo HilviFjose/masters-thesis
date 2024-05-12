@@ -69,8 +69,8 @@ construction_insertor = 2 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
 
-max_num_regret1 = 50
-max_num_regret2 = 100
+max_num_regret1 = 30
+max_num_regret2 = 60
 
 #Insertor som kan brukes en andel av gangene 
 fraction_repair_insertor = 1
