@@ -73,7 +73,7 @@ class ALNS:
         candidate_route_plan = d_operator(candidate_route_plan) 
 
         candidate_route_plan.updateObjective(self.iterationNum, iterations)
-        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy_parallel_"+str(parNum),d_operator.__name__)
+        #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy_parallel_"+str(parNum),d_operator.__name__)
 
         self.d_count[destroy] += 1
 
@@ -86,7 +86,7 @@ class ALNS:
         #end_time = time.perf_counter()
         #print("destroy used time", str(end_time - start_time))
         candidate_route_plan.updateObjective(self.iterationNum, iterations)
-        candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
+        #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
 
         weight_score, acceptedWithCriterion = self.update_weights(self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
@@ -104,12 +104,12 @@ class ALNS:
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
 
-            self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
+            #self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
             self.destruction_degree = self.random_numbers[self.iterationNum-1]
             
             if not doParalellDestroyRepair:
                 #Uten parallell
-                candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
+                candidate_route_plan, destroy, repair, acceptedWithCriterion = self.doIteration((candidate_route_plan, 1))
 
             else:
                 #Kjører paralelt. 
@@ -122,10 +122,10 @@ class ALNS:
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
                         candidate_route_plan, destroy, repair, acceptedWithCriterion = result
              
-            candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
+            #candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
-                print("Solution promising. Doing local search.")
+                #print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
                 
                 if not doParalellLocalSearch:
@@ -135,36 +135,24 @@ class ALNS:
                 else: 
                     #Med parallell 
                     results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, days+1) ], mp_config=self.mp_config, paralellNum=days)
-                    print("GJOR LOKALSØKET I PARALELL")
+                    #print("GJOR LOKALSØKET I PARALELL")
                     for day in range(1, days+1): 
                         candidate_route_plan.routes[day] = results[day-1].routes[day]
                     
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
                
                 
-            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
+            #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             
             
-            if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():
-                print(f" ALNS: Penalty in first objective: {candidate_route_plan.getOriginalObjective() - candidate_route_plan.objective[0]}. Original Objective: {candidate_route_plan.getOriginalObjective()}, Updated Objective: {candidate_route_plan.objective[0]} ")
+            #if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():
+                #print(f" ALNS: Penalty in first objective: {candidate_route_plan.getOriginalObjective() - candidate_route_plan.objective[0]}. Original Objective: {candidate_route_plan.getOriginalObjective()}, Updated Objective: {candidate_route_plan.objective[0]} ")
         
-            '''
-            Hvordan vil vi gjøre det her: 
-            I iterasjonene så vil vi oppdatere vektene. Det vil gjøres i evaluate candidate funskjonen. 
-            Lager en ny evauluate candidate som kommer til slutt etter at lokalsøket har kjørt. 
-
-            Evaluate paralell candidate, inne i doIteration funsjonen så vil vi kalle evaluate. 
-            Så gjør vi lokalsøket hvis den er innenfor en hvis mengdde. 
-
-            Etter det skal den settes til best hvis den er innenfor, eller 
-
-            Evaluate candidate gjør to ting samtidig. Den velger om den skal oppdateres. 
-            '''
             # Compare solutions
              #Her settes current, til å være det det skal være 
             self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan, acceptedWithCriterion)
         
-            candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
+            #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
             if (i+1)* self.iterations_update == 0:
@@ -183,7 +171,7 @@ class ALNS:
                     len(self.repair_operators), dtype=np.float16)
                 
         # Do local search to local optimum before returning last iteration
-        self.best_route_plan.printSolution("candidate_before_final_local_search", "ingen operator")
+        #self.best_route_plan.printSolution("candidate_before_final_local_search", "ingen operator")
         localsearch = LocalSearch(self.best_route_plan, iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
         self.best_route_plan = localsearch.do_local_search_to_local_optimum()
         self.best_route_plan.updateObjective(iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
@@ -260,15 +248,15 @@ class ALNS:
         return weight_score, acceptedWithCriterion
     
     def update_current_best(self, best_route_plan, current_route_plan, candidate_route_plan, acceptedWithCriterion):
-        if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
+        if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective) and candidate_route_plan.objective[0] == candidate_route_plan.getOriginalObjective():
             best_route_plan = copy.deepcopy(candidate_route_plan)
             current_route_plan = copy.deepcopy(candidate_route_plan)
 
             # Open the file for writing in the correct directory
             file_path = os.path.join(self.folder_path, "0config_info.txt")
             with open(file_path, "a") as file: 
-                file.write(f"ALNS iteration {self.iterationNum} is new global best\n")
-
+                file.write(f"ALNS iteration {self.iterationNum} is new global best, objective {best_route_plan.objective}\n")
+            
             return best_route_plan, current_route_plan
         
         if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective) or acceptedWithCriterion: 

@@ -1,7 +1,7 @@
 # INFUSION CASE
 # -------------------------
 # PATIENTS
-P_num = 50                                          # Number of patients
+P_num = 6                                          # Number of patients
 
 # Patient demographics
 clinicDistribution = [0.25, 0.57, 0.03, 0.15]       # Cancer, Medical, Orthopaedic, Paediatric
@@ -58,9 +58,10 @@ allocation = 0.15 # Percentage already allocated to AHH (Overwritten if P_num > 
 
 # EMPLOYEES
 # Number of employees
-E_num = 5
+E_num = 2
 E_generalists = 0.2 #Percentage of employees with profession level 1 and 2 that are generalists
-
+if E_num == 2: 
+    preferredEmployees = [1, 2, 0]
 # Profession Level 
 professionLevels = [1, 2, 3, 4]
 professionLevelsProb =  [0.1, 0.4311, 0.4689, 0] #index 0: level 1

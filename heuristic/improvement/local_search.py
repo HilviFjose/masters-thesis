@@ -83,7 +83,7 @@ class LocalSearch:
         for day in range(1, self.days + 1):
            candidate = self.change_employee(candidate, day)
 
-        candidate.printSolution("candidate_after_initial_local_search_after_change_empl", "ingen operator")
+        #candidate.printSolution("candidate_after_initial_local_search_after_change_empl", "ingen operator")
 
         
         # SWAP EMPLOYEE
@@ -92,7 +92,7 @@ class LocalSearch:
         for day in range(1, self.days + 1):
             candidate = self.swap_employee(candidate, day)
 
-        candidate.printSolution("candidate_after_initial_local_search_after_swap_empl", "ingen operator")
+        #candidate.printSolution("candidate_after_initial_local_search_after_swap_empl", "ingen operator")
 
         # MOVE ACTIVITY
         for day in range(1, self.days + 1):
@@ -106,7 +106,7 @@ class LocalSearch:
                 new_route = self.move_activity_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
 
-        candidate.printSolution("candidate_after_initial_local_search_after_ma", "ingen operator")
+        #candidate.printSolution("candidate_after_initial_local_search_after_ma", "ingen operator")
 
 
         # SWAP ACTIVITY 
@@ -121,7 +121,7 @@ class LocalSearch:
                 new_route = self.swap_activities_in_route(copy.deepcopy(candidate.routes[day][emplID]), candidate)
                 candidate.insertNewRouteOnDay(new_route, day)
         
-        candidate.printSolution("candidate_after_initial_local_search_after_sa", "ingen operator")
+        #candidate.printSolution("candidate_after_initial_local_search_after_sa", "ingen operator")
 
         return candidate
     

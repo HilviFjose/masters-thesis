@@ -13,22 +13,6 @@ class SimulatedAnnealing:
         self.end_temperature = self.start_temperature*rate_T_start_end
         self.temperature = self.start_temperature
 
-        '''
-        self.start_temperature = -sim_annealing_diff/math.log(prob_of_choosing)
-        self.end_temperature = self.start_temperature*rate_T_start_end
-        
-        self.temperature = self.start_temperature
-        
-        print("self.start_temperature", self.start_temperature)
-        print("self.end_temperature", self.end_temperature)
-        print("self.cooling_rate", self.cooling_rate)
-        
-        
-        self.start_temperature = start_temperature
-        self.end_temperature = end_temperature
-        self.cooling_rate = cooling_rate
-        self.temperature = start_temperature
-        '''
         
     # Simulated annealing acceptance criterion
     def accept_criterion(self, current_objective, candidate_objective):
@@ -36,7 +20,7 @@ class SimulatedAnnealing:
         # Always accept better solution
         if checkCandidateBetterThanBest(candidate_objective, current_objective):
             accept = True
-            print("Candidate is better than current and accepted")
+            #print("Candidate is better than current and accepted")
         
         # Sometimes accept worse
 
@@ -50,7 +34,7 @@ class SimulatedAnnealing:
                 deviation_diff = (candidate_objective[0] - current_objective[0])/current_objective[0]
                 probability = np.exp(-deviation_diff * self.temperature)
                 accept = (probability >= rnd.random())
-                print("Candidate not better. Accepted det solution?", accept)
+                #print("Candidate not better. Accepted det solution?", accept)
             else:
 
                 #Nå vet vi at første objektivet er likt som det første, vil da evaluere på de neste objektivene? 
@@ -61,7 +45,7 @@ class SimulatedAnnealing:
                         diff = (candidate_objective[i] - current_objective[i])/current_objective[i]
                         probability = np.exp(-diff * self.temperature)
                         accept = (probability >= rnd.random())
-                        print("Candidate not better. Accepted det solution?", accept)
+                        #print("Candidate not better. Accepted det solution?", accept)
                         break
     
         # Should not set a temperature that is lower than the end temperature.

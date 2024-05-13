@@ -55,7 +55,7 @@ def main():
         file.write(content)
     
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
-    print("Constructing Initial Solution")
+    #print("Constructing Initial Solution")
     '''
     #CONSTRUCTION HEURISTIC NORMA
     constructor.construct_initial()
@@ -70,10 +70,10 @@ def main():
     constructor.route_plan.printSolution("initial", "ingen operator")
 
     initial_route_plan = constructor.route_plan 
-    print('Allocated patients in initial solution',len(constructor.route_plan.allocatedPatients.keys()))
-    print('First objective in initial solution',constructor.route_plan.objective)
-    if constructor.route_plan.objective[0] != constructor.route_plan.getOriginalObjective():
-        print(f" Construction: Penalty in first objective: {constructor.route_plan.getOriginalObjective() - constructor.route_plan.objective[0]}. Original Objective: {constructor.route_plan.getOriginalObjective()}, Updated Objective: {constructor.route_plan.objective[0]} ")
+    #print('Allocated patients in initial solution',len(constructor.route_plan.allocatedPatients.keys()))
+    #print('First objective in initial solution',constructor.route_plan.objective)
+    #if constructor.route_plan.objective[0] != constructor.route_plan.getOriginalObjective():
+        #print(f" Construction: Penalty in first objective: {constructor.route_plan.getOriginalObjective() - constructor.route_plan.objective[0]}. Original Objective: {constructor.route_plan.getOriginalObjective()}, Updated Objective: {constructor.route_plan.objective[0]} ")
         
 
     #IMPROVEMENT OF INITAL SOLUTION 
@@ -85,7 +85,7 @@ def main():
     localsearch = LocalSearch(initial_route_plan, 1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan = localsearch.do_local_search()
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
-    initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
+    #initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
     '''
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
@@ -407,11 +407,12 @@ def find_best_trial_lexicographically(study):
             if best_trial is None or is_better(trial.values, best_trial.values):
                 best_trial = trial
                 found_better = True
-
+    '''
     if best_trial and not found_better:
         print("Alle trials har like verdier.")
     else: 
         print('Best trial', best_trial.number)
+    '''
     
     return best_trial    
         
