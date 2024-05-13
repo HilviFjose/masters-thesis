@@ -253,7 +253,7 @@ def visitsGenerator(df_treatments):
 
 def activitiesGenerator(df_visits):
     df_activities = pd.DataFrame(columns=['activityId', 'patientId', 'activityType','numActivitiesInVisit','earliestStartTime', 'latestStartTime', 
-                                          'duration', 'synchronisation', 'skillRequirement', 'clinic', 'specialisationPreferred', 'nextPrece', 'prevPrece', 
+                                          'duration', 'synchronisation', 'skillRequirement', 'clinic', 'specialisationPreferred', 'exactPrece','nextPrece', 'prevPrece', 
                                           'sameEmployeeActivityId', 'visitId', 'treatmentId', 'location', 'therapy'])
 
     # Generate rows for each activity with the visitId, treatmentId and patientId
@@ -301,6 +301,9 @@ def activitiesGenerator(df_visits):
             df_activities.loc[df_activities['activityId'] == activity_ids[2], 'prevPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[0]}: {pd_time}"
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'nextPrece'] = f"{activity_ids[-2]}: {pd_time}, {activity_ids[-1]}: {pd_time}"    # Pick-up and delivery at the end
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'nextPrece'] = f"{activity_ids[-1]}: {pd_time}"                                   # Pick-up and delivery at the end
+            #Precedence for exact model:
+            df_activities.loc[df_activities['activityId'] == activity_ids[0], 'exactPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time}"    # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[1], 'exactPrece'] = f"{activity_ids[-1]}"                                   # Pick-up and delivery at the end
             
             # Same Employee Requirement for pick-up and delivery activities
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'sameEmployeeActivityId'] = activity_ids[2]          # Start of the visit
@@ -340,7 +343,10 @@ def activitiesGenerator(df_visits):
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'nextPrece'] = f"{activity_ids[2]}: {pd_time1}, {activity_ids[3]}, {activity_ids[4]}"                                           # Pick-up and delivery at the start
             df_activities.loc[df_activities['activityId'] == activity_ids[-3], 'nextPrece'] = f"{activity_ids[-2]}: {pd_time2}, {activity_ids[-1]}: {pd_time2}"    # Pick-up and delivery at the end
             df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'nextPrece'] = f"{activity_ids[-1]}: {pd_time2}"                                         # Pick-up and delivery at the end
-
+            #Precedence for exact model
+            df_activities.loc[df_activities['activityId'] == activity_ids[-3], 'exactPrece'] = f"{activity_ids[-2]}, {activity_ids[-1]}: {pd_time2}"    # Pick-up and delivery at the end
+            df_activities.loc[df_activities['activityId'] == activity_ids[-2], 'exactPrece'] = f"{activity_ids[-1]}"                                         # Pick-up and delivery at the end
+            
             # Same Employee Requirement for åick-up and delivery activities 
             df_activities.loc[df_activities['activityId'] == activity_ids[0], 'sameEmployeeActivityId'] = activity_ids[1]      # The two first activities 
             df_activities.loc[df_activities['activityId'] == activity_ids[1], 'sameEmployeeActivityId'] = activity_ids[0]

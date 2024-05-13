@@ -1,7 +1,7 @@
 # ANTIBIOTICS INFUSION CASE
 # -------------------------
 # PATIENTS
-P_num = 15                                          # Number of patients
+P_num = 8                                          # Number of patients
 
 # Patient demographics
 clinicDistribution = [0.12, 0.64, 0.09, 0.15]         # Cancer, Medical, Orthopaedic, Paediatric
@@ -32,8 +32,11 @@ heavinessDistribution = [0.5, 0.5, 0]
 
 # EMPLOYEES
 # Number of employees
-E_num = 3
+E_num = 2
 E_generalists = 0.2 #Percentage of employees with profession level 1 and 2 that are generalists
+
+if E_num == 2:
+    preferredEmployees = [1,2,0]
 
 # Profession Level 
 professionLevels = [1, 2, 3, 4]
