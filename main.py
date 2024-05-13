@@ -1,4 +1,4 @@
-#import pandas as pd
+import pandas as pd
 #import numpy.random as rnd
 import os
 #import sys
@@ -86,7 +86,7 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    
+    '''
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
 
@@ -98,12 +98,13 @@ def main():
     '''
 
     #RUN OPTUNA
+    
     #DESTRUCTION DEGREE
     search_space = {'destruction_degree': [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
     #study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
-    objective_func = partial(objective_destruction_degree, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config)
+    objective_func = partial(objective_destruction_degree, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path)
     study_destruction_degree.optimize(objective_func)
     #study_destruction_degree.optimize(objective_func, n_trials=5)
     
@@ -118,7 +119,7 @@ def main():
     search_space = {'weight_score_best': list(range(10, 16))}
     sampler = optuna.samplers.GridSampler(search_space)
     study_weight_score_best = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
-    objective_func = partial(objective_weight_score_best, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+    objective_func = partial(objective_weight_score_best, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
                              destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned)
     study_weight_score_best.optimize(objective_func)    
 
@@ -131,7 +132,7 @@ def main():
     search_space = {'weight_score_better': list(range(1, 11))}  
     sampler = optuna.samplers.GridSampler(search_space)
     study_weight_score_better = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
-    objective_func = partial(objective_weight_score_better, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+    objective_func = partial(objective_weight_score_better, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
                              destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
                              weight_score_best_tuned=weight_score_best_tuned)
     study_weight_score_better.optimize(objective_func)    
@@ -145,7 +146,7 @@ def main():
     search_space = {'weight_score_accepted': list(range(1, 11))}  
     sampler = optuna.samplers.GridSampler(search_space)
     study_weight_score_accepted = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
-    objective_func = partial(objective_weight_score_accepted, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+    objective_func = partial(objective_weight_score_accepted, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
                              destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
                              weight_score_better_tuned=weight_score_better_tuned, weight_score_best_tuned=weight_score_best_tuned)
     study_weight_score_accepted.optimize(objective_func)    
@@ -159,7 +160,7 @@ def main():
     search_space = {'reaction_factor': [0.4, 0.5, 0.6, 0.7, 0.8]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_reaction_factor = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'],sampler=sampler)
-    objective_func = partial(objective_reaction_factor, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+    objective_func = partial(objective_reaction_factor, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
                              destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
                              weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned)
     study_reaction_factor.optimize(objective_func)
@@ -167,12 +168,13 @@ def main():
     write_trials_to_csv(study_reaction_factor, folder_name, 'reaction_factor')
     best_trial_reaction_factor = find_best_trial_lexicographically(study_reaction_factor)
     reaction_factor_tuned = best_trial_reaction_factor.params['reaction_factor']
-
+    
     #NUMBER OF ITERATION FOR UPDATING WEIGHTS
-    search_space = {'iterations_update': [0.1, 0.2, 0.3, 0.4, 0.5]}
+    search_space = {'iterations_update': [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'],sampler=sampler)
-    objective_func = partial(objective_iterations_update, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+    study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
+    objective_func = partial(objective_iterations_update, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
                              destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
                              weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned,
                              reaction_factor_tuned=reaction_factor_tuned)
@@ -181,12 +183,12 @@ def main():
     write_trials_to_csv(study_iterations_update, folder_name, 'iterations_update')
     best_trial_iterations_update = find_best_trial_lexicographically(study_iterations_update)
     iterations_update_tuned = best_trial_iterations_update.params['iterations_update']
-
+    
     #LOCAL SEARCH REQUIREMENT
     search_space = {'local_search_req': [0.01, 0.02, 0.03, 0.04, 0.05]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_local_search = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
-    objective_func = partial(objective_local_search, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config,
+    objective_func = partial(objective_local_search, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
                              destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
                              weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned,
                              reaction_factor_tuned=reaction_factor_tuned, iterations_update_tuned=iterations_update_tuned)
@@ -203,7 +205,7 @@ def main():
     print(f'reaction_factor {reaction_factor_tuned}') 
     print(f'iterations_update {iterations_update_tuned}')
     print(f'local_search_req {local_search_tuned}')
-    '''
+    
          
 '''KOMPLETT KRYSSTUNING
 def objective(trial, route_plan, criterion, constructor, mp_config, folder_path):
@@ -235,7 +237,8 @@ def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_c
 
     return route_plan.objective
 
-def objective_weight_score_best(trial, route_plan, criterion, constructor, mp_config, folder_path, destruction_degree_low_tuned, destruction_degree_high_tuned):
+def objective_weight_score_best(trial, route_plan, criterion, constructor, mp_config, folder_path, 
+                                destruction_degree_low_tuned, destruction_degree_high_tuned):
     # Suggesting parameters
     weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
     
@@ -246,7 +249,9 @@ def objective_weight_score_best(trial, route_plan, criterion, constructor, mp_co
 
     return route_plan.objective
 
-def objective_weight_score_better(trial, route_plan, criterion, constructor, mp_config, folder_path, destruction_degree_low_tuned, destruction_degree_high_tuned, weight_score_best_tuned):
+def objective_weight_score_better(trial, route_plan, criterion, constructor, mp_config, folder_path, 
+                                  destruction_degree_low_tuned, destruction_degree_high_tuned, 
+                                  weight_score_best_tuned):
     # Suggesting parameters
     weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
     
@@ -257,13 +262,15 @@ def objective_weight_score_better(trial, route_plan, criterion, constructor, mp_
 
     return route_plan.objective
 
-def objective_weight_score_accepted(trial, route_plan, criterion, constructor, mp_config, destruction_degree_low_tuned, destruction_degree_high_tuned, weight_score_best_tuned, weight_score_better_tuned):
+def objective_weight_score_accepted(trial, route_plan, criterion, constructor, mp_config, folder_path, 
+                                    destruction_degree_low_tuned, destruction_degree_high_tuned, 
+                                    weight_score_best_tuned, weight_score_better_tuned):
     # Suggesting parameters
     weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
     
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_interval, weight_score_bad, weight_score_best_tuned,
-                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective
@@ -281,16 +288,16 @@ def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_conf
 
     return route_plan.objective
 
-def objective_iterations_update(trial, route_plan, criterion, constructor, mp_config, 
+def objective_iterations_update(trial, route_plan, criterion, constructor, mp_config, folder_path,
               destruction_degree_low_tuned, destruction_degree_high_tuned, 
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned,
               reaction_factor_tuned):
     # Suggesting parameters
-    iterations_update_interval = trial.suggest_categorical('iterations_update', [0.1, 0.2, 0.3, 0.4, 0.5])
+    iterations_update_interval = trial.suggest_categorical('iterations_update', [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
-                    reaction_factor_tuned, local_search_req_default, iterations_update_interval, route_plan, criterion, constructor, mp_config)
+                    reaction_factor_tuned, local_search_req_default, iterations_update_interval, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
     return route_plan.objective

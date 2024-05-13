@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
-num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
 reaction_factor_default = 0.7
@@ -52,11 +52,10 @@ penalty_visit = 5           # Penalty per illegal visit
 penalty_act = 3             # Penalty per illegal activity 
 
 # Weights for objectives
-#weight_C = 0.0              # Max continuity of care
-weight_DW = 0.3             # Balance daily workload
-weight_WW = 0.3             # Balance weekly workload
-weight_S = 0.2              # Min skill difference
-weight_SG = 0.2             # Balance specialist/generalist
+weight_DW = 1             # Balance daily workload
+weight_WW = 1             # Balance weekly workload
+weight_S = 1/3              # Min skill difference
+weight_SG = 1             # Balance specialist/generalist
 
 #Planning period
 days = 5
@@ -65,12 +64,12 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Insertor choises [0,1,2, 3, 4] for [simple, better with max reg1, better with max regret2, better, best ]
-construction_insertor = 2 #W
+construction_insertor = 1 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
 
-max_num_regret1 = 50
-max_num_regret2 = 100
+max_num_regret1 = 60
+max_num_regret2 = 80
 
 #Insertor som kan brukes en andel av gangene 
 fraction_repair_insertor = 1
