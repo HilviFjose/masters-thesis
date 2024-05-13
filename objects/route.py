@@ -153,7 +153,7 @@ class Route:
             i = j 
             self.aggSkillDiff += self.employee.skillLevel - act.skillReq
             self.suitability += act.suitability
-            if act.prefSpes != None and act.prefSpes != self.employee.clinic: 
+            if isinstance(act.prefSpes, int) and act.prefSpes != self.employee.clinic: 
                 self.deviationPrefSpes += 1
         self.travel_time += T_ij[i][0]
    

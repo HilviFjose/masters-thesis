@@ -241,7 +241,7 @@ class RoutePlan:
             #self.updateObjective()
             print("operator brukt:", operator_string)
             print("updated objective ", self.objective)
-            print("objective 3 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes]", [self.weeklyHeaviness, self.dailyHeaviness,self.aggSkillDiff , self.aggDeviationPrefSpes])
+            print("objective 2 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes]", [self.weeklyHeaviness, self.dailyHeaviness,self.aggSkillDiff , self.aggDeviationPrefSpes])
             print("primary objective without penalty ", self.getOriginalObjective())
             print("visits", self.visits)
             print("treatments", self.treatments)
@@ -375,8 +375,8 @@ class RoutePlan:
                 self.aggSkillDiff += route.aggSkillDiff 
                 self.aggDeviationPrefSpes += route.deviationPrefSpes
                 self.objective[3] += route.travel_time   
-        self.objective[1] = self.totalContinuity 
-        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
+        self.objective[2] = self.totalContinuity 
+        self.objective[1] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 

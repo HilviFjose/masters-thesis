@@ -88,16 +88,21 @@ class ALNS:
         candidate_route_plan.updateObjective(self.iterationNum, iterations)
         candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
-        return candidate_route_plan, destroy, repair
+
+        weight_score, acceptedWithCriterion = self.update_weights(self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
+       
+        # Update scores
+        self.d_scores[destroy] += weight_score
+        self.r_scores[repair] += weight_score
+
+        return candidate_route_plan, destroy, repair, acceptedWithCriterion
 
         
     def iterate(self, num_iterations):
-        found_solutions = {}
         
         for i in tqdm(range(num_iterations), colour='#39ff14'):
             self.iterationNum += 1
             candidate_route_plan = copy.deepcopy(self.current_route_plan)
-            already_found = False
 
             self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
             self.destruction_degree = self.random_numbers[self.iterationNum-1]
@@ -112,17 +117,14 @@ class ALNS:
                 jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
                 
                 results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
-                candidate_route_plan, destroy, repair = results[0]
+                candidate_route_plan, destroy, repair, acceptedWithCriterion = results[0]
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
-                        candidate_route_plan, destroy, repair = result
+                        candidate_route_plan, destroy, repair, acceptedWithCriterion = result
              
-            
-
             candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
-                start_time = time.perf_counter()
                 print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
                 
@@ -138,28 +140,30 @@ class ALNS:
                         candidate_route_plan.routes[day] = results[day-1].routes[day]
                     
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
-                end_time = time.perf_counter()
-                print("Lokalsøket bruker", str(end_time -start_time))
+               
                 
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
-            #TODO: Skal final candiate printes lenger nede? 
+            
+            
             if candidate_route_plan.objective[0] != candidate_route_plan.getOriginalObjective():
                 print(f" ALNS: Penalty in first objective: {candidate_route_plan.getOriginalObjective() - candidate_route_plan.objective[0]}. Original Objective: {candidate_route_plan.getOriginalObjective()}, Updated Objective: {candidate_route_plan.objective[0]} ")
         
-            # Konverterer til hexa-string for å sjekke om vi har samme løsning. Evaluerer og scores oppdateres kun hvis vi har en løsning som ikke er funnet før
-            if hash(str(candidate_route_plan)) == hash(str(self.current_route_plan)) and hash(str(candidate_route_plan)) in found_solutions.keys():
-                already_found = True
-            else:
-                found_solutions[hash(str(self.current_route_plan))] = 1
+            '''
+            Hvordan vil vi gjøre det her: 
+            I iterasjonene så vil vi oppdatere vektene. Det vil gjøres i evaluate candidate funskjonen. 
+            Lager en ny evauluate candidate som kommer til slutt etter at lokalsøket har kjørt. 
 
-            if not already_found:
-                # Compare solutions
-                self.best_route_plan, self.current_route_plan, weight_score = self.evaluate_candidate(
-                    self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
-                # Update scores
-                self.d_scores[destroy] += weight_score
-                self.r_scores[repair] += weight_score
-            
+            Evaluate paralell candidate, inne i doIteration funsjonen så vil vi kalle evaluate. 
+            Så gjør vi lokalsøket hvis den er innenfor en hvis mengdde. 
+
+            Etter det skal den settes til best hvis den er innenfor, eller 
+
+            Evaluate candidate gjør to ting samtidig. Den velger om den skal oppdateres. 
+            '''
+            # Compare solutions
+             #Her settes current, til å være det det skal være 
+            self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan, acceptedWithCriterion)
+        
             candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
@@ -232,7 +236,47 @@ class ALNS:
         a = [i for i in range(len(operators))]
         return np.random.choice(a=a, p=w)
 
+
+    #
+    def update_weights(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
+        acceptedWithCriterion = False
+        if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
+            if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
+                # Solution is better
+                weight_score = self.weight_score_better
+            else:
+                # Solution is not better, but accepted
+                weight_score = self.weight_score_accepted
+                #Sjekker om løsningen blir godkjent som følge av acceptancecriteria
+                acceptedWithCriterion = True
+        else:
+            # Solution is rejected
+            weight_score = self.weight_score_bad
+
+        # Check if solution is new global best
+        if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
+            weight_score = self.weight_score_best 
+
+        return weight_score, acceptedWithCriterion
     
+    def update_current_best(self, best_route_plan, current_route_plan, candidate_route_plan, acceptedWithCriterion):
+        if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
+            best_route_plan = copy.deepcopy(candidate_route_plan)
+            current_route_plan = copy.deepcopy(candidate_route_plan)
+
+            # Open the file for writing in the correct directory
+            file_path = os.path.join(self.folder_path, "0config_info.txt")
+            with open(file_path, "a") as file: 
+                file.write(f"ALNS iteration {self.iterationNum} is new global best\n")
+
+            return best_route_plan, current_route_plan
+        
+        if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective) or acceptedWithCriterion: 
+            current_route_plan = copy.deepcopy(candidate_route_plan)
+
+        return best_route_plan, current_route_plan
+
+    '''
     # Evaluate candidate
     def evaluate_candidate(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
         # If solution is accepted by criterion (simulated annealing)
@@ -261,5 +305,5 @@ class ALNS:
                 file.write(f"ALNS iteration {self.iterationNum} is new global best\n")
 
         return best_route_plan, current_route_plan, weight_score    
-
+    '''
     
