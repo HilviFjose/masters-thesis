@@ -5,10 +5,10 @@ import math
 num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Iterations in ALNS
-iterations = 400
+iterations = 100
 
 #Number of paralell processes 
-num_of_paralell_iterations = 3
+num_of_paralell_iterations = 10
 
 #Boolean for paralell 
 doParalellLocalSearch = True
@@ -23,8 +23,8 @@ max_num_regret1 = 60
 max_num_regret2 = 80
 
 #Insertor som kan brukes en andel av gangene 
-fraction_repair_insertor = 1
-frequecy_of_fraction_insertion = 0.01
+fraction_repair_insertor = 2
+frequecy_of_fraction_insertion = 0.05
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
