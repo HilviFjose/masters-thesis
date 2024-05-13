@@ -65,16 +65,16 @@ days = 5
 depot = (59.9365, 10.7396)
 
 #Insertor choises [0,1,2, 3, 4] for [simple, better with max reg1, better with max regret2, better, best ]
-construction_insertor = 2 #W
+construction_insertor = 1 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
 
-max_num_regret1 = 50
-max_num_regret2 = 100
+max_num_regret1 = 60
+max_num_regret2 = 80
 
 #Insertor som kan brukes en andel av gangene 
-fraction_repair_insertor = 1
-frequecy_of_fraction_insertion = 0.01
+fraction_repair_insertor = 2
+frequecy_of_fraction_insertion = 0.05
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
 
