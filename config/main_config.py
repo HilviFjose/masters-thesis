@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
-num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
 reaction_factor_default = 0.7
