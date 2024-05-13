@@ -8,7 +8,7 @@ num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hv
 reaction_factor_default = 0.7
 
 # Iterations in ALNS
-iterations = 400
+iterations = 50
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
 local_search_req_default = 0.02
@@ -26,7 +26,7 @@ destruction_degree_low_default = 0.15
 #end_temperature = 10
 #cooling_rate = 0.96
 
-sim_annealing_diff = 0.05
+deviation_from_best = 0.05
 prob_of_choosing = 0.5 
 rate_T_start_end = 0.2 
 
@@ -72,13 +72,13 @@ max_num_regret1 = 60
 max_num_regret2 = 80
 
 #Insertor som kan brukes en andel av gangene 
-fraction_repair_insertor = 1
-frequecy_of_fraction_insertion = 0.01
+fraction_repair_insertor = 2
+frequecy_of_fraction_insertion = 0.05
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
 
 #Number of paralell processes 
-num_of_paralell_iterations = 3
+num_of_paralell_iterations = 1
 
 #Boolean for paralell 
 doParalellLocalSearch = True

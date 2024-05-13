@@ -78,7 +78,7 @@ def main():
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
     #criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
-    criterion = SimulatedAnnealing(sim_annealing_diff, prob_of_choosing, rate_T_start_end)
+    criterion = SimulatedAnnealing(deviation_from_best, prob_of_choosing, rate_T_start_end)
 
     #TODO: Gjøre parellelt lokalsøk på denne også 
     localsearch = LocalSearch(initial_route_plan, 1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
