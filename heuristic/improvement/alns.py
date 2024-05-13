@@ -109,7 +109,7 @@ class ALNS:
             
             if not doParalellDestroyRepair:
                 #Uten parallell
-                candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
+                candidate_route_plan, destroy, repair, acceptedWithCriterion = self.doIteration((candidate_route_plan, 1))
 
             else:
                 #Kjører paralelt. 
@@ -260,7 +260,7 @@ class ALNS:
         return weight_score, acceptedWithCriterion
     
     def update_current_best(self, best_route_plan, current_route_plan, candidate_route_plan, acceptedWithCriterion):
-        if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
+        if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective) and candidate_route_plan.objective[0] == candidate_route_plan.getOriginalObjective():
             best_route_plan = copy.deepcopy(candidate_route_plan)
             current_route_plan = copy.deepcopy(candidate_route_plan)
 
