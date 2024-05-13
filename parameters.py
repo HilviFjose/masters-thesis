@@ -8,7 +8,7 @@ generate_new_data = False
 folder_name = 'data'
 
 if antibiotics_data:
-    print("ANTIBIOTICS DATA")
+    #print("ANTIBIOTICS DATA")
     from datageneration.employeeGenerationAntibiotics import *
     from datageneration.patientGenerationAntibiotics import *
     from config.construction_config_antibiotics import *
@@ -16,7 +16,7 @@ if antibiotics_data:
 else: 
     #TODO: Complexity er ikke dobbeltsjekket i infusion casen, så dobbelt sjekk at denne gir comlexity verdier som virker troverdige
     #INFUSION THERAPY CASE
-    print("INFUSION DATA")
+    #print("INFUSION DATA")
     from datageneration.employeeGenerationInfusion import *
     from datageneration.patientGenerationInfusion import *
     from config.construction_config_infusion import *

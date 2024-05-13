@@ -76,18 +76,18 @@ def setup(t0: float, tn: float, tj: float) -> dict:
     Returns:
         dict: Configuration that can be passed as mp_config
     """
-    print()
-    print('Using multiprocessing')
+    #print()
+    #print('Using multiprocessing')
     max_processes = mp.cpu_count()
-    print('Multiprocess configuration:')
-    print('Number of processes:'.ljust(30) + str(max_processes).rjust(10))
+    #print('Multiprocess configuration:')
+    #print('Number of processes:'.ljust(30) + str(max_processes).rjust(10))
     if not (mp.get_start_method() == 'spawn'):
         try:
             mp.set_start_method('spawn')
         except RuntimeError:
             pass
-    print('Multiprocessing start method:'.ljust(30) + str(mp.get_start_method()).rjust(10))
-    print()
+    #print('Multiprocessing start method:'.ljust(30) + str(mp.get_start_method()).rjust(10))
+    #print()
     return {
             "t0": t0,
             "tn": tn,
