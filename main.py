@@ -3,6 +3,7 @@ import pandas as pd
 import os
 #import sys
 from datetime import datetime
+import time
 
 import parameters
 from config.main_config import *
@@ -100,7 +101,7 @@ def main():
     #RUN OPTUNA
     
     #DESTRUCTION DEGREE
-    search_space = {'destruction_degree': [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]]}
+    search_space = {'destruction_degree': [[0.05, 0.15], [0.05, 0.30], [0.15, 0.30], [0.15, 0.5], [0.3, 0.5]]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
     #study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
@@ -115,6 +116,19 @@ def main():
     print("DESTRUCTION DEGREE - Number of finished trials: ", len(study_destruction_degree.trials))
     print('destruction_degree_tuned', destruction_degree_tuned)
 
+    #WEIGHT SCORES
+    search_space = {'weight_scores': [[5, 10, 15], [5, 15, 25], [5, 15, 35]]}
+    sampler = optuna.samplers.GridSampler(search_space)
+    study_weight_scores = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
+    objective_func = partial(objective_weight_scores, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
+                             destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned)
+    study_weight_scores.optimize(objective_func)    
+
+    write_trials_to_csv(study_weight_scores, folder_name, 'weight_scores')
+    best_trial_weight_scores = find_best_trial_lexicographically(study_weight_scores)
+    weight_score_best_tuned, weight_score_better_tuned, weight_score_accepted_tuned = best_trial_weight_scores.params['weight_scores']
+    print(f'weight score best {weight_score_best_tuned}, better {weight_score_better_tuned}, accepted {weight_score_accepted_tuned}')
+    '''
     #WEIGHT SCORE BEST
     search_space = {'weight_score_best': list(range(10, 16))}
     sampler = optuna.samplers.GridSampler(search_space)
@@ -155,7 +169,7 @@ def main():
     best_trial_weight_score_accepted = find_best_trial_lexicographically(study_weight_score_accepted)
     weight_score_accepted_tuned = best_trial_weight_score_accepted.params['weight_score_accepted']
     print(f'weight scores bad but accepted {weight_score_accepted_tuned}')
-
+    '''
     #REACTION FACTOR AND NUMBER OF ITERATION FOR UPDATING WEIGHTS
     search_space = {'reaction_factor': [0.4, 0.5, 0.6, 0.7, 0.8]}
     sampler = optuna.samplers.GridSampler(search_space)
@@ -227,18 +241,41 @@ def objective(trial, route_plan, criterion, constructor, mp_config, folder_path)
 '''
 
 def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_config, folder_path):
+    start_time = time.time()  
     # Suggesting parameters
-    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [[0.05, 0.15], [0.15, 0.30], [0.05, 0.30], [0.15, 0.5], [0.3, 0.5]])
+    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [[0.05, 0.15], [0.05, 0.30], [0.15, 0.30], [0.15, 0.5], [0.3, 0.5]])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low, destruction_degree_high], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default,
                     reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
+
     return route_plan.objective
 
+def objective_weight_scores(trial, route_plan, criterion, constructor, mp_config, folder_path, 
+                                destruction_degree_low_tuned, destruction_degree_high_tuned):
+    start_time = time.time()  
+    # Suggesting parameters
+    weight_score_best_interval, weight_score_better_interval, weight_score_accepted_interval = trial.suggest_categorical('weight_scores', [[5, 10, 15], [5, 15, 25], [5, 15, 35]])
+
+    # Configure and run ALNS
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval,
+                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
+    route_plan = alns.iterate(iterations)
+
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
+
+    return route_plan.objective
+'''
 def objective_weight_score_best(trial, route_plan, criterion, constructor, mp_config, folder_path, 
                                 destruction_degree_low_tuned, destruction_degree_high_tuned):
+    start_time = time.time()  
     # Suggesting parameters
     weight_score_best_interval = trial.suggest_int('weight_score_best', 10, 15,  step=1)
     
@@ -247,11 +284,16 @@ def objective_weight_score_best(trial, route_plan, criterion, constructor, mp_co
                     reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
+    
     return route_plan.objective
 
 def objective_weight_score_better(trial, route_plan, criterion, constructor, mp_config, folder_path, 
                                   destruction_degree_low_tuned, destruction_degree_high_tuned, 
                                   weight_score_best_tuned):
+    start_time = time.time()  
     # Suggesting parameters
     weight_score_better_interval = trial.suggest_int('weight_score_better', 1, 10, step=1)
     
@@ -260,11 +302,16 @@ def objective_weight_score_better(trial, route_plan, criterion, constructor, mp_
                     reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
+
     return route_plan.objective
 
 def objective_weight_score_accepted(trial, route_plan, criterion, constructor, mp_config, folder_path, 
                                     destruction_degree_low_tuned, destruction_degree_high_tuned, 
                                     weight_score_best_tuned, weight_score_better_tuned):
+    start_time = time.time()      
     # Suggesting parameters
     weight_score_accepted_interval = trial.suggest_int('weight_score_accepted', 1, 10, step=1)
     
@@ -273,11 +320,17 @@ def objective_weight_score_accepted(trial, route_plan, criterion, constructor, m
                     reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
+    
     return route_plan.objective
+'''
 
 def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_config, folder_path, 
               destruction_degree_low_tuned, destruction_degree_high_tuned, 
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned):
+    start_time = time.time()  
     # Suggesting parameters
     reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.4, 0.5, 0.6, 0.7, 0.8])
 
@@ -286,12 +339,17 @@ def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_conf
                     reaction_factor_interval, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
+    
     return route_plan.objective
 
 def objective_iterations_update(trial, route_plan, criterion, constructor, mp_config, folder_path,
               destruction_degree_low_tuned, destruction_degree_high_tuned, 
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned,
               reaction_factor_tuned):
+    start_time = time.time()  
     # Suggesting parameters
     iterations_update_interval = trial.suggest_categorical('iterations_update', [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5])
 
@@ -300,12 +358,17 @@ def objective_iterations_update(trial, route_plan, criterion, constructor, mp_co
                     reaction_factor_tuned, local_search_req_default, iterations_update_interval, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
 
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
+    
     return route_plan.objective
 
 def objective_local_search(trial, route_plan, criterion, constructor, mp_config, folder_path, 
               destruction_degree_low_tuned, destruction_degree_high_tuned, 
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned, 
               reaction_factor_tuned, iterations_update_tuned):
+    start_time = time.time()  
     # Suggesting parameters
     local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.02, 0.03, 0.04, 0.05])
 
@@ -313,6 +376,10 @@ def objective_local_search(trial, route_plan, criterion, constructor, mp_config,
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
                     reaction_factor_tuned, local_search_req_interval, iterations_update_tuned, route_plan, criterion, constructor, mp_config, folder_path)
     route_plan = alns.iterate(iterations)
+
+    end_time = time.time()
+    duration = end_time - start_time
+    trial.set_user_attr('duration', duration)
 
     return route_plan.objective
 
@@ -348,7 +415,7 @@ def find_best_trial_lexicographically(study):
     
     return best_trial    
         
-def write_trials_to_csv(study, folder_name, tuning_parameters):
+'''def write_trials_to_csv(study, folder_name, tuning_parameters):
     # Ensure directory exists
     results_dir = os.path.join('results', folder_name, tuning_parameters)
     os.makedirs(results_dir, exist_ok=True)
@@ -376,6 +443,45 @@ def write_trials_to_csv(study, folder_name, tuning_parameters):
     df.sort_values(by=["First Objective", "Second Objective", "Third Objective", "Fourth Objective"], ascending=[False, True, True, True], inplace=True)
     csv_file_path = os.path.join(results_dir, "trials_data.csv")
     df.to_csv(csv_file_path, index=False)
+    '''
+
+def write_trials_to_csv(study, folder_name, tuning_parameters):
+    # Ensure the results directory exists
+    results_dir = os.path.join('results', folder_name, tuning_parameters)
+    os.makedirs(results_dir, exist_ok=True)
+
+    # Collect data for DataFrame
+    data = []
+    for trial in study.trials:
+        # Format parameters as a string for display
+        params_str = ', '.join([f"{k}: {v}" for k, v in trial.params.items()])
+        duration_seconds = trial.user_attrs.get('duration', 0)  # Retrieve the duration from user attributes, default to 0 if not found
+        duration_seconds = round(duration_seconds)
+        
+        # Convert duration to minutes and hours
+        duration_minutes = round(duration_seconds / 60, 2)
+        duration_hours = round(duration_seconds / 3600, 4)
+
+        row = {
+            "Trial Number": trial.number,
+            "First Objective": trial.values[0] if trial.values else 'None',
+            "Second Objective": trial.values[1] if len(trial.values) > 1 else 'None',
+            "Third Objective": trial.values[2] if len(trial.values) > 2 else 'None',
+            "Fourth Objective": trial.values[3] if len(trial.values) > 3 else 'None',
+            "Parameters": params_str,
+            "Duration (seconds)": duration_seconds,
+            "Duration (minutes)": duration_minutes,
+            "Duration (hours)": duration_hours
+        }
+        data.append(row)
+        
+    # Create DataFrame from collected data
+    df = pd.DataFrame(data)
+    df.sort_values(by=["First Objective", "Second Objective", "Third Objective", "Fourth Objective"], 
+                   ascending=[False, True, True, True], inplace=True)
+    csv_file_path = os.path.join(results_dir, "trials_data.csv")
+    df.to_csv(csv_file_path, index=False)
+
 
 def write_trials_to_file(study, folder_name, tuning_parameters):
     # Ensure directory exists
