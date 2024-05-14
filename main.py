@@ -181,7 +181,7 @@ def main():
 def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_config, folder_path):
     start_time = time.time()  
     # Suggesting parameters
-    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', ((0.05, 0.15), (0.05, 0.30), (0.15, 0.30), (0.15, 0.5), (0.3, 0.5)))
+    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [(0.05, 0.15), (0.05, 0.30), (0.15, 0.30), (0.15, 0.5), (0.3, 0.5)])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low, destruction_degree_high], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default,
@@ -198,7 +198,7 @@ def objective_weight_scores(trial, route_plan, criterion, constructor, mp_config
                                 destruction_degree_low_tuned, destruction_degree_high_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    weight_score_best_interval, weight_score_better_interval, weight_score_accepted_interval = trial.suggest_categorical('weight_scores', ((5, 10, 15), (5, 15, 25), (5, 15, 35)))
+    weight_score_best_interval, weight_score_better_interval, weight_score_accepted_interval = trial.suggest_categorical('weight_scores', [(5, 10, 15), (5, 15, 25), (5, 15, 35)])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval,
@@ -216,7 +216,7 @@ def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_conf
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    reaction_factor_interval = trial.suggest_categorical('reaction_factor', (0.1, 0.25, 0.5, 0.75, 1))
+    reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.1, 0.25, 0.5, 0.75, 1])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
@@ -235,7 +235,7 @@ def objective_iterations_update(trial, route_plan, criterion, constructor, mp_co
               reaction_factor_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    iterations_update_interval = trial.suggest_categorical('iterations_update', (0.01, 0.05, 0.1, 0.2, 0.35, 0.5))
+    iterations_update_interval = trial.suggest_categorical('iterations_update', [0.01, 0.05, 0.1, 0.2, 0.35, 0.5])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
@@ -254,7 +254,7 @@ def objective_local_search(trial, route_plan, criterion, constructor, mp_config,
               reaction_factor_tuned, iterations_update_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    local_search_req_interval = trial.suggest_categorical('local_search_req', (0.01, 0.05, 0.1, 0.2))
+    local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.05, 0.1, 0.2])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
