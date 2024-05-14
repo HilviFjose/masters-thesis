@@ -87,7 +87,7 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     #initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    
+    '''
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
 
@@ -99,6 +99,7 @@ def main():
     '''
 
     #RUN OPTUNA
+    '''
     #DESTRUCTION DEGREE
     search_space = {'destruction_degree': [[0.05, 0.15], [0.05, 0.30], [0.15, 0.30], [0.15, 0.5], [0.3, 0.5]]}
     sampler = optuna.samplers.GridSampler(search_space)
@@ -140,22 +141,27 @@ def main():
     write_trials_to_csv(study_reaction_factor, folder_name, 'reaction_factor')
     best_trial_reaction_factor = find_best_trial_lexicographically(study_reaction_factor)
     reaction_factor_tuned = best_trial_reaction_factor.params['reaction_factor']
-    
+    '''
     #NUMBER OF ITERATION FOR UPDATING WEIGHTS
     search_space = {'iterations_update': [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'],sampler=sampler)
     study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
+    #objective_func = partial(objective_iterations_update, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
+    #                         destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
+    #                         weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned,
+    #                         reaction_factor_tuned=reaction_factor_tuned)
     objective_func = partial(objective_iterations_update, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
-                             destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
-                             weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned,
-                             reaction_factor_tuned=reaction_factor_tuned)
+                             destruction_degree_low_tuned=destruction_degree_low_default, destruction_degree_high_tuned=destruction_degree_high_default, 
+                             weight_score_better_tuned=weight_score_better_default, weight_score_accepted_tuned=weight_score_accepted_default, weight_score_best_tuned=weight_score_best_default,
+                             reaction_factor_tuned=reaction_factor_default)
+    
     study_iterations_update.optimize(objective_func)
 
     write_trials_to_csv(study_iterations_update, folder_name, 'iterations_update')
     best_trial_iterations_update = find_best_trial_lexicographically(study_iterations_update)
     iterations_update_tuned = best_trial_iterations_update.params['iterations_update']
-    
+    '''
     #LOCAL SEARCH REQUIREMENT
     search_space = {'local_search_req': [0.01, 0.02, 0.03, 0.04, 0.05]}
     sampler = optuna.samplers.GridSampler(search_space)
