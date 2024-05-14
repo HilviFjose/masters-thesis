@@ -145,7 +145,6 @@ def main():
     search_space = {'iterations_update': [0.01, 0.05, 0.1, 0.2, 0.35, 0.5]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'],sampler=sampler)
-    study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
     objective_func = partial(objective_iterations_update, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
                              destruction_degree_low_tuned=destruction_degree_low_tuned, destruction_degree_high_tuned=destruction_degree_high_tuned, 
                              weight_score_better_tuned=weight_score_better_tuned, weight_score_accepted_tuned=weight_score_accepted_tuned, weight_score_best_tuned=weight_score_best_tuned,
