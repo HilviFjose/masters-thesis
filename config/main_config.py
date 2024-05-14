@@ -31,7 +31,7 @@ modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insert
 local_search_req_default = 0.1
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
-reaction_factor_default = 0.1
+reaction_factor_default = 0.5
 
 # Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
 weight_score_best_default = 15
