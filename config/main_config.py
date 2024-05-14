@@ -28,10 +28,10 @@ frequecy_of_fraction_insertion = 0.05
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
-local_search_req_default = 0.02
+local_search_req_default = 0.1
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
-reaction_factor_default = 0.7
+reaction_factor_default = 0.1
 
 # Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
 weight_score_best_default = 15
