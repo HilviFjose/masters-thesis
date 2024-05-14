@@ -87,7 +87,7 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     #initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    
+    '''
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
 
@@ -129,7 +129,7 @@ def main():
     print(f'weight score best {weight_score_best_tuned}, better {weight_score_better_tuned}, accepted {weight_score_accepted_tuned}')
     
     #REACTION FACTOR AND NUMBER OF ITERATION FOR UPDATING WEIGHTS
-    search_space = {'reaction_factor': [0.4, 0.5, 0.6, 0.7, 0.8]}
+    search_space = {'reaction_factor': [0.1, 0.25, 0.5, 0.75, 1]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_reaction_factor = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'],sampler=sampler)
     objective_func = partial(objective_reaction_factor, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
@@ -142,7 +142,7 @@ def main():
     reaction_factor_tuned = best_trial_reaction_factor.params['reaction_factor']
     
     #NUMBER OF ITERATION FOR UPDATING WEIGHTS
-    search_space = {'iterations_update': [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]}
+    search_space = {'iterations_update': [0.01, 0.05, 0.1, 0.2, 0.35, 0.5]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'],sampler=sampler)
     study_iterations_update = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
@@ -157,7 +157,7 @@ def main():
     iterations_update_tuned = best_trial_iterations_update.params['iterations_update']
     
     #LOCAL SEARCH REQUIREMENT
-    search_space = {'local_search_req': [0.01, 0.02, 0.03, 0.04, 0.05]}
+    search_space = {'local_search_req': [0.01, 0.05, 0.1, 0.2]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_local_search = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
     objective_func = partial(objective_local_search, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
@@ -177,7 +177,7 @@ def main():
     print(f'reaction_factor {reaction_factor_tuned}') 
     print(f'iterations_update {iterations_update_tuned}')
     print(f'local_search_req {local_search_tuned}')
-    '''
+    
 
 def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_config, folder_path):
     start_time = time.time()  
@@ -217,7 +217,7 @@ def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_conf
               weight_score_better_tuned, weight_score_accepted_tuned, weight_score_best_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.4, 0.5, 0.6, 0.7, 0.8])
+    reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.1, 0.25, 0.5, 0.75, 1])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
@@ -236,7 +236,7 @@ def objective_iterations_update(trial, route_plan, criterion, constructor, mp_co
               reaction_factor_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    iterations_update_interval = trial.suggest_categorical('iterations_update', [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5])
+    iterations_update_interval = trial.suggest_categorical('iterations_update', [0.01, 0.05, 0.1, 0.2, 0.35, 0.5])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
@@ -255,7 +255,7 @@ def objective_local_search(trial, route_plan, criterion, constructor, mp_config,
               reaction_factor_tuned, iterations_update_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.02, 0.03, 0.04, 0.05])
+    local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.05, 0.1, 0.2])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
