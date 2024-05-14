@@ -87,10 +87,10 @@ def main():
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     #initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
    
-    
+    '''
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
-
+    
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
     best_route_plan.updateObjective(iterations, iterations)
@@ -100,7 +100,7 @@ def main():
 
     #RUN OPTUNA
     #DESTRUCTION DEGREE
-    search_space = {'destruction_degree': [[0.05, 0.15], [0.05, 0.30], [0.15, 0.30], [0.15, 0.5], [0.3, 0.5]]}
+    search_space = {'destruction_degree': [(0.05, 0.15), (0.05, 0.30), (0.15, 0.30), (0.15, 0.5), (0.3, 0.5)]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
     #study_destruction_degree = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'])
@@ -116,7 +116,7 @@ def main():
     print('destruction_degree_tuned', destruction_degree_tuned)
 
     #WEIGHT SCORES
-    search_space = {'weight_scores': [[5, 10, 15], [5, 15, 25], [5, 15, 35]]}
+    search_space = {'weight_scores': [(5, 10, 15), (5, 15, 25), (5, 15, 35)]}
     sampler = optuna.samplers.GridSampler(search_space)
     study_weight_scores = optuna.create_study(directions=['maximize', 'minimize', 'minimize', 'minimize'], sampler=sampler)
     objective_func = partial(objective_weight_scores, route_plan=initial_route_plan, criterion=criterion, constructor=constructor, mp_config=mp_config, folder_path=folder_path,
@@ -176,12 +176,12 @@ def main():
     print(f'reaction_factor {reaction_factor_tuned}') 
     print(f'iterations_update {iterations_update_tuned}')
     print(f'local_search_req {local_search_tuned}')
-    '''
+    
 
 def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_config, folder_path):
     start_time = time.time()  
     # Suggesting parameters
-    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [[0.05, 0.15], [0.05, 0.30], [0.15, 0.30], [0.15, 0.5], [0.3, 0.5]])
+    destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [(0.05, 0.15), (0.05, 0.30), (0.15, 0.30), (0.15, 0.5), (0.3, 0.5)])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low, destruction_degree_high], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default,
@@ -198,7 +198,7 @@ def objective_weight_scores(trial, route_plan, criterion, constructor, mp_config
                                 destruction_degree_low_tuned, destruction_degree_high_tuned):
     start_time = time.time()  
     # Suggesting parameters
-    weight_score_best_interval, weight_score_better_interval, weight_score_accepted_interval = trial.suggest_categorical('weight_scores', [[5, 10, 15], [5, 15, 25], [5, 15, 35]])
+    weight_score_best_interval, weight_score_better_interval, weight_score_accepted_interval = trial.suggest_categorical('weight_scores', [(5, 10, 15), (5, 15, 25), (5, 15, 35)])
 
     # Configure and run ALNS
     alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval,
