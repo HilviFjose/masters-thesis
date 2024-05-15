@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
-num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 10  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Iterations in ALNS
 iterations = 100
@@ -19,8 +19,8 @@ construction_insertor = 1 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
 
-max_num_regret1 = 30
-max_num_regret2 = 50
+max_num_regret1 = 60
+max_num_regret2 = 80
 
 #Insertor som kan brukes en andel av gangene 
 fraction_repair_insertor = 2
