@@ -8,7 +8,7 @@ class MainConfig:
         self.num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
         # Iterations in ALNS
-        self.iterations = 2
+        self.iterations = 5
 
         #Number of paralell processes 
         self.num_of_paralell_iterations = 10
@@ -22,8 +22,8 @@ class MainConfig:
         self.repair_insertor = 1
         self.illegal_repair_insertor = 2
 
-        self.max_num_regret1 = 30
-        self.max_num_regret2 = 50
+        self.max_num_regret1 = 60
+        self.max_num_regret2 = 80
 
         #Insertor som kan brukes en andel av gangene 
         self.fraction_repair_insertor = 2
@@ -31,14 +31,14 @@ class MainConfig:
         self.modNum_for_fraction_insertion = math.ceil(self.iterations*self.frequecy_of_fraction_insertion) 
 
         # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
-        self.local_search_req_default = 0.1
+        self.local_search_req_default = 0.05
 
         # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
-        self.reaction_factor_default = 0.5
+        self.reaction_factor_default = 0.25
 
         # Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
-        self.weight_score_best_default = 15
-        self.weight_score_better_default = 10
+        self.weight_score_best_default = 35
+        self.weight_score_better_default = 15
         self.weight_score_accepted_default = 5
         self.weight_score_bad = 0
 
@@ -49,7 +49,7 @@ class MainConfig:
         self.k = 3
 
         #The amount of activities to remove in destroy operators
-        self.destruction_degree_high_default = 0.3
+        self.destruction_degree_high_default = 0.5
         self.destruction_degree_low_default = 0.15
 
         # Simulated annealing temperatures -- TODO: these must be tuned

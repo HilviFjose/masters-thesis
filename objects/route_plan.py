@@ -9,6 +9,7 @@ from objects.route import Route
 import copy
 import random 
 import datetime
+depot = (59.9365, 10.7396)
 #from config.main_config import depot
 #from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
 #from config.main_config import  weight_DW, weight_WW, weight_SG, weight_S

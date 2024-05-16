@@ -118,7 +118,7 @@ class ALNS:
                 jobs = [(candidate_route_plan, parNum) for parNum in range(1, self.main_config.num_of_paralell_iterations+1)]
                 
                 results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=self.main_config.num_of_paralell_iterations)
-                candidate_route_plan, destroy, repair, acceptedWithCriterion = results[0]
+                candidate_route_plan, destroy, repair = results[0]
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
                         candidate_route_plan, destroy, repair = result
@@ -156,7 +156,7 @@ class ALNS:
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
-            if (i+1) % (self.iterations_update*iterations) == 0:
+            if (i+1) % (self.iterations_update*self.main_config.iterations) == 0:
                 # Update weights with scores
                 for destroy in range(len(self.d_weights)):
                     if self.d_count[destroy] != 0: 

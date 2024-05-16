@@ -325,12 +325,26 @@ if __name__ == "__main__":
     date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
     #folder_name = f"{parent_folder}-{date_time_str}"
 
-    #Running 
+    #Running paralell 1-1000
     main_config = MainConfig()
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'run1')
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p20_I50')
+    main_config.iterations = 50 
+    main_config.num_of_paralell_iterations = 20
     main(folder_path_run1, main_config)
-    '''
-    data_folder_name = 'data'
-    folder_path_run2 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'run2')
-    main(folder_path_run2)
-    '''
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p10_I100')
+    main_config.iterations = 100 
+    main_config.num_of_paralell_iterations = 10
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p4_I250')
+    main_config.iterations = 250
+    main_config.num_of_paralell_iterations = 4
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p1_I1000')
+    main_config.iterations = 1000 
+    main_config.num_of_paralell_iterations = 1
+    main(folder_path_run1, main_config)
+
