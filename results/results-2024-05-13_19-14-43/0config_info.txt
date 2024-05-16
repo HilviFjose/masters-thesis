@@ -1,0 +1,154 @@
+from datetime import datetime, timedelta
+import math
+
+#Number of constructed solutions 
+num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+
+# Iterations in ALNS
+iterations = 100
+
+#Number of paralell processes 
+num_of_paralell_iterations = 10
+
+#Boolean for paralell 
+doParalellLocalSearch = True
+doParalellDestroyRepair = True
+
+#Insertor choises [0,1,2, 3, 4] for [simple, better with max reg1, better with max regret2, better, best ]
+construction_insertor = 1 #W
+repair_insertor = 1
+illegal_repair_insertor = 2
+
+max_num_regret1 = 90
+max_num_regret2 = 110
+
+#Insertor som kan brukes en andel av gangene 
+fraction_repair_insertor = 2
+frequecy_of_fraction_insertion = 0.05
+modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
+
+# Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
+local_search_req_default = 0.02
+
+# Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
+reaction_factor_default = 0.7
+
+# Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
+weight_score_best_default = 15
+weight_score_better_default = 10
+weight_score_accepted_default = 5
+weight_score_bad = 0
+
+# Iterations between each weight update in ALNS
+iterations_update_default = 0.1
+
+# k-repair value
+k = 3
+
+#The amount of activities to remove in destroy operators
+destruction_degree_high_default = 0.3
+destruction_degree_low_default = 0.15
+
+# Simulated annealing temperatures -- TODO: these must be tuned
+#start_temperature = 60
+#end_temperature = 10
+#cooling_rate = 0.96
+
+deviation_from_best = 0.05
+prob_of_choosing = 0.5 
+rate_T_start_end = 0.2 
+
+# Distance Matrix
+# Buses in Oslo om average drive in 25 kms/h.
+speed = 40
+rush_factor = 2
+
+# Penalty in first objective for infeasible solution
+# TODO: these must be tuned
+penalty_patient = 20        # Penalty per illegal patient (Not allocated patient from the pre-allocated patient list)
+penalty_treat = 10          # Penalty per illegal treatment
+penalty_visit = 5           # Penalty per illegal visit  
+penalty_act = 3             # Penalty per illegal activity 
+
+# Weights for objectives
+weight_DW = 1             # Balance daily workload
+weight_WW = 1             # Balance weekly workload
+weight_S = 1/3              # Min skill difference
+weight_SG = 1             # Balance specialist/generalist
+
+#Planning period
+days = 5
+
+#Depot
+depot = (59.9365, 10.7396)
+
+
+
+
+
+ALNS iteration 39 is new global best, objective [91, 76, -19, 923]
+ALNS iteration 83 is new global best, objective [91, 75, -19, 1021]
+ALNS iteration 84 is new global best, objective [91, 75, -21, 1035]
+ALNS iteration 85 is new global best, objective [91, 74, -23, 1068]
+ALNS iteration 86 is new global best, objective [91, 73, -25, 863]
+ALNS iteration 89 is new global best, objective [91, 70, -23, 943]
+ALNS iteration 96 is new global best, objective [91, 68, -23, 942]
+ALNS iteration 2 is new global best, objective [91, 76, -19, 974]
+ALNS iteration 1 is new global best, objective [91, 75, -21, 926]
+ALNS iteration 23 is new global best, objective [91, 72, -19, 999]
+ALNS iteration 29 is new global best, objective [91, 78, -25, 1076]
+ALNS iteration 32 is new global best, objective [91, 78, -25, 1026]
+ALNS iteration 40 is new global best, objective [91, 73, -23, 982]
+ALNS iteration 35 is new global best, objective [91, 77, -21, 959]
+ALNS iteration 21 is new global best, objective [91, 77, -25, 1098]
+ALNS iteration 30 is new global best, objective [91, 76, -25, 984]
+ALNS iteration 31 is new global best, objective [91, 75, -21, 923]
+ALNS iteration 11 is new global best, objective [91, 78, -19, 974]
+ALNS iteration 20 is new global best, objective [91, 78, -23, 1013]
+ALNS iteration 21 is new global best, objective [91, 78, -23, 1004]
+ALNS iteration 26 is new global best, objective [91, 77, -23, 980]
+ALNS iteration 31 is new global best, objective [91, 75, -23, 1030]
+ALNS iteration 37 is new global best, objective [91, 75, -23, 1013]
+ALNS iteration 41 is new global best, objective [91, 74, -23, 905]
+ALNS iteration 63 is new global best, objective [91, 73, -25, 1047]
+ALNS iteration 1 is new global best, objective [91, 76, -25, 960]
+ALNS iteration 5 is new global best, objective [91, 74, -23, 881]
+ALNS iteration 14 is new global best, objective [91, 74, -25, 970]
+ALNS iteration 21 is new global best, objective [91, 72, -23, 932]
+ALNS iteration 43 is new global best, objective [91, 68, -19, 939]
+ALNS iteration 5 is new global best, objective [91, 78, -25, 1088]
+ALNS iteration 35 is new global best, objective [91, 71, -27, 1002]
+ALNS iteration 72 is new global best, objective [91, 71, -29, 876]
+ALNS iteration 21 is new global best, objective [91, 76, -21, 989]
+ALNS iteration 33 is new global best, objective [91, 74, -23, 910]
+ALNS iteration 82 is new global best, objective [91, 74, -27, 942]
+ALNS iteration 25 is new global best, objective [91, 75, -19, 977]
+ALNS iteration 20 is new global best, objective [91, 78, -25, 974]
+ALNS iteration 35 is new global best, objective [91, 78, -27, 1000]
+ALNS iteration 42 is new global best, objective [91, 77, -25, 983]
+ALNS iteration 57 is new global best, objective [91, 75, -27, 934]
+ALNS iteration 77 is new global best, objective [91, 74, -23, 870]
+ALNS iteration 5 is new global best, objective [91, 78, -25, 1023]
+ALNS iteration 12 is new global best, objective [91, 76, -25, 1008]
+ALNS iteration 42 is new global best, objective [91, 75, -27, 941]
+ALNS iteration 62 is new global best, objective [91, 73, -23, 947]
+ALNS iteration 24 is new global best, objective [91, 78, -23, 1111]
+ALNS iteration 25 is new global best, objective [91, 78, -23, 1077]
+ALNS iteration 26 is new global best, objective [91, 76, -23, 1061]
+ALNS iteration 29 is new global best, objective [91, 75, -21, 993]
+ALNS iteration 8 is new global best, objective [91, 78, -23, 964]
+ALNS iteration 19 is new global best, objective [91, 75, -19, 1032]
+ALNS iteration 21 is new global best, objective [91, 73, -19, 964]
+ALNS iteration 5 is new global best, objective [91, 77, -23, 1149]
+ALNS iteration 6 is new global best, objective [91, 73, -29, 964]
+ALNS iteration 7 is new global best, objective [91, 71, -27, 1027]
+ALNS iteration 10 is new global best, objective [91, 70, -23, 1004]
+ALNS iteration 4 is new global best, objective [91, 75, -23, 919]
+ALNS iteration 4 is new global best, objective [91, 76, -27, 913]
+ALNS iteration 6 is new global best, objective [91, 70, -23, 970]
+ALNS iteration 18 is new global best, objective [91, 77, -23, 925]
+ALNS iteration 27 is new global best, objective [91, 76, -25, 1017]
+ALNS iteration 14 is new global best, objective [91, 76, -23, 961]
+ALNS iteration 19 is new global best, objective [91, 76, -23, 927]
+ALNS iteration 27 is new global best, objective [91, 72, -17, 966]
+ALNS iteration 40 is new global best, objective [91, 70, -21, 966]
