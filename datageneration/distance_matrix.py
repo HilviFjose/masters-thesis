@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import os
 import sys
 sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subfolders
-from config import main_config
+#from config import main_config
 
 
 def process_location(x):
@@ -41,8 +41,10 @@ def travel_matrix(df):
         D_ij = haversine_distances(rad_location, rad_location) * 6371
         
         # Buses in Oslo om average drive in 25 kms/h.
-        speed = main_config.speed
-        rush_factor = main_config.rush_factor
+        #speed = main_config.speed
+        #rush_factor = main_config.rush_factor
+        speed = 40
+        rush_factor = 2
 
         # Travel time matrix - 2D-list with time given in minutes. 
         T_ij = [[0 for _ in range(len(D_ij))] for _ in range(len(D_ij))]
@@ -81,8 +83,10 @@ def travel_matrix_without_rush(df):
         D_ij = haversine_distances(rad_location, rad_location) * 6371
         
         # Buses in Oslo om average drive in 25 kms/h.
-        speed = main_config.speed
-        rush_factor = main_config.rush_factor
+        #speed = main_config.speed
+        #rush_factor = main_config.rush_factor
+        speed = 40
+        rush_factor = 2
 
         # Travel time matrix - 2D-list with time given in minutes. 
         T_ij = [[0 for _ in range(len(D_ij))] for _ in range(len(D_ij))]

@@ -1,7 +1,7 @@
 import numpy as np
 import multiprocessing as mp
 from typing import Callable
-from config.main_config import num_of_paralell_iterations
+#from config.main_config import num_of_paralell_iterations
 
 def process_parallel(job_processor: Callable, function_kwargs: dict, jobs: list, mp_config: dict, paralellNum: int, profile = False):
     """Processes a set of jobs in parallel

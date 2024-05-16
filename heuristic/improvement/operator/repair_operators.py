@@ -8,7 +8,7 @@ import random
 #from scipy.spatial import cKDTree
 #import time
 
-from config import main_config
+#from config import main_config
 
 
 import os
@@ -28,6 +28,7 @@ class RepairOperators:
     def __init__(self, alns):
         self.constructor = alns.constructor
         self.count = 0 
+        self.main_config = self.constructor.main_config
 
 
     #TODO: Skal vi rullere på hvilke funksjoner den gjør først? Det burde vel også vært i ALNS funksjonaliteten 
@@ -47,10 +48,10 @@ class RepairOperators:
         #print("Ferdig med illegal insetting, sekunder:", str(end_time-start_time)) 
   
 
-        repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
+        repair_insertor_level = self.main_config.repair_insertor
+        if current_iteration % self.main_config.modNum_for_fraction_insertion == 0: 
             #print("iteration ", current_iteration, "main_config.modNum_for_fraction_insertion", main_config.modNum_for_fraction_insertion)
-            repair_insertor_level = main_config.fraction_repair_insertor
+            repair_insertor_level = self.main_config.fraction_repair_insertor
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
 
@@ -90,9 +91,9 @@ class RepairOperators:
 
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)   
     
-        repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
-            repair_insertor_level = main_config.fraction_repair_insertor
+        repair_insertor_level = self.main_config.repair_insertor
+        if current_iteration % self.main_config.modNum_for_fraction_insertion == 0: 
+            repair_insertor_level = self.main_config.fraction_repair_insertor
         randomNotAllocatedPatients = repaired_route_plan.notAllocatedPatients
         random.shuffle(randomNotAllocatedPatients)
 
@@ -130,10 +131,10 @@ class RepairOperators:
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
 
 
-        repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
+        repair_insertor_level = self.main_config.repair_insertor
+        if current_iteration % self.main_config.modNum_for_fraction_insertion == 0: 
             #print("iteration ", current_iteration, "main_config.modNum_for_fraction_insertion", main_config.modNum_for_fraction_insertion)
-            repair_insertor_level = main_config.fraction_repair_insertor
+            repair_insertor_level = self.main_config.fraction_repair_insertor
         descendingComplexityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'p_complexity'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingComplexityNotAllocatedPatients = sorted(descendingComplexityNotAllocatedPatientsDict, key=descendingComplexityNotAllocatedPatientsDict.get, reverse=True)
         
@@ -176,14 +177,14 @@ class RepairOperators:
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
         descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
         
-        repair_insertor_level = main_config.repair_insertor
-        if current_iteration % main_config.modNum_for_fraction_insertion == 0: 
+        repair_insertor_level = self.main_config.repair_insertor
+        if current_iteration % self.main_config.modNum_for_fraction_insertion == 0: 
             #print("iteration ", current_iteration, "main_config.modNum_for_fraction_insertion", main_config.modNum_for_fraction_insertion)
 
-            repair_insertor_level = main_config.fraction_repair_insertor
+            repair_insertor_level = self.main_config.fraction_repair_insertor
         best_repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
         best_repaired_route_plan_with_k_regret.updateObjective(current_iteration, total_iterations)
-        for k in range(1, main_config.k): 
+        for k in range(1, self.main_config.k): 
             repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
 
             for patient in descendingUtilityNotAllocatedPatients[k:]: 
@@ -246,7 +247,7 @@ class RepairOperators:
     def illegal_visit_repair(self, repaired_route_plan): 
         illegal_visit_iteration_list = list(repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays.keys())
         for visit in illegal_visit_iteration_list:  
-            visitInsertor = Insertor(self.constructor, repaired_route_plan, main_config.illegal_repair_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
+            visitInsertor = Insertor(self.constructor, repaired_route_plan, self.main_config.illegal_repair_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = visitInsertor.insertVisitOnDay(visit, repaired_route_plan.illegalNotAllocatedVisitsWithPossibleDays[visit])
             
@@ -275,7 +276,7 @@ class RepairOperators:
     
     def illegal_treatment_repair(self, repaired_route_plan): 
         for treatment in repaired_route_plan.illegalNotAllocatedTreatments:  
-            treatmentInsertor = Insertor(self.constructor, repaired_route_plan, main_config.illegal_repair_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
+            treatmentInsertor = Insertor(self.constructor, repaired_route_plan, self.main_config.illegal_repair_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = treatmentInsertor.insert_treatment(treatment)
             
@@ -307,7 +308,7 @@ class RepairOperators:
     def illegal_patient_repair(self, repaired_route_plan): 
          
         for patient in repaired_route_plan.illegalNotAllocatedPatients:  
-            patientInsertor = Insertor(self.constructor, repaired_route_plan, main_config.illegal_repair_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
+            patientInsertor = Insertor(self.constructor, repaired_route_plan, self.main_config.illegal_repair_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
             old_route_plan = copy.deepcopy(repaired_route_plan)
             status = patientInsertor.insert_patient(patient)
             

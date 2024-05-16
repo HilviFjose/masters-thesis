@@ -2,10 +2,10 @@ import numpy as np
 from helpfunctions import *
 import numpy.random as rnd
 import math
-from config.main_config import iterations
+#from config.main_config import iterations
 
 class SimulatedAnnealing:
-    def __init__(self, deviation_from_best, prob_of_choosing, rate_T_start_end):
+    def __init__(self, deviation_from_best, prob_of_choosing, rate_T_start_end, iterations):
     #def __init__(self, sim_annealing_diff, prob_of_choosing, rate_T_start_end):
         
         self.cooling_rate = (rate_T_start_end)**(1/iterations)

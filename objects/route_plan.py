@@ -9,12 +9,12 @@ from objects.route import Route
 import copy
 import random 
 import datetime
-from config.main_config import depot
-from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
-from config.main_config import  weight_DW, weight_WW, weight_SG, weight_S
+#from config.main_config import depot
+#from config.main_config import penalty_act, penalty_visit, penalty_treat, penalty_patient
+#from config.main_config import  weight_DW, weight_WW, weight_SG, weight_S
 
 class RoutePlan:
-    def __init__(self, days, employee_df, folder_name):
+    def __init__(self, days, employee_df, folder_name, main_config):
         self.employee_df = employee_df
         self.folder_name = folder_name
         
@@ -56,6 +56,8 @@ class RoutePlan:
         self.illegalNotAllocatedTreatments = []
         self.illegalNotAllocatedVisitsWithPossibleDays = {}
         self.illegalNotAllocatedActivitiesWithPossibleDays = {}
+
+        self.main_config = main_config
 
     '''
     Hvordan vil vi endre klassen med nye route_plan -> Vil ikke ha noen endringer i funksjonalitet, så fikser på oppsettet, men ingen 
@@ -376,7 +378,7 @@ class RoutePlan:
                 self.aggDeviationPrefSpes += route.deviationPrefSpes
                 self.objective[3] += route.travel_time   
         self.objective[2] = self.totalContinuity 
-        self.objective[1] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
+        self.objective[1] = round(self.main_config.weight_WW*self.weeklyHeaviness + self.main_config.weight_DW*self.dailyHeaviness + self.main_config.weight_S*self.aggSkillDiff + self.main_config.weight_SG*self.aggDeviationPrefSpes)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
@@ -413,10 +415,10 @@ class RoutePlan:
             if current_iteration != None and total_iterations != None:
                 iteration_factor = max(1 - ((total_iterations - current_iteration) / total_iterations), 0.1) #Tvinger iterasjonsfaktoren til å være mellom 0.1 og 1
 
-            penalty = iteration_factor * (len(self.illegalNotAllocatedPatients) * penalty_patient
-                    + len(self.illegalNotAllocatedTreatments) * penalty_treat 
-                    + len(self.illegalNotAllocatedVisitsWithPossibleDays) * penalty_visit
-                    + len(self.illegalNotAllocatedActivitiesWithPossibleDays) * penalty_act)
+            penalty = iteration_factor * (len(self.illegalNotAllocatedPatients) * self.main_config.penalty_patient
+                    + len(self.illegalNotAllocatedTreatments) * self.main_config.penalty_treat 
+                    + len(self.illegalNotAllocatedVisitsWithPossibleDays) * self.main_config.penalty_visit
+                    + len(self.illegalNotAllocatedActivitiesWithPossibleDays) * self.main_config.penalty_act)
             
             updated_first_objective = self.objective[0] - penalty
             #print(f'PENALTY IN FIRST OBJECTIVE: {penalty}. Original objective: {self.objective[0]}, Updated objective: {updated_first_objective}')

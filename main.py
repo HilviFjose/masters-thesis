@@ -6,7 +6,8 @@ from datetime import datetime
 import time
 
 import parameters
-from config.main_config import *
+#from config.main_config import *
+from config.main_config import MainConfig
 from heuristic.construction.construction import ConstructionHeuristic
 from heuristic.improvement.simulated_annealing import SimulatedAnnealing
 from heuristic.improvement.alns import ALNS
@@ -19,7 +20,7 @@ from functools import partial
 
 import optuna
 
-def main(folder_path):
+def main(folder_path, main_config):
     #TODO: Burde legge til sånn try og accept kriterier her når vi er ferdig. Men Bruker ikke det enda fordi letter å jobbe uten
     
     mp_config = setup(3,2,3)
@@ -41,18 +42,18 @@ def main(folder_path):
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
     
-    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_path)
+    constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_path, main_config)
     #print("Constructing Initial Solution")
 
     #CONSTRUCTION HEURISTIC NORMA
     #constructor.construct_initial()
 
     #PARALELL CONSTUCTION 
-    constructor.route_plans = process_parallel(constructor.construct_simple_initial, function_kwargs={} , jobs=[a for a in range(num_of_constructions)], mp_config= mp_config, paralellNum=num_of_constructions)
+    constructor.route_plans = process_parallel(constructor.construct_simple_initial, function_kwargs={} , jobs=[a for a in range(main_config.num_of_constructions)], mp_config= mp_config, paralellNum=main_config.num_of_constructions)
     constructor.setBestRoutePlan()
     
     
-    constructor.route_plan.updateObjective(1, iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
+    constructor.route_plan.updateObjective(1, main_config.iterations)  #Egentlig iterasjon 0, men da blir det ingen penalty
     constructor.route_plan.printSolution("initial", "ingen operator")
 
     initial_route_plan = constructor.route_plan 
@@ -60,21 +61,21 @@ def main(folder_path):
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
     #criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
-    criterion = SimulatedAnnealing(deviation_from_best, prob_of_choosing, rate_T_start_end)
+    criterion = SimulatedAnnealing(main_config.deviation_from_best, main_config.prob_of_choosing, main_config.rate_T_start_end, main_config.iterations)
 
     #TODO: Gjøre parellelt lokalsøk på denne også 
-    localsearch = LocalSearch(initial_route_plan, 1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+    localsearch = LocalSearch(initial_route_plan, 1, main_config.iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan = localsearch.do_local_search()
-    initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+    initial_route_plan.updateObjective(1, main_config.iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     #initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
 
     
-    alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
-                      local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
+    alns = ALNS([main_config.destruction_degree_low_default, main_config.destruction_degree_high_default], main_config.weight_score_better_default, main_config.weight_score_accepted_default, main_config.weight_score_bad, main_config.weight_score_best_default, main_config.reaction_factor_default, 
+                      main_config.local_search_req_default, main_config.iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
     
     #RUN ALNS 
-    best_route_plan = alns.iterate(iterations)
-    best_route_plan.updateObjective(iterations, iterations)
+    best_route_plan = alns.iterate(main_config.iterations)
+    best_route_plan.updateObjective(main_config.iterations, main_config.iterations)
     best_route_plan.printSolution("final", "no operator")
 
     '''
@@ -165,9 +166,9 @@ def objective_destruction_degree(trial, route_plan, criterion, constructor, mp_c
     destruction_degree_low, destruction_degree_high = trial.suggest_categorical('destruction_degree', [(0.05, 0.15), (0.05, 0.30), (0.15, 0.30), (0.15, 0.5), (0.3, 0.5)])
 
     # Configure and run ALNS
-    alns = ALNS([destruction_degree_low, destruction_degree_high], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default,
-                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
-    route_plan = alns.iterate(iterations)
+    alns = ALNS([destruction_degree_low, destruction_degree_high], main_config.weight_score_better_default, main_config.weight_score_accepted_default, main_config.weight_score_bad, main_config.weight_score_best_default,
+                    main_config.reaction_factor_default, main_config.local_search_req_default, main_config.iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
+    route_plan = alns.iterate(main_config.iterations)
 
     end_time = time.time()
     duration = end_time - start_time
@@ -182,9 +183,9 @@ def objective_weight_scores(trial, route_plan, criterion, constructor, mp_config
     weight_score_best_interval, weight_score_better_interval, weight_score_accepted_interval = trial.suggest_categorical('weight_scores', [(5, 10, 15), (5, 15, 25), (5, 15, 35)])
 
     # Configure and run ALNS
-    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_interval, weight_score_accepted_interval, weight_score_bad, weight_score_best_interval,
-                    reaction_factor_default, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
-    route_plan = alns.iterate(iterations)
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_interval, weight_score_accepted_interval, main_config.weight_score_bad, weight_score_best_interval,
+                    main_config.reaction_factor_default, main_config.local_search_req_default, main_config.iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
+    route_plan = alns.iterate(main_config.iterations)
 
     end_time = time.time()
     duration = end_time - start_time
@@ -200,9 +201,9 @@ def objective_reaction_factor(trial, route_plan, criterion, constructor, mp_conf
     reaction_factor_interval = trial.suggest_categorical('reaction_factor', [0.1, 0.25, 0.5, 0.75, 1])
 
     # Configure and run ALNS
-    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
-                    reaction_factor_interval, local_search_req_default, iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
-    route_plan = alns.iterate(iterations)
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, main_config.weight_score_bad, weight_score_best_tuned,
+                    reaction_factor_interval, main_config.local_search_req_default, main_config.iterations_update_default, route_plan, criterion, constructor, mp_config, folder_path)
+    route_plan = alns.iterate(main_config.iterations)
 
     end_time = time.time()
     duration = end_time - start_time
@@ -219,9 +220,9 @@ def objective_iterations_update(trial, route_plan, criterion, constructor, mp_co
     iterations_update_interval = trial.suggest_categorical('iterations_update', [0.01, 0.05, 0.1, 0.2, 0.35, 0.5])
 
     # Configure and run ALNS
-    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
-                    reaction_factor_tuned, local_search_req_default, iterations_update_interval, route_plan, criterion, constructor, mp_config, folder_path)
-    route_plan = alns.iterate(iterations)
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, main_config.weight_score_bad, weight_score_best_tuned,
+                    reaction_factor_tuned, main_config.local_search_req_default, iterations_update_interval, route_plan, criterion, constructor, mp_config, folder_path)
+    route_plan = alns.iterate(main_config.iterations)
 
     end_time = time.time()
     duration = end_time - start_time
@@ -238,9 +239,9 @@ def objective_local_search(trial, route_plan, criterion, constructor, mp_config,
     local_search_req_interval = trial.suggest_categorical('local_search_req', [0.01, 0.05, 0.1, 0.2])
 
     # Configure and run ALNS
-    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned, weight_score_bad, weight_score_best_tuned,
+    alns = ALNS([destruction_degree_low_tuned, destruction_degree_high_tuned], weight_score_better_tuned, weight_score_accepted_tuned,main_config.weight_score_bad, weight_score_best_tuned,
                     reaction_factor_tuned, local_search_req_interval, iterations_update_tuned, route_plan, criterion, constructor, mp_config, folder_path)
-    route_plan = alns.iterate(iterations)
+    route_plan = alns.iterate(main_config.iterations)
 
     end_time = time.time()
     duration = end_time - start_time
@@ -324,8 +325,12 @@ if __name__ == "__main__":
     date_time_str = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
     #folder_name = f"{parent_folder}-{date_time_str}"
 
+    #Running 
+    main_config = MainConfig()
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'run1')
-    main(folder_path_run1)
+    main(folder_path_run1, main_config)
+    '''
+    data_folder_name = 'data'
     folder_path_run2 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'run2')
     main(folder_path_run2)
-    
+    '''

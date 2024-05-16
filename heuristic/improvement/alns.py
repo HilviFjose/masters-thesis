@@ -53,8 +53,9 @@ class ALNS:
         self.r_count = np.zeros(len(self.repair_operators), dtype=np.float16)
 
         self.mp_config = mp_config
+        self.main_config = constructor.main_config 
 
-        self.random_numbers = np.round(np.random.uniform(low=destruction_degree_interval[0], high=destruction_degree_interval[1], size=iterations),1)
+        self.random_numbers = np.round(np.random.uniform(low=destruction_degree_interval[0], high=destruction_degree_interval[1], size=self.main_config.iterations),1)
 
 
         
@@ -72,7 +73,7 @@ class ALNS:
 
         candidate_route_plan = d_operator(candidate_route_plan) 
 
-        candidate_route_plan.updateObjective(self.iterationNum, iterations)
+        candidate_route_plan.updateObjective(self.iterationNum, self.main_config.iterations)
         #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_destroy_parallel_"+str(parNum),d_operator.__name__)
 
         self.d_count[destroy] += 1
@@ -82,10 +83,10 @@ class ALNS:
         r_operator = self.repair_operators[repair]
         #print("repair operator", r_operator.__name__)
         #start_time = time.perf_counter()
-        candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, iterations)
+        candidate_route_plan = r_operator(candidate_route_plan, self.iterationNum, self.main_config.iterations)
         #end_time = time.perf_counter()
         #print("destroy used time", str(end_time - start_time))
-        candidate_route_plan.updateObjective(self.iterationNum, iterations)
+        candidate_route_plan.updateObjective(self.iterationNum, self.main_config.iterations)
         #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
 
@@ -107,16 +108,16 @@ class ALNS:
             #self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
             self.destruction_degree = self.random_numbers[self.iterationNum-1]
             
-            if not doParalellDestroyRepair:
+            if not self.main_config.doParalellDestroyRepair:
                 #Uten parallell
                 candidate_route_plan, destroy, repair, acceptedWithCriterion = self.doIteration((candidate_route_plan, 1))
 
             else:
                 #Kjører paralelt. 
                 
-                jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
+                jobs = [(candidate_route_plan, parNum) for parNum in range(1, self.main_config.num_of_paralell_iterations+1)]
                 
-                results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
+                results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=self.main_config.num_of_paralell_iterations)
                 candidate_route_plan, destroy, repair, acceptedWithCriterion = results[0]
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
@@ -128,15 +129,15 @@ class ALNS:
                 #print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
                 
-                if not doParalellLocalSearch:
+                if not self.main_config.doParalellLocalSearch:
                     #Uten parallell
                     candidate_route_plan = localsearch.do_local_search()
 
                 else: 
                     #Med parallell 
-                    results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, days+1) ], mp_config=self.mp_config, paralellNum=days)
+                    results = process_parallel(localsearch.do_local_search_on_day, function_kwargs={} , jobs=[day for day in range(1, self.main_config.days+1) ], mp_config=self.mp_config, paralellNum=self.main_config.days)
                     #print("GJOR LOKALSØKET I PARALELL")
-                    for day in range(1, days+1): 
+                    for day in range(1, self.main_config.days+1): 
                         candidate_route_plan.routes[day] = results[day-1].routes[day]
                     
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
@@ -172,9 +173,9 @@ class ALNS:
                 
         # Do local search to local optimum before returning last iteration
         #self.best_route_plan.printSolution("candidate_before_final_local_search", "ingen operator")
-        localsearch = LocalSearch(self.best_route_plan, iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+        localsearch = LocalSearch(self.best_route_plan, self.main_config.iterations, self.main_config.iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
         self.best_route_plan = localsearch.do_local_search_to_local_optimum()
-        self.best_route_plan.updateObjective(iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
+        self.best_route_plan.updateObjective(self.main_config.iterations, self.main_config.iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
                 
         return self.best_route_plan
     

@@ -7,7 +7,7 @@ import networkx as nx
 from sklearn.cluster import KMeans
 from scipy.spatial import cKDTree
 
-from config import main_config
+#from config import main_config
 
  #To alternativer
         #1) Selected activity er en del av et visit der flere aktiviteter ligger inne. -> Legger til i illegalActivity

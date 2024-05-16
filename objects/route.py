@@ -8,8 +8,9 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subf
 #from objects.distances import T_ij
 from parameters import T_ij
 import copy 
-from config.main_config import depot
+#from config.main_config import depot
 #import time
+depot = (59.9365, 10.7396)
 
 class Route:
     def __init__(self, day, employee):
@@ -27,7 +28,8 @@ class Route:
         #TODO: Må finne ut hvordan man vil ha det med depoet. Nå vil depoet fortrekkes ovenfor en aktivitet som allerde har noen ute. 
         #Men det er vel kanskje fint for å få moblisert de som ikke har fått noen enda 
         self.locations = []
-        self.averageLocation = depot
+        self.depot = (59.9365, 10.7396)
+        self.averageLocation = self.depot
 
 
     '''

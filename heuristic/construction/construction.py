@@ -7,7 +7,7 @@ sys.path.append( os.path.join(os.path.split(__file__)[0],'..') )  # Include subf
 from objects.route_plan import RoutePlan
 from heuristic.improvement.insertor import Insertor
 from helpfunctions import checkCandidateBetterThanBest
-from config.main_config import num_of_constructions, iterations, construction_insertor
+#from config.main_config import num_of_constructions, iterations, construction_insertor
 
 '''
 Info: ConstructionHeurstic klassen er selve konstruskjonsheurstikken. 
@@ -17,7 +17,7 @@ Gjennom construct_inital funksjonen så oppdateres løsningen, objektivverdien o
 
 
 class ConstructionHeuristic:
-    def __init__(self, activities_df,  employees_df, patients_df, treatment_df, visit_df, days, folder_name):
+    def __init__(self, activities_df,  employees_df, patients_df, treatment_df, visit_df, days, folder_name, main_config):
         
         self.activities_df = activities_df
         self.visit_df = visit_df
@@ -27,10 +27,11 @@ class ConstructionHeuristic:
         self.days = days
         self.folder_name = folder_name
         #self.route_plan = RoutePlan(days, employees_df) 
-
-        self.route_plans = [RoutePlan(days, employees_df, folder_name) for _ in range(num_of_constructions) ]
+        self.main_config = main_config
+        self.route_plans = [RoutePlan(days, employees_df, folder_name, self.main_config) for _ in range(self.main_config.num_of_constructions) ]
 
         self.route_plan = None
+        
         
     '''
     Oppdatering av matrisene. I dette statidiet vil vi bare godekjenne inserting av pasienter som fullstendig legges inn på hjemmesykehuset 
@@ -39,7 +40,7 @@ class ConstructionHeuristic:
     '''
  
     def construct_simple_initial(self, a): 
-        route_plan = RoutePlan(self.days, self.employees_df, self.folder_name)
+        route_plan = RoutePlan(self.days, self.employees_df, self.folder_name, self.main_config)
         #Lager en liste med pasienter i prioritert rekkefølge. 
         unassigned_patients = self.patients_df.sort_values(by=['allocation', 'aggUtility'], ascending=[False, False])
         #Iterer over hver pasient i lista. Pasienten vi ser på kalles videre pasient
@@ -51,7 +52,7 @@ class ConstructionHeuristic:
             #Kopierer nåværende ruteplan for denne pasienten 
             route_plan_with_patient = copy.deepcopy(route_plan)
 
-            patientInsertor = Insertor(self, route_plan_with_patient, construction_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
+            patientInsertor = Insertor(self, route_plan_with_patient, self.main_config.construction_insertor) #Må bestemmes hvor god visitInsertor vi skal bruke
             state = patientInsertor.insert_patient(patient)
         
             if state == True: 
@@ -77,7 +78,7 @@ class ConstructionHeuristic:
             for route in route_plan.routes[day].values(): 
                 for activity in route.route: 
                     route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
-        route_plan.updateObjective(0, iterations)
+        route_plan.updateObjective(0, self.main_config.iterations)
 
         return route_plan 
         
@@ -122,7 +123,7 @@ class ConstructionHeuristic:
                 for route in route_plan.routes[day].values(): 
                     for activity in route.route: 
                         route_plan.updateActivityBasedOnRoutePlanOnDay(activity, day)
-            route_plan.updateObjective(0, iterations)
+            route_plan.updateObjective(0, self.main_config.iterations)
             self.route_plans[j] = route_plan
             
         self.setBestRoutePlan()
