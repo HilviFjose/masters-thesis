@@ -5,10 +5,10 @@ import math
 num_of_constructions = 10  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Iterations in ALNS
-iterations = 20
+iterations = 100
 
 #Number of paralell processes 
-num_of_paralell_iterations = 50
+num_of_paralell_iterations = 10
 
 #Boolean for paralell 
 doParalellLocalSearch = True
@@ -86,3 +86,7 @@ depot = (59.9365, 10.7396)
 
 
 
+ALNS iteration 31 is new global best, objective [277, 115, -34, 1736]
+ALNS iteration 32 is new global best, objective [279, 115, -40, 1999]
+ALNS iteration 42 is new global best, objective [281, 122, -37, 1883]
+ALNS iteration 50 is new global best, objective [291, 122, -40, 1915]
