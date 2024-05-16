@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
-num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Iterations in ALNS
-iterations = 100
+iterations = 2
 
 #Number of paralell processes 
 num_of_paralell_iterations = 10
