@@ -49,5 +49,36 @@ class SimulatedAnnealing:
                         break
     
         # Should not set a temperature that is lower than the end temperature.
+        #self.temperature = self.temperature * self.cooling_rate
+        return accept
+    
+
+
+    def accept_criterion_without_weights_update(self, current_objective, candidate_objective):
+        accept = False
+        # Always accept better solution
+        if checkCandidateBetterThanBest(candidate_objective, current_objective):
+            accept = True
+          
+        else:
+            if candidate_objective[0] < current_objective[0]:
+                deviation_diff = (candidate_objective[0] - current_objective[0])/current_objective[0]
+                probability = np.exp(-deviation_diff * self.temperature)
+                accept = (probability >= rnd.random())
+                #print("Candidate not better. Accepted det solution?", accept)
+            else:
+
+                #Nå vet vi at første objektivet er likt som det første, vil da evaluere på de neste objektivene? 
+                #Vi vet at dette objektivet ikke er bedre enn de neste, for da ville den slått ut
+                #Vi vil hoppe ned helt til vi finner der hvor den ikke fungerer lenger. 
+                for i in range(1, len(candidate_objective)): 
+                    if candidate_objective[i] > current_objective[i]: 
+                        diff = (candidate_objective[i] - current_objective[i])/current_objective[i]
+                        probability = np.exp(-diff * self.temperature)
+                        accept = (probability >= rnd.random())
+                        #print("Candidate not better. Accepted det solution?", accept)
+                        break
+    
+        # Should not set a temperature that is lower than the end temperature.
         self.temperature = self.temperature * self.cooling_rate
         return accept
