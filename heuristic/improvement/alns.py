@@ -155,7 +155,7 @@ class ALNS:
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
-            if (i+1)* self.iterations_update == 0:
+            if (i+1) % (self.iterations_update*iterations) == 0:
                 # Update weights with scores
                 for destroy in range(len(self.d_weights)):
                     if self.d_count[destroy] != 0: 
