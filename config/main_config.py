@@ -8,7 +8,7 @@ class MainConfig:
         self.num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
         # Iterations in ALNS
-        self.iterations = 5
+        self.iterations = 100
 
         #Number of paralell processes 
         self.num_of_paralell_iterations = 10

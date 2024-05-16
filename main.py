@@ -330,30 +330,6 @@ if __name__ == "__main__":
 
     #KJØRE PARALLELL
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p20_I50')
-    main_config.iterations = 50 
-    main_config.num_of_paralell_iterations = 20
-    main(folder_path_run1, main_config)
-
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p10_I100')
-    main_config.iterations = 100 
-    main_config.num_of_paralell_iterations = 10
-    main(folder_path_run1, main_config)
-
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p4_I250')
-    main_config.iterations = 250
-    main_config.num_of_paralell_iterations = 4
-    main(folder_path_run1, main_config)
-
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p1_I1000')
-    main_config.iterations = 1000 
-    main_config.num_of_paralell_iterations = 1
-    main(folder_path_run1, main_config)
-
-    main_config.iterations = 100 
-    main_config.num_of_paralell_iterations = 10
-
-
     #KJORE OBJEKTIV STUDIE 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111/31')
     main_config.weight_DW = 1             # Balance daily workload
@@ -383,4 +359,32 @@ if __name__ == "__main__":
     main_config.weight_SG = 2 
     main(folder_path_run1, main_config)
 
+    main_config.weight_DW = 1             # Balance daily workload
+    main_config.weight_WW = 1             # Balance weekly workload
+    main_config.weight_S = 1/3              # Min skill difference
+    main_config.weight_SG = 1  
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p20_I50')
+    main_config.iterations = 50 
+    main_config.num_of_paralell_iterations = 20
+    main(folder_path_run1, main_config)
 
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p10_I100')
+    main_config.iterations = 100 
+    main_config.num_of_paralell_iterations = 10
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p4_I250')
+    main_config.iterations = 250
+    main_config.num_of_paralell_iterations = 4
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p1_I1000')
+    main_config.iterations = 1000 
+    main_config.num_of_paralell_iterations = 1
+    main(folder_path_run1, main_config)
+
+    main_config.iterations = 100 
+    main_config.num_of_paralell_iterations = 10
+
+
+   
