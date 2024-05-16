@@ -90,13 +90,13 @@ class ALNS:
         #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
 
-        weight_score, acceptedWithCriterion = self.update_weights(self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
+        weight_score = self.update_weights(self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
        
         # Update scores
         self.d_scores[destroy] += weight_score
         self.r_scores[repair] += weight_score
 
-        return candidate_route_plan, destroy, repair, acceptedWithCriterion
+        return candidate_route_plan, destroy, repair
 
         
     def iterate(self, num_iterations):
@@ -110,7 +110,7 @@ class ALNS:
             
             if not self.main_config.doParalellDestroyRepair:
                 #Uten parallell
-                candidate_route_plan, destroy, repair, acceptedWithCriterion = self.doIteration((candidate_route_plan, 1))
+                candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
 
             else:
                 #Kjører paralelt. 
@@ -121,7 +121,7 @@ class ALNS:
                 candidate_route_plan, destroy, repair, acceptedWithCriterion = results[0]
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
-                        candidate_route_plan, destroy, repair, acceptedWithCriterion = result
+                        candidate_route_plan, destroy, repair = result
              
             #candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
@@ -151,12 +151,12 @@ class ALNS:
         
             # Compare solutions
              #Her settes current, til å være det det skal være 
-            self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan, acceptedWithCriterion)
+            self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan)
         
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
-            if (i+1)* self.iterations_update == 0:
+            if (i+1) % (self.iterations_update*iterations) == 0:
                 # Update weights with scores
                 for destroy in range(len(self.d_weights)):
                     if self.d_count[destroy] != 0: 
@@ -228,7 +228,6 @@ class ALNS:
 
     #
     def update_weights(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
-        acceptedWithCriterion = False
         if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
@@ -237,7 +236,7 @@ class ALNS:
                 # Solution is not better, but accepted
                 weight_score = self.weight_score_accepted
                 #Sjekker om løsningen blir godkjent som følge av acceptancecriteria
-                acceptedWithCriterion = True
+                
         else:
             # Solution is rejected
             weight_score = self.weight_score_bad
@@ -246,9 +245,9 @@ class ALNS:
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective):
             weight_score = self.weight_score_best 
 
-        return weight_score, acceptedWithCriterion
+        return weight_score
     
-    def update_current_best(self, best_route_plan, current_route_plan, candidate_route_plan, acceptedWithCriterion):
+    def update_current_best(self, best_route_plan, current_route_plan, candidate_route_plan):
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective) and candidate_route_plan.objective[0] == candidate_route_plan.getOriginalObjective():
             best_route_plan = copy.deepcopy(candidate_route_plan)
             current_route_plan = copy.deepcopy(candidate_route_plan)
@@ -260,7 +259,7 @@ class ALNS:
             
             return best_route_plan, current_route_plan
         
-        if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective) or acceptedWithCriterion: 
+        if self.criterion.accept_criterion_without_weights_update( current_route_plan.objective, candidate_route_plan.objective):
             current_route_plan = copy.deepcopy(candidate_route_plan)
 
         return best_route_plan, current_route_plan
