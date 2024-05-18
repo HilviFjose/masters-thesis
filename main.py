@@ -331,28 +331,28 @@ if __name__ == "__main__":
     #KJØRE PARALLELL
 
     #KJORE OBJEKTIV STUDIE 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111/31')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_31')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/3              # Min skill difference
     main_config.weight_SG = 1  
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111/21')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_21')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/2              # Min skill difference
     main_config.weight_SG = 1  
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111/32')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_32')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/3              # Min skill difference
     main_config.weight_SG = 2 
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111/22')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_22')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/2              # Min skill difference
