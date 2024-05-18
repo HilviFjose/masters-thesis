@@ -328,57 +328,120 @@ if __name__ == "__main__":
     #Running paralell 1-1000
     main_config = MainConfig()
 
-    #KJØRE PARALLELL
+    #INSERTIONTEST
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'First_possible')
+    main_config.construction_insertor = 0 
+    main_config.repair_insertor = 0
+    main_config.illegal_repair_insertor = 0 
+    main_config.fraction_repair_insertor = 0
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum_only')
+    main_config.max_num_regret1 = 60
+    main_config.max_num_regret2 = 60
+    main_config.construction_insertor = 1 
+    main_config.repair_insertor = 1
+    main_config.illegal_repair_insertor = 2 
+    main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum_1')
+    main_config.max_num_regret1 = 60
+    main_config.max_num_regret2 = 80
+    main_config.construction_insertor = 1 
+    main_config.repair_insertor = 1
+    main_config.illegal_repair_insertor = 2 
+    main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum_2')
+    main_config.max_num_regret1 = 90
+    main_config.max_num_regret2 = 110
+    main_config.construction_insertor = 1 
+    main_config.repair_insertor = 1
+    main_config.illegal_repair_insertor = 2 
+    main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum_3')
+    main_config.max_num_regret1 = 120
+    main_config.max_num_regret2 = 140
+    main_config.construction_insertor = 1 
+    main_config.repair_insertor = 1
+    main_config.illegal_repair_insertor = 2 
+    main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Regret')
+    main_config.construction_insertor = 3 
+    main_config.repair_insertor = 3
+    main_config.illegal_repair_insertor = 3 
+    main_config.fraction_repair_insertor = 3
+    main(folder_path_run1, main_config)
+
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Best')
+    main_config.construction_insertor = 4 
+    main_config.repair_insertor = 4
+    main_config.illegal_repair_insertor = 4 
+    main_config.fraction_repair_insertor = 4
+    main(folder_path_run1, main_config)
 
     #KJORE OBJEKTIV STUDIE 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_31')
+    main_config.max_num_regret1 = 60
+    main_config.max_num_regret2 = 80
+    main_config.construction_insertor = 1 
+    main_config.repair_insertor = 1
+    main_config.illegal_repair_insertor = 2 
+    main_config.fraction_repair_insertor = 1
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'objective1')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/3              # Min skill difference
     main_config.weight_SG = 1  
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_21')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'objective2')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/2              # Min skill difference
     main_config.weight_SG = 1  
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_32')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'objective3')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/3              # Min skill difference
     main_config.weight_SG = 2 
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_W111_22')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'objective4')
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/2              # Min skill difference
     main_config.weight_SG = 2 
     main(folder_path_run1, main_config)
 
+    #Kjører parallelltesten
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/3              # Min skill difference
     main_config.weight_SG = 1  
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p20_I50')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p20_I50')
     main_config.iterations = 50 
     main_config.num_of_paralell_iterations = 20
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p10_I100')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p10_I100')
     main_config.iterations = 100 
     main_config.num_of_paralell_iterations = 10
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p4_I250')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p4_I250')
     main_config.iterations = 250
     main_config.num_of_paralell_iterations = 4
     main(folder_path_run1, main_config)
 
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'A25-1_p1_I1000')
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p1_I1000')
     main_config.iterations = 1000 
     main_config.num_of_paralell_iterations = 1
     main(folder_path_run1, main_config)
