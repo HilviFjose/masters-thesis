@@ -30,10 +30,13 @@ def main(folder_path, main_config):
 
     config_info_file_path = os.path.join(folder_path, "0config_info" + ".txt")
 
+    
+
     with open("config/main_config.py", 'r') as file:
         content = file.read()
 
     with open(config_info_file_path, 'w') as file:
+        file.write("TIDSPUNKT FOR KJORING "+date_time_str)
         file.write(content)
 
     df_employees = parameters.df_employees

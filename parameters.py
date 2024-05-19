@@ -3,8 +3,8 @@ import os
 
 #ANTIBIOTICS CASE
 
-antibiotics_data = True
-generate_new_data = False  
+antibiotics_data = False
+generate_new_data = False
 folder_name = 'data'
 
 if antibiotics_data:

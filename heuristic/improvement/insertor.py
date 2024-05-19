@@ -108,13 +108,16 @@ class Insertor:
         old_route_plan = copy.deepcopy(self.route_plan)
         #Iterer over alle aktivitere i visitet som må legges til på denne dagen 
         # Create a list of activity objects
+        route_plan = copy.deepcopy(self.route_plan)
         activities = [Activity(self.constructor.activities_df, activityID) for activityID in activitiesList]
         for activity in activities: 
-            activityStatus = self.route_plan.addActivityOnDay(activity, day)
-            if activityStatus == False: 
+            #activityStatus = self.route_plan.addActivityOnDay(activity, day)
+            activityStatus = route_plan.addActivityOnDay(activity, day)
+            if activityStatus == False:
                 self.route_plan = old_route_plan
                 return False
-        #Dersom alle aktivitene har blitt lagt til returers true  
+        #Dersom alle aktivitene har blitt lagt til returers true 
+        self.route_plan = route_plan 
         return True
     
     def better_insert_visit_on_day(self, visit, day):
