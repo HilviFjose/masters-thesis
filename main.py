@@ -327,14 +327,17 @@ if __name__ == "__main__":
 
     #Running paralell 1-1000
     main_config = MainConfig()
+    main_config.data = "dataA-50P7E-3"
 
     #INSERTIONTEST
+    '''
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'First_possible')
     main_config.construction_insertor = 0 
     main_config.repair_insertor = 0
     main_config.illegal_repair_insertor = 0 
     main_config.fraction_repair_insertor = 0
     main(folder_path_run1, main_config)
+    '''
 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum_only')
     main_config.max_num_regret1 = 60
@@ -343,6 +346,7 @@ if __name__ == "__main__":
     main_config.repair_insertor = 1
     main_config.illegal_repair_insertor = 2 
     main_config.fraction_repair_insertor = 1
+    
     main(folder_path_run1, main_config)
 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum_1')
@@ -378,14 +382,14 @@ if __name__ == "__main__":
     main_config.illegal_repair_insertor = 3 
     main_config.fraction_repair_insertor = 3
     main(folder_path_run1, main_config)
-
+    """
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Best')
     main_config.construction_insertor = 4 
     main_config.repair_insertor = 4
     main_config.illegal_repair_insertor = 4 
     main_config.fraction_repair_insertor = 4
     main(folder_path_run1, main_config)
-
+   
     #KJORE OBJEKTIV STUDIE 
     main_config.max_num_regret1 = 60
     main_config.max_num_regret2 = 80
@@ -449,5 +453,5 @@ if __name__ == "__main__":
     main_config.iterations = 100 
     main_config.num_of_paralell_iterations = 10
 
-
+    """
    
