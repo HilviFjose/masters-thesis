@@ -22,7 +22,7 @@ items = os.listdir(path)
 
 # Filter out only the directories that match your naming convention
 results_folders = [item for item in items if os.path.isdir(os.path.join(path, item))]# and item.startswith("results-")]
-folder_name = results_folders[3]  #Velg hvilken i results du vil teste 
+folder_name = results_folders[8]  #Velg hvilken i results du vil teste 
 print("tester folder", folder_name)
 
 def extract_activities(file_path):
@@ -421,7 +421,7 @@ def check_employee_consistency(file_path):
     if inconsistencies: 
         return False 
     return True 
-
+'''
 #------------ TEST FOR SAMEEMPLOYEE -----------------
 file_name_list = ["_before_destroy", "_after_destroy", "_after_repair"] 
 
@@ -514,9 +514,46 @@ for cand in range(1, iterations+1):
             print("HAPPENED IN ROUND ", cand, "IN STEP", file_name)
             print("---------------------------")
                 
-
+'''
 
 # -------------------------- TEST FOR FINAL  ------------------
+general_file_path = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+folder_name 
+file_path = general_file_path+'\\initial.txt' 
+status1 = compare_dictionary_with_candidate(file_path)
+if status1 == False:
+    print("SOmething wrong in", file_path)
+    print("---------------------------")
+
+status2 = compare_allocated_dictionaries(file_path)
+if status2 == False: 
+    print("SOmething wrong in", file_path)
+    print("---------------------------")
+
+status3, status4a, status4b, status5a, status5b = check_precedence_within_file(file_path)
+if status3 == False or status4a == False or status4b == False or status5a == False or status5b == False:
+    print("SOmething wrong in", file_path)
+    print("---------------------------") 
+
+status6 = check_objective(file_path)
+if status6 == False: 
+    print("SOmething wrong in", file_path)
+    print("---------------------------")
+
+status7 = check_employee_consistency(file_path)
+if status7 == False: 
+    print("SOmething wrong in", file_path)
+    print("---------------------------")
+
+status8 = check_consistency(file_path)
+if status8 == False: 
+    print("SOmething wrong in", file_path)
+    print("---------------------------")
+
+
+print("FERDIG TESTET")
+
+
+general_file_path = 'c:\\Users\\'+username+'\\masters-thesis\\results\\'+folder_name 
 file_path = general_file_path+'\\final.txt' 
 status1 = compare_dictionary_with_candidate(file_path)
 if status1 == False:
