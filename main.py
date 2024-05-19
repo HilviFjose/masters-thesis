@@ -319,7 +319,7 @@ def write_trials_to_csv(study, folder_path, tuning_parameters):
 if __name__ == "__main__":
     #main()
     #df_employees, df_patients, df_treatments, df_visits, df_activities = parameters.data(folder_name='data', case_type='antibiotics_data', generate_new_data=False)
-        
+   
     # Specify the parent folder
     parent_folder = "results"
 
@@ -331,7 +331,13 @@ if __name__ == "__main__":
     #Running paralell 1-1000
     main_config = MainConfig()
     main_config.data = "dataA-50P7E-3"
-
+    main_config.construction_insertor = 0 
+    main_config.repair_insertor = 0
+    main_config.illegal_repair_insertor = 0 
+    main_config.fraction_repair_insertor = 0
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Test1')
+    main(folder_path_run1, main_config)
+    """
     #INSERTIONTEST
     '''
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'First_possible')
@@ -385,7 +391,7 @@ if __name__ == "__main__":
     main_config.illegal_repair_insertor = 3 
     main_config.fraction_repair_insertor = 3
     main(folder_path_run1, main_config)
-    """
+ 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Best')
     main_config.construction_insertor = 4 
     main_config.repair_insertor = 4
