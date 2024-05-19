@@ -48,12 +48,16 @@ def main():
 
     config_info_file_path = os.path.join(folder_path, "0config_info" + ".txt")
 
+    
+
     with open("config/main_config.py", 'r') as file:
         content = file.read()
 
     with open(config_info_file_path, 'w') as file:
+        file.write("TIDSPUNKT FOR KJORING "+date_time_str)
         file.write(content)
-    
+        
+     
     constructor = ConstructionHeuristic(df_activities, df_employees, df_patients, df_treatments, df_visits, 5, folder_name)
     #print("Constructing Initial Solution")
     '''
