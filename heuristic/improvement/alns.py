@@ -121,8 +121,8 @@ class ALNS:
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
                         candidate_route_plan, destroy, repair = result
-             
-            #candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
+
+            
 
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 #print("Solution promising. Doing local search.")
@@ -151,7 +151,7 @@ class ALNS:
             # Compare solutions
              #Her settes current, til å være det det skal være 
             self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan)
-        
+            #print("current route plan", i,": ",self.current_route_plan.getOriginalObjective())
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
