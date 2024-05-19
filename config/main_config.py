@@ -19,8 +19,8 @@ construction_insertor = 1 #W
 repair_insertor = 1
 illegal_repair_insertor = 2
 
-max_num_regret1 = 30
-max_num_regret2 = 50
+max_num_regret1 = 60
+max_num_regret2 = 80
 
 #Insertor som kan brukes en andel av gangene 
 fraction_repair_insertor = 2
@@ -28,14 +28,14 @@ frequecy_of_fraction_insertion = 0.05
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
 # Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
-local_search_req_default = 0.1
+local_search_req_default = 0.05
 
 # Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
 reaction_factor_default = 0.5
 
 # Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
-weight_score_best_default = 15
-weight_score_better_default = 10
+weight_score_best_default = 35
+weight_score_better_default = 15
 weight_score_accepted_default = 5
 weight_score_bad = 0
 
@@ -46,7 +46,7 @@ iterations_update_default = 0.1
 k = 3
 
 #The amount of activities to remove in destroy operators
-destruction_degree_high_default = 0.3
+destruction_degree_high_default = 0.5
 destruction_degree_low_default = 0.15
 
 # Simulated annealing temperatures -- TODO: these must be tuned
@@ -73,7 +73,7 @@ penalty_act = 3             # Penalty per illegal activity
 # Weights for objectives
 weight_DW = 1             # Balance daily workload
 weight_WW = 1             # Balance weekly workload
-weight_S = 1/3              # Min skill difference
+weight_S = 1/4             # Min skill difference
 weight_SG = 1             # Balance specialist/generalist
 
 #Planning period
