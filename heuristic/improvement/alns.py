@@ -212,6 +212,8 @@ class ALNS:
         #self.add_repair_operator(repair_operators.random_repair)
         self.add_repair_operator(repair_operators.complexity_repair)
         self.add_repair_operator(repair_operators.regret_k_repair)
+        self.add_repair_operator(repair_operators.regret_k_repair_with_2)
+
 
 
     # Add operator to the heuristic instance

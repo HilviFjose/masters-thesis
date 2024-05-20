@@ -44,6 +44,7 @@ iterations_update_default = 0.1 #0.1
 
 # k-repair value
 k = 3 #3
+k_2= 2 #2
 
 #The amount of activities to remove in destroy operators
 destruction_degree_high_default = 0.5 #0.5
