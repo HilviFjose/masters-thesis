@@ -59,6 +59,7 @@ class ALNS:
         self.config_info_file_path = os.path.join(self.folder_path, "0config_info" + ".txt")
 
 
+        
         '''
         Hvordan skal vi legge til 
         Legge det neders i config, da må SimmulatedAnnealing hente ut filepath 
