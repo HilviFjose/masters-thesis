@@ -175,7 +175,7 @@ class RepairOperators:
         repaired_route_plan = self.illegal_patient_repair(repaired_route_plan)
 
         descendingUtilityNotAllocatedPatientsDict =  {patient: self.constructor.patients_df.loc[patient, 'utility'] for patient in repaired_route_plan.notAllocatedPatients}
-        descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get)
+        descendingUtilityNotAllocatedPatients = sorted(descendingUtilityNotAllocatedPatientsDict, key=descendingUtilityNotAllocatedPatientsDict.get, reverse = True)
         
         repair_insertor_level = self.main_config.repair_insertor
         if current_iteration % self.main_config.modNum_for_fraction_insertion == 0: 
