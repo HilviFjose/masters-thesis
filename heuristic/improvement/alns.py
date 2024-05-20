@@ -57,7 +57,7 @@ class ALNS:
 
         self.random_numbers = np.round(np.random.uniform(low=destruction_degree_interval[0], high=destruction_degree_interval[1], size=self.main_config.iterations),1)
 
-        self.random_states_for_parallell = [np.random.RandomState() for i in range(1, num_of_paralell_iterations+1)]
+        self.random_states_for_parallell = [np.random.RandomState() for i in range(1, self.main_config.num_of_paralell_iterations+1)]
         '''
         Skal fikse at den kjører i parallell slika t det blir rikig 
         '''
@@ -123,7 +123,7 @@ class ALNS:
                 
                 jobs = [(candidate_route_plan, parNum) for parNum in range(1, self.main_config.num_of_paralell_iterations+1)]
                 
-                results = process_parallel(self.doIteration, function_kwargs={'random_states_for_parallell': self.random_states_for_parallell}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
+                results = process_parallel(self.doIteration, function_kwargs={'random_states_for_parallell': self.random_states_for_parallell}, jobs=jobs, mp_config=self.mp_config, paralellNum=self.main_config.num_of_paralell_iterations)
                 candidate_route_plan, destroy, repair = results[0]
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 

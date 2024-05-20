@@ -184,7 +184,7 @@ class RepairOperators:
             repair_insertor_level = self.main_config.fraction_repair_insertor
         best_repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
         best_repaired_route_plan_with_k_regret.updateObjective(current_iteration, total_iterations)
-        for k in range(1, self.main_config.k): 
+        for k in range(0, self.main_config.k): 
             repaired_route_plan_with_k_regret = copy.deepcopy(repaired_route_plan)
 
             for patient in descendingUtilityNotAllocatedPatients[k:]: 
