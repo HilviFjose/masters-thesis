@@ -215,6 +215,8 @@ class ALNS:
         #self.add_repair_operator(repair_operators.random_repair)
         self.add_repair_operator(repair_operators.complexity_repair)
         self.add_repair_operator(repair_operators.regret_k_repair)
+        self.add_repair_operator(repair_operators.regret_k_repair_with_2)
+
 
 
     # Add operator to the heuristic instance
@@ -257,12 +259,12 @@ class ALNS:
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective) and candidate_route_plan.objective[0] == candidate_route_plan.getOriginalObjective():
             best_route_plan = copy.deepcopy(candidate_route_plan)
             current_route_plan = copy.deepcopy(candidate_route_plan)
-
+            """
             # Open the file for writing in the correct directory
             file_path = os.path.join(self.folder_path, "0config_info.txt")
             with open(file_path, "a") as file: 
                 file.writelines(f"ALNS iteration {self.iterationNum} is new global best, objective {best_route_plan.objective} BestDestroy{destroy} BestRepair{repair}\n")
-            
+            """
             return best_route_plan, current_route_plan
         
         if self.criterion.accept_criterion_without_weights_update( current_route_plan.objective, candidate_route_plan.objective):

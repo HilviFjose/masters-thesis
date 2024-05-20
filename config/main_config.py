@@ -19,11 +19,11 @@ construction_insertor = 1 #1
 repair_insertor = 1  #1
 illegal_repair_insertor = 2  #2
 
-max_num_regret1 = 60  #120
-max_num_regret2 = 80 #140
+max_num_regret1 = 120  #120
+max_num_regret2 = 140 #140
 
 #Insertor som kan brukes en andel av gangene 
-fraction_repair_insertor = 2 #1
+fraction_repair_insertor = 1 #1
 frequecy_of_fraction_insertion = 0.05 #0.05
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
@@ -44,6 +44,7 @@ iterations_update_default = 0.1 #0.1
 
 # k-repair value
 k = 3 #3
+k_2= 2 #2
 
 #The amount of activities to remove in destroy operators
 destruction_degree_high_default = 0.5 #0.5
