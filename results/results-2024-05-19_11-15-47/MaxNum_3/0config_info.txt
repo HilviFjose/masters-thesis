@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
-num_of_constructions = 20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
+num_of_constructions = 1  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
 # Iterations in ALNS
-iterations = 100
+iterations = 10
 
 #Number of paralell processes 
 num_of_paralell_iterations = 10
@@ -86,3 +86,4 @@ depot = (59.9365, 10.7396)
 
 
 
+ALNS iteration 1 is new global best, objective [117, 134, -21, 1900]
