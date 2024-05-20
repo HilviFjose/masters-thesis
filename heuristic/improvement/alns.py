@@ -61,13 +61,13 @@ class ALNS:
     def doIteration(self, input_tuple): 
         candidate_route_plan = input_tuple[0]
         parNum = input_tuple[1]
-        destroy = np.random.choice(self.destroy_operators)
-        print(destroy)
+        a = [i for i in range(len(self.destroy_operators))]
+        destroy = np.random.choice(a)
         #destroy = self.select_operator(self.destroy_operators, self.d_weights)
            
         # Select repair method
-        repair = np.random.choice(self.repair_operators)
-        print(repair)
+        a = [i for i in range(len(self.repair_operators))]
+        repair = np.random.choice(a)
         #repair = self.select_operator(self.repair_operators, self.r_weights)
   
 
