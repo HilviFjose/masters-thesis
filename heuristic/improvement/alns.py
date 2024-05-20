@@ -56,6 +56,13 @@ class ALNS:
 
         self.random_numbers = np.round(np.random.uniform(low=destruction_degree_interval[0], high=destruction_degree_interval[1], size=iterations),1)
 
+        self.config_info_file_path = os.path.join(self.folder_path, "0config_info" + ".txt")
+
+
+        '''
+        Hvordan skal vi legge til 
+        Legge det neders i config, da må SimmulatedAnnealing hente ut filepath 
+        '''
 
         
     def doIteration(self, input_tuple): 
@@ -89,7 +96,7 @@ class ALNS:
         #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_repair_parallel_"+str(parNum), r_operator.__name__)
         self.r_count[repair] += 1
 
-        weight_score = self.update_weights(self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion)
+        weight_score = self.update_weights(self.best_route_plan, self.current_route_plan, candidate_route_plan, self.criterion, destroy, repair)
        
         # Update scores
         self.d_scores[destroy] += weight_score
@@ -115,12 +122,15 @@ class ALNS:
                 #Kjører paralelt. 
                 
                 jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
-                
+                with open(self.config_info_file_path, 'a') as file:
+                    file.writelines("ITERATION "+str(self.iterationNum)+": ")
                 results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
                 candidate_route_plan, destroy, repair = results[0]
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
                         candidate_route_plan, destroy, repair = result
+                with open(self.config_info_file_path, 'a') as file:
+                    file.writelines("   ")
              
             #candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
 
@@ -150,7 +160,7 @@ class ALNS:
         
             # Compare solutions
              #Her settes current, til å være det det skal være 
-            self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan)
+            self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan, destroy, repair)
         
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
@@ -226,8 +236,8 @@ class ALNS:
 
 
     #
-    def update_weights(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
-        if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
+    def update_weights(self, best_route_plan, current_route_plan, candidate_route_plan, criterion, destroy, repair):
+        if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective, destroy, repair):
             if checkCandidateBetterThanBest(candidate_route_plan.objective, current_route_plan.objective):
                 # Solution is better
                 weight_score = self.weight_score_better
@@ -246,7 +256,7 @@ class ALNS:
 
         return weight_score
     
-    def update_current_best(self, best_route_plan, current_route_plan, candidate_route_plan):
+    def update_current_best(self, best_route_plan, current_route_plan, candidate_route_plan, destroy, repair):
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective) and candidate_route_plan.objective[0] == candidate_route_plan.getOriginalObjective():
             best_route_plan = copy.deepcopy(candidate_route_plan)
             current_route_plan = copy.deepcopy(candidate_route_plan)
@@ -254,7 +264,7 @@ class ALNS:
             # Open the file for writing in the correct directory
             file_path = os.path.join(self.folder_path, "0config_info.txt")
             with open(file_path, "a") as file: 
-                file.write(f"ALNS iteration {self.iterationNum} is new global best, objective {best_route_plan.objective}\n")
+                file.writelines(f"ALNS iteration {self.iterationNum} is new global best, objective {best_route_plan.objective} with Dest{destroy} Rep{repair}\n")
             
             return best_route_plan, current_route_plan
         

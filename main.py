@@ -83,22 +83,23 @@ def main():
     #IMPROVEMENT OF INITAL SOLUTION 
     #Parameterne er hentet fra config. 
     #criterion = SimulatedAnnealing(start_temperature, end_temperature, cooling_rate)
-    criterion = SimulatedAnnealing(deviation_from_best, prob_of_choosing, rate_T_start_end)
+    
 
     #TODO: Gjøre parellelt lokalsøk på denne også 
     localsearch = LocalSearch(initial_route_plan, 1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     initial_route_plan = localsearch.do_local_search()
     initial_route_plan.updateObjective(1, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
     #initial_route_plan.printSolution("candidate_after_initial_local_search", "ingen operator")
-   
+    criterion = SimulatedAnnealing(deviation_from_best, prob_of_choosing, rate_T_start_end)
     
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
-    
+    criterion.setALNS(alns)
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
     best_route_plan.updateObjective(iterations, iterations)
     best_route_plan.printSolution("final", "no operator")
+
 
     '''
 
