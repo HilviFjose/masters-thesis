@@ -254,12 +254,12 @@ class ALNS:
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective) and candidate_route_plan.objective[0] == candidate_route_plan.getOriginalObjective():
             best_route_plan = copy.deepcopy(candidate_route_plan)
             current_route_plan = copy.deepcopy(candidate_route_plan)
-
+            """
             # Open the file for writing in the correct directory
             file_path = os.path.join(self.folder_path, "0config_info.txt")
             with open(file_path, "a") as file: 
                 file.write(f"ALNS iteration {self.iterationNum} is new global best, objective {best_route_plan.objective}\n")
-            
+            """
             return best_route_plan, current_route_plan
         
         if self.criterion.accept_criterion_without_weights_update( current_route_plan.objective, candidate_route_plan.objective):

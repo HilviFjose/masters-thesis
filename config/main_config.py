@@ -19,11 +19,11 @@ construction_insertor = 1 #1
 repair_insertor = 1  #1
 illegal_repair_insertor = 2  #2
 
-max_num_regret1 = 60  #120
-max_num_regret2 = 80 #140
+max_num_regret1 = 120  #120
+max_num_regret2 = 140 #140
 
 #Insertor som kan brukes en andel av gangene 
-fraction_repair_insertor = 2 #1
+fraction_repair_insertor = 1 #1
 frequecy_of_fraction_insertion = 0.05 #0.05
 modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
 
