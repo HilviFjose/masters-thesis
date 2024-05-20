@@ -212,6 +212,7 @@ class RepairOperators:
     
 
     def regret_k_repair_with_2(self, destroyed_route_plan, current_iteration, total_iterations):
+        print("kommer inn i denne regret 2")
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
 
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
@@ -251,12 +252,12 @@ class RepairOperators:
 
                 else:
                     repaired_route_plan_with_k_regret = copy.deepcopy(old_route_plan)
+                    
         
             repaired_route_plan_with_k_regret.updateObjective(current_iteration, total_iterations)
-
+            
             if checkCandidateBetterThanBest(repaired_route_plan_with_k_regret.objective, best_repaired_route_plan_with_k_regret.objective): 
                 best_repaired_route_plan_with_k_regret = repaired_route_plan_with_k_regret
-      
         return best_repaired_route_plan_with_k_regret
     
 
