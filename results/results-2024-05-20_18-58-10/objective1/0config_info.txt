@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+TIDSPUNKT FOR KJORING 2024-05-20_18-58-10from datetime import datetime, timedelta
 import math
 
 class MainConfig:
@@ -9,7 +9,7 @@ class MainConfig:
         self.num_of_constructions = 20 #20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
         # Iterations in ALNS
-        self.iterations = 100 #100
+        self.iterations = 10 #100
 
         #Number of paralell processes 
         self.num_of_paralell_iterations = 10 #10
