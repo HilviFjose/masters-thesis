@@ -3,6 +3,7 @@ from helpfunctions import *
 import numpy.random as rnd
 import math
 from config.main_config import iterations
+import os 
 
 class SimulatedAnnealing:
     def __init__(self, deviation_from_best, prob_of_choosing, rate_T_start_end):
@@ -13,13 +14,24 @@ class SimulatedAnnealing:
         self.end_temperature = self.start_temperature*rate_T_start_end
         self.temperature = self.start_temperature
 
+        self.alns = None
+        self.config_info_file_path = None  
+
+       
+
+    def setALNS(self, alns): 
+        self.alns = alns 
+        self.config_info_file_path = os.path.join(alns.folder_path, "0config_info" + ".txt")
+
         
     # Simulated annealing acceptance criterion
-    def accept_criterion(self, current_objective, candidate_objective):
+    def accept_criterion(self, current_objective, candidate_objective, destroy, repair):
         accept = False
         # Always accept better solution
         if checkCandidateBetterThanBest(candidate_objective, current_objective):
             accept = True
+            with open(self.config_info_file_path, 'a') as file:
+                file.writelines(" destroy "+str(destroy)+" repair "+str(repair))
             #print("Candidate is better than current and accepted")
         
         # Sometimes accept worse

@@ -95,6 +95,7 @@ def main():
     alns = ALNS([destruction_degree_low_default, destruction_degree_high_default], weight_score_better_default, weight_score_accepted_default, weight_score_bad, weight_score_best_default, reaction_factor_default, 
                       local_search_req_default, iterations_update_default, initial_route_plan, criterion, constructor, mp_config, folder_path) 
     
+    criterion.setALNS( alns)
     #RUN ALNS 
     best_route_plan = alns.iterate(iterations)
     best_route_plan.updateObjective(iterations, iterations)
