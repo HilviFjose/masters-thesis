@@ -123,7 +123,7 @@ class ALNS:
                         candidate_route_plan, destroy, repair = result
              
             #candidate_route_plan.printSolution(str(self.iterationNum)+'candidate_after_paralell', "ingen operator")
-            
+            """
             if isPromisingLS(candidate_route_plan.objective, self.best_route_plan.objective, self.local_search_req) == True: 
                 #print("Solution promising. Doing local search.")
                 localsearch = LocalSearch(candidate_route_plan, self.iterationNum, num_iterations)
@@ -140,7 +140,7 @@ class ALNS:
                         candidate_route_plan.routes[day] = results[day-1].routes[day]
                     
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
-            
+                """
                 
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             
