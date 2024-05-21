@@ -85,5 +85,6 @@ depot = (59.9365, 10.7396)
 
 
 
-
+removeWorstOperators = True #True
+removeBestOperators = False #True
 
