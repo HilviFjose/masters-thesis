@@ -190,7 +190,7 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
-        self.add_destroy_operator(destroy_operators.random_activity_removal)
+        #self.add_destroy_operator(destroy_operators.random_activity_removal)
         
         self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
@@ -201,7 +201,7 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
        
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
-        self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
+        #self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
         self.add_destroy_operator(destroy_operators.related_patients_removal)
         self.add_destroy_operator(destroy_operators.related_treatments_removal)
@@ -212,7 +212,7 @@ class ALNS:
         #self.add_repair_operator(repair_operators.random_repair)
         self.add_repair_operator(repair_operators.complexity_repair)
         self.add_repair_operator(repair_operators.regret_k_repair)
-        self.add_repair_operator(repair_operators.regret_k_repair_with_2)
+        #self.add_repair_operator(repair_operators.regret_k_repair_with_2)
 
 
 
