@@ -3,7 +3,7 @@ import os
 
 #ANTIBIOTICS CASE
 
-antibiotics_data = False
+antibiotics_data = True
 generate_new_data = False
 folder_name = 'data'
 
