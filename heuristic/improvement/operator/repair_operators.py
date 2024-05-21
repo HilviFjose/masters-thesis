@@ -212,7 +212,6 @@ class RepairOperators:
     
 
     def regret_k_repair_with_2(self, destroyed_route_plan, current_iteration, total_iterations):
-        print("kommer inn i denne regret 2")
         repaired_route_plan = copy.deepcopy(destroyed_route_plan)
 
         repaired_route_plan = self.illegal_activity_repair(repaired_route_plan)
