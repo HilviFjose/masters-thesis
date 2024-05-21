@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
-num_of_constructions = 1 #20   
+num_of_constructions = 20 #20   
 
 # Iterations in ALNS
-iterations = 1 #100
+iterations = 100 #100
 
 #Number of paralell processes 
 num_of_paralell_iterations = 1 #10
