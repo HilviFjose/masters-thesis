@@ -146,8 +146,8 @@ class ALNS:
                         candidate_route_plan.routes[day] = results[day-1].routes[day]
                     
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
-                """
-                
+ 
+            """   
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             
             
@@ -178,11 +178,10 @@ class ALNS:
                 
         # Do local search to local optimum before returning last iteration
         #self.best_route_plan.printSolution("candidate_before_final_local_search", "ingen operator")
-        """
         localsearch = LocalSearch(self.best_route_plan, iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
         self.best_route_plan = localsearch.do_local_search_to_local_optimum()
         self.best_route_plan.updateObjective(iterations, iterations) #Egentlig iterasjon 0, men da blir det ingen penalty
-        """
+ 
         return self.best_route_plan
     
     def set_operators(self, destroy_operators, repair_operators):
