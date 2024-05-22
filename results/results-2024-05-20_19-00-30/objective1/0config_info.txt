@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+TIDSPUNKT FOR KJORING 2024-05-20_19-00-30from datetime import datetime, timedelta
 import math
 
 class MainConfig:
@@ -9,7 +9,7 @@ class MainConfig:
         self.num_of_constructions = 20 #20  #OBS: Bør ikke settes til over 5, for er usikkert hvro mye prosessoren tåler
 
         # Iterations in ALNS
-        self.iterations = 100 #100
+        self.iterations = 10 #100
 
         #Number of paralell processes 
         self.num_of_paralell_iterations = 10 #10
@@ -23,8 +23,8 @@ class MainConfig:
         self.repair_insertor = 1 #1
         self.illegal_repair_insertor = 2 #2
 
-        self.max_num_regret1 = 60 #120
-        self.max_num_regret2 = 80 #140
+        self.max_num_regret1 = 120 #120
+        self.max_num_regret2 = 140 #140
 
         #Insertor som kan brukes en andel av gangene 
         self.fraction_repair_insertor = 1 #1
@@ -81,7 +81,7 @@ class MainConfig:
         self.weight_SG = 1             # Balance specialist/generalist
 
         #Planning period
-        self.days = 5s
+        self.days = 5
 
         #Depot
         self.depot = (59.9365, 10.7396)
