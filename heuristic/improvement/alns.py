@@ -56,15 +56,21 @@ class ALNS:
 
         self.random_numbers = np.round(np.random.uniform(low=destruction_degree_interval[0], high=destruction_degree_interval[1], size=iterations),1)
 
-
+        self.random_states_for_parallell = [np.random.RandomState() for i in range(1, num_of_paralell_iterations+1)]
+        '''
+        Skal fikse at den kjører i parallell slika t det blir rikig 
+        '''
         
-    def doIteration(self, input_tuple): 
+    def doIteration(self, input_tuple, random_states_for_parallell): 
         candidate_route_plan = input_tuple[0]
         parNum = input_tuple[1]
-        destroy = self.select_operator(self.destroy_operators, self.d_weights)
+        #print("parNum", parNum)
+        #print("random_states_for_parallell", random_states_for_parallell)
+        random_state = random_states_for_parallell[parNum-1]
+        destroy = self.select_operator(self.destroy_operators, self.d_weights, random_state)
            
         # Select repair method
-        repair = self.select_operator(self.repair_operators, self.r_weights)
+        repair = self.select_operator(self.repair_operators, self.r_weights, random_state)
   
 
         #Destroy solution 
@@ -116,7 +122,7 @@ class ALNS:
                 
                 jobs = [(candidate_route_plan, parNum) for parNum in range(1, num_of_paralell_iterations+1)]
                 
-                results = process_parallel(self.doIteration, function_kwargs={}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
+                results = process_parallel(self.doIteration, function_kwargs={'random_states_for_parallell': self.random_states_for_parallell}, jobs=jobs, mp_config=self.mp_config, paralellNum=num_of_paralell_iterations)
                 candidate_route_plan, destroy, repair = results[0]
                 for result in results[1:]: 
                     if checkCandidateBetterThanBest(result[0].objective, candidate_route_plan.objective): 
@@ -185,7 +191,7 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.random_patient_removal)
         self.add_destroy_operator(destroy_operators.random_treatment_removal)
         self.add_destroy_operator(destroy_operators.random_visit_removal)
-        self.add_destroy_operator(destroy_operators.random_activity_removal)
+        #self.add_destroy_operator(destroy_operators.random_activity_removal)
         
         self.add_destroy_operator(destroy_operators.worst_deviation_patient_removal)
         self.add_destroy_operator(destroy_operators.worst_deviation_treatment_removal)
@@ -196,7 +202,7 @@ class ALNS:
         self.add_destroy_operator(destroy_operators.cluster_distance_activities_removal)
        
         self.add_destroy_operator(destroy_operators.spread_distance_patients_removal)
-        self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
+        #self.add_destroy_operator(destroy_operators.spread_distance_activities_removal)
         
         self.add_destroy_operator(destroy_operators.related_patients_removal)
         self.add_destroy_operator(destroy_operators.related_treatments_removal)
@@ -207,6 +213,8 @@ class ALNS:
         #self.add_repair_operator(repair_operators.random_repair)
         self.add_repair_operator(repair_operators.complexity_repair)
         self.add_repair_operator(repair_operators.regret_k_repair)
+        #self.add_repair_operator(repair_operators.regret_k_repair_with_2)
+
 
 
     # Add operator to the heuristic instance
@@ -220,12 +228,10 @@ class ALNS:
 
     # Select destroy/repair operator
     @staticmethod
-    def select_operator(operators, weights):
+    def select_operator(operators, weights, random_state):
         w = weights / np.sum(weights)
         a = [i for i in range(len(operators))]
-        return np.random.choice(a=a, p=w)
-
-
+        return random_state.choice(a=a, p=w)
     #
     def update_weights(self, best_route_plan, current_route_plan, candidate_route_plan, criterion):
         if criterion.accept_criterion( current_route_plan.objective, candidate_route_plan.objective):
@@ -251,12 +257,12 @@ class ALNS:
         if checkCandidateBetterThanBest(candidate_route_plan.objective, best_route_plan.objective) and candidate_route_plan.objective[0] == candidate_route_plan.getOriginalObjective():
             best_route_plan = copy.deepcopy(candidate_route_plan)
             current_route_plan = copy.deepcopy(candidate_route_plan)
-
+            """
             # Open the file for writing in the correct directory
             file_path = os.path.join(self.folder_path, "0config_info.txt")
             with open(file_path, "a") as file: 
                 file.write(f"ALNS iteration {self.iterationNum} is new global best, objective {best_route_plan.objective}\n")
-            
+            """
             return best_route_plan, current_route_plan
         
         if self.criterion.accept_criterion_without_weights_update( current_route_plan.objective, candidate_route_plan.objective):
