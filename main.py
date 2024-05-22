@@ -334,8 +334,7 @@ if __name__ == "__main__":
 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'konvergens')
     main(folder_path_run1, main_config)
-    """
-    """
+   
     #KJORE OBJEKTIV STUDIE 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'objective1')
     main_config.weight_DW = 1             # Balance daily workload
