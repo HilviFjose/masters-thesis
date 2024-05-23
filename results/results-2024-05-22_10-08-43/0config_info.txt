@@ -1,4 +1,4 @@
-TIDSPUNKT FOR KJORING 2024-05-20_19-08-18from datetime import datetime, timedelta
+TIDSPUNKT FOR KJORING 2024-05-22_10-08-43from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
@@ -84,9 +84,12 @@ days = 5
 depot = (59.9365, 10.7396)
 
 
+removeWorstOperators = False #True
+removeBestOperators = True #True
 
 
-
- ITERATION 1:  ITERATION 2:  destroy 2 repair 0 destroy 12 repair 0 destroy 0 repair 1 destroy 2 repair 2 ITERATION 3:  ITERATION 4:  ITERATION 5:  destroy 13 repair 1 ITERATION 6:  ITERATION 7:  destroy 13 repair 1 destroy 0 repair 1 destroy 2 repair 0 destroy 2 repair 2 ITERATION 8:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 9:  destroy 10 repair 2 ITERATION 10: ALNS iteration 10 is new global best, objective [110, 70, -27, 1452] BestDestroy8 BestRepair1
- ITERATION 11: ALNS iteration 11 is new global best, objective [110, 69, -26, 1475] BestDestroy0 BestRepair1
- ITERATION 12:  ITERATION 13:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 14:  ITERATION 15:  ITERATION 16:  ITERATION 17:  ITERATION 18:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 19:  ITERATION 20:  ITERATION 21:  ITERATION 22:  destroy 13 repair 1 ITERATION 23:  ITERATION 24:  ITERATION 25:  ITERATION 26:  ITERATION 27:  ITERATION 28:  ITERATION 29:  destroy 0 repair 1 destroy 13 repair 1 ITERATION 30:  ITERATION 31:  ITERATION 32:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 33:  destroy 13 repair 1 ITERATION 34:  ITERATION 35:  ITERATION 36:  ITERATION 37:  ITERATION 38:  destroy 13 repair 1 ITERATION 39:  destroy 8 repair 1
+ ITERATION 1:  ITERATION 2:  destroy 12 repair 2 destroy 8 repair 2ALNS iteration 2 is new global best, objective [108, 71, -17, 1665] BestDestroy8 BestRepair2
+ ITERATION 3: ALNS iteration 3 is new global best, objective [108, 70, -19, 1607] BestDestroy11 BestRepair2
+ ITERATION 4:  ITERATION 5:  destroy 12 repair 2 ITERATION 6:  destroy 12 repair 2 ITERATION 7:  destroy 12 repair 2 ITERATION 8:  ITERATION 9:  ITERATION 10:  ITERATION 11:  destroy 0 repair 0 destroy 12 repair 2 ITERATION 12:  destroy 12 repair 2 ITERATION 13:  destroy 12 repair 2 ITERATION 14:  ITERATION 15:  ITERATION 16:  destroy 12 repair 2 ITERATION 17:  ITERATION 18:  ITERATION 19:  destroy 12 repair 2 ITERATION 20:  destroy 8 repair 2ALNS iteration 20 is new global best, objective [115, 78, -26, 1770] BestDestroy8 BestRepair2
+ ITERATION 21:  ITERATION 22:  ITERATION 23:  destroy 8 repair 2 destroy 8 repair 2 ITERATION 24:  ITERATION 25:  destroy 8 repair 2 destroy 8 repair 2 ITERATION 26:  ITERATION 27:  destroy 8 repair 2 ITERATION 28:  destroy 11 repair 2 ITERATION 29:  ITERATION 30:  destroy 11 repair 2 destroy 8 repair 2 ITERATION 31:  destroy 0 repair 0 ITERATION 32:  ITERATION 33:  ITERATION 34:  ITERATION 35:  ITERATION 36:  ITERATION 37:  ITERATION 38:  ITERATION 39:  destroy 10 repair 0 destroy 8 repair 2 destroy 8 repair 2 ITERATION 40:  destroy 8 repair 0 destroy 8 repair 2 destroy 8 repair 2 ITERATION 41:  ITERATION 42:  ITERATION 43:  ITERATION 44:  destroy 11 repair 2 ITERATION 45:  destroy 10 repair 0 ITERATION 46:  destroy 10 repair 0 destroy 11 repair 2 ITERATION 47:  destroy 8 repair 2 ITERATION 48:  ITERATION 49:  destroy 12 repair 2 ITERATION 50:  destroy 12 repair 2 ITERATION 51:  ITERATION 52:  destroy 11 repair 2ALNS iteration 52 is new global best, objective [116, 84, -32, 1721] BestDestroy11 BestRepair2
+ ITERATION 53:  ITERATION 54:  ITERATION 55:  ITERATION 56:  ITERATION 57:  destroy 8 repair 2 ITERATION 58:  ITERATION 59:  destroy 11 repair 2 ITERATION 60:  ITERATION 61:  destroy 12 repair 2 ITERATION 62:  ITERATION 63:  destroy 8 repair 2 ITERATION 64: 

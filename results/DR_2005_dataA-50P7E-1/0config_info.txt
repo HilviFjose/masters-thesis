@@ -1,0 +1,95 @@
+TIDSPUNKT FOR KJORING 2024-05-20_19-08-18from datetime import datetime, timedelta
+import math
+
+#Number of constructed solutions 
+num_of_constructions = 20 #20   
+
+# Iterations in ALNS
+iterations = 100 #100
+
+#Number of paralell processes 
+num_of_paralell_iterations = 10 #10
+
+#Boolean for paralell 
+doParalellLocalSearch = True #True
+doParalellDestroyRepair = True #True
+
+#Insertor choises [0,1,2, 3, 4] for [simple, better with max reg1, better with max regret2, better, best ]
+construction_insertor = 1 #1
+repair_insertor = 1  #1
+illegal_repair_insertor = 2  #2
+
+max_num_regret1 = 120  #120
+max_num_regret2 = 140 #140
+
+#Insertor som kan brukes en andel av gangene 
+fraction_repair_insertor = 1 #1
+frequecy_of_fraction_insertion = 0.05 #0.05
+modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
+
+# Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
+local_search_req_default = 0.05 #0.05
+
+# Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
+reaction_factor_default = 0.5 #0.5
+
+# Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
+weight_score_best_default = 35 #35
+weight_score_better_default = 15 #15
+weight_score_accepted_default = 5 #5
+weight_score_bad = 0 #0
+
+# Iterations between each weight update in ALNS
+iterations_update_default = 0.1 #0.1
+
+# k-repair value
+k = 3 #3
+k_2= 2 #2
+
+#The amount of activities to remove in destroy operators
+destruction_degree_high_default = 0.5 #0.5
+destruction_degree_low_default = 0.15 #0.15
+
+# Simulated annealing temperatures -- TODO: these must be tuned
+#start_temperature = 60
+#end_temperature = 10
+#cooling_rate = 0.96
+
+deviation_from_best = 0.05
+prob_of_choosing = 0.5 
+rate_T_start_end = 0.2 
+
+# Distance Matrix
+# Buses in Oslo om average drive in 25 kms/h.
+speed = 40
+rush_factor = 2
+
+# Penalty in first objective for infeasible solution
+# TODO: these must be tuned
+penalty_patient = 20        # Penalty per illegal patient (Not allocated patient from the pre-allocated patient list)
+penalty_treat = 10          # Penalty per illegal treatment
+penalty_visit = 5           # Penalty per illegal visit  
+penalty_act = 3             # Penalty per illegal activity 
+
+# Weights for objectives
+weight_DW = 1             # Balance daily workload
+weight_WW = 1             # Balance weekly workload
+weight_S = 1/4             # Min skill difference
+weight_SG = 1             # Balance specialist/generalist
+
+#Planning period
+days = 5
+
+#Depot
+depot = (59.9365, 10.7396)
+
+
+
+
+
+ ITERATION 1:  ITERATION 2:  destroy 2 repair 0 destroy 12 repair 0 destroy 0 repair 1 destroy 2 repair 2 ITERATION 3:  ITERATION 4:  ITERATION 5:  destroy 13 repair 1 ITERATION 6:  ITERATION 7:  destroy 13 repair 1 destroy 0 repair 1 destroy 2 repair 0 destroy 2 repair 2 ITERATION 8:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 9:  destroy 10 repair 2 ITERATION 10: ALNS iteration 10 is new global best, objective [110, 70, -27, 1452] BestDestroy8 BestRepair1
+ ITERATION 11: ALNS iteration 11 is new global best, objective [110, 69, -26, 1475] BestDestroy0 BestRepair1
+ ITERATION 12:  ITERATION 13:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 14:  ITERATION 15:  ITERATION 16:  ITERATION 17:  ITERATION 18:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 19:  ITERATION 20:  ITERATION 21:  ITERATION 22:  destroy 13 repair 1 ITERATION 23:  ITERATION 24:  ITERATION 25:  ITERATION 26:  ITERATION 27:  ITERATION 28:  ITERATION 29:  destroy 0 repair 1 destroy 13 repair 1 ITERATION 30:  ITERATION 31:  ITERATION 32:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 33:  destroy 13 repair 1 ITERATION 34:  ITERATION 35:  ITERATION 36:  ITERATION 37:  ITERATION 38:  destroy 13 repair 1 ITERATION 39:  destroy 8 repair 1ALNS iteration 39 is new global best, objective [113, 72, -23, 1837] BestDestroy8 BestRepair1
+ ITERATION 40:  ITERATION 41:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 42:  ITERATION 43:  destroy 12 repair 0 ITERATION 44:  destroy 10 repair 2 ITERATION 45:  ITERATION 46:  ITERATION 47:  ITERATION 48:  ITERATION 49:  ITERATION 50:  ITERATION 51:  ITERATION 52:  destroy 10 repair 3 destroy 10 repair 2 ITERATION 53:  ITERATION 54:  destroy 0 repair 1 ITERATION 55:  destroy 2 repair 0 ITERATION 56:  destroy 10 repair 3 destroy 10 repair 2 ITERATION 57:  ITERATION 58:  ITERATION 59:  ITERATION 60:  ITERATION 61:  destroy 2 repair 0 destroy 13 repair 1 destroy 2 repair 2 ITERATION 62:  destroy 0 repair 1 ITERATION 63:  ITERATION 64:  destroy 0 repair 1 ITERATION 65:  destroy 0 repair 1 destroy 12 repair 0 destroy 8 repair 1 ITERATION 66:  destroy 8 repair 1 ITERATION 67:  destroy 8 repair 1 destroy 13 repair 1 ITERATION 68:  ITERATION 69:  ITERATION 70:  destroy 13 repair 1 ITERATION 71:  destroy 2 repair 0 destroy 2 repair 2 ITERATION 72:  ITERATION 73:  destroy 0 repair 1 ITERATION 74:  destroy 12 repair 0 ITERATION 75:  ITERATION 76:  ITERATION 77:  ITERATION 78:  ITERATION 79:  destroy 12 repair 0 destroy 2 repair 0 destroy 13 repair 1 destroy 8 repair 1 destroy 10 repair 3 destroy 2 repair 2 ITERATION 80:  destroy 8 repair 1 ITERATION 81:  ITERATION 82:  destroy 8 repair 1 ITERATION 83:  destroy 2 repair 2 destroy 10 repair 2 ITERATION 84:  destroy 8 repair 1 ITERATION 85:  ITERATION 86:  destroy 12 repair 0 destroy 8 repair 1 destroy 10 repair 3 destroy 10 repair 2 ITERATION 87:  destroy 8 repair 1 destroy 10 repair 3 destroy 10 repair 2 ITERATION 88:  destroy 0 repair 1 ITERATION 89:  ITERATION 90:  destroy 10 repair 3 destroy 10 repair 2ALNS iteration 90 is new global best, objective [114, 78, -23, 1734] BestDestroy10 BestRepair3
+ ITERATION 91:  ITERATION 92:  destroy 13 repair 1 ITERATION 93:  ITERATION 94:  destroy 10 repair 3 destroy 10 repair 2 ITERATION 95:  destroy 10 repair 2ALNS iteration 95 is new global best, objective [117, 75, -31, 1583] BestDestroy10 BestRepair2
+ ITERATION 96:  ITERATION 97:  destroy 2 repair 0 destroy 13 repair 1 destroy 10 repair 3 destroy 2 repair 2 ITERATION 98:  ITERATION 99:  destroy 13 repair 1 ITERATION 100:  destroy 13 repair 1
