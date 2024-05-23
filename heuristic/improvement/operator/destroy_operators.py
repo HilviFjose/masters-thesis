@@ -949,7 +949,7 @@ class DestroyOperators:
         coordinates = np.array(coordinates)
         
         # Perform k-means clustering
-        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(coordinates)
+        kmeans = KMeans(n_clusters=n_clusters, n_init = 10, random_state=0).fit(coordinates)
         labels = kmeans.labels_
 
         # Identify and select the indices of the activities in the smallest cluster
