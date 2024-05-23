@@ -147,7 +147,6 @@ class ALNS:
                         candidate_route_plan.routes[day] = results[day-1].routes[day]
                     
                 candidate_route_plan.updateObjective(self.iterationNum, num_iterations)
-               
                 
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_after_local_search", "ingen operator")
             
@@ -158,6 +157,9 @@ class ALNS:
             # Compare solutions
              #Her settes current, til å være det det skal være 
             self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan)
+            print("iteration ", i, " no penalty: ", candidate_route_plan.getOriginalObjective())  
+            print("iteration ", i, " current: ", candidate_route_plan.objective)  
+            print("iteration ", i, " best: ", candidate_route_plan.objective)  
         
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             

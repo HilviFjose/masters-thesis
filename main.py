@@ -332,7 +332,9 @@ if __name__ == "__main__":
     main_config = MainConfig()
     main_config.data = "dataA-50P7E-3"
 
-    """
+    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'konvergens')
+    main(folder_path_run1, main_config)
+   
     #KJORE OBJEKTIV STUDIE 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'objective1')
     main_config.weight_DW = 1             # Balance daily workload
@@ -451,6 +453,6 @@ if __name__ == "__main__":
     main_config.fraction_repair_insertor = 4
     main(folder_path_run1, main_config)
 
-    """
+
 
 
