@@ -269,9 +269,9 @@ class RoutePlan:
             #print(f'Travel Time: {self.objective[-1]}')
             print(f'Travel Time: {self.objective[-1]}')
             #print(f'Patient continuity: {self.objective[2]}')
-            print(f'Patient continuity: {self.objective[1]}')
+            print(f'Patient continuity: {self.objective[2]}')
             #print(f'Employee convenience: {self.objective[1]}')
-            print(f'Employee convenience: {self.objective[2]}')
+            print(f'Employee convenience: {self.objective[1]}')
             print('-------------------------------------------------------')
 
             # Tilbakestill sys.stdout til original
@@ -389,9 +389,9 @@ class RoutePlan:
                 #self.objective[3] += route.travel_time   
                 self.objective[3] += route.travel_time   
         #self.objective[2] = self.totalContinuity 
-        self.objective[1] = self.totalContinuity 
+        self.objective[2] = self.totalContinuity 
         #self.objective[1] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
-        self.objective[2] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
+        self.objective[1] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
 
