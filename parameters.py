@@ -3,8 +3,8 @@ import os
 
 #ANTIBIOTICS CASE
 
-antibiotics_data = False
-generate_new_data = False
+antibiotics_data = True
+generate_new_data = True
 folder_name = 'data'
 
 if antibiotics_data:
@@ -84,7 +84,7 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
 #TILDELE KLINIKKER TIL ANTIBIOTIKA-ANSATTE
-'''
+
 def update_clinic_assignments(df_employees, clinic_distribution):
     # Filtrere ut ansatte med profesjon 1 og de med profesjon > 1
     df_profession_1 = df_employees[df_employees['professionalLevel'] == 1]
@@ -92,37 +92,36 @@ def update_clinic_assignments(df_employees, clinic_distribution):
 
     num_others = len(df_others)
     
-    # Beregne eksakt antall klinikker basert på fordeling for de som ikke har profesjon 1
-    clinic_counts = (np.array(clinic_distribution) * num_others).astype(int)
-    clinics = np.hstack([np.full(count, i) for i, count in enumerate(clinic_counts, start=1)])
+    # Opprette en eksakt liste over klinikker basert på den forhåndsbestemte fordelingen
+    total_clinics_needed = num_others
+    clinics = []
+    for i, fraction in enumerate(clinic_distribution):
+        clinics += [i + 1] * int(round(fraction * total_clinics_needed))  # i+1 fordi klinikk indekser starter fra 1
 
-    # Justere for manglende eller ekstra klinikker på grunn av avrunding
-    current_total_clinics = len(clinics)
-    if current_total_clinics < num_others:
-        # Legg til manglende klinikker
-        extra_clinics = np.random.choice(range(1, len(clinic_counts) + 1), 
-                                         num_others - current_total_clinics,
-                                         p=clinic_distribution)
-        clinics = np.concatenate([clinics, extra_clics])
-    elif current_total_clinics > num_others:
-        # Fjern overflødige klinikker tilfeldig
-        np.random.shuffle(clinics)
-        clinics = clinics[:num_others]
+    # Tilpasse til nøyaktig antall ansatte med profesjon > 1 hvis det er behov
+    discrepancy = len(clinics) - total_clinics_needed
+    if discrepancy > 0:
+        clinics = clinics[:-discrepancy]  # Fjerne ekstra elementer fra slutten
+    elif discrepancy < 0:
+        additional_clinics = [-discrepancy * [i + 1] for i in range(len(clinic_distribution))]
+        clinics += sum(additional_clinics, [])[:abs(discrepancy)]  # Legge til manglende elementer
 
     np.random.shuffle(clinics)  # Blande klinikker for å tildele tilfeldig
-    
+
     # Oppdatere klinikk-kolonnen for ansatte med profesjon > 1
     df_others['clinic'] = clinics
 
-    # Samle sammen de oppdaterte ansatte til en DataFrame
     df_updated = pd.concat([df_profession_1, df_others]).sort_index()
+    file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
+    df_updated.to_csv(file_path, index=False)
 
     return df_updated
 
 df_employees = update_clinic_assignments(df_employees, construction_config_antibiotics.clinicDistribution)
-'''
+df_employees.to_pickle(os.path.join(os.getcwd(), folder_name, 'employees.pkl'))
+print(df_employees)
+
 #SILO-BASED DATASETS
-'''
 df_employees['clinic'] = df_employees['clinic'].replace(0, 2)
 def find_employees_not_in_clinic(activity_clinic, employee_df):
     # Finn ansatte som ikke er i den samme klinikken som aktiviteten
@@ -142,7 +141,7 @@ for idx, row in df_activities.iterrows():
         updated_list = list(set(existing_list + restricted_employees))
         df_activities.at[idx, 'employeeRestriction'] = updated_list
 
-#selected_columns = df_activities[['clinic', 'employeeRestriction']]
-#print(selected_columns)
-#print(df_employees)
-'''
+selected_columns = df_activities[['clinic', 'employeeRestriction']]
+print(selected_columns)
+print(df_employees)
+
