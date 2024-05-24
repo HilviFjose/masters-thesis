@@ -83,7 +83,44 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 #Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
 df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
+#TILDELE KLINIKKER TIL ANTIBIOTIKA-ANSATTE
+'''
+def update_clinic_assignments(df_employees, clinic_distribution):
+    # Filtrere ut ansatte med profesjon 1 og de med profesjon > 1
+    df_profession_1 = df_employees[df_employees['professionalLevel'] == 1]
+    df_others = df_employees[df_employees['professionalLevel'] > 1]
 
+    num_others = len(df_others)
+    
+    # Beregne eksakt antall klinikker basert på fordeling for de som ikke har profesjon 1
+    clinic_counts = (np.array(clinic_distribution) * num_others).astype(int)
+    clinics = np.hstack([np.full(count, i) for i, count in enumerate(clinic_counts, start=1)])
+
+    # Justere for manglende eller ekstra klinikker på grunn av avrunding
+    current_total_clinics = len(clinics)
+    if current_total_clinics < num_others:
+        # Legg til manglende klinikker
+        extra_clinics = np.random.choice(range(1, len(clinic_counts) + 1), 
+                                         num_others - current_total_clinics,
+                                         p=clinic_distribution)
+        clinics = np.concatenate([clinics, extra_clics])
+    elif current_total_clinics > num_others:
+        # Fjern overflødige klinikker tilfeldig
+        np.random.shuffle(clinics)
+        clinics = clinics[:num_others]
+
+    np.random.shuffle(clinics)  # Blande klinikker for å tildele tilfeldig
+    
+    # Oppdatere klinikk-kolonnen for ansatte med profesjon > 1
+    df_others['clinic'] = clinics
+
+    # Samle sammen de oppdaterte ansatte til en DataFrame
+    df_updated = pd.concat([df_profession_1, df_others]).sort_index()
+
+    return df_updated
+
+df_employees = update_clinic_assignments(df_employees, construction_config_antibiotics.clinicDistribution)
+'''
 #SILO-BASED DATASETS
 '''
 df_employees['clinic'] = df_employees['clinic'].replace(0, 2)
