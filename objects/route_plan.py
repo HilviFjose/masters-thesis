@@ -385,6 +385,7 @@ class RoutePlan:
                 route.updateObjective()
                 self.objective[0] += route.suitability
                 self.aggSkillDiff += route.aggSkillDiff 
+                #self.aggDeviationPrefSpes += route.deviationPrefSpes
                 self.aggDeviationPrefSpes += route.deviationPrefSpes
                 #self.objective[3] += route.travel_time   
                 self.objective[3] += route.travel_time   

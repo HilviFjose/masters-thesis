@@ -148,7 +148,7 @@ for idx, row in df_activities.iterrows():
 #selected_columns = df_activities[['clinic', 'employeeRestriction']]
 #print(selected_columns)
 #print(df_employees)
-'''
+
 #SILO-BASED WITH LOGISTIC EMPLOYEES WORKING CROSS-CLINIC - DATASETS
 def find_employees_not_in_clinic(activity_clinic, employee_df):
     # Finn ansatte som ikke er i den samme klinikk som aktiviteten og som ikke har professionLevel = 1
@@ -171,5 +171,5 @@ for idx, row in df_activities.iterrows():
 selected_columns = df_activities[['clinic', 'employeeRestriction']]
 print(selected_columns)
 print(df_employees)
-
+'''
 
