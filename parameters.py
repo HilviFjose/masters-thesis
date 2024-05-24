@@ -110,9 +110,12 @@ def update_clinic_assignments(df_employees, clinic_distribution):
     # Oppdatere klinikk-kolonnen for ansatte med profesjon > 1
     df_others['clinic'] = clinics
 
+    # Samle sammen de oppdaterte ansatte til en DataFrame
     df_updated = pd.concat([df_profession_1, df_others]).sort_index()
+
+    # Lagre til CSV, inkludert index
     file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
-    df_updated.to_csv(file_path, index=False)
+    df_updated.to_csv(file_path, index=True)  # Her angir vi index=True for å inkludere index-kolonnen
 
     return df_updated
 
