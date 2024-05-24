@@ -124,8 +124,8 @@ df_employees = update_clinic_assignments(df_employees, construction_config_antib
 df_employees.to_pickle(os.path.join(os.getcwd(), folder_name, 'employees.pkl'))
 print(df_employees)
 '''
-#SILO-BASED DATASETS
-
+#SILO-BASED - DATASETS
+'''
 df_employees['clinic'] = df_employees['clinic'].replace(0, 2)
 def find_employees_not_in_clinic(activity_clinic, employee_df):
     # Finn ansatte som ikke er i den samme klinikken som aktiviteten
@@ -148,4 +148,28 @@ for idx, row in df_activities.iterrows():
 #selected_columns = df_activities[['clinic', 'employeeRestriction']]
 #print(selected_columns)
 #print(df_employees)
+'''
+#SILO-BASED WITH LOGISTIC EMPLOYEES WORKING CROSS-CLINIC - DATASETS
+def find_employees_not_in_clinic(activity_clinic, employee_df):
+    # Finn ansatte som ikke er i den samme klinikk som aktiviteten og som ikke har professionLevel = 1
+    return employee_df[(employee_df['clinic'] != activity_clinic) & (employee_df['professionalLevel'] != 1)].index.tolist()
+
+# Oppdaterer df_activities uten å overskrive eksisterende restriksjoner
+for idx, row in df_activities.iterrows():
+    # Finn ansatte som ikke jobber i samme klinikk som aktiviteten og som ikke har klinikk 0
+    restricted_employees = find_employees_not_in_clinic(row['clinic'], df_employees)
+    
+    # Sjekk om det allerede er en liste i 'employeeRestriction'
+    if pd.isna(row['employeeRestriction']):
+        df_activities.at[idx, 'employeeRestriction'] = restricted_employees
+    else:
+        # Slår sammen eksisterende liste med nye ansatteIDer, unngår duplikater
+        existing_list = row['employeeRestriction']
+        updated_list = list(set(existing_list + restricted_employees))
+        df_activities.at[idx, 'employeeRestriction'] = updated_list
+
+selected_columns = df_activities[['clinic', 'employeeRestriction']]
+print(selected_columns)
+print(df_employees)
+
 
