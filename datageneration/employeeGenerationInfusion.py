@@ -119,22 +119,34 @@ def employeeGeneratorOnlyDay():
     for index, level in enumerate(profession_levels): 
         employees.append([index+1, level, [2, 5, 8, 11, 14]])          # EmployeeId, Profession Level, Schedule
 
-    # Forbered klinikker
-    clinic = np.empty(construction_config_infusion.E_num, dtype=int)
+    # Beregne eksakt antall klinikker basert på fordeling
+    clinic_counts = (np.array(construction_config_infusion.clinicDistribution) * construction_config_infusion.E_num).astype(int)
+    clinics = np.hstack([np.full(count, i) for i, count in enumerate(clinic_counts, start=1)])
 
-    # Tildele klinikk 0 til de som har profesjon 1, resten får tildelt basert på fordeling
+    # Justere for manglende eller ekstra klinikker på grunn av avrunding
+    current_total_clinics = len(clinics)
+    if current_total_clinics < construction_config_infusion.E_num:
+        # Legg til manglende klinikker
+        extra_clinics = np.random.choice(range(1, len(clinic_counts) + 1), 
+                                         construction_config_infusion.E_num - current_total_clinics,
+                                         p=construction_config_infusion.clinicDistribution)
+        clinics = np.concatenate([clinics, extra_clinics])
+    elif current_total_clinics > construction_config_infusion.E_num:
+        # Fjern overflødige klinikker tilfeldig
+        np.random.shuffle(clinics)
+        clinics = clinics[:construction_config_infusion.E_num]
+
+    np.random.shuffle(clinics)  # Blande klinikker for å tildele tilfeldig
+
+    # Tildele klinikk 0 til ansatte med profesjon 1 og justere fordelingen
     for i, level in enumerate(profession_levels):
         if level == 1:
-            clinic[i] = 0
-        else:
-            # Bestemme om ansatte med profesjon > 1 skal få 0 basert på 30 % sjanse
-            if np.random.rand() <= construction_config_infusion.E_generalists:
-                clinic[i] = 0
-            else:
-                clinic[i] = np.random.choice(range(2, len(construction_config_infusion.clinicDistribution) + 2), p=construction_config_infusion.clinicDistribution)
+            # Finn en ikke-null klinikk og bytt den ut
+            non_zero_index = np.where(clinics != 0)[0][0]
+            clinics[i], clinics[non_zero_index] = 0, clinics[i]
 
     # Fyll DataFrame
-    for e, c in zip(employees, clinic):
+    for e, c in zip(employees, clinics):
         df_employees = df_employees._append({
             'employeeId': e[0],
             'professionalLevel': e[1],
@@ -147,4 +159,4 @@ def employeeGeneratorOnlyDay():
     
     return df_employees
 
-#employeeGenerator()
+#employeeGeneratorOnlyDay()

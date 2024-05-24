@@ -4,7 +4,7 @@ import os
 #ANTIBIOTICS CASE
 
 antibiotics_data = False
-generate_new_data = False
+generate_new_data = True
 folder_name = 'data'
 
 if antibiotics_data:
@@ -84,3 +84,26 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
 
+#SILO-BASED DATASETS
+'''
+def find_employees_not_in_clinic(activity_clinic, employee_df):
+    # Finn ansatte som ikke er i den samme klinikken som aktiviteten
+    return employee_df[employee_df['clinic'] != activity_clinic].index.tolist()
+
+# Oppdaterer df_activities uten å overskrive eksisterende restriksjoner
+for idx, row in df_activities.iterrows():
+    # Finn ansatte som ikke jobber i samme klinikk som aktiviteten
+    restricted_employees = find_employees_not_in_clinic(row['clinic'], df_employees)
+    
+    # Sjekk om det allerede er en liste i 'employeeRestriction'
+    if pd.isna(row['employeeRestriction']):
+        df_activities.at[idx, 'employeeRestriction'] = restricted_employees
+    else:
+        # Slår sammen eksisterende liste med nye ansatteIDer, unngår duplikater
+        existing_list = row['employeeRestriction']
+        updated_list = list(set(existing_list + restricted_employees))
+        df_activities.at[idx, 'employeeRestriction'] = updated_list
+
+#selected_columns = df_activities[['clinic', 'employeeRestriction']]
+#print(selected_columns)
+'''
