@@ -84,6 +84,7 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
 #TILDELE KLINIKKER TIL ANTIBIOTIKA-ANSATTE
+'''
 def update_clinic_assignments(df_employees, clinic_distribution):
     # Filtrere ut ansatte med profesjon 1 og de med profesjon > 1
     df_profession_1 = df_employees[df_employees['professionalLevel'] == 1]
@@ -122,7 +123,7 @@ def update_clinic_assignments(df_employees, clinic_distribution):
 df_employees = update_clinic_assignments(df_employees, construction_config_antibiotics.clinicDistribution)
 df_employees.to_pickle(os.path.join(os.getcwd(), folder_name, 'employees.pkl'))
 print(df_employees)
-
+'''
 #SILO-BASED DATASETS
 '''
 df_employees['clinic'] = df_employees['clinic'].replace(0, 2)
