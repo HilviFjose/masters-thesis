@@ -4,7 +4,7 @@ import os
 #ANTIBIOTICS CASE
 
 antibiotics_data = False
-generate_new_data = True
+generate_new_data = False
 folder_name = 'data'
 
 if antibiotics_data:
@@ -86,6 +86,7 @@ df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
 #SILO-BASED DATASETS
 '''
+df_employees['clinic'] = df_employees['clinic'].replace(0, 2)
 def find_employees_not_in_clinic(activity_clinic, employee_df):
     # Finn ansatte som ikke er i den samme klinikken som aktiviteten
     return employee_df[employee_df['clinic'] != activity_clinic].index.tolist()
@@ -106,4 +107,5 @@ for idx, row in df_activities.iterrows():
 
 #selected_columns = df_activities[['clinic', 'employeeRestriction']]
 #print(selected_columns)
+#print(df_employees)
 '''
