@@ -331,7 +331,7 @@ if __name__ == "__main__":
     #Running paralell 1-1000
     main_config = MainConfig()
     main_config.data = "dataA-50P7E-3"
-
+    """
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'konvergens')
     main(folder_path_run1, main_config)
    
@@ -370,7 +370,7 @@ if __name__ == "__main__":
     main_config.weight_S = 1/4              # Min skill difference
     main_config.weight_SG = 1  
     """
-    
+    """
     #KJORE PARALLELLTEST
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p20_I50')
     main_config.iterations = 50 
@@ -386,7 +386,7 @@ if __name__ == "__main__":
     main_config.iterations = 250
     main_config.num_of_paralell_iterations = 4
     main(folder_path_run1, main_config)
-
+    """
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p1_I1000')
     main_config.iterations = 1000 
     main_config.num_of_paralell_iterations = 1
@@ -452,7 +452,7 @@ if __name__ == "__main__":
     main_config.illegal_repair_insertor = 4 
     main_config.fraction_repair_insertor = 4
     main(folder_path_run1, main_config)
-
+    """
 
 
 
