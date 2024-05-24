@@ -4,7 +4,7 @@ import os
 #ANTIBIOTICS CASE
 
 antibiotics_data = True
-generate_new_data = True
+generate_new_data = False
 folder_name = 'data'
 
 if antibiotics_data:
@@ -84,7 +84,7 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
 #TILDELE KLINIKKER TIL ANTIBIOTIKA-ANSATTE
-
+'''
 def update_clinic_assignments(df_employees, clinic_distribution):
     # Filtrere ut ansatte med profesjon 1 og de med profesjon > 1
     df_profession_1 = df_employees[df_employees['professionalLevel'] == 1]
@@ -111,17 +111,21 @@ def update_clinic_assignments(df_employees, clinic_distribution):
     # Oppdatere klinikk-kolonnen for ansatte med profesjon > 1
     df_others['clinic'] = clinics
 
+    # Samle sammen de oppdaterte ansatte til en DataFrame
     df_updated = pd.concat([df_profession_1, df_others]).sort_index()
+
+    # Lagre til CSV, inkludert index
     file_path = os.path.join(os.getcwd(), 'data', 'employees.csv')
-    df_updated.to_csv(file_path, index=False)
+    df_updated.to_csv(file_path, index=True)  # Her angir vi index=True for å inkludere index-kolonnen
 
     return df_updated
 
 df_employees = update_clinic_assignments(df_employees, construction_config_antibiotics.clinicDistribution)
 df_employees.to_pickle(os.path.join(os.getcwd(), folder_name, 'employees.pkl'))
 print(df_employees)
-
+'''
 #SILO-BASED DATASETS
+'''
 df_employees['clinic'] = df_employees['clinic'].replace(0, 2)
 def find_employees_not_in_clinic(activity_clinic, employee_df):
     # Finn ansatte som ikke er i den samme klinikken som aktiviteten
@@ -144,4 +148,4 @@ for idx, row in df_activities.iterrows():
 selected_columns = df_activities[['clinic', 'employeeRestriction']]
 print(selected_columns)
 print(df_employees)
-
+'''
