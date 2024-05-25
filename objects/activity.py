@@ -24,6 +24,9 @@ class Activity:
         self.pickUpActivityID = activity_data["sameEmployeeActivityId"]
         self.location = self.makeLocationTuple(activity_data["location"])
         self.employeeRestricions = activity_data["employeeRestriction"]
+        if not isinstance(self.employeeRestricions, list): 
+            self.employeeRestricions = []
+
         self.continuityGroup = activity_data["continuityGroup"]
         self.employeeHistory = activity_data["employeeHistory"]
         self.PrevNode, self.PrevNodeInTime = self.makePresNodes(activity_data["prevPrece"])

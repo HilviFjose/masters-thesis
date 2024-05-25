@@ -39,10 +39,12 @@ class Route:
     '''
 
     def checkTrueFalse(self, activity): 
-        if  self.employee.id in activity.employeeRestricions or (
+    
+        if  self.employee.id in activity.employeeRestricions or  (
             self.employee.id in activity.employeeNotAllowedDueToPickUpDelivery) or (
                 activity.skillReq > self.skillLev) or (activity.possibleToInsert == False): 
             return False
+    
         
         return True 
 
