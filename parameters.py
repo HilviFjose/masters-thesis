@@ -183,6 +183,7 @@ df_employees = remove_logistic_employees(df_employees)
 print(df_employees)
 '''
 #CROSS-CLINIC WITH STRICT SPECIALIST CONSTRAINTS 
+'''
 def find_employees_not_in_clinic(activity_specialist, employee_df):
     # Finn ansatte som ikke er i den samme klinikken som aktiviteten
     return employee_df[(employee_df['clinic'] != activity_specialist) & (employee_df['professionalLevel'] != 1)].index.tolist()
@@ -207,3 +208,4 @@ for idx, row in df_activities.iterrows():
 selected_columns = df_activities[['clinic', 'employeeRestriction', 'specialisationPreferred']]
 print(selected_columns)
 print(df_employees)
+'''
