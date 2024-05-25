@@ -125,7 +125,7 @@ df_employees.to_pickle(os.path.join(os.getcwd(), folder_name, 'employees.pkl'))
 print(df_employees)
 '''
 #SILO-BASED DATASETS
-
+'''
 df_employees['clinic'] = df_employees['clinic'].replace(0, 2)
 def find_employees_not_in_clinic(activity_clinic, employee_df):
     # Finn ansatte som ikke er i den samme klinikken som aktiviteten
@@ -148,4 +148,4 @@ for idx, row in df_activities.iterrows():
 #selected_columns = df_activities[['clinic', 'employeeRestriction']]
 #print(selected_columns)
 #print(df_employees)
-
+'''

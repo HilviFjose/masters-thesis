@@ -217,7 +217,7 @@ def calculate_hospital_cost(results_filepath):
 folder_name = 'data'
 file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
 file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-22_17-54-18\\final.txt"
+file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-23_13-19-54\\final.txt"
 
 #KPI-resultater
 idle_time = calculate_idle_time(file_path_results, file_path_activities, file_path_employees)
