@@ -45,10 +45,11 @@ class MainConfig:
 
         # Iterations between each weight update in ALNS
         self.iterations_update_default = 0.1 #0.1
-
         # k-repair value
-        self.k = 3
+        k = 3 #3
+        k_2= 2 #2
 
+  
         #The amount of activities to remove in destroy operators
         self.destruction_degree_high_default = 0.5 #0.5
         self.destruction_degree_low_default = 0.15 #0.15

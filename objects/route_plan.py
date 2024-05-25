@@ -255,8 +255,6 @@ class RoutePlan:
             print("illegalNotAllocatedVisits", self.illegalNotAllocatedVisitsWithPossibleDays)
             print("illegalNotAllocatedActivities", self.illegalNotAllocatedActivitiesWithPossibleDays)
 
-            print('-------------------------------------------------------')
-
             '''
             Printer alle rutene som inngår i routeplan
             '''
@@ -265,7 +263,17 @@ class RoutePlan:
                 for route in self.routes[day].values(): 
                     route.printSoultion()
 
-             # Tilbakestill sys.stdout til original
+            print('-------------------------------------------------------')
+            print('Informasjon til KPIs')
+            print(f'Allocated patients: {list((self.allocatedPatients).keys())}')
+            print(f'Number of employees: {(self.employee_df).shape[0]}')
+            print(f'Activities: {[activity for sublist in self.visits.values() for activity in sublist]}') 
+            print(f'Travel Time: {self.objective[-1]}')
+            print(f'Patient continuity: {self.objective[2]}')
+            print(f'Employee convenience: {self.objective[1]}')
+            print('-------------------------------------------------------')
+
+            # Tilbakestill sys.stdout til original
             sys.stdout = original_stdout
             
     def getEmployeeIDAllocatedForActivity(self, activity, day): 
