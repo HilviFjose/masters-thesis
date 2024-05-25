@@ -174,9 +174,11 @@ print(selected_columns)
 print(df_employees)
 '''
 #CROSS-CLINIC WITHOUT LOGISTIC EMPLOYEES
+'''
 def remove_logistic_employees(employee_df):
     # Filter out employees whose 'ProfessionLevel' is 1
     filtered_df = employee_df[employee_df['professionalLevel'] != 1]
     return filtered_df
 df_employees = remove_logistic_employees(df_employees)
 print(df_employees)
+'''
