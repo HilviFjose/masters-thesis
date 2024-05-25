@@ -83,9 +83,6 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 #Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
 df_activities = TimeWindowsWithTravel(df_activities, T_ij)
 
-print("FØR ")
-print(df_activities[['clinic', 'employeeRestriction']])
-
 #TILDELE KLINIKKER TIL ANTIBIOTIKA-ANSATTE
 '''
 def update_clinic_assignments(df_employees, clinic_distribution):
@@ -185,3 +182,28 @@ def remove_logistic_employees(employee_df):
 df_employees = remove_logistic_employees(df_employees)
 print(df_employees)
 '''
+#CROSS-CLINIC WITH STRICT SPECIALIST CONSTRAINTS 
+def find_employees_not_in_clinic(activity_specialist, employee_df):
+    # Finn ansatte som ikke er i den samme klinikken som aktiviteten
+    return employee_df[(employee_df['clinic'] != activity_specialist) & (employee_df['professionalLevel'] != 1)].index.tolist()
+
+# Oppdaterer df_activities uten å overskrive eksisterende restriksjoner
+for idx, row in df_activities.iterrows():
+    # Sjekk om aktiviteten har en preferanse for spesialisering
+    if not pd.isna(row['specialisationPreferred']):
+        # Finn ansatte som ikke jobber i samme klinikk som aktiviteten
+        restricted_employees = find_employees_not_in_clinic(row['clinic'], df_employees)
+        
+        # Sjekk om det allerede er en liste i 'employeeRestriction'
+        if pd.isna(row['employeeRestriction']):
+            df_activities.at[idx, 'employeeRestriction'] = restricted_employees
+        else:
+            # Slår sammen eksisterende liste med nye ansatteIDer, unngår duplikater
+            existing_list = row['employeeRestriction']
+            updated_list = list(set(existing_list + restricted_employees))
+            df_activities.at[idx, 'employeeRestriction'] = updated_list
+
+# For å sjekke og vise endringene
+selected_columns = df_activities[['clinic', 'employeeRestriction', 'specialisationPreferred']]
+print(selected_columns)
+print(df_employees)

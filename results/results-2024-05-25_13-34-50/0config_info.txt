@@ -1,14 +1,14 @@
-TIDSPUNKT FOR KJORING 2024-05-25_12-23-57from datetime import datetime, timedelta
+TIDSPUNKT FOR KJORING 2024-05-25_13-34-50from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
 num_of_constructions = 20 #20   
 
 # Iterations in ALNS
-iterations = 50 #100
+iterations = 100 #100
 
 #Number of paralell processes 
-num_of_paralell_iterations = 20 #10
+num_of_paralell_iterations = 10 #10
 
 #Boolean for paralell 
 doParalellLocalSearch = True #True
@@ -87,6 +87,3 @@ depot = (59.9365, 10.7396)
 
 
 
-ALNS iteration 2 is new global best, objective [216, 115, -29, 2205]
-ALNS iteration 3 is new global best, objective [219, 113, -31, 2214]
-ALNS iteration 8 is new global best, objective [224, 118, -39, 2166]
