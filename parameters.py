@@ -3,7 +3,7 @@ import os
 
 #ANTIBIOTICS CASE
 
-antibiotics_data = True
+antibiotics_data = False
 generate_new_data = False
 folder_name = 'data'
 
@@ -82,6 +82,9 @@ T_ij = distance_matrix.travel_matrix(df_activities_depot)
 #ADDING TRAVEL DISTANCE TO TIME WINDOWS
 #Update earliest and latest start times of activities to make sure it is possible to travel between activities and the depot if there is a pick-up and delivery
 df_activities = TimeWindowsWithTravel(df_activities, T_ij)
+
+print("FØR ")
+print(df_activities[['clinic', 'employeeRestriction']])
 
 #TILDELE KLINIKKER TIL ANTIBIOTIKA-ANSATTE
 '''

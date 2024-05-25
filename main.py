@@ -33,7 +33,9 @@ def main():
     df_treatments = parameters.df_treatments
     df_visits = parameters.df_visits
     df_activities = parameters.df_activities
-   
+
+    print(df_activities[['clinic', 'employeeRestriction']])
+
     # Specify the parent folder
     parent_folder = "results"
 
