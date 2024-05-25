@@ -370,7 +370,6 @@ if __name__ == "__main__":
     main_config.weight_S = 1/4              # Min skill difference
     main_config.weight_SG = 1  
     """
-    """
     #KJORE PARALLELLTEST
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p20_I50')
     main_config.iterations = 50 
@@ -391,12 +390,11 @@ if __name__ == "__main__":
     main_config.iterations = 1000 
     main_config.num_of_paralell_iterations = 1
     main(folder_path_run1, main_config)
-
+    """
     #reset
     main_config.iterations = 100 
     main_config.num_of_paralell_iterations = 10
-    
-    """s
+   
     #KJORE INSERTERTEST
     #first possible
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'First Possible')
@@ -444,7 +442,7 @@ if __name__ == "__main__":
     main_config.repair_insertor = 3
     main_config.illegal_repair_insertor = 3 
     main_config.fraction_repair_insertor = 3
-    
+    """
     #best objective only
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Best')
     main_config.construction_insertor = 4 
