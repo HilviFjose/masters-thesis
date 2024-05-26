@@ -438,12 +438,12 @@ if __name__ == "__main__":
     main_config.repair_insertor = 1
     main_config.illegal_repair_insertor = 2 
     main_config.fraction_repair_insertor = 1
-
+    
     #regret only
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Regret')
     main_config.construction_insertor = 3 
     main_config.repair_insertor = 3
-    main_config.illegal_repair_insertor = 3 
+    main_config.illegal_repair_insertor = 3 s
     main_config.fraction_repair_insertor = 3
 
     #best objective only
@@ -453,7 +453,7 @@ if __name__ == "__main__":
     main_config.illegal_repair_insertor = 4 
     main_config.fraction_repair_insertor = 4
     main(folder_path_run1, main_config)
-  
+    
 
 
 
