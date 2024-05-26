@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
+TIDSPUNKT FOR KJORING 2024-05-26_12-36-04from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
 num_of_constructions = 20 #20   
 
 # Iterations in ALNS
-iterations = 100 #100
+iterations = 1000 #100
 
 #Number of paralell processes 
-num_of_paralell_iterations = 10 #10
+num_of_paralell_iterations = 1 #10
 
 #Boolean for paralell 
 doParalellLocalSearch = True #True
@@ -19,8 +19,8 @@ construction_insertor = 1 #1
 repair_insertor = 1  #1
 illegal_repair_insertor = 2  #2
 
-max_num_regret1 = 120 #120
-max_num_regret2 = 140 #140
+max_num_regret1 = 60  #120
+max_num_regret2 = 80 #140
 
 #Insertor som kan brukes en andel av gangene 
 fraction_repair_insertor = 1 #1
