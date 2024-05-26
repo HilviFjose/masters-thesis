@@ -150,7 +150,7 @@ def calculate_route_efficiency(results_filepath, activities_filepath):
     travel_time = read_travel_time(results_filepath)  # assuming this function reads the travel time
     print(f'original travel time {travel_time}, hypothetical travel time to visits {travel_time_visits}')
    
-    return travel_time/travel_time_visits
+    return travel_time_visits/travel_time
 
 #-------------- PATIENT CONVENIENCE -----------------
 def read_patient_continuity_obj(filepath):
@@ -217,7 +217,7 @@ def calculate_hospital_cost(results_filepath):
 folder_name = 'data'
 file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
 file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-23_13-19-54\\final.txt"
+file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-24_19-19-38\\final.txt"
 
 #KPI-resultater
 idle_time = calculate_idle_time(file_path_results, file_path_activities, file_path_employees)
