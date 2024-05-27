@@ -334,7 +334,7 @@ if __name__ == "__main__":
     """
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'konvergens')
     main(folder_path_run1, main_config)
-    """
+    
     main_config.max_num_regret1 = 60
     main_config.max_num_regret1 = 80
     
@@ -366,16 +366,7 @@ if __name__ == "__main__":
     main_config.weight_S = 1/4              # Min skill difference
     main_config.weight_SG = 2 
     main(folder_path_run1, main_config)
-    """
-    #reset
-    main_config.weight_DW = 1             # Balance daily workload
-    main_config.weight_WW = 1             # Balance weekly workload
-    main_config.weight_S = 1/4              # Min skill difference
-    main_config.weight_SG = 1  
- 
-   
-    main_config.max_num_regret1 = 60
-    main_config.max_num_regret1 = 80
+
     #KJORE PARALLELLTEST
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p20_I50')
     main_config.iterations = 50 
@@ -396,11 +387,8 @@ if __name__ == "__main__":
     main_config.iterations = 1000 
     main_config.num_of_paralell_iterations = 1
     main(folder_path_run1, main_config)
- 
-    #reset
-    main_config.iterations = 100 
-    main_config.num_of_paralell_iterations = 10
-   
+    """
+
     #KJORE INSERTERTEST
     #first possible
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'First Possible')
@@ -408,6 +396,7 @@ if __name__ == "__main__":
     main_config.repair_insertor = 0
     main_config.illegal_repair_insertor = 0 
     main_config.fraction_repair_insertor = 0
+    main(folder_path_run1, main_config)
 
     #maxnum only
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum Only')
@@ -416,6 +405,7 @@ if __name__ == "__main__":
     main_config.repair_insertor = 1
     main_config.illegal_repair_insertor = 1 
     main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
 
     #maxnum combinations
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Maxnum 6080')
@@ -425,6 +415,7 @@ if __name__ == "__main__":
     main_config.repair_insertor = 1
     main_config.illegal_repair_insertor = 2 
     main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'MaxNum 90110')
     main_config.max_num_regret1 = 90
@@ -433,6 +424,7 @@ if __name__ == "__main__":
     main_config.repair_insertor = 1
     main_config.illegal_repair_insertor = 2 
     main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Maxnum 120140')
     main_config.max_num_regret1 = 120
@@ -441,22 +433,12 @@ if __name__ == "__main__":
     main_config.repair_insertor = 1
     main_config.illegal_repair_insertor = 2 
     main_config.fraction_repair_insertor = 1
+    main(folder_path_run1, main_config)
     
     #regret only
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Regret')
     main_config.construction_insertor = 3 
     main_config.repair_insertor = 3
-    main_config.illegal_repair_insertor = 3 s
+    main_config.illegal_repair_insertor = 3 
     main_config.fraction_repair_insertor = 3
-
-    #best objective only
-    folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'Best')
-    main_config.construction_insertor = 4 
-    main_config.repair_insertor = 4
-    main_config.illegal_repair_insertor = 4 
-    main_config.fraction_repair_insertor = 4
     main(folder_path_run1, main_config)
-    """
-
-
-
