@@ -334,7 +334,10 @@ if __name__ == "__main__":
     """
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'konvergens')
     main(folder_path_run1, main_config)
-   
+    """
+    main_config.max_num_regret1 = 60
+    main_config.max_num_regret1 = 80
+    
     #KJORE OBJEKTIV STUDIE 
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'objective1')
     main_config.weight_DW = 1             # Balance daily workload
@@ -363,14 +366,14 @@ if __name__ == "__main__":
     main_config.weight_S = 1/4              # Min skill difference
     main_config.weight_SG = 2 
     main(folder_path_run1, main_config)
-
+    """
     #reset
     main_config.weight_DW = 1             # Balance daily workload
     main_config.weight_WW = 1             # Balance weekly workload
     main_config.weight_S = 1/4              # Min skill difference
     main_config.weight_SG = 1  
-    """
-    """
+ 
+   
     main_config.max_num_regret1 = 60
     main_config.max_num_regret1 = 80
     #KJORE PARALLELLTEST
@@ -393,7 +396,7 @@ if __name__ == "__main__":
     main_config.iterations = 1000 
     main_config.num_of_paralell_iterations = 1
     main(folder_path_run1, main_config)
-    """
+ 
     #reset
     main_config.iterations = 100 
     main_config.num_of_paralell_iterations = 10
@@ -453,7 +456,7 @@ if __name__ == "__main__":
     main_config.illegal_repair_insertor = 4 
     main_config.fraction_repair_insertor = 4
     main(folder_path_run1, main_config)
-    
+    """
 
 
 
