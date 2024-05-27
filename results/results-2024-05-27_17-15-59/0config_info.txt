@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+TIDSPUNKT FOR KJORING 2024-05-27_17-15-59from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
@@ -75,7 +75,7 @@ penalty_act = 3             # Penalty per illegal activity
 weight_DW = 1             # Balance daily workload
 weight_WW = 1             # Balance weekly workload
 weight_S = 1/10 #1/10?            # Min skill difference
-weight_SG = 1   #1          # Balance specialist/generalist
+weight_SG = 10   #1          # Balance specialist/generalist
 
 #Planning period
 days = 5
