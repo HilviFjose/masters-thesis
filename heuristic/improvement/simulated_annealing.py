@@ -30,8 +30,10 @@ class SimulatedAnnealing:
         # Always accept better solution
         if checkCandidateBetterThanBest(candidate_objective, current_objective):
             accept = True
+            '''
             with open(self.config_info_file_path, 'a') as file:
                 file.writelines(" destroy "+str(destroy)+" repair "+str(repair))
+            '''
             #print("Candidate is better than current and accepted")
         
         # Sometimes accept worse

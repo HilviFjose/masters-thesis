@@ -1,0 +1,390 @@
+TIDSPUNKT FOR KJORING 2024-05-25_19-00-00from datetime import datetime, timedelta
+import math
+
+#Number of constructed solutions 
+num_of_constructions = 20 #20   
+
+# Iterations in ALNS
+iterations = 100 #100
+
+#Number of paralell processes 
+num_of_paralell_iterations = 10 #10
+
+#Boolean for paralell 
+doParalellLocalSearch = True #True
+doParalellDestroyRepair = True #True
+
+#Insertor choises [0,1,2, 3, 4] for [simple, better with max reg1, better with max regret2, better, best ]
+construction_insertor = 1 #1
+repair_insertor = 1  #1
+illegal_repair_insertor = 2  #2
+
+max_num_regret1 = 120  #120
+max_num_regret2 = 140 #140
+
+#Insertor som kan brukes en andel av gangene 
+fraction_repair_insertor = 1 #1
+frequecy_of_fraction_insertion = 0.05 #0.05
+modNum_for_fraction_insertion = math.ceil(iterations*frequecy_of_fraction_insertion) 
+
+# Requirement for how good a candidate must be before doing the local search. -- TODO: these must be tuned
+local_search_req_default = 0.05 #0.05
+
+# Adaptive Weights: Brukes i ALNS for å telle når man skal oppdatere vekter på operatorer
+reaction_factor_default = 0.5 #0.5
+
+# Weight score for Acceptance Criterion and giving weights [better, not better but accepted, not better, global best]. Må se på hva disse tallene skal være 
+weight_score_best_default = 35 #35
+weight_score_better_default = 15 #15
+weight_score_accepted_default = 5 #5
+weight_score_bad = 0 #0
+
+# Iterations between each weight update in ALNS
+iterations_update_default = 0.1 #0.1
+
+# k-repair value
+k = 3 #3
+k_2= 2 #2
+
+#The amount of activities to remove in destroy operators
+destruction_degree_high_default = 0.5 #0.5
+destruction_degree_low_default = 0.15 #0.15
+
+# Simulated annealing temperatures -- TODO: these must be tuned
+#start_temperature = 60
+#end_temperature = 10
+#cooling_rate = 0.96
+
+deviation_from_best = 0.05
+prob_of_choosing = 0.5 
+rate_T_start_end = 0.2 
+
+# Distance Matrix
+# Buses in Oslo om average drive in 25 kms/h.
+speed = 40
+rush_factor = 2
+
+# Penalty in first objective for infeasible solution
+# TODO: these must be tuned
+penalty_patient = 20        # Penalty per illegal patient (Not allocated patient from the pre-allocated patient list)
+penalty_treat = 10          # Penalty per illegal treatment
+penalty_visit = 5           # Penalty per illegal visit  
+penalty_act = 3             # Penalty per illegal activity 
+
+# Weights for objectives
+weight_DW = 1             # Balance daily workload
+weight_WW = 1             # Balance weekly workload
+weight_S = 1/4             # Min skill difference
+weight_SG = 1             # Balance specialist/generalist
+
+#Planning period
+days = 5
+
+#Depot
+depot = (59.9365, 10.7396)
+
+
+removeWorstOperators = True #True
+removeBestOperators = False #False
+
+
+ ITERATION 1: Best Objective [108, 67, -19, 1573]
+Current Objective [108, 67, -19, 1573]
+Current Objective without penalty 108
+ ITERATION 2: Best Objective [108, 67, -19, 1573]
+Current Objective [107.0, 82, -18, 1615]
+Current Objective without penalty 108
+ ITERATION 3: Best Objective [108, 67, -19, 1573]
+Current Objective [106.5, 84, -21, 1525]
+Current Objective without penalty 107
+ ITERATION 4: Best Objective [108, 67, -19, 1573]
+Current Objective [111.5, 68, -21, 1542]
+Current Objective without penalty 112
+ ITERATION 5: Best Objective [108, 67, -19, 1573]
+Current Objective [108.5, 64, -24, 1452]
+Current Objective without penalty 110
+ ITERATION 6: Best Objective [108, 67, -19, 1573]
+Current Objective [105.5, 76, -17, 1545]
+Current Objective without penalty 108
+ ITERATION 7: Best Objective [108, 67, -19, 1573]
+Current Objective [103.5, 86, -16, 1683]
+Current Objective without penalty 107
+ ITERATION 8: Best Objective [108, 67, -19, 1573]
+Current Objective [105.5, 84, -21, 1732]
+Current Objective without penalty 106
+ ITERATION 9: Best Objective [108, 67, -19, 1573]
+Current Objective [109.5, 73, -30, 1490]
+Current Objective without penalty 112
+ ITERATION 10: Best Objective [108, 67, -19, 1573]
+Current Objective [113.5, 81, -41, 1554]
+Current Objective without penalty 114
+ ITERATION 11: Best Objective [110, 79, -25, 1516]
+Current Objective [110, 79, -25, 1516]
+Current Objective without penalty 110
+ ITERATION 12: Best Objective [110, 79, -25, 1516]
+Current Objective [108, 86, -25, 1723]
+Current Objective without penalty 108
+ ITERATION 13: Best Objective [110, 79, -25, 1516]
+Current Objective [110.35, 75, -28, 1497]
+Current Objective without penalty 111
+ ITERATION 14: Best Objective [110, 78, -23, 1451]
+Current Objective [110, 78, -23, 1451]
+Current Objective without penalty 110
+ ITERATION 15: Best Objective [110, 78, -23, 1451]
+Current Objective [110.25, 72, -20, 1569]
+Current Objective without penalty 114
+ ITERATION 16: Best Objective [110, 78, -23, 1451]
+Current Objective [114.0, 79, -21, 1843]
+Current Objective without penalty 118
+ ITERATION 17: Best Objective [110, 78, -23, 1451]
+Current Objective [108, 81, -20, 1429]
+Current Objective without penalty 108
+ ITERATION 18: Best Objective [110, 78, -23, 1451]
+Current Objective [108, 81, -20, 1429]
+Current Objective without penalty 108
+ ITERATION 19: Best Objective [110, 70, -20, 1396]
+Current Objective [110, 70, -20, 1396]
+Current Objective without penalty 110
+ ITERATION 20: Best Objective [110, 70, -20, 1396]
+Current Objective [110, 70, -20, 1396]
+Current Objective without penalty 110
+ ITERATION 21: Best Objective [110, 70, -20, 1396]
+Current Objective [108.85, 82, -19, 1524]
+Current Objective without penalty 112
+ ITERATION 22: Best Objective [110, 70, -20, 1396]
+Current Objective [109, 81, -20, 1700]
+Current Objective without penalty 109
+ ITERATION 23: Best Objective [110, 70, -20, 1396]
+Current Objective [110, 92, -20, 1777]
+Current Objective without penalty 110
+ ITERATION 24: Best Objective [110, 70, -20, 1396]
+Current Objective [110, 97, -21, 1874]
+Current Objective without penalty 110
+ ITERATION 25: Best Objective [112, 78, -18, 1592]
+Current Objective [112, 78, -18, 1592]
+Current Objective without penalty 112
+ ITERATION 26: Best Objective [112, 78, -18, 1592]
+Current Objective [111.8, 96, -21, 1591]
+Current Objective without penalty 117
+ ITERATION 27: Best Objective [112, 78, -18, 1592]
+Current Objective [112, 92, -18, 1641]
+Current Objective without penalty 112
+ ITERATION 28: Best Objective [115, 78, -23, 1707]
+Current Objective [115, 78, -23, 1707]
+Current Objective without penalty 115
+ ITERATION 29: Best Objective [115, 78, -23, 1707]
+Current Objective [113, 86, -23, 1767]
+Current Objective without penalty 113
+ ITERATION 30: Best Objective [115, 78, -23, 1707]
+Current Objective [113, 86, -23, 1767]
+Current Objective without penalty 113
+ ITERATION 31: Best Objective [115, 78, -23, 1707]
+Current Objective [113, 86, -23, 1767]
+Current Objective without penalty 113
+ ITERATION 32: Best Objective [115, 78, -23, 1707]
+Current Objective [112, 92, -27, 1903]
+Current Objective without penalty 112
+ ITERATION 33: Best Objective [115, 78, -23, 1707]
+Current Objective [108, 100, -22, 2118]
+Current Objective without penalty 108
+ ITERATION 34: Best Objective [115, 78, -23, 1707]
+Current Objective [108, 90, -23, 1812]
+Current Objective without penalty 108
+ ITERATION 35: Best Objective [115, 78, -23, 1707]
+Current Objective [106, 88, -23, 1802]
+Current Objective without penalty 106
+ ITERATION 36: Best Objective [115, 78, -23, 1707]
+Current Objective [107.4, 92, -21, 1919]
+Current Objective without penalty 111
+ ITERATION 37: Best Objective [115, 78, -23, 1707]
+Current Objective [102, 93, -17, 1655]
+Current Objective without penalty 102
+ ITERATION 38: Best Objective [115, 78, -23, 1707]
+Current Objective [109, 98, -12, 1818]
+Current Objective without penalty 109
+ ITERATION 39: Best Objective [115, 78, -23, 1707]
+Current Objective [109, 89, -10, 1871]
+Current Objective without penalty 109
+ ITERATION 40: Best Objective [115, 78, -23, 1707]
+Current Objective [105, 87, -13, 1652]
+Current Objective without penalty 105
+ ITERATION 41: Best Objective [115, 78, -23, 1707]
+Current Objective [110, 83, -12, 1724]
+Current Objective without penalty 110
+ ITERATION 42: Best Objective [115, 78, -23, 1707]
+Current Objective [110, 86, -20, 1876]
+Current Objective without penalty 110
+ ITERATION 43: Best Objective [115, 78, -23, 1707]
+Current Objective [113.7, 90, -24, 1879]
+Current Objective without penalty 118
+ ITERATION 44: Best Objective [115, 78, -23, 1707]
+Current Objective [110, 82, -15, 2184]
+Current Objective without penalty 110
+ ITERATION 45: Best Objective [115, 78, -23, 1707]
+Current Objective [113, 88, -16, 2161]
+Current Objective without penalty 113
+ ITERATION 46: Best Objective [115, 78, -23, 1707]
+Current Objective [109, 97, -18, 2030]
+Current Objective without penalty 109
+ ITERATION 47: Best Objective [115, 78, -23, 1707]
+Current Objective [108, 95, -17, 1880]
+Current Objective without penalty 108
+ ITERATION 48: Best Objective [115, 78, -23, 1707]
+Current Objective [108, 95, -17, 1880]
+Current Objective without penalty 108
+ ITERATION 49: Best Objective [115, 78, -23, 1707]
+Current Objective [108, 95, -17, 1880]
+Current Objective without penalty 108
+ ITERATION 50: Best Objective [115, 78, -23, 1707]
+Current Objective [110, 93, -17, 1954]
+Current Objective without penalty 110
+ ITERATION 51: Best Objective [115, 78, -23, 1707]
+Current Objective [110, 93, -17, 1954]
+Current Objective without penalty 110
+ ITERATION 52: Best Objective [115, 78, -23, 1707]
+Current Objective [109, 91, -14, 1852]
+Current Objective without penalty 109
+ ITERATION 53: Best Objective [115, 78, -23, 1707]
+Current Objective [109, 91, -14, 1852]
+Current Objective without penalty 109
+ ITERATION 54: Best Objective [115, 78, -23, 1707]
+Current Objective [112, 96, -14, 1909]
+Current Objective without penalty 112
+ ITERATION 55: Best Objective [115, 76, -24, 1696]
+Current Objective [115, 76, -24, 1696]
+Current Objective without penalty 115
+ ITERATION 56: Best Objective [117, 81, -28, 1843]
+Current Objective [117, 81, -28, 1843]
+Current Objective without penalty 117
+ ITERATION 57: Best Objective [117, 81, -28, 1843]
+Current Objective [107, 89, -18, 1788]
+Current Objective without penalty 107
+ ITERATION 58: Best Objective [117, 81, -28, 1843]
+Current Objective [110, 90, -19, 2142]
+Current Objective without penalty 110
+ ITERATION 59: Best Objective [117, 81, -28, 1843]
+Current Objective [116, 100, -20, 1853]
+Current Objective without penalty 116
+ ITERATION 60: Best Objective [117, 81, -28, 1843]
+Current Objective [112, 100, -18, 1738]
+Current Objective without penalty 112
+ ITERATION 61: Best Objective [117, 81, -28, 1843]
+Current Objective [116, 102, -20, 1913]
+Current Objective without penalty 116
+ ITERATION 62: Best Objective [117, 81, -28, 1843]
+Current Objective [116, 102, -20, 1850]
+Current Objective without penalty 116
+ ITERATION 63: Best Objective [117, 81, -28, 1843]
+Current Objective [114, 96, -20, 1895]
+Current Objective without penalty 114
+ ITERATION 64: Best Objective [117, 81, -28, 1843]
+Current Objective [112, 87, -17, 1900]
+Current Objective without penalty 112
+ ITERATION 65: Best Objective [117, 81, -28, 1843]
+Current Objective [112, 93, -19, 1907]
+Current Objective without penalty 112
+ ITERATION 66: Best Objective [117, 81, -28, 1843]
+Current Objective [112, 87, -17, 1900]
+Current Objective without penalty 112
+ ITERATION 67: Best Objective [117, 81, -28, 1843]
+Current Objective [112, 87, -20, 1973]
+Current Objective without penalty 112
+ ITERATION 68: Best Objective [117, 81, -28, 1843]
+Current Objective [114, 103, -20, 1850]
+Current Objective without penalty 114
+ ITERATION 69: Best Objective [117, 81, -28, 1843]
+Current Objective [114, 103, -22, 1881]
+Current Objective without penalty 114
+ ITERATION 70: Best Objective [117, 81, -28, 1843]
+Current Objective [110, 85, -19, 1835]
+Current Objective without penalty 110
+ ITERATION 71: Best Objective [117, 81, -28, 1843]
+Current Objective [114, 103, -20, 1931]
+Current Objective without penalty 114
+ ITERATION 72: Best Objective [117, 81, -28, 1843]
+Current Objective [107, 86, -15, 1735]
+Current Objective without penalty 107
+ ITERATION 73: Best Objective [117, 81, -28, 1843]
+Current Objective [110, 87, -21, 1824]
+Current Objective without penalty 110
+ ITERATION 74: Best Objective [117, 81, -28, 1843]
+Current Objective [110, 86, -23, 1914]
+Current Objective without penalty 110
+ ITERATION 75: Best Objective [117, 81, -28, 1843]
+Current Objective [110, 88, -23, 1936]
+Current Objective without penalty 110
+ ITERATION 76: Best Objective [117, 81, -28, 1843]
+Current Objective [112, 92, -18, 1863]
+Current Objective without penalty 112
+ ITERATION 77: Best Objective [117, 81, -28, 1843]
+Current Objective [112, 90, -18, 1806]
+Current Objective without penalty 112
+ ITERATION 78: Best Objective [117, 81, -28, 1843]
+Current Objective [108, 89, -16, 1780]
+Current Objective without penalty 108
+ ITERATION 79: Best Objective [120, 75, -24, 1794]
+Current Objective [120, 75, -24, 1794]
+Current Objective without penalty 120
+ ITERATION 80: Best Objective [120, 75, -24, 1794]
+Current Objective [111, 83, -19, 1744]
+Current Objective without penalty 111
+ ITERATION 81: Best Objective [120, 75, -24, 1794]
+Current Objective [107, 86, -8, 1878]
+Current Objective without penalty 107
+ ITERATION 82: Best Objective [120, 75, -24, 1794]
+Current Objective [107, 90, -11, 2026]
+Current Objective without penalty 107
+ ITERATION 83: Best Objective [120, 75, -24, 1794]
+Current Objective [104, 86, -12, 1796]
+Current Objective without penalty 104
+ ITERATION 84: Best Objective [120, 75, -24, 1794]
+Current Objective [105, 96, -11, 1723]
+Current Objective without penalty 105
+ ITERATION 85: Best Objective [120, 75, -24, 1794]
+Current Objective [110, 90, -13, 1793]
+Current Objective without penalty 110
+ ITERATION 86: Best Objective [120, 75, -24, 1794]
+Current Objective [109.7, 84, -17, 1793]
+Current Objective without penalty 114
+ ITERATION 87: Best Objective [120, 75, -24, 1794]
+Current Objective [109.7, 84, -17, 1793]
+Current Objective without penalty 114
+ ITERATION 88: Best Objective [120, 75, -24, 1794]
+Current Objective [107, 91, -17, 1691]
+Current Objective without penalty 107
+ ITERATION 89: Best Objective [120, 75, -24, 1794]
+Current Objective [108, 81, -15, 1712]
+Current Objective without penalty 108
+ ITERATION 90: Best Objective [120, 75, -24, 1794]
+Current Objective [101, 76, -16, 1681]
+Current Objective without penalty 101
+ ITERATION 91: Best Objective [120, 75, -24, 1794]
+Current Objective [105, 82, -22, 1727]
+Current Objective without penalty 105
+ ITERATION 92: Best Objective [120, 75, -24, 1794]
+Current Objective [107, 90, -20, 1579]
+Current Objective without penalty 107
+ ITERATION 93: Best Objective [120, 75, -24, 1794]
+Current Objective [102, 91, -18, 1546]
+Current Objective without penalty 102
+ ITERATION 94: Best Objective [120, 75, -24, 1794]
+Current Objective [102, 84, -21, 1487]
+Current Objective without penalty 102
+ ITERATION 95: Best Objective [120, 75, -24, 1794]
+Current Objective [103, 89, -21, 1601]
+Current Objective without penalty 103
+ ITERATION 96: Best Objective [120, 75, -24, 1794]
+Current Objective [101, 90, -18, 1642]
+Current Objective without penalty 101
+ ITERATION 97: Best Objective [120, 75, -24, 1794]
+Current Objective [106, 94, -18, 1669]
+Current Objective without penalty 106
+ ITERATION 98: Best Objective [120, 75, -24, 1794]
+Current Objective [105, 95, -15, 1851]
+Current Objective without penalty 105
+ ITERATION 99: Best Objective [120, 75, -24, 1794]
+Current Objective [100, 99, -7, 1902]
+Current Objective without penalty 100
+ ITERATION 100: Best Objective [120, 75, -24, 1794]
+Current Objective [102, 90, -8, 1760]
+Current Objective without penalty 102

@@ -114,8 +114,7 @@ class ALNS:
 
             #self.current_route_plan.printSolution(str(self.iterationNum)+"candidate_before_destroy", None)
             self.destruction_degree = self.random_numbers[self.iterationNum-1]
-            with open(self.config_info_file_path, 'a') as file:
-                file.writelines(" ITERATION "+str(self.iterationNum)+": ")
+                
             if not doParalellDestroyRepair:
                 #Uten parallell
                 candidate_route_plan, destroy, repair = self.doIteration((candidate_route_plan, 1))
@@ -160,6 +159,13 @@ class ALNS:
              #Her settes current, til å være det det skal være 
             self.best_route_plan, self.current_route_plan = self.update_current_best( self.best_route_plan, self.current_route_plan, candidate_route_plan, destroy, repair)
         
+            with open(self.config_info_file_path, "a") as file: 
+                file.writelines(" ITERATION "+str(self.iterationNum)+": ")
+                file.writelines(f"Best Objective {self.best_route_plan.objective}\n")
+                file.writelines(f"Current Objective {self.current_route_plan.objective}\n")
+                file.writelines(f"Current Objective without penalty {self.current_route_plan.getOriginalObjective()}\n")
+            
+
             #candidate_route_plan.printSolution(str(self.iterationNum)+"candidate_final", "ingen operator")
             
             # After a certain number of iterations, update weight
@@ -265,9 +271,7 @@ class ALNS:
             
             # Open the file for writing in the correct directory
             file_path = os.path.join(self.folder_path, "0config_info.txt")
-            with open(file_path, "a") as file: 
-                file.writelines(f"ALNS iteration {self.iterationNum} is new global best, objective {best_route_plan.objective} BestDestroy{destroy} BestRepair{repair}\n")
-            
+           
             return best_route_plan, current_route_plan
         
         if self.criterion.accept_criterion_without_weights_update( current_route_plan.objective, candidate_route_plan.objective):

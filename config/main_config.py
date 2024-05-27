@@ -84,7 +84,7 @@ days = 5
 depot = (59.9365, 10.7396)
 
 
-removeWorstOperators = False #True
-removeBestOperators = True #False
+removeWorstOperators = True #True
+removeBestOperators = False #False
 
 
