@@ -391,7 +391,7 @@ if __name__ == "__main__":
     main_config.iterations = 250
     main_config.num_of_paralell_iterations = 4
     main(folder_path_run1, main_config)
-    
+    s
     folder_path_run1 = os.path.join(parent_folder, f"{parent_folder}-{date_time_str}", 'p1_I1000')
     main_config.iterations = 1000 
     main_config.num_of_paralell_iterations = 1
