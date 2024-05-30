@@ -41,7 +41,7 @@ class RoutePlan:
         #OBS: Jeg forstår ikke hvorfor denne er slik: 
         #self.routes[day].append((emp.skillLevel, Route(day, emp))) 
         
-        self.objective = [0,0,0,0]
+        self.objective = [0,0,0,0,0]
         self.weeklyHeaviness = 0
         self.dailyHeaviness = 0
         self.totalContinuity = 0
@@ -269,9 +269,10 @@ class RoutePlan:
             #print(f'Travel Time: {self.objective[-1]}')
             print(f'Travel Time: {self.objective[-1]}')
             #print(f'Patient continuity: {self.objective[2]}')
-            print(f'Patient continuity: {self.objective[2]}')
+            print(f'Patient continuity: {self.objective[3]}')
             #print(f'Employee convenience: {self.objective[1]}')
-            print(f'Employee convenience: {self.objective[1]}')
+            print(f'Employee convenience: {self.objective[2]}')
+            print(f'Preferred speciality: {self.objective[1]}')
             print('-------------------------------------------------------')
 
             # Tilbakestill sys.stdout til original
@@ -388,13 +389,14 @@ class RoutePlan:
                 #self.aggDeviationPrefSpes += route.deviationPrefSpes
                 self.aggDeviationPrefSpes += route.deviationPrefSpes
                 #self.objective[3] += route.travel_time   
-                self.objective[3] += route.travel_time   
+                self.objective[-1] += route.travel_time   
         #self.objective[2] = self.totalContinuity 
-        self.objective[2] = self.totalContinuity 
+        self.objective[3] = self.totalContinuity 
         #self.objective[1] = round(weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
-        self.objective[1] = (weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff + weight_SG*self.aggDeviationPrefSpes)
+        self.objective[2] = (weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
+        self.objective[1] = self.aggDeviationPrefSpes
 
     '''
     HER ER OBJEKTIVENE IKKE SLÅTT SAMMEN.
