@@ -74,7 +74,7 @@ penalty_act = 3             # Penalty per illegal activity
 # Weights for objectives
 weight_DW = 1             # Balance daily workload
 weight_WW = 1             # Balance weekly workload
-weight_S = 1/10 #1/10?            # Min skill difference
+weight_S = 1/4 #1/10?            # Min skill difference
 weight_SG = 1   #1          # Balance specialist/generalist
 
 #Planning period

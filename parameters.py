@@ -149,6 +149,15 @@ for idx, row in df_activities.iterrows():
 #print(selected_columns)
 #print(df_employees)
 '''
+#SILO-BASED WITHOUT LOGISTIC EMPLOYEES - Må tas sammen med den over
+'''
+def remove_logistic_employees(employee_df):
+    # Filter out employees whose 'ProfessionLevel' is 1
+    filtered_df = employee_df[employee_df['professionalLevel'] != 1]
+    return filtered_df
+df_employees = remove_logistic_employees(df_employees)
+print('Uten logistikk', df_employees)
+'''
 #SILO-BASED WITH LOGISTIC EMPLOYEES WORKING CROSS-CLINIC - DATASETS
 '''
 def find_employees_not_in_clinic(activity_clinic, employee_df):
@@ -209,3 +218,4 @@ selected_columns = df_activities[['clinic', 'employeeRestriction', 'specialisati
 print(selected_columns)
 print(df_employees)
 '''
+
