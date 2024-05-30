@@ -74,8 +74,6 @@ def logistic_employees_activities(results_filepath, logistic_employees_list):
         all_routes.append(current_route)
     return all_routes
 
-
-
 def get_logistic_employees(employees_filepath):
     employees = pd.read_csv(employees_filepath)
     logistic_employees = employees[employees['professionalLevel'] == 1]
@@ -85,6 +83,15 @@ def count_unique_employees(employees_filepath):
     """Count the number of unique employees from the employees file."""
     employees = pd.read_csv(employees_filepath)
     return employees['employeeId'].nunique()
+
+def partial_travel_time(activity_ids):
+    from_act = 0 
+    travel_time = 0 
+    activity_ids.append(0)
+    for actID in activity_ids: 
+        travel_time +=  T_ij[from_act][actID]
+        from_act = actID
+    return travel_time
 
 def calculate_idle_time(results_filepath, activities_filepath, employees_filepath):
     """Calculate the idle time based on travel time, total activity duration, and number of employees."""
@@ -96,15 +103,30 @@ def calculate_idle_time(results_filepath, activities_filepath, employees_filepat
     idle_time = (travel_time + total_activity_duration) / (5 * 8 * 60 * num_employees)
     return idle_time
 
-def partial_travel_time(activity_ids):
-    from_act = 0 
-    travel_time = 0 
-    activity_ids.append(0)
-    for actID in activity_ids: 
-        travel_time +=  T_ij[from_act][actID]
-        from_act = actID
-    return travel_time
 
+def calculate_idle_time_for_profession_levels(results_filepath, activities_filepath, employees_filepath):
+    
+    activity_ids = extract_activity_ids(results_filepath)
+    logistic_employees = get_logistic_employees(employees_filepath)
+    activity_ids_logistic  = logistic_employees_activities(results_filepath, logistic_employees)
+    flat_activity_ids_logistic = [item for sublist in activity_ids_logistic for item in sublist]
+    activity_ids_health_workers_nurses = [item for item in activity_ids if item not in flat_activity_ids_logistic]
+    
+    travel_time_logistic = 0
+    for list in activity_ids_logistic:
+        travel_time_logistic += partial_travel_time(list) #Gitt at det bare er en logistikkansatt!
+    travel_time_health = read_travel_time(results_filepath) - travel_time_logistic
+    print(f"travel time logistic {travel_time_logistic}, health {travel_time_health}, total {read_travel_time(results_filepath)}")
+    
+    duration_logistic = calculate_total_activity_duration(activities_filepath, flat_activity_ids_logistic)
+    duration_health = calculate_total_activity_duration(activities_filepath, activity_ids_health_workers_nurses)
+    print(f"duration logistic {duration_logistic}, health {duration_health}, total {duration_health+duration_logistic}")
+
+    idle_time_logistic = (travel_time_logistic + duration_logistic) / (5 * 8 * 60)
+    num_health_employees = count_unique_employees(employees_filepath) - 1
+    idle_time_health = (travel_time_health + duration_health) / (5 * 8 * 60 * num_health_employees)
+
+    return idle_time_logistic, idle_time_health
 
 def calculate_healthcare_time(results_filepath, activities_filepath, employees_filepath):
     """Calculate the healthcare time based on travel time, total activity duration, and total health activity duration."""
@@ -131,7 +153,7 @@ def calculate_healthcare_time(results_filepath, activities_filepath, employees_f
         return 0  # To avoid division by zero
     
     return total_health_duration / (activity_duration_performed_by_health + total_travel_time_by_health)
-    
+
 
 #-------------- EFFICIENCY OF ROUTES -----------------
 def calculate_route_efficiency(results_filepath, activities_filepath):
@@ -217,11 +239,13 @@ def calculate_hospital_cost(results_filepath):
 folder_name = 'data'
 file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
 file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-24_19-19-38\\final.txt"
+file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-25_13-34-50\\final.txt"
 
 #KPI-resultater
 idle_time = calculate_idle_time(file_path_results, file_path_activities, file_path_employees)
 print(f"Calculated Idle Time: {idle_time}\n")
+idle_time_logistic, idle_time_health_employees = calculate_idle_time_for_profession_levels(file_path_results, file_path_activities, file_path_employees)
+print(f"Calculated Idle Time for logistics employees {idle_time_logistic} and health workers/nurses {idle_time_health_employees}\n")
 health_time = calculate_healthcare_time(file_path_results, file_path_activities, file_path_employees)
 print(f"Calculated Healthcare Time: {health_time}\n")
 route_efficiency = calculate_route_efficiency(file_path_results, file_path_activities)
