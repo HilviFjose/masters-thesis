@@ -1,4 +1,4 @@
-TIDSPUNKT FOR KJORING 2024-05-29_10-25-05from datetime import datetime, timedelta
+TIDSPUNKT FOR KJORING 2024-05-30_19-16-43from datetime import datetime, timedelta
 import math
 
 #Number of constructed solutions 
@@ -74,7 +74,7 @@ penalty_act = 3             # Penalty per illegal activity
 # Weights for objectives
 weight_DW = 1             # Balance daily workload
 weight_WW = 1             # Balance weekly workload
-weight_S = 1/10 #1/10?            # Min skill difference
+weight_S = 1/4 #1/10?            # Min skill difference
 weight_SG = 1   #1          # Balance specialist/generalist
 
 #Planning period
@@ -87,8 +87,5 @@ depot = (59.9365, 10.7396)
 
 
 
-ALNS iteration 3 is new global best, objective [377, 81.7, -38, 3622]
-ALNS iteration 46 is new global best, objective [379, 79.8, -36, 3793]
-ALNS iteration 59 is new global best, objective [380, 82.16666666666667, -29, 3808]
-ALNS iteration 93 is new global best, objective [381, 82.1, -33, 3506]
-ALNS iteration 98 is new global best, objective [382, 88.4, -46, 3463]
+ALNS iteration 1 is new global best, objective [227, 17, 83.91666666666667, -33, 2471]
+ALNS iteration 7 is new global best, objective [231, 18, 93.58333333333334, -34, 2245]

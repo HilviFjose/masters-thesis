@@ -375,7 +375,7 @@ class RoutePlan:
         return first_objective
     
     def updateObjective(self, current_iteration, total_iterations): 
-        self.objective = [0, 0, 0, 0]
+        self.objective = [0, 0, 0, 0, 0]
         self.calculateWeeklyHeaviness()
         self.calculateDailyHeaviness()
         self.calculateTotalContinuity()
@@ -387,7 +387,7 @@ class RoutePlan:
                 self.objective[0] += route.suitability
                 self.aggSkillDiff += route.aggSkillDiff 
                 #self.aggDeviationPrefSpes += route.deviationPrefSpes
-                self.aggDeviationPrefSpes += route.deviationPrefSpes
+                self.objective[1] += route.deviationPrefSpes
                 #self.objective[3] += route.travel_time   
                 self.objective[-1] += route.travel_time   
         #self.objective[2] = self.totalContinuity 
@@ -396,7 +396,7 @@ class RoutePlan:
         self.objective[2] = (weight_WW*self.weeklyHeaviness + weight_DW*self.dailyHeaviness + weight_S*self.aggSkillDiff)
         #Oppdaterer første-objektivet med straff for illegal      
         self.objective[0] = self.calculatePenaltyIllegalSolution(current_iteration, total_iterations)
-        self.objective[1] = self.aggDeviationPrefSpes
+        #self.objective[1] = self.aggDeviationPrefSpes
 
     '''
     HER ER OBJEKTIVENE IKKE SLÅTT SAMMEN.
