@@ -174,6 +174,13 @@ def calculate_route_efficiency(results_filepath, activities_filepath):
    
     return travel_time_visits/travel_time
 
+def calculate_route_efficiency_number_of_tasks(results_filepath):
+    travel_time = read_travel_time(results_filepath)
+    num_activities = len(extract_activity_ids(results_filepath))
+    
+    return travel_time / num_activities
+
+
 #-------------- PATIENT CONVENIENCE -----------------
 def read_patient_continuity_obj(filepath):
     """Read and return the travel time from the results file."""
@@ -272,12 +279,12 @@ def calculate_patient_continuity_counter(assignments, folder_name):
                 if patient_id not in unique_patients_continuity1:
                     unique_patients_continuity1.add(patient_id)
                     score += 1
-                    print(f"Match found for activity {activity_id} with employee {assigned_employee} for preference 1, patient {patient_id}")
+                    #print(f"Match found for activity {activity_id} with employee {assigned_employee} for preference 1, patient {patient_id}")
             if 2 in preferences and assigned_employee in preferences[2]:
                 if patient_id not in unique_patients_continuity2:
                     unique_patients_continuity2.add(patient_id)
                     score += 2
-                    print(f"Match found for activity {activity_id} with employee {assigned_employee} for preference 2, patient {patient_id}")
+                    #print(f"Match found for activity {activity_id} with employee {assigned_employee} for preference 2, patient {patient_id}")
             results.append({'activityId': activity_id, 'score': score})
     
     df_scores = pd.DataFrame(results)
@@ -325,7 +332,7 @@ def count_unique_patients_in_solution(file_path_results, folder_name):
 folder_name = 'data'
 file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
 file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-22_17-54-18\\final.txt"
+file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-22_10-02-32\\final.txt"
 
 #KPI-resultater
 idle_time = calculate_idle_time(file_path_results, file_path_activities, file_path_employees)
@@ -335,7 +342,9 @@ print(f"Calculated Idle Time for logistics employees {idle_time_logistic} and he
 health_time = calculate_healthcare_time(file_path_results, file_path_activities, file_path_employees)
 print(f"Calculated Healthcare Time: {health_time}\n")
 route_efficiency = calculate_route_efficiency(file_path_results, file_path_activities)
-print(f"Calculated Route Efficiency: {route_efficiency}\n")
+print(f"Calculated Route Efficiency: {route_efficiency}")
+route_efficiency2 = calculate_route_efficiency_number_of_tasks(file_path_results)
+print(f"Calculated Route Efficiency based on number of tasks conducted: {route_efficiency2}\n")
 patient_continuity = calculate_patient_continuity(file_path_results, folder_name)
 print(f"OBS: Hent riktig objektiv i ruteplanen (blir feil på objective study)")
 print(f"Calculated Patient Continuity: {patient_continuity}\n")
