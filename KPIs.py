@@ -235,11 +235,97 @@ def calculate_hospital_cost(results_filepath):
     #gammel = int(0.3 * bed_day_cost * num_allocated_patients)
     return num_allocated_patients
     
+
+#-------------- PATIENT CONTINUITY COUNTER -----------------
+def extract_employee_assignments(filepath):
+    """ Extract employee assignments from the results file. """
+    with open(filepath, 'r') as file:
+        data = file.read()
+    # Finn alle aktivitetsblokkene for hver ansatt
+    assignments = {}
+    activities_blocks = re.findall(r"DAG \d+ ANSATT (\d+)(.*?)(?=DAG \d+ ANSATT|\Z)", data, re.DOTALL)
+    for employee, block in activities_blocks:
+        # Finn alle aktivitets-IDer i hver blokk
+        activity_ids = re.findall(r"activity (\d+)", block)
+        for activity_id in activity_ids:
+            assignments[int(activity_id)] = int(employee)
+    
+    return assignments
+
+
+def calculate_patient_continuity_counter(assignments, folder_name):
+    file_path_activities = os.path.join(os.getcwd(), folder_name, 'activities.pkl')
+    df_activities = pd.read_pickle(file_path_activities)
+    results = []
+
+    # Bruker sett for å holde styr på unike pasienter som møter kontinuitetskravene
+    unique_patients_continuity1 = set()
+    unique_patients_continuity2 = set()
+
+    # Gjennomgå hver aktivitet og beregn poeng basert på preferanser
+    for activity_id, assigned_employee in assignments.items():
+        if activity_id in df_activities.index:
+            patient_id = df_activities.at[activity_id, 'patientId']
+            preferences = df_activities.at[activity_id, 'employeeHistory']
+            score = 0
+            if 1 in preferences and assigned_employee in preferences[1]:
+                if patient_id not in unique_patients_continuity1:
+                    unique_patients_continuity1.add(patient_id)
+                    score += 1
+                    print(f"Match found for activity {activity_id} with employee {assigned_employee} for preference 1, patient {patient_id}")
+            if 2 in preferences and assigned_employee in preferences[2]:
+                if patient_id not in unique_patients_continuity2:
+                    unique_patients_continuity2.add(patient_id)
+                    score += 2
+                    print(f"Match found for activity {activity_id} with employee {assigned_employee} for preference 2, patient {patient_id}")
+            results.append({'activityId': activity_id, 'score': score})
+    
+    df_scores = pd.DataFrame(results)
+    total_score = df_scores['score'].sum()
+
+    return total_score, len(unique_patients_continuity1), len(unique_patients_continuity2)
+
+def count_unique_patients_in_solution(file_path_results, folder_name):
+    activity_ids = extract_activity_ids(file_path_results)  # Anta at denne funksjonen returnerer en liste med aktivitets-IDer
+
+    file_path_activities = os.path.join(os.getcwd(), folder_name, 'activities.pkl')
+    df_activities = pd.read_pickle(file_path_activities)
+
+    filtered_activities = df_activities.loc[df_activities.index.isin(activity_ids)]
+
+    patientsInSolutionContinuity1 = 0
+    patientsInSolutionContinuity2 = 0
+    patientsInSolutionContinuity3 = 0
+
+    seen_patients1 = set()
+    seen_patients2 = set()
+
+    # Grupper etter patientId og sjekk preferanser
+    for patientId, group in filtered_activities.groupby('patientId'):
+        # Anta at 'employeeHistory' for hver aktivitet er et dictionary som kan ha keys 1 og 2
+        hasContinuity1 = any(1 in act.employeeHistory for act in group.itertuples())
+        hasContinuity2 = any(2 in act.employeeHistory for act in group.itertuples())
+        
+        if hasContinuity1 and patientId not in seen_patients1:
+            patientsInSolutionContinuity1 += 1
+            seen_patients1.add(patientId)
+        
+        elif hasContinuity2 and patientId not in seen_patients2:
+            patientsInSolutionContinuity2 += 1
+            seen_patients2.add(patientId)
+
+        else:
+            patientsInSolutionContinuity3 += 1
+
+    return patientsInSolutionContinuity1, patientsInSolutionContinuity2, patientsInSolutionContinuity3
+  
+
+
 # File paths
 folder_name = 'data'
 file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
 file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-25_13-34-50\\final.txt"
+file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-22_17-54-18\\final.txt"
 
 #KPI-resultater
 idle_time = calculate_idle_time(file_path_results, file_path_activities, file_path_employees)
@@ -257,3 +343,11 @@ patient_utility = calculate_patient_utility(file_path_results, folder_name)
 print(f"Calculated Patient Utility: {patient_utility}\n")
 hospital_cost = calculate_hospital_cost(file_path_results)
 print(f"Calculated Hospital Cost Effectiveness: {hospital_cost}\n")
+activity_assignments = extract_employee_assignments(file_path_results)
+total_score, count1, count2 = calculate_patient_continuity_counter(activity_assignments, folder_name)
+patientsInSolutionContinuity1,patientsInSolutionContinuity2, patientsInSolutionContinuity3 = count_unique_patients_in_solution(file_path_results, folder_name)
+
+print(f"Total patient continuity score: {total_score}")
+print(f"Number of unique patients for continuity 2 matches: {count1} of {patientsInSolutionContinuity1}") #Koden og overleaf gjør det motsatt på continuity level ser det ut som
+print(f"Number of unique patients for continuity 1 matches: {count2} of {patientsInSolutionContinuity2}")
+print(f"Number of unique patients for continuity 3: {patientsInSolutionContinuity3}\n")
