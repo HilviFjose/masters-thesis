@@ -99,8 +99,9 @@ def calculate_idle_time(results_filepath, activities_filepath, employees_filepat
     activity_ids = extract_activity_ids(results_filepath)
     total_activity_duration = calculate_total_activity_duration(activities_filepath, activity_ids)
     num_employees = count_unique_employees(employees_filepath)
-    print(f'travel time {travel_time}, duration {total_activity_duration}, working time {5*8*60*num_employees}')
+    #print(f'travel time {travel_time}, duration {total_activity_duration}, working time {5*8*60*num_employees}')
     idle_time = (travel_time + total_activity_duration) / (5 * 8 * 60 * num_employees)
+    print(f'num employees {num_employees}')
     return idle_time
 
 
@@ -116,11 +117,11 @@ def calculate_idle_time_for_profession_levels(results_filepath, activities_filep
     for list in activity_ids_logistic:
         travel_time_logistic += partial_travel_time(list) #Gitt at det bare er en logistikkansatt!
     travel_time_health = read_travel_time(results_filepath) - travel_time_logistic
-    print(f"travel time logistic {travel_time_logistic}, health {travel_time_health}, total {read_travel_time(results_filepath)}")
+    #print(f"travel time logistic {travel_time_logistic}, health {travel_time_health}, total {read_travel_time(results_filepath)}")
     
     duration_logistic = calculate_total_activity_duration(activities_filepath, flat_activity_ids_logistic)
     duration_health = calculate_total_activity_duration(activities_filepath, activity_ids_health_workers_nurses)
-    print(f"duration logistic {duration_logistic}, health {duration_health}, total {duration_health+duration_logistic}")
+    #print(f"duration logistic {duration_logistic}, health {duration_health}, total {duration_health+duration_logistic}")
 
     idle_time_logistic = (travel_time_logistic + duration_logistic) / (5 * 8 * 60)
     num_health_employees = count_unique_employees(employees_filepath) - 1
@@ -148,7 +149,7 @@ def calculate_healthcare_time(results_filepath, activities_filepath, employees_f
     total_travel_time = read_travel_time(results_filepath)  
     total_travel_time_by_health = total_travel_time - travel_time_by_logistic
 
-    print(f'total travel time {total_travel_time}, travel time health {total_travel_time_by_health}, duration activities performed by health personnel {activity_duration_performed_by_health}, duration health activities {total_health_duration}')
+    #print(f'total travel time {total_travel_time}, travel time health {total_travel_time_by_health}, duration activities performed by health personnel {activity_duration_performed_by_health}, duration health activities {total_health_duration}')
     if (activity_duration_performed_by_health + total_travel_time_by_health) == 0:
         return 0  # To avoid division by zero
     
@@ -170,7 +171,7 @@ def calculate_route_efficiency(results_filepath, activities_filepath):
 
     travel_time_visits = 2* sum(T_vw[0]) #Frem og tilbake til sykehuset og visits
     travel_time = read_travel_time(results_filepath)  # assuming this function reads the travel time
-    print(f'original travel time {travel_time}, hypothetical travel time to visits {travel_time_visits}')
+    #print(f'original travel time {travel_time}, hypothetical travel time to visits {travel_time_visits}')
    
     return travel_time_visits/travel_time
 
@@ -268,6 +269,8 @@ def calculate_patient_continuity_counter(assignments, folder_name):
     # Bruker sett for å holde styr på unike pasienter som møter kontinuitetskravene
     unique_patients_continuity1 = set()
     unique_patients_continuity2 = set()
+    activities_continuity1 = set()
+    activities_continuity2 = set()
 
     # Gjennomgå hver aktivitet og beregn poeng basert på preferanser
     for activity_id, assigned_employee in assignments.items():
@@ -276,11 +279,13 @@ def calculate_patient_continuity_counter(assignments, folder_name):
             preferences = df_activities.at[activity_id, 'employeeHistory']
             score = 0
             if 1 in preferences and assigned_employee in preferences[1]:
+                activities_continuity1.add(activity_id)
                 if patient_id not in unique_patients_continuity1:
                     unique_patients_continuity1.add(patient_id)
                     score += 1
                     #print(f"Match found for activity {activity_id} with employee {assigned_employee} for preference 1, patient {patient_id}")
             if 2 in preferences and assigned_employee in preferences[2]:
+                activities_continuity2.add(activity_id)
                 if patient_id not in unique_patients_continuity2:
                     unique_patients_continuity2.add(patient_id)
                     score += 2
@@ -290,7 +295,7 @@ def calculate_patient_continuity_counter(assignments, folder_name):
     df_scores = pd.DataFrame(results)
     total_score = df_scores['score'].sum()
 
-    return total_score, len(unique_patients_continuity1), len(unique_patients_continuity2)
+    return total_score, len(unique_patients_continuity1), len(unique_patients_continuity2), len(activities_continuity1), len(activities_continuity2)
 
 def count_unique_patients_in_solution(file_path_results, folder_name):
     activity_ids = extract_activity_ids(file_path_results)  # Anta at denne funksjonen returnerer en liste med aktivitets-IDer
@@ -325,6 +330,58 @@ def count_unique_patients_in_solution(file_path_results, folder_name):
             patientsInSolutionContinuity3 += 1
 
     return patientsInSolutionContinuity1, patientsInSolutionContinuity2, patientsInSolutionContinuity3
+
+def count_unique_patients_in_solution2(file_path_results, folder_name):
+    activity_ids = extract_activity_ids(file_path_results)  # Anta at denne funksjonen returnerer en liste med aktivitets-IDer
+    file_path_activities = os.path.join(os.getcwd(), folder_name, 'activities.pkl')
+    df_activities = pd.read_pickle(file_path_activities)
+
+    filtered_activities = df_activities.loc[df_activities.index.isin(activity_ids)]
+
+    # Initialisere tellere for pasienter og aktiviteter
+    patientsInSolutionContinuity1 = 0
+    activitiesInSolutionContinuity1 = 0
+    patientsInSolutionContinuity2 = 0
+    activitiesInSolutionContinuity2 = 0
+    patientsInSolutionContinuity3 = 0
+    activitiesInSolutionContinuity3 = 0
+
+    seen_patients1 = set()
+    seen_patients2 = set()
+
+    # Grupper etter patientId og sjekk preferanser
+    for patientId, group in filtered_activities.groupby('patientId'):
+        groupContinuity1 = False
+        groupContinuity2 = False
+
+        # Sjekk preferanser for hver aktivitet i gruppen
+        for act in group.itertuples():
+            if 1 in act.employeeHistory:
+                activitiesInSolutionContinuity1 += 1
+                groupContinuity1 = True
+            elif 2 in act.employeeHistory:
+                activitiesInSolutionContinuity2 += 1
+                groupContinuity2 = True
+
+        # Oppdater unike pasienttallere basert på gruppeinformasjon
+        if groupContinuity1 and patientId not in seen_patients1:
+            patientsInSolutionContinuity1 += 1
+            seen_patients1.add(patientId)
+
+        if groupContinuity2 and patientId not in seen_patients2:
+            patientsInSolutionContinuity2 += 1
+            seen_patients2.add(patientId)
+
+        if not groupContinuity1 and not groupContinuity2:
+            patientsInSolutionContinuity3 += 1
+            activitiesInSolutionContinuity3 += len(group)  # Anta alle aktiviteter ikke oppfyller noen preferanser
+
+    return (patientsInSolutionContinuity1, activitiesInSolutionContinuity1,
+            patientsInSolutionContinuity2, activitiesInSolutionContinuity2,
+            patientsInSolutionContinuity3, activitiesInSolutionContinuity3)
+
+
+
   
 
 
@@ -332,31 +389,36 @@ def count_unique_patients_in_solution(file_path_results, folder_name):
 folder_name = 'data'
 file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
 file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-24_11-54-45\\final.txt"
+file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-22_17-54-18\\final.txt"
 
 #KPI-resultater
-idle_time = calculate_idle_time(file_path_results, file_path_activities, file_path_employees)
+idle_time = round(calculate_idle_time(file_path_results, file_path_activities, file_path_employees),2)
 print(f"Calculated Idle Time: {idle_time}\n")
 idle_time_logistic, idle_time_health_employees = calculate_idle_time_for_profession_levels(file_path_results, file_path_activities, file_path_employees)
-print(f"Calculated Idle Time for logistics employees {idle_time_logistic} and health workers/nurses {idle_time_health_employees}\n")
+print(f"Calculated Idle Time for logistics employees {round(idle_time_logistic,2)} and health workers/nurses {round(idle_time_health_employees,2)}\n")
 health_time = calculate_healthcare_time(file_path_results, file_path_activities, file_path_employees)
-print(f"Calculated Healthcare Time: {health_time}\n")
+print(f"Calculated Healthcare Time: {round(health_time,2)}\n")
 route_efficiency = calculate_route_efficiency(file_path_results, file_path_activities)
-print(f"Calculated Route Efficiency: {route_efficiency}")
+#print(f"Calculated Route Efficiency: {route_efficiency}")
 route_efficiency2 = calculate_route_efficiency_number_of_tasks(file_path_results)
-print(f"Calculated Route Efficiency based on number of tasks conducted: {route_efficiency2}\n")
+print(f"Calculated Route Efficiency based on number of tasks conducted: {round(route_efficiency2,2)}\n")
 patient_continuity = calculate_patient_continuity(file_path_results, folder_name)
-print(f"OBS: Hent riktig objektiv i ruteplanen (blir feil på objective study)")
-print(f"Calculated Patient Continuity: {patient_continuity}\n")
+print(f"Calculated Patient Continuity: {round(patient_continuity,2)}\n")
 patient_utility = calculate_patient_utility(file_path_results, folder_name)
-print(f"Calculated Patient Utility: {patient_utility}\n")
+print(f"Calculated Patient Utility: {round(patient_utility,2)}\n")
 hospital_cost = calculate_hospital_cost(file_path_results)
 print(f"Calculated Hospital Cost Effectiveness: {hospital_cost}\n")
 activity_assignments = extract_employee_assignments(file_path_results)
-total_score, count1, count2 = calculate_patient_continuity_counter(activity_assignments, folder_name)
-patientsInSolutionContinuity1,patientsInSolutionContinuity2, patientsInSolutionContinuity3 = count_unique_patients_in_solution(file_path_results, folder_name)
+total_score, patients_continuity1, patients_continuity2, activities_continuity1, activities_continuity2 = calculate_patient_continuity_counter(activity_assignments, folder_name)
+#patientsInSolutionContinuity1,patientsInSolutionContinuity2, patientsInSolutionContinuity3 = count_unique_patients_in_solution(file_path_results, folder_name)
+
+results = count_unique_patients_in_solution2(file_path_results, folder_name)
+print(f"Continuity 1 - Patients: {results[0]}, Activities: {results[1]}")
+print(f"Continuity 2 - Patients: {results[2]}, Activities: {results[3]}")
+print(f"No Continuity - Patients: {results[4]}, Activities: {results[5]}")
 
 print(f"Total patient continuity score: {total_score}")
-print(f"Number of unique patients for continuity 2 matches: {count1} of {patientsInSolutionContinuity1}") #Koden og overleaf gjør det motsatt på continuity level ser det ut som
-print(f"Number of unique patients for continuity 1 matches: {count2} of {patientsInSolutionContinuity2}")
-print(f"Number of unique patients for continuity 3: {patientsInSolutionContinuity3}\n")
+print(f"Number of unique patients for continuity 2 matches: activities {activities_continuity1} of {results[1]}, patients {patients_continuity1} of {results[0]}") #Koden og overleaf gjør det motsatt på continuity level ser det ut som
+print(f"Number of unique patients for continuity 1 matches: activities {activities_continuity2} of {results[3]}, patients {patients_continuity2} of {results[2]}")
+print(f"Number of unique patients for continuity 3: activities {results[5]}, patients {results[4]}\n")
+

@@ -218,4 +218,3 @@ selected_columns = df_activities[['clinic', 'employeeRestriction', 'specialisati
 print(selected_columns)
 print(df_employees)
 '''
-
