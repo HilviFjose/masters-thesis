@@ -332,7 +332,7 @@ def count_unique_patients_in_solution(file_path_results, folder_name):
     return patientsInSolutionContinuity1, patientsInSolutionContinuity2, patientsInSolutionContinuity3
 
 def count_unique_patients_in_solution2(file_path_results, folder_name):
-    activity_ids = extract_activity_ids(file_path_results)  # Anta at denne funksjonen returnerer en liste med aktivitets-IDer
+    activity_ids = extract_activity_ids(file_path_results)  
     file_path_activities = os.path.join(os.getcwd(), folder_name, 'activities.pkl')
     df_activities = pd.read_pickle(file_path_activities)
 
@@ -378,18 +378,13 @@ def count_unique_patients_in_solution2(file_path_results, folder_name):
 
     return (patientsInSolutionContinuity1, activitiesInSolutionContinuity1,
             patientsInSolutionContinuity2, activitiesInSolutionContinuity2,
-            patientsInSolutionContinuity3, activitiesInSolutionContinuity3)
-
-
-
-  
-
+            patientsInSolutionContinuity3, activitiesInSolutionContinuity3)   
 
 # File paths
 folder_name = 'data'
 file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
 file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-22_17-54-18\\final.txt"
+file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-29_10-25-05\\final.txt"
 
 #KPI-resultater
 idle_time = round(calculate_idle_time(file_path_results, file_path_activities, file_path_employees),2)
@@ -421,4 +416,3 @@ print(f"Total patient continuity score: {total_score}")
 print(f"Number of unique patients for continuity 2 matches: activities {activities_continuity1} of {results[1]}, patients {patients_continuity1} of {results[0]}") #Koden og overleaf gjør det motsatt på continuity level ser det ut som
 print(f"Number of unique patients for continuity 1 matches: activities {activities_continuity2} of {results[3]}, patients {patients_continuity2} of {results[2]}")
 print(f"Number of unique patients for continuity 3: activities {results[5]}, patients {results[4]}\n")
-
