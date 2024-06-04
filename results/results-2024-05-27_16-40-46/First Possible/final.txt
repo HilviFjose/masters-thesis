@@ -1,0 +1,117 @@
+Solution generated at time: 2024-05-27 16:49:56
+
+operator brukt: no operator
+updated objective  [21, 30, -19, 402]
+objective 2 [weeklyHeaviness, dailyHeaviness, aggSkillDiff, aggDeviationPrefSpes] [13.5, 1, 64, 0]
+primary objective without penalty  21
+visits {21: [73, 74, 75, 76, 77], 22: [78, 79, 80, 81, 82], 9: [41, 42, 43, 44, 45], 10: [46], 11: [47], 12: [48], 13: [50, 49, 51], 7: [31, 32, 33, 34, 35], 8: [36, 37, 38, 39, 40], 27: [103], 28: [104, 105, 106], 29: [107], 30: [108], 31: [109, 110, 111, 112, 113], 23: [83, 84, 85, 86, 87], 24: [88, 89, 90, 91, 92], 14: [52], 15: [53, 54, 55], 16: [56], 17: [57], 18: [58, 59, 60, 61, 62]}
+treatments {8: [21, 22], 5: [9, 10, 11, 12, 13], 4: [7, 8], 11: [27, 28, 29, 30, 31], 9: [23, 24], 6: [14, 15, 16, 17, 18]}
+allocated patients  {8: [8], 5: [5], 4: [4], 11: [11], 9: [9], 6: [6]}
+not allocated  [10, 1, 2, 3, 7, 12]
+illegalNotAllocatedPatients []
+illegalNotAllocatedTreatments []
+illegalNotAllocatedVisits {}
+illegalNotAllocatedActivities {}
+Printer alle rutene
+DAG 1 ANSATT 1
+activity 41 start 480.0
+activity 42 start 502.0
+activity 31 start 524.0
+activity 32 start 578.0
+activity 44 start 630.0
+activity 34 start 646.0
+activity 45 start 662.0
+activity 35 start 718.0
+---------------------
+DAG 1 ANSATT 2
+activity 52 start 750.0
+activity 103 start 915
+---------------------
+DAG 1 ANSATT 3
+activity 43 start 512.0
+activity 33 start 588.0
+---------------------
+DAG 2 ANSATT 1
+activity 73 start 480.0
+activity 74 start 497.0
+activity 76 start 547.0
+activity 77 start 564.0
+activity 54 start 706.0
+activity 55 start 778.0
+---------------------
+DAG 2 ANSATT 2
+activity 85 start 562.0
+activity 53 start 616.0
+activity 104 start 725.0
+activity 105 start 890.0
+activity 106 start 905.0
+---------------------
+DAG 2 ANSATT 3
+activity 83 start 480.0
+activity 75 start 507.0
+activity 84 start 552.0
+activity 86 start 602.0
+activity 87 start 622.0
+activity 46 start 690.0
+---------------------
+DAG 3 ANSATT 1
+activity 107 start 660.0
+activity 47 start 714.0
+activity 56 start 764.0
+---------------------
+DAG 3 ANSATT 2
+---------------------
+DAG 3 ANSATT 3
+---------------------
+DAG 4 ANSATT 1
+activity 36 start 480.0
+activity 37 start 496.0
+activity 48 start 660.0
+activity 39 start 706.0
+activity 40 start 722.0
+activity 57 start 736.0
+---------------------
+DAG 4 ANSATT 2
+activity 38 start 599.0
+---------------------
+DAG 4 ANSATT 3
+activity 108 start 570.0
+---------------------
+DAG 5 ANSATT 1
+activity 78 start 480.0
+activity 79 start 497.0
+activity 109 start 514.0
+activity 110 start 541.0
+activity 81 start 597.0
+activity 82 start 631.0
+activity 49 start 653.0
+activity 50 start 799.0
+activity 51 start 833.0
+---------------------
+DAG 5 ANSATT 2
+activity 80 start 507.0
+activity 111 start 551.0
+activity 112 start 611.0
+activity 91 start 629.0
+activity 113 start 649.0
+activity 92 start 659.0
+activity 60 start 673.0
+---------------------
+DAG 5 ANSATT 3
+activity 88 start 490.0
+activity 89 start 523.0
+activity 90 start 569.0
+activity 58 start 630.0
+activity 59 start 644.0
+activity 61 start 733.0
+activity 62 start 747.0
+---------------------
+-------------------------------------------------------
+Informasjon til KPIs
+Allocated patients: [8, 5, 4, 11, 9, 6]
+Number of employees: 3
+Activities: [73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 41, 42, 43, 44, 45, 46, 47, 48, 50, 49, 51, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62]
+Travel Time: 402
+Patient continuity: -19
+Employee convenience: 30
+-------------------------------------------------------
