@@ -124,7 +124,10 @@ def calculate_idle_time_for_profession_levels(results_filepath, activities_filep
     #print(f"duration logistic {duration_logistic}, health {duration_health}, total {duration_health+duration_logistic}")
 
     idle_time_logistic = (travel_time_logistic + duration_logistic) / (5 * 8 * 60)
+    #idle_time_logistic = (travel_time_logistic + duration_logistic) / (2*5 * 8 * 60)
+
     num_health_employees = count_unique_employees(employees_filepath) - 1
+    #num_health_employees = count_unique_employees(employees_filepath) - 2
     idle_time_health = (travel_time_health + duration_health) / (5 * 8 * 60 * num_health_employees)
 
     return idle_time_logistic, idle_time_health
