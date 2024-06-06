@@ -237,9 +237,17 @@ def calculate_patient_utility(results_filepath, folder_name):
     return sum_allocated / sum_all if sum_all != 0 else 0
     
 #-------------- HOSPITAL COST -----------------
-def calculate_hospital_cost(results_filepath):
-    num_allocated_patients = len(extract_patient_ids(results_filepath))
-    #gammel = int(0.3 * bed_day_cost * num_allocated_patients)
+def calculate_hospital_cost(results_filepath, folder_name):
+    patient_ids = extract_patient_ids(results_filepath)
+    num_allocated_patients = len(patient_ids)
+
+    file_path_patients = os.path.join(os.getcwd(), folder_name, 'patients.pkl')
+    df_patients = pd.read_pickle(file_path_patients)
+    filtered_patients = df_patients.loc[patient_ids]
+    
+    result = filtered_patients.groupby('clinic').size().reset_index(name='patient_count')
+    
+    print(result)
     return num_allocated_patients
     
 
@@ -326,13 +334,25 @@ def count_unique_patients_in_solution(file_path_results, folder_name):
 
     return patientsInSolutionContinuity1, patientsInSolutionContinuity2, patientsInSolutionContinuity3
   
+#-----------------OPPDELT OBJEKTIV-----------------------------
+def objective_each_clinic(file_path_results, folder_name):
+    activity_ids = extract_activity_ids(file_path_results)
 
+    file_path_activities = os.path.join(os.getcwd(), folder_name, 'activities.pkl')
+    df_activities = pd.read_pickle(file_path_activities)
+    filtered_activities = df_activities.loc[activity_ids]
 
+    result = filtered_activities.groupby('clinic')['utility'].sum().reset_index()
+    print(result)
+
+    return result
+
+                                                                                                
 # File paths
 folder_name = 'data'
-file_path_activities = "C:\\Users\\gurl\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
-file_path_employees = "C:\\Users\\gurl\\masters-thesis\\data\\employees.csv"
-file_path_results = "C:\\Users\\gurl\\masters-thesis\\results\\results-2024-05-24_11-54-45\\final.txt"
+file_path_activities = "C:\\Users\\gurol\\masters-thesis\\data\\activitiesNewTimeWindows.csv"
+file_path_employees = "C:\\Users\\gurol\\masters-thesis\\data\\employees.csv"
+file_path_results = "C:\\Users\\gurol\\masters-thesis\\results\\results-2024-05-25_13-34-50\\final.txt"
 
 #KPI-resultater
 idle_time = calculate_idle_time(file_path_results, file_path_activities, file_path_employees)
@@ -350,7 +370,7 @@ print(f"OBS: Hent riktig objektiv i ruteplanen (blir feil på objective study)")
 print(f"Calculated Patient Continuity: {patient_continuity}\n")
 patient_utility = calculate_patient_utility(file_path_results, folder_name)
 print(f"Calculated Patient Utility: {patient_utility}\n")
-hospital_cost = calculate_hospital_cost(file_path_results)
+hospital_cost = calculate_hospital_cost(file_path_results, folder_name)
 print(f"Calculated Hospital Cost Effectiveness: {hospital_cost}\n")
 activity_assignments = extract_employee_assignments(file_path_results)
 total_score, count1, count2 = calculate_patient_continuity_counter(activity_assignments, folder_name)
@@ -360,3 +380,5 @@ print(f"Total patient continuity score: {total_score}")
 print(f"Number of unique patients for continuity 2 matches: {count1} of {patientsInSolutionContinuity1}") #Koden og overleaf gjør det motsatt på continuity level ser det ut som
 print(f"Number of unique patients for continuity 1 matches: {count2} of {patientsInSolutionContinuity2}")
 print(f"Number of unique patients for continuity 3: {patientsInSolutionContinuity3}\n")
+
+objective_each_clinic(file_path_results, folder_name)
